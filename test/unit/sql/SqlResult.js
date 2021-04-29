@@ -571,7 +571,7 @@ describe('SqlResultTest', function () {
             const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
             sqlResult.updateCount = long.fromNumber(1); // change update count to see if it's changed
 
-            const anError = new Error('whoops');
+            const anError = new HazelcastSqlException();
             simulateExecuteError(100, sqlResult, anError);
 
             sqlResult.executeDeferred.promise.then(() => {

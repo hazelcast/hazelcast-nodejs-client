@@ -21,7 +21,7 @@ import {SqlServiceImpl} from './SqlService';
 import {Connection} from '../network/Connection';
 import {SqlQueryId} from './SqlQueryId';
 import {DeferredPromise, deferredPromise} from '../util/Util';
-import {HazelcastSqlException} from '../core';
+import {HazelcastSqlException, UUID} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
 
 export type SqlRowAsObject = { [key: string]: any };
@@ -105,7 +105,8 @@ export class SqlResultImpl implements SqlResult {
         private readonly queryId: SqlQueryId,
         private readonly cursorBufferSize: number,
         /* If true SqlResult is an object iterable, otherwise SqlRow iterable */
-        private readonly returnRawResult: boolean = false
+        private readonly returnRawResult: boolean = false,
+        private readonly clientUUID: UUID
     ) {
         this.closed = false;
         this.last = false;
@@ -132,9 +133,10 @@ export class SqlResultImpl implements SqlResult {
         connection: Connection,
         queryId: SqlQueryId,
         cursorBufferSize: number,
-        returnRawResult: boolean
+        returnRawResult: boolean,
+        clientUUID: UUID
     ) {
-        return new SqlResultImpl(service, connection, queryId, cursorBufferSize, returnRawResult);
+        return new SqlResultImpl(service, connection, queryId, cursorBufferSize, returnRawResult, clientUUID);
     }
 
     getUpdateCount(): Promise<Long> {
@@ -163,7 +165,7 @@ export class SqlResultImpl implements SqlResult {
 
         this.closeDeferred = deferredPromise<void>();
 
-        const error = new HazelcastSqlException(null, SqlErrorCode.CANCELLED_BY_USER, 'Cancelled by user');
+        const error = new HazelcastSqlException(this.clientUUID, SqlErrorCode.CANCELLED_BY_USER, 'Cancelled by user');
         this.onExecuteError(error);
         // Reject ongoing fetch if there is one
         if (this.fetchDeferred?.promise)
@@ -190,7 +192,7 @@ export class SqlResultImpl implements SqlResult {
     }
 
     /** @internal */
-    onExecuteError(error: Error): void {
+    onExecuteError(error: HazelcastSqlException): void {
         if (this.closed) return;
         this.updateCount = Long.fromInt(-1);
         this.rowMetadata = null;

@@ -89,13 +89,11 @@ export class SqlServiceImpl implements SqlService {
     handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
         if (response.error !== null) {
-            const responseError = new HazelcastSqlException(
-                response.error.originatingMemberId,
-                response.error.code,
-                response.error.message,
-                null
-            )
-            res.onExecuteError(responseError);
+            res.onExecuteError(
+                new HazelcastSqlException(
+                    response.error.originatingMemberId, response.error.code, response.error.message
+                )
+            );
         } else {
             res.onExecuteResponse(
                 response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
@@ -161,8 +159,7 @@ export class SqlServiceImpl implements SqlService {
     convertToStringIfDatetimeValue(value: any) {
         if (value instanceof HzLocalTime || value instanceof HzLocalDate || value instanceof HzLocalDateTime) {
             return value.toString();
-        }
-        else if (value instanceof HzOffsetDateTime) {
+        } else if (value instanceof HzOffsetDateTime) {
             return value.toISOString();
         } else {
             return value;
@@ -237,12 +234,19 @@ export class SqlServiceImpl implements SqlService {
                 queryId,
                 cursorBufferSize,
                 sqlStatement.options?.hasOwnProperty('returnRawResult') ?
-                    sqlStatement.options.returnRawResult : SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT
+                    sqlStatement.options.returnRawResult : SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT,
+                this.connectionManager.getClientUuid()
             );
 
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
                 this.handleExecuteResponse(clientMessage, res);
-            }).catch(res.onExecuteError);
+            }).catch(err => {
+                res.onExecuteError(
+                    new HazelcastSqlException(
+                        connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM, 'Invocation error', err
+                    )
+                );
+            });
 
             return res;
         } catch (error) {

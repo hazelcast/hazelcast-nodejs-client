@@ -27,6 +27,7 @@ const { HazelcastSqlException } = require('../../../../lib/core/HazelcastError')
 const { SqlServiceImpl } = require('../../../../lib/sql/SqlService');
 const { SqlResultImpl } = require('../../../../lib/sql/SqlResult');
 const { SqlRowImpl } = require('../../../../lib/sql/SqlRow');
+const { SqlErrorCode } = require('../../../../lib/sql/SqlErrorCode');
 
 const TestUtil = require('../../../TestUtil');
 const RC = require('../../RC');
@@ -419,31 +420,127 @@ describe('SqlExecuteTest', function () {
         });
     });
     describe('errors/invalid usage', function () {
-        before(async function () {
-            cluster = await RC.createCluster(null, null);
-            await RC.startMember(cluster.id);
-            client = await Client.newHazelcastClient({
-                clusterName: cluster.id
-            });
-        });
-
-        beforeEach(async function () {
-            mapName = TestUtil.randomString(10);
-            someMap = await client.getMap(mapName);
-        });
+        const LITE_MEMBER_CONFIG = `
+            <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                    <lite-member enabled="true" />
+            </hazelcast>
+        `;
 
         after(async function () {
             await RC.terminateCluster(cluster.id);
             await client.shutdown();
         });
 
-        afterEach(async function () {
-            await someMap.clear();
+        it('should return an error if sql query sent to lite member', async function () {
+            cluster = await RC.createCluster(null, LITE_MEMBER_CONFIG);
+            await RC.startMember(cluster.id);
+            client = await Client.newHazelcastClient({
+                clusterName: cluster.id
+            });
+            mapName = TestUtil.randomString(10);
+            someMap = await client.getMap(mapName);
+
+            const error1 = TestUtil.getThrownErrorOrDummy(client.getSqlService(), 'execute', `SELECT * FROM ${mapName}`);
+            error1.should.be.instanceof(HazelcastSqlException);
+            error1.code.should.be.eq(SqlErrorCode.CONNECTION_PROBLEM);
+            error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
+
+            const error2 = TestUtil.getThrownErrorOrDummy(client.getSqlService(), 'execute',
+                {
+                    sql: `SELECT * FROM ${mapName}`,
+                    params: [],
+                    options: {}
+                }
+            );
+            error2.should.be.instanceof(HazelcastSqlException);
+            error2.code.should.be.eq(SqlErrorCode.CONNECTION_PROBLEM);
+            error2.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
+
+            await RC.terminateCluster(cluster.id);
+            await client.shutdown();
         });
 
-        // lite member
-        // connection problem
-        // invalid sql strings
+        it('should return an error if connection lost', async function () {
+            cluster = await RC.createCluster(null, null);
+            const member = await RC.startMember(cluster.id);
+            client = await Client.newHazelcastClient({
+                clusterName: cluster.id
+            });
+            mapName = TestUtil.randomString(10);
+            someMap = await client.getMap(mapName);
+
+            await RC.terminateMember(cluster.id, member.uuid);
+
+            const result1 = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+
+            const error1 = await TestUtil.getRejectionReasonOrDummy(result1, 'next');
+            error1.should.be.instanceof(HazelcastSqlException);
+            error1.code.should.be.eq(SqlErrorCode.CONNECTION_PROBLEM);
+            error1.originatingMemberId.toString().should.be.eq(member.uuid);
+
+            await RC.terminateCluster(cluster.id);
+            await client.shutdown();
+        });
+
+        it('should return an error if connection lost - statement', async function () {
+            cluster = await RC.createCluster(null, null);
+            const member = await RC.startMember(cluster.id);
+            client = await Client.newHazelcastClient({
+                clusterName: cluster.id
+            });
+            mapName = TestUtil.randomString(10);
+            someMap = await client.getMap(mapName);
+
+            await RC.terminateMember(cluster.id, member.uuid);
+
+            const result1 = client.getSqlService().execute({
+                sql: `SELECT * FROM ${mapName}`,
+                params: [],
+                options: {}
+            });
+
+            const error1 = await TestUtil.getRejectionReasonOrDummy(result1, 'next');
+            error1.should.be.instanceof(HazelcastSqlException);
+            error1.code.should.be.eq(SqlErrorCode.CONNECTION_PROBLEM);
+            error1.originatingMemberId.toString().should.be.eq(member.uuid);
+
+            await RC.terminateCluster(cluster.id);
+            await client.shutdown();
+        });
+
+        it('should return an error if sql is invalid', async function () {
+            cluster = await RC.createCluster(null, null);
+            const member = await RC.startMember(cluster.id);
+            client = await Client.newHazelcastClient({
+                clusterName: cluster.id
+            });
+            mapName = TestUtil.randomString(10);
+            someMap = await client.getMap(mapName);
+
+            const result1 = client.getSqlService().execute('asdasd');
+
+            const error1 = await TestUtil.getRejectionReasonOrDummy(result1, 'next');
+            error1.should.be.instanceof(HazelcastSqlException);
+            error1.code.should.be.eq(SqlErrorCode.PARSING);
+            error1.originatingMemberId.toString().should.be.eq(member.uuid);
+
+            const result2 = client.getSqlService().execute({
+                sql: `--SELECT * FROM ${mapName}`,
+                params: [],
+                options: {}
+            });
+
+            const error2 = await TestUtil.getRejectionReasonOrDummy(result2, 'next');
+            error2.should.be.instanceof(HazelcastSqlException);
+            error2.code.should.be.eq(SqlErrorCode.PARSING);
+            error2.originatingMemberId.toString().should.be.eq(member.uuid);
+
+            await RC.terminateCluster(cluster.id);
+            await client.shutdown();
+        });
     });
 });
 

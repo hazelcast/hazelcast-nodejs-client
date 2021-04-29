@@ -41,6 +41,18 @@ exports.getRejectionReasonOrDummy = async function (object, asyncMethodName, ...
     }
 };
 
+/**
+ * Returns thrown error if thrown, otherwise returns a dummy error.
+ */
+exports.getThrownErrorOrDummy = function (object, asyncMethodName, ...params) {
+    try {
+        object[asyncMethodName](...params);
+        return new Error('dummy error');
+    } catch (e) {
+        return e;
+    }
+};
+
 exports.promiseWaitMilliseconds = function (milliseconds) {
     return new Promise(((resolve) => {
         setTimeout(() => {
