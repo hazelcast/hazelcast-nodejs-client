@@ -20,7 +20,7 @@ const sinon = require('sinon');
 const long = require('long');
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
-chai.should();
+const should = chai.should();
 
 const { Client } = require('../../../');
 const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
@@ -40,12 +40,11 @@ const TestUtil = require('../../TestUtil');
 const RC = require('../RC');
 
 function randomString(length) {
-    var result = [];
-    var characters = 'abcdefghijklmnopqrstuvwxyz';
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
-        result.push(characters.charAt(Math.floor(Math.random() *
-            charactersLength)));
+    const result = [];
+    const characters = 'abcdefghijklmnopqrstuvwxyz';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
     }
     return result.join('');
 }
@@ -439,6 +438,25 @@ describe('SqlTest', function () {
             });
         });
         describe('return type test (decode)', function () {
+
+            const SERVER_CONFIG = `
+                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                    <serialization>
+                        <portable-factories>
+                            <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory
+                            </portable-factory>
+                            <portable-factory factory-id="100">com.hazelcast.client.test.ClassroomFactory
+                            </portable-factory>
+                            <portable-factory factory-id="1000">com.hazelcast.client.test.EmployeeFactory
+                            </portable-factory>
+                        </portable-factories>
+                    </serialization>
+                </hazelcast>
+            `;
+
             class Employee {
                 constructor(id, name) {
                     this.id = id;
@@ -458,32 +476,70 @@ describe('SqlTest', function () {
                 }
             }
 
-            class Customer {
-                constructor(name, id, lastOrder) {
-                    this.name = name;
-                    this.id = id;
-                    this.lastOrder = lastOrder;
-                    this.factoryId = 1;
-                    this.classId = 1;
+            class Student {
+                constructor(age, height) {
+                    this.age = age;
+                    this.height = height;
+                    this.factoryId = 666;
+                    this.classId = 6;
                 }
 
                 readPortable(reader) {
-                    this.name = reader.readString('name');
-                    this.id = reader.readInt('id');
-                    this.lastOrder = reader.readLong('lastOrder').toNumber();
+                    this.age = reader.readLong('age');
+                    this.height = reader.readFloat('height');
                 }
 
                 writePortable(writer) {
-                    writer.writeString('name', this.name);
-                    writer.writeInt('id', this.id);
-                    writer.writeLong('lastOrder', long.fromNumber(this.lastOrder));
+                    writer.writeLong('age', this.age);
+                    writer.writeFloat('height', this.height);
                 }
             }
 
-            function portableFactory(classId) {
-                if (classId === 1) {
-                    return new Customer();
+            class Classroom {
+                constructor(className, students) {
+                    this.students = students;
+                    this.className = className;
+                    this.factoryId = 100;
+                    this.classId = 333;
                 }
+
+                readPortable(reader) {
+                    this.className = reader.readString('className');
+                    this.students = reader.readPortableArray('students');
+                }
+
+                writePortable(writer) {
+                    writer.writeString('className', this.className);
+                    writer.writePortableArray('students', this.students);
+                }
+            }
+
+            class SmallClassroom {
+                constructor(className, student) {
+                    this.student = student;
+                    this.className = className;
+                    this.factoryId = 100;
+                    this.classId = 333;
+                }
+
+                readPortable(reader) {
+                    this.className = reader.readString('className');
+                    this.student = reader.readPortable('student');
+                }
+
+                writePortable(writer) {
+                    writer.writeString('className', this.className);
+                    writer.writePortable('student', this.student);
+                }
+            }
+
+            function otherPortFac(classId) {
+                if (classId === 333) return new Classroom();
+                return null;
+            }
+
+            function portableFactory(classId) {
+                if (classId === 6) return new Student();
                 return null;
             }
 
@@ -495,17 +551,17 @@ describe('SqlTest', function () {
             }
 
             before(async function () {
-                cluster = await RC.createCluster(null, null);
+                cluster = await RC.createCluster(null, SERVER_CONFIG);
                 await RC.startMember(cluster.id);
                 client = await Client.newHazelcastClient({
                     clusterName: cluster.id,
                     serialization: {
-                        defaultNumberType: 'Double',
                         dataSerializableFactories: {
                             1000: sampleDataSerializableFactory
                         },
                         portableFactories: {
-                            1: portableFactory
+                            666: portableFactory,
+                            100: otherPortFac
                         }
                     }
                 });
@@ -892,12 +948,84 @@ describe('SqlTest', function () {
                     rows[i]['__key'].should.be.eq(i + 1);
                 }
             });
-            it('should be able to decode OBJECT(portable)', function () {
+            it('should be able to decode OBJECT(portable)', async function () {
+                const student = new Student(long.fromNumber(12), 123.23);
+                await someMap.put(0, student);
 
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
+
+                const row = (await result.next()).value;
+                row['age'].eq(student.age).should.be.true;
+                (row['height'] - student.height).should.be.lessThan(1e-5);
+                row['__key'].should.be.eq(0);
             });
-            it('should be able to decode OBJECT(identified data serializable)', function () {
+
+            it.skip('should be able to decode nested portable array', async function () {
+                const classroom = new Classroom('asd', [
+                    new Student(long.fromNumber(12), 123.23),
+                    new Student(long.fromNumber(13), 123.23)
+                ]);
+
+                await someMap.put(0, classroom);
+                // console.log(await someMap.get(0));
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('students')).type.should.be.eq(SqlColumnType.OBJECT);
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('className')).type.should.be.eq(SqlColumnType.VARCHAR);
+
+                const row = (await result.next()).value;
+                row['className'].should.be.eq(classroom.className);
+                row['students'].should.be.eq(classroom.students);
+                row['__key'].should.be.eq(0);
             });
-            it('should be able to decode NULL', function () {
+
+            it.skip('should be able to decode nested portable', async function () {
+                const classroom = new SmallClassroom('asd', new Student(long.fromNumber(13), 123.23));
+                await someMap.put(0, classroom);
+
+                // console.log(await someMap.get(0));
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('student')).type.should.be.eq(SqlColumnType.OBJECT);
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('className')).type.should.be.eq(SqlColumnType.VARCHAR);
+
+                const row = (await result.next()).value;
+                row['className'].should.be.eq(classroom.className);
+                row['student'].should.be.eq(classroom.student);
+                row['__key'].should.be.eq(0);
+            });
+
+            it.skip('should be able to decode OBJECT(identified data serializable)', async function () {
+                const emp = new Employee(1, 'ali');
+                await someMap.put(0, emp);
+
+                // console.log(await someMap.get(0));
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('id')).type.should.be.eq(SqlColumnType.INTEGER);
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('name')).type.should.be.eq(SqlColumnType.VARCHAR);
+
+                const row1 = (await result.next()).value;
+                row1['id'].should.be.eq(emp.id);
+                row1['name'].should.be.eq(emp.name);
+                row1['__key'].should.be.eq(0);
+            });
+
+            it.skip('should be able to decode NULL', async function () {
+                const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+                const rowMetadata = await result.getRowMetadata();
+                rowMetadata.getColumnByIndex(rowMetadata.findColumn('this'))
+                    .type.should.be.eq(SqlColumnType.NULL);
+                const row = await result.next();
+                should.equal(row['this'], null);
+                row['__key'].should.be.eq(0);
             });
         });
         describe('errors/invalid usage', function () {
