@@ -24,7 +24,7 @@ let testProcess;
 let runTests = true;
 let CLASSPATH = `hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar${PATH_SEPARATOR}`
               + `hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
-              + 'test/integration/javaclasses';
+              + 'test/java_classes';
 
 if (HAZELCAST_ENTERPRISE_KEY) {
     CLASSPATH = `hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar${PATH_SEPARATOR}`
@@ -219,7 +219,7 @@ process.on('SIGINT', shutdownProcesses);
 process.on('SIGTERM', shutdownProcesses);
 process.on('SIGHUP', shutdownProcesses);
 
-startRC(!runTests).then(() => {
+startRC().then(() => {
     console.log('Hazelcast Remote Controller is started!');
     if (runTests) {
         console.log(`Running tests... Test type: ${testType}, Test command: ${testCommand}`);

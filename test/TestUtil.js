@@ -17,7 +17,6 @@
 
 const { expect } = require('chai');
 const { BuildInfo } = require('../lib/BuildInfo');
-const { UuidUtil } = require('../lib/util/UuidUtil');
 
 exports.promiseLater = function (time, func) {
     if (func === undefined) {
@@ -178,8 +177,14 @@ exports.getRandomInt = function (lowerLim, upperLim) {
     return Math.floor(Math.random() * (upperLim - lowerLim)) + lowerLim;
 };
 
-exports.randomString = function () {
-    return UuidUtil.generate().toString();
+exports.randomString = function (length) {
+    const result = [];
+    const characters = 'abcdefghijklmnopqrstuvwxyz';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
+    }
+    return result.join('');
 };
 
 class CountingMembershipListener {
