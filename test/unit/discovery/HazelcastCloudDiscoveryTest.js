@@ -16,7 +16,6 @@
 'use strict';
 
 const chai = require('chai');
-chai.should();
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const net = require('net');

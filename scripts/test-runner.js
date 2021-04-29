@@ -176,8 +176,7 @@ if (process.argv.length === 3 || process.argv.length === 4) {
     } else if (process.argv[2] === 'startrc') {
         runTests = false;
     } else if (process.argv[2] === 'coverage') {
-        testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha "test/**/*.js" -- '
-                    + '--reporter-options mochaFile=report.xml --reporter mocha-junit-reporter';
+        testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha "test/**/*.js"';
         testType = 'coverage';
     } else {
         throw 'Operation type can be one of "unit", "integration", "all", "startrc"';
