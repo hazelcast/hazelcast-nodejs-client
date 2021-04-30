@@ -243,7 +243,7 @@ export class SqlServiceImpl implements SqlService {
             }).catch(err => {
                 res.onExecuteError(
                     new HazelcastSqlException(
-                        connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM, 'Invocation error', err
+                        connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM, err.message, err
                     )
                 );
             });

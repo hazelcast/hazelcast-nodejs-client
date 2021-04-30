@@ -42,12 +42,8 @@ describe('Decode/Serialize Test', function () {
                 xsi:schemaLocation="http://www.hazelcast.com/schema/config
                 http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
                     <serialization>
-                        <portable-factories>
-                            <portable-factory factory-id="100">com.hazelcast.client.test.ClassroomFactory
-                            </portable-factory>
-                        </portable-factories>
                         <data-serializable-factories>
-                            <data-serializable-factory factory-id="1000">com.hazelcast.client.test.AddressFactory
+                            <data-serializable-factory factory-id="66">com.hazelcast.client.test.IdentifiedFactory
                             </data-serializable-factory>
                         </data-serializable-factories>
                     </serialization>
@@ -58,8 +54,8 @@ describe('Decode/Serialize Test', function () {
         constructor(street, zipCode) {
             this.zipCode = zipCode;
             this.street = street;
-            this.factoryId = 1000;
-            this.classId = 100;
+            this.factoryId = 66;
+            this.classId = 18;
         }
 
         readData(input) {
@@ -96,8 +92,8 @@ describe('Decode/Serialize Test', function () {
         constructor(className, students) {
             this.students = students;
             this.className = className;
-            this.factoryId = 100;
-            this.classId = 333;
+            this.factoryId = 666;
+            this.classId = 7;
         }
 
         readPortable(reader) {
@@ -115,8 +111,8 @@ describe('Decode/Serialize Test', function () {
         constructor(className, student) {
             this.student = student;
             this.className = className;
-            this.factoryId = 100;
-            this.classId = 333;
+            this.factoryId = 666;
+            this.classId = 3;
         }
 
         readPortable(reader) {
@@ -130,13 +126,10 @@ describe('Decode/Serialize Test', function () {
         }
     }
 
-    const otherPortFac = (classId) => {
-        if (classId === 333) return new Classroom();
-        return null;
-    };
-
     const portableFactory = (classId) => {
-        if (classId === 6) return new Student();
+        if (classId === 1) return new Student();
+        if (classId === 2) return new Classroom();
+        if (classId === 3) return new SmallClassroom();
         return null;
     };
 
@@ -175,8 +168,7 @@ describe('Decode/Serialize Test', function () {
                     1000: sampleDataSerializableFactory
                 },
                 portableFactories: {
-                    666: portableFactory,
-                    100: otherPortFac
+                    666: portableFactory
                 }
             }
         });
@@ -681,10 +673,11 @@ describe('Decode/Serialize Test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
+
     it('should be able to decode/serialize OBJECT(portable)', async function () {
         const student1 = new Student(long.fromNumber(12), 123.23);
-        const student2 = new Student(long.fromNumber(15), 123.23);
-        const student3 = new Student(long.fromNumber(17), 123.23);
+        const student2 = new Student(long.fromNumber(15), null);
+        const student3 = new Student(long.fromNumber(17), null);
         await someMap.put(0, student1);
         await someMap.put(1, student2);
         await someMap.put(2, student3);
@@ -715,7 +708,7 @@ describe('Decode/Serialize Test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-    // eslint-disable-next-line mocha/no-skipped-tests
+    it.skip('portable server config olmadan', function () {});
     it.skip('should be able to decode/serialize OBJECT(identified data serializable)', async function () {
         const address1 = new Address('a', 2);
         const address2 = new Address('b', 3);
@@ -751,6 +744,8 @@ describe('Decode/Serialize Test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
+    it.skip('identified nested', function () {});
+    it.skip('identified nested array', function () {});
     // eslint-disable-next-line mocha/no-skipped-tests
     it.skip('should be able to decode/serialize nested portable array', async function () {
         const classroom = new Classroom('asd', [
@@ -771,12 +766,11 @@ describe('Decode/Serialize Test', function () {
         row['students'].should.be.eq(classroom.students);
         row['__key'].should.be.eq(0);
     });
-    // eslint-disable-next-line mocha/no-skipped-tests
+    it.skip('nested portable array server config olmadan', function () {});
     it.skip('should be able to decode/serialize nested portable', async function () {
         const classroom = new SmallClassroom('asd', new Student(long.fromNumber(13), 123.23));
         await someMap.put(0, classroom);
 
-        // console.log(await someMap.get(0));
         const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
 
         const rowMetadata = await result.getRowMetadata();
@@ -788,14 +782,35 @@ describe('Decode/Serialize Test', function () {
         row['student'].should.be.eq(classroom.student);
         row['__key'].should.be.eq(0);
     });
+    it.skip('nested portable server config olmadan', function () {});
     // eslint-disable-next-line mocha/no-skipped-tests
-    it.skip('should be able to decode/serialize NULL', async function () {
+    it.skip('should be able to decode NULL in portable field', async function () {
+        const script = `
+            var map = instance_0.getMap("${mapName}");
+            for (var key = 0; key < 3; key++) {
+                map.set(new java.lang.Integer(key), new hazelcast.client.test.Classroom(null));
+            }
+        `;
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this'))
-            .type.should.be.eq(SqlColumnType.NULL);
-        const row = await result.next();
-        should.equal(row['this'], null);
-        row['__key'].should.be.eq(0);
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('testField')).type.should.be.eq(SqlColumnType.NULL);
+
+        const rows = [];
+
+        for await (const row of result) {
+            rows.push(row);
+        }
+        sortByKey(rows);
+
+        const expectedKeys = [0, 1, 2];
+
+        rows.length.should.be.eq(expectedKeys.length);
+
+        for (let i = 0; i < rows.length; i++) {
+            should.equal(rows[i]['testField'], null);
+            rows[i]['__key'].should.be.eq(expectedKeys[i]);
+        }
     });
 });

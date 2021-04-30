@@ -244,7 +244,6 @@ describe('SqlServiceTest', function () {
             return assertTrueEventually(async () => {
                 fakeResult.onExecuteError.calledOnceWithExactly(
                     sinon.match.instanceOf(HazelcastSqlException)
-                        .and(sinon.match.hasOwn('message', 'Invocation error'))
                         .and(sinon.match.hasOwn('cause', fakeError))
                 ).should.be.true;
             }, 100, 1000);
