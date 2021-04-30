@@ -115,13 +115,13 @@ const downloadRC = () => {
             console.log('hazelcast-enterprise-tests.jar already exists, not downloading from maven.');
         } else {
             console.log('Downloading: hazelcast enterprise test jar '
-                + `com.hazelcast:hazelcast-enterprise-all:${HAZELCAST_TEST_VERSION}:jar:tests`);
+                + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests`);
             const subprocess = spawnSync('mvn', [
                 '-q',
                 'org.apache.maven.plugins:maven-dependency-plugin:2.8:get',
                 '-Dtransitive=false',
                 `-DrepoUrl=${ENTERPRISE_TEST_REPO}`,
-                `-Dartifact=com.hazelcast:hazelcast-enterprise-all:${HAZELCAST_TEST_VERSION}:jar:tests`,
+                `-Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests`,
                 `-Ddest=hazelcast-enterprise-${HAZELCAST_TEST_VERSION}-tests.jar`
             ], {
                 stdio: 'inherit',
@@ -130,7 +130,7 @@ const downloadRC = () => {
             if (subprocess.status !== 0) {
                 const subprocessTrace = subprocess.error ? subprocess.error.stack : '';
                 throw 'Failed to download hazelcast enterprise test jar '
-                    + `com.hazelcast:hazelcast-enterprise-all:${HAZELCAST_TEST_VERSION}:jar:tests ${subprocessTrace}`;
+                    + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests ${subprocessTrace}`;
             }
         }
         console.log('Starting Remote Controller ... enterprise ...');
