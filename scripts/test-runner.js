@@ -64,8 +64,8 @@ const startRC = async (background) => {
                 }
             );
         } else {
-            // const outFD = fs.openSync('rc_stdout.txt', 'w');
-            // const errFD = fs.openSync('rc_stderr.txt', 'w');
+            const outFD = fs.openSync('rc_stdout.txt', 'w');
+            const errFD = fs.openSync('rc_stderr.txt', 'w');
             rcProcess = spawn('java', [
                 `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
                 '-cp',
@@ -75,16 +75,14 @@ const startRC = async (background) => {
             ], {
                 stdio: [
                     'ignore',
-                    'inherit',
-                    'inherit'
+                    outFD,
+                    errFD
                 ]
             });
-            /*
             rcProcess.on('close', () => {
                 fs.closeSync(outFD);
                 fs.closeSync(errFD);
             });
-             */
         }
     } else {
         if (background) {
