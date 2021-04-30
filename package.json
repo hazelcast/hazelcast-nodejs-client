@@ -46,8 +46,8 @@
         "coverage": "node scripts/test-runner.js coverage",
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --options typedoc.json",
-        "lint": "eslint --ext .ts src && eslint --plugin mocha test && eslint code_samples && eslint scripts",
-        "lint:fix": "eslint --fix --ext .ts src && eslint --fix --plugin mocha test && eslint --fix code_samples && eslint --fix scripts",
+        "lint": "eslint --cache --ext .ts src && eslint --cache --plugin mocha test && eslint --cache  code_samples && eslint --cache scripts",
+        "lint:fix": "eslint --cache --fix --ext .ts src && eslint --cache --fix --plugin mocha test && eslint --cache --fix code_samples && eslint --cache --fix scripts",
         "startrc": "node scripts/test-runner.js startrc"
     },
     "repository": {
