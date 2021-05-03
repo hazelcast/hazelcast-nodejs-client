@@ -38,7 +38,6 @@ export class DefaultAddressProvider implements AddressProvider {
         if (addressList.length === 0) {
             addressList.push('127.0.0.1');
         }
-        const addresses = new Addresses();
         for (const address of addressList) {
             addresses.addAll(getSocketAddresses(address));
         }
