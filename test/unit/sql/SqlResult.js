@@ -382,7 +382,7 @@ describe('SqlResultTest', function () {
             await sqlResult.close();
             const rejectionReason = await getRejectionReasonOrDummy(sqlResult, 'fetch');
             rejectionReason.should.be.a('string');
-            rejectionReason.should.include('the result is closed');
+            rejectionReason.should.include('close() is called');
         });
 
         it('should return a promise that resolves an sql page', async function () {
@@ -483,7 +483,7 @@ describe('SqlResultTest', function () {
             const anError = new Error('oops');
 
             simulateExecuteError(1, sqlResult, anError);
-            (await getRejectionReasonOrDummy(sqlResult, '_hasNext')).should.be.eq(anError);
+            (await getRejectionReasonOrDummy(sqlResult, 'hasNext')).should.be.eq(anError);
         });
 
         it('should resolve to false if last page is received and all rows are read', async function () {
@@ -491,7 +491,7 @@ describe('SqlResultTest', function () {
             // eslint-disable-next-line no-unused-vars,no-empty
             for await (const row of sqlResult) {
             }
-            const hasNext = await sqlResult._hasNext();
+            const hasNext = await sqlResult.hasNext();
             hasNext.should.be.false;
         });
 
@@ -500,7 +500,7 @@ describe('SqlResultTest', function () {
 
             await sqlResult.next();
 
-            const hasNext = await sqlResult._hasNext();
+            const hasNext = await sqlResult.hasNext();
             hasNext.should.be.true;
         });
 
@@ -511,14 +511,14 @@ describe('SqlResultTest', function () {
             // Consume the row
             await sqlResult.next();
 
-            (await sqlResult._hasNext()).should.be.true;
+            (await sqlResult.hasNext()).should.be.true;
 
             fakeSqlService.fetch.calledOnce.should.be.true;
 
             await sqlResult.next();
             await sqlResult.next();
 
-            (await sqlResult._hasNext()).should.be.false;
+            (await sqlResult.hasNext()).should.be.false;
         });
     });
     describe('onNextPage', function () {

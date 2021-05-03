@@ -26,7 +26,7 @@ const {
     HzOffsetDateTime,
     HzLocalDate,
     HzLocalTime
-} = require('../../../lib/sql/DatetimeWrapperClasses');
+} = require('../../../lib/sql/DatetimeClasses');
 const { SqlExecuteCodec } = require('../../../lib/codec/SqlExecuteCodec');
 const { SqlCloseCodec } = require('../../../lib/codec/SqlCloseCodec');
 const { SqlFetchCodec } = require('../../../lib/codec/SqlFetchCodec');

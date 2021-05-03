@@ -2,7 +2,7 @@ import {ClientMessage} from '../../protocol/ClientMessage';
 import {ListCNFixedSizeCodec} from './ListCNFixedSizeCodec';
 import {BitsUtil} from '../../util/BitsUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
-import {HzOffsetDateTime} from '../../sql/DatetimeWrapperClasses';
+import {HzOffsetDateTime} from '../../sql/DatetimeClasses';
 
 /** @internal */
 export class ListCNOffsetDateTimeCodec {

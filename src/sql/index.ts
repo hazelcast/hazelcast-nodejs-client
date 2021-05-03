@@ -19,4 +19,4 @@
  * Public API re-exports.
  */
 
-export * from './DatetimeWrapperClasses';
+export * from './DatetimeClasses';

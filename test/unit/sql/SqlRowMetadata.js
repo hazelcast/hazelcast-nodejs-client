@@ -19,16 +19,9 @@ const chai = require('chai');
 const should = chai.should();
 const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
 const { SqlColumnMetadataImpl } = require('../../../lib/sql/SqlColumnMetadata');
-const { IllegalArgumentError, IllegalStateError } = require('../../../lib/core/HazelcastError');
+const { IllegalArgumentError } = require('../../../lib/core/HazelcastError');
 
 describe('SqlRowMetadataTest', function () {
-    describe('constructor', function () {
-        it('should throw on non-array columns argument, or an empty array', function () {
-            [undefined, [], '', 1, BigInt(1), Symbol(), {}].forEach(invalidColumnValue => {
-                (() => new SqlRowMetadataImpl(invalidColumnValue)).should.throw(IllegalStateError, 'Invalid columns given');
-            });
-        });
-    });
     describe('getColumnByIndex', function () {
        it('should return correct column', function () {
            const columnMetadata1 = {};

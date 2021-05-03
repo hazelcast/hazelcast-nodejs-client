@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {SqlRow, SqlRowImpl} from './SqlRow';
 import * as Long from 'long';
+
+import {SqlRow, SqlRowImpl} from './SqlRow';
 import {SqlRowMetadata} from './SqlRowMetadata';
 import {SqlPage} from './SqlPage';
 import {SqlServiceImpl} from './SqlService';
@@ -27,6 +28,44 @@ import {SqlErrorCode} from './SqlErrorCode';
 export type SqlRowAsObject = { [key: string]: any };
 export type SqlRowType = SqlRow | SqlRowAsObject;
 
+/**
+ * ## SQL Result
+ *
+ * Represents an SQL result. {@link SqlService.execute} returns an SqlResult.
+ *
+ * ### Iteration
+ *
+ * The SqlResult is an async iterable of {@link SqlRowType} which is either an {@link SqlRow} or regular objects.
+ * By default it returns regular javascript objects, containing key and values. Keys represent column names, whereas
+ * values represent row values. The default object returning behavior can be changed via the option
+ * {@link SqlStatementOptions.returnRawResult}. If it is true, {@link SqlRow} objects are returned instead of regular objects.
+ *
+ * #### for-await... of
+ *
+ * Refer to [for-await... of](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of)
+ * page for more information.
+ *
+ * ```js
+ * for await(const row of result){
+ *     console.log(row);
+ * }
+ * ```
+ *
+ * #### next()
+ *
+ * Another approach to iterating rows is using {@link next}. Next returns an object with `done` and `value` properties.
+ * `done` is false when there are more rows to iterate, false otherwise. `value` holds the current row value. Refer to
+ * [iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators) for more information.
+ *
+ * ```js
+ * let row = await result.next();
+ * while (!row.done) {
+ *     console.log(row.value);
+ *     row = await result.next();
+ * }
+ * ```
+ *
+ */
 export interface SqlResult extends AsyncIterable<SqlRowType> {
     /**
      *  Returns next {@link SqlRowType} iteration result.
@@ -37,27 +76,27 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
     next(): Promise<IteratorResult<SqlRowType>>;
 
     /**
-     * Closes the result.
+     * Closes the result. This will prevent further iterations.
      */
     close(): Promise<void>;
 
     /**
      * Returns row metadata of the result.
-     * @returns {Promise<SqlRowMetadata | null>} a promise that resolves to SqlRowMetadata if rows exists in the result,
-     * otherwise, i.e update count result is received, to null. If SqlResult execution encounters an error, this promise is
-     * rejected with the same error.
+     * @returns SqlRowMetadata if rows exists in the result, otherwise, e.g update count result is received, to null.
+     * If SQL execution was not successful, this promise is rejected with an error.
      */
     getRowMetadata(): Promise<SqlRowMetadata | null>;
 
     /**
      * Return whether this result has rows to iterate. False if update count is returned or a response is not received yet.
-     * @returns {boolean}
+     * If SQL execution was not successful, this promise is rejected with an error.
      */
     isRowSet(): Promise<boolean>;
 
     /**
      * Returns the number of rows updated by the statement or -1 if this result is a row set.
-     * @returns {number} Update count
+     * If SQL execution was not successful, this promise is rejected with an error.
+     * @returns Update count
      */
     getUpdateCount(): Promise<Long>;
 
@@ -65,47 +104,51 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
 
 /** @internal */
 export class SqlResultImpl implements SqlResult {
-    /** Update count received as a result of sql execution. See {@link SqlExpectedResultType} */
+    /** Update count received as a result of SQL execution. See {@link SqlExpectedResultType} */
     private updateCount: Long;
     private currentPage: SqlPage | null;
     /* The number of rows in current page */
     private currentRowCount: number;
-    /* Counter for current row position during iteration of a page */
+    /* Current row position in current page */
     private currentPosition: number;
-    /* Made true when last page is received */
+    /* Set to true when the last page is received */
     private last: boolean;
 
     /**
-     * Deferred promise that resolves to true when page is received. If an error is occurred during execution,
-     * this promise is rejected with the error. Used by {@link _hasNext}
+     * Deferred promise that resolves to true when an execute response is received. If an error is occurred during execution,
+     * this promise is rejected with the error.
      */
     private readonly executeDeferred: DeferredPromise<boolean>;
 
     /**
-     * Deferred promise that resolves to a SqlPage when fetch is completed.
+     * Deferred promise that resolves to an SqlPage when current fetch request is completed.
      */
     private fetchDeferred: DeferredPromise<SqlPage>;
 
     /**
-     * If closing of the result is triggered
+     * Deferred promise that resolves when current close request is completed.
      */
     private closeDeferred: DeferredPromise<void>;
 
-    /*
-    Whether the result is closed or not. The result is closed if an update count or the last page is received.
-    When true, there is no need to send the "cancel" request to the server.
-    */
+    /**
+     * Whether the result is closed or not. The result is closed if an update count or the last page is received.
+     * When true, there is no need to send the "cancel" request to the server.
+     */
     private closed: boolean;
-    private rowMetadata: SqlRowMetadata | null;
 
+    /**
+     * Row metadata of the result. Initially null.
+     */
+    private rowMetadata: SqlRowMetadata | null;
 
     constructor(
         private readonly service: SqlServiceImpl,
         private readonly connection: Connection,
         private readonly queryId: SqlQueryId,
+        /** The page size used for pagination */
         private readonly cursorBufferSize: number,
-        /* If true SqlResult is an object iterable, otherwise SqlRow iterable */
-        private readonly returnRawResult: boolean = false,
+        /** If true, SqlResult is an object iterable, otherwise SqlRow iterable */
+        private readonly returnRawResult: boolean,
         private readonly clientUUID: UUID
     ) {
         this.closed = false;
@@ -117,15 +160,15 @@ export class SqlResultImpl implements SqlResult {
         });
     }
 
+    /** This symbol is needed to be included to be an async iterable */
     [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
-        const nextFn: () => Promise<IteratorResult<SqlRowType, SqlRowType | undefined>> = this.next.bind(this);
+        const nextFn = this.next.bind(this);
         return {
             next: nextFn
         }
     }
 
     /**
-     * @internal
      * Returns new result object. Useful for mocking. (Constructor mocking is hard/impossible)
      */
     static newResult(
@@ -158,7 +201,7 @@ export class SqlResultImpl implements SqlResult {
     }
 
     close(): Promise<void> {
-        // Return close promise if a close is already started
+        // Return the close promise if a close request is already started
         if (this.closeDeferred?.promise) {
             return this.closeDeferred.promise;
         }
@@ -166,8 +209,9 @@ export class SqlResultImpl implements SqlResult {
         this.closeDeferred = deferredPromise<void>();
 
         const error = new HazelcastSqlException(this.clientUUID, SqlErrorCode.CANCELLED_BY_USER, 'Cancelled by user');
+        // Reject execute with user cancellation error.
         this.onExecuteError(error);
-        // Reject ongoing fetch if there is one
+        // Reject ongoing fetch request if there is one.
         if (this.fetchDeferred?.promise)
             this.fetchDeferred.reject(error);
         // Send the close request.
@@ -179,7 +223,7 @@ export class SqlResultImpl implements SqlResult {
         return this.closeDeferred.promise
     }
 
-    /** @internal */
+    /** Called when next page of the result is received. */
     onNextPage(page: SqlPage) {
         this.currentPage = page;
         this.currentRowCount = page.getRowCount();
@@ -191,7 +235,7 @@ export class SqlResultImpl implements SqlResult {
         }
     }
 
-    /** @internal */
+    /** Called when an error is occurred during SQL execute */
     onExecuteError(error: HazelcastSqlException): void {
         if (this.closed) return;
         this.updateCount = Long.fromInt(-1);
@@ -199,9 +243,9 @@ export class SqlResultImpl implements SqlResult {
         this.executeDeferred.reject(error);
     }
 
-    /** @internal */
+    /** Returns the current row. Used by {@link next}. */
     getCurrentRow(): SqlRowType {
-        if (this.returnRawResult) { // raw result, returns SqlRowImpl
+        if (this.returnRawResult) { // Return SqlRow
             const values = [];
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 values.push({
@@ -210,7 +254,7 @@ export class SqlResultImpl implements SqlResult {
                 });
             }
             return new SqlRowImpl(values, this.rowMetadata);
-        } else { // return objects
+        } else { // Return objects
             const result: SqlRowAsObject = {};
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 const columnMetadata = this.rowMetadata.getColumnByIndex(i);
@@ -222,9 +266,9 @@ export class SqlResultImpl implements SqlResult {
         }
     }
 
-    /** @internal */
+    /** Called when a execute response is received. */
     onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage, updateCount: Long) {
-        // Ignore the response if sql result is closed.
+        // Ignore the response if SQL result is closed.
         if (this.closed) return;
 
         if (rowMetadata !== null) { // Result that including rows
@@ -238,40 +282,48 @@ export class SqlResultImpl implements SqlResult {
         this.executeDeferred.resolve(true);
     }
 
-    /** @internal */
+    /**
+     * Fetches the next page. Called internally by iteration logic. Pages are fetched whenever the current page is fully
+     * iterated.
+     */
     fetch(): Promise<SqlPage> {
         // If there is an ongoing fetch, return that promise
         if (this.fetchDeferred?.promise)
             return this.fetchDeferred.promise;
 
-        // Do not start a new fetch if the result is closed
+        // Do not start a fetch if close is called
         if (this.closeDeferred?.promise) {
-            return Promise.reject('Cannot fetch, the result is closed');
+            return Promise.reject('Cannot fetch, close() is called');
+        }
+        // Do not start a fetch if the result is already closed
+        if (this.closed) {
+            return Promise.reject('Cannot fetch, the result is already closed');
         }
 
         this.fetchDeferred = deferredPromise<SqlPage>();
 
         this.service.fetch(this.connection, this.queryId, this.cursorBufferSize).then(value => {
             this.fetchDeferred.resolve(value);
-            this.fetchDeferred = undefined;
+            this.fetchDeferred = undefined; // Set fetchDeferred to undefined to be able to fetch again
         }).catch(this.fetchDeferred.reject);
 
         return this.fetchDeferred.promise;
     }
 
-    /** @internal */
-    _hasNext(): Promise<boolean> {
+    /** Returns if there are rows to be iterated. Used by {@link next}. */
+    hasNext(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {
+            // While loop similar logic is written via recursion when written in async manner
             const checkHasNext = (): Promise<boolean> => {
                 if (this.currentPosition === this.currentRowCount) {
-                    // Reached end of the page. Try fetching the next one if possible.
+                    // Reached end of the page. Try fetching the next page if there are more.
                     if (!this.last) {
                         return this.fetch().then(page => {
                             this.onNextPage(page);
                             return checkHasNext();
                         });
                     } else {
-                        // No more pages expected, so resolve false.
+                        // No more pages are expected, so resolve false.
                         return Promise.resolve(false);
                     }
                 } else {
@@ -283,7 +335,7 @@ export class SqlResultImpl implements SqlResult {
     }
 
     next(): Promise<IteratorResult<SqlRowType, SqlRowType | undefined>> {
-        return this._hasNext().then((hasNext: boolean) => {
+        return this.hasNext().then((hasNext: boolean) => {
             if (hasNext) {
                 const row = this.getCurrentRow();
                 this.currentPosition++;

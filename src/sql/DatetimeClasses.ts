@@ -6,8 +6,10 @@ import {IllegalArgumentError} from '../core';
 
 /**
  * ### Local time object
- * * Represents time in day without timezone.
- * * This class is similar to LocalTime class in java. Node.js client uses this class to represent the TIME datatype in SQL.
+ * * Represents time in day without timezone. This class is similar to LocalTime class in java.
+ * * Node.js client uses this class to represent the TIME datatype in SQL.
+ *
+ * See also: {@link SqlColumnType}
  */
 export class HzLocalTime {
     /**
@@ -280,8 +282,6 @@ export class HzLocalDate {
 export class HzLocalDateTime {
     /**
      * @throws {@link IllegalArgumentError} if arguments are invalid
-     * @param hzLocalDate
-     * @param hzLocalTime
      */
     constructor(
         private readonly hzLocalDate: HzLocalDate,
@@ -376,9 +376,7 @@ export class HzOffsetDateTime {
     }
 
     /**
-     *
-     * @param hzLocalDatetime
-     * @param offsetSeconds
+     * Constructs a new instance from {@link HzLocalDateTime} and offset seconds.
      */
     static fromHzLocalDateTime(hzLocalDatetime: HzLocalDateTime, offsetSeconds: number): HzOffsetDateTime {
         const instance = new HzOffsetDateTime(new Date(), offsetSeconds);
@@ -412,8 +410,8 @@ export class HzOffsetDateTime {
     }
 
     /**
-     * Returns this offset datetime as date. In order to do this, internal {@link HzLocalDateTime} is treated as UTC date and
-     * offset seconds is added onto it.
+     * Returns this offset datetime as date. Note that the timezone information is not stored in Date objects and you
+     * effectively get a timestamp.(an instance in time without timezone)
      */
     asDate(): Date {
         return new Date(

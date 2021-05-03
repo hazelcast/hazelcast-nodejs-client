@@ -15,7 +15,7 @@
  */
 
 import {SqlColumnMetadata} from './SqlColumnMetadata';
-import {IllegalArgumentError, IllegalStateError} from '../core';
+import {IllegalArgumentError} from '../core';
 
 export interface SqlRowMetadata {
 
@@ -45,18 +45,13 @@ export interface SqlRowMetadata {
     findColumn(columnName: string): number;
 }
 
-/**
- * @internal
- */
+/** @internal */
 export class SqlRowMetadataImpl implements SqlRowMetadata {
     private readonly columns: SqlColumnMetadata[];
     private static readonly COLUMN_NOT_FOUND = -1
     private readonly nameToIndex: { [key: string]: number };
 
     constructor(columns: SqlColumnMetadata[]) {
-        if (!Array.isArray(columns) || columns.length === 0) {
-            throw new IllegalStateError('Invalid columns given');
-        }
         this.columns = columns;
         this.nameToIndex = {};
         for (let i = 0; i < columns.length; i++) {

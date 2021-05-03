@@ -38,22 +38,24 @@ import {
     tryGetString
 } from '../util/Util';
 import {SqlPage} from './SqlPage';
-import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './DatetimeWrapperClasses';
+import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './DatetimeClasses';
 
-
+/**
+ *
+ */
 export interface SqlService {
     execute(sql: SqlStatement): SqlResult;
 
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
 
     /**
-     * Executes sql and returns SqlResult
-     * @param {string | SqlStatement} sql sql statement, either string or SqlStatement
+     * Executes SQL and returns SqlResult
+     * @param {string | SqlStatement} sql SQL statement, either string or SqlStatement
      * @param {array} params any list
-     * @param {SqlStatementOptions} options options that are affecting how sql is executed
+     * @param {SqlStatementOptions} options options that are affecting how SQL is executed
      * @throws {IllegalArgumentError} If arguments are not valid
-     * @throws {HazelcastSqlException} If there is an error running sql
-     * @returns {SqlResult} Sql result
+     * @throws {HazelcastSqlException} If there is an error running SQL
+     * @returns {SqlResult} SQL result
      */
     execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult;
 }
@@ -82,9 +84,9 @@ export class SqlServiceImpl implements SqlService {
     }
 
     /**
-     * Handles sql execute response.
+     * Handles SQL execute response.
      * @param clientMessage The response message
-     * @param res Sql result for this response
+     * @param res SQL result for this response
      */
     handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
@@ -104,7 +106,7 @@ export class SqlServiceImpl implements SqlService {
     }
 
     /**
-     * Validates sqlStatement
+     * Validates SqlStatement
      *
      * @param sqlStatement
      * @throws RangeError if validation is not successful
@@ -122,7 +124,7 @@ export class SqlServiceImpl implements SqlService {
     }
 
     /**
-     * Validates sqlStatementOptions
+     * Validates SqlStatementOptions
      *
      * @param sqlStatementOptions
      * @throws RangeError if validation is not successful
@@ -253,7 +255,7 @@ export class SqlServiceImpl implements SqlService {
             throw new HazelcastSqlException(
                 connection.getRemoteUuid(),
                 SqlErrorCode.GENERIC,
-                `An error occurred during sql execution: ${error.message}`,
+                `An error occurred during SQL execution: ${error.message}`,
                 error
             );
         }

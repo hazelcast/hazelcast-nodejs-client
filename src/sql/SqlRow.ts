@@ -16,13 +16,12 @@
 import {SqlRowMetadata} from './SqlRowMetadata';
 import {IllegalArgumentError, IndexOutOfBoundsError} from '../core';
 
-
 export interface SqlRow {
 
     /**
      Gets the value of the column by column index or column name.
-     The class of the returned value depends on the SQL type of the column. No implicit conversions are performed on the value.
-     @param {string | number} columnNameOrIndex Column name or index
+     The class of the returned value depends on the SQL type of the column. See {@link SqlColumnType}
+     @param columnNameOrIndex Column name or index
      @returns value in specified column of this row
      @throws {IllegalArgumentError} if columnNameOrIndex is string and column specified with name does not exist
      @throws {IndexOutOfBoundsError} if columnNameOrIndex is number and there is no index with its value
@@ -31,8 +30,8 @@ export interface SqlRow {
     getObject<T>(columnNameOrIndex: string | number): T;
 
     /**
-     * Get an object that carries general information about this row.
-     * @returns {SqlRowMetadata} row metadata.
+     * Get row metadata of this row.
+     * @returns row metadata.
      */
     getMetadata(): SqlRowMetadata;
 

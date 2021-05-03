@@ -18,7 +18,12 @@ import {UUID} from '../core';
 import {UuidUtil} from '../util/UuidUtil';
 import * as Long from 'long';
 
-/** @internal */
+/**
+ * @internal
+ *
+ * Represents an individual query of the client. This is sent to server to identify the query. The query id is used
+ * to fetch more pages or to close a query.
+ * */
 export class SqlQueryId {
     constructor(
         readonly memberIdHigh: Long,

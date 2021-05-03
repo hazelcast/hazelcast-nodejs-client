@@ -18,25 +18,25 @@
  * Error codes used in Hazelcast SQL.
  * @internal
  */
-export class SqlErrorCode {
+export enum SqlErrorCode {
     /** Generic error. */
-    static GENERIC = -1;
+    GENERIC = -1,
     /** A network connection problem between members, or between a client and a member. */
-    static CONNECTION_PROBLEM = 1001;
+    CONNECTION_PROBLEM = 1001,
     /** Query was cancelled due to user request. */
-    static CANCELLED_BY_USER = 1003;
+    CANCELLED_BY_USER = 1003,
     /** Query was cancelled due to timeout. */
-    static TIMEOUT = 1004;
+    TIMEOUT = 1004,
     /** A problem with partition distribution. */
-    static PARTITION_DISTRIBUTION = 1005;
+    PARTITION_DISTRIBUTION = 1005,
     /** An error caused by a concurrent destroy of a map. */
-    static MAP_DESTROYED = 1006;
+    MAP_DESTROYED = 1006,
     /** Map loading is not finished yet. */
-    static MAP_LOADING_IN_PROGRESS = 1007;
+    MAP_LOADING_IN_PROGRESS = 1007,
     /** Generic parsing error. */
-    static PARSING = 1008;
+    PARSING = 1008,
     /** An error caused by an attempt to query an index that is not valid. */
-    static INDEX_INVALID = 1009;
+    INDEX_INVALID = 1009,
     /** An error with data conversion or transformation. */
-    static DATA_EXCEPTION = 2000;
+    DATA_EXCEPTION = 2000
 }

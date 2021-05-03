@@ -22,7 +22,7 @@ const {
     HzLocalDateTime,
     HzOffsetDateTime,
     HzLocalTime
-} = require('../../../../lib/sql/DatetimeWrapperClasses');
+} = require('../../../../lib/sql/DatetimeClasses');
 const chai = require('chai');
 const long = require('long');
 const should = chai.should();
