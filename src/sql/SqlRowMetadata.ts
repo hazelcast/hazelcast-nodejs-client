@@ -40,7 +40,7 @@ export interface SqlRowMetadata {
     /**
      * Find index of the column with the given name. Returned index can be used to get column value from SqlRow.
      * @returns {number} Column index. If column is not found, -1 is returned.
-     * @throws {IllegalArgumentError} is thrown if columnName is not string.
+     * @throws {@link IllegalArgumentError} is thrown if columnName is not string.
      */
     findColumn(columnName: string): number;
 }

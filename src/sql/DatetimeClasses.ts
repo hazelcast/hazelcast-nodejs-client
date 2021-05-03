@@ -43,28 +43,28 @@ export class HzLocalTime {
     }
 
     /**
-     * Returns hour value of this local time
+     * Returns hour value of this local time.
      */
     getHour(): number {
         return this.hour;
     }
 
     /**
-     * Returns minute value of this local time
+     * Returns minute value of this local time.
      */
     getMinute(): number {
         return this.minute;
     }
 
     /**
-     * Returns second value of this local time
+     * Returns second value of this local time.
      */
     getSecond(): number {
         return this.second;
     }
 
     /**
-     * Returns nanosecond value of this local time
+     * Returns nanosecond value of this local time.
      */
     getNano(): number {
         return this.nano;
@@ -73,7 +73,7 @@ export class HzLocalTime {
     /**
      * Constructs a new {@link HzLocalTime} object from timeString.
      * @param timeString A string in the form hh:mm:ss[.sss]. At most 9 digits allowed for second decimal value. If more than 9
-     * digits are given, the first 9 of them are used.
+     * digits are given, the first 9 of them are used
      * @throws {@link IllegalArgumentError} if invalid timeString is given
      */
     static fromString(timeString: string): HzLocalTime {
@@ -154,7 +154,7 @@ export class HzLocalDate {
     /**
      * @param year Must be between -999999999-999999999
      * @param month Must be between 1-12
-     * @param date Must be between 1-28/31 depending on year and month.
+     * @param date Must be between 1-28/31 depending on year and month
      * @throws {@link IllegalArgumentError} if any of the arguments are invalid
      */
     constructor(
@@ -263,7 +263,7 @@ export class HzLocalDate {
 
     /**
      * Returns string representation of this local date.
-     * @returns A string in the form yyyy:mm:dd. Values are zero padded from left.
+     * @returns A string in the form yyyy:mm:dd. Values are zero padded from left
      */
     toString(): string {
         const year = this.year.toString().padStart(4, '0');
@@ -312,7 +312,7 @@ export class HzLocalDateTime {
     /**
      * Constructs HzLocalDateTime from ISO 8601 string.
      * @param isoString Must not include timezone information. The string format is yyyy-mm-ss(T|t)hh:mm:ss[.sss], so, second
-     * decimal value can be omitted.
+     * decimal value can be omitted
      * @throws {@link IllegalArgumentError} if iso string is invalid or any of the values in iso string is invalid
      */
     static fromISOString(isoString: string): HzLocalDateTime {
@@ -329,7 +329,7 @@ export class HzLocalDateTime {
     /**
      * Returns string representation of this local datetime.
      * @returns A string in the form yyyy:mm:ddThh:mm:ss[.sssssssss]. Values are zero padded from left. If nano second value
-     * is zero, second decimal is not include in the returned string.
+     * is zero, second decimal is not include in the returned string
      */
     toString(): string {
         return `${this.hzLocalDate.toString()}T${this.hzLocalTime.toString()}`;
@@ -349,7 +349,7 @@ export class HzOffsetDateTime {
     private hzLocalDateTime: HzLocalDateTime;
 
     /**
-     * @param date Must be a valid date. So `date.getTime()` should be not NaN.
+     * @param date Must be a valid date. So `date.getTime()` should be not NaN
      * @param offsetSeconds Must be between -64800-64800 (-+18:00)
      */
     constructor(date: Date, private readonly offsetSeconds: number) {
@@ -391,7 +391,7 @@ export class HzOffsetDateTime {
 
     /**
      * Constructs a new instance from ISO 8601 string.
-     * @param isoString ISO 8601 string with timezone. If timezone is omitted, UTC is assumed.
+     * @param isoString ISO 8601 string with timezone. If timezone is omitted, UTC is assumed
      */
     static fromISOString(isoString: string): HzOffsetDateTime {
         if (typeof isoString !== 'string') {

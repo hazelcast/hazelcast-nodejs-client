@@ -23,15 +23,15 @@ export interface SqlRow {
      The class of the returned value depends on the SQL type of the column. See {@link SqlColumnType}
      @param columnNameOrIndex Column name or index
      @returns value in specified column of this row
-     @throws {IllegalArgumentError} if columnNameOrIndex is string and column specified with name does not exist
-     @throws {IndexOutOfBoundsError} if columnNameOrIndex is number and there is no index with its value
-     @throws {IllegalArgumentError} if columnNameOrIndex is not string or number
+     @throws {@link IllegalArgumentError} if columnNameOrIndex is string and column specified with name does not exist
+     @throws {@link IndexOutOfBoundsError} if columnNameOrIndex is number and there is no index with its value
+     @throws {@link IllegalArgumentError} if columnNameOrIndex is not string or number
      */
     getObject<T>(columnNameOrIndex: string | number): T;
 
     /**
      * Get row metadata of this row.
-     * @returns row metadata.
+     * @returns row metadata
      */
     getMetadata(): SqlRowMetadata;
 

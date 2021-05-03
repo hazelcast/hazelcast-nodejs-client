@@ -41,23 +41,26 @@ import {SqlPage} from './SqlPage';
 import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './DatetimeClasses';
 
 /**
- *
+ * SQL Service of the client. You can use this service to execute SQL queries.
  */
 export interface SqlService {
-    execute(sql: SqlStatement): SqlResult;
-
+    /**
+     * Executes SQL and returns an SqlResult.
+     * @param sql SQL string. SQL string placeholder character is question mark(`?`)
+     * @param params Parameter list. The parameter count must be equal to number of placeholders in the SQL string
+     * @param options Options that are affecting how SQL is executed
+     * @throws {@link IllegalArgumentError} If arguments are not valid
+     * @throws {@link HazelcastSqlException} If there is an error running SQL
+     */
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
 
     /**
-     * Executes SQL and returns SqlResult
-     * @param {string | SqlStatement} sql SQL statement, either string or SqlStatement
-     * @param {array} params any list
-     * @param {SqlStatementOptions} options options that are affecting how SQL is executed
-     * @throws {IllegalArgumentError} If arguments are not valid
-     * @throws {HazelcastSqlException} If there is an error running SQL
-     * @returns {SqlResult} SQL result
+     * Executes SQL and returns an SqlResult.
+     * @param sql SQL statement object
+     * @throws {@link IllegalArgumentError} If arguments are not valid
+     * @throws {@link HazelcastSqlException} If there is an error running SQL
      */
-    execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult;
+    execute(sql: SqlStatement): SqlResult;
 }
 
 /** @internal */
