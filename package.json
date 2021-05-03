@@ -49,7 +49,8 @@
         "generate-docs": "typedoc --options typedoc.json",
         "lint": "eslint --cache --ext .ts src && eslint --cache --plugin mocha test && eslint --cache  code_samples && eslint --cache scripts",
         "lint:fix": "eslint --cache --fix --ext .ts src && eslint --cache --fix --plugin mocha test && eslint --cache --fix code_samples && eslint --cache --fix scripts",
-        "startrc": "node scripts/test-runner.js startrc"
+        "startrc": "node scripts/test-runner.js startrc",
+        "prepare": "husky install"
     },
     "repository": {
         "type": "git",
