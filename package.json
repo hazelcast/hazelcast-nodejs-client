@@ -64,11 +64,6 @@
         "data",
         "grid"
     ],
-    "husky": {
-        "hooks": {
-            "pre-commit": "compile && lint && validate-user-code"
-        }
-    },
     "license": "Apache-2.0",
     "bugs": {
         "url": "https://github.com/hazelcast/hazelcast-nodejs-client/issues"
