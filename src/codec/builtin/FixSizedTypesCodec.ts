@@ -179,12 +179,12 @@ export class FixSizedTypesCodec {
     }
 
     static decodeUUID(buffer: Buffer, offset: number): UUID {
-        const isNull = this.decodeBoolean(buffer, offset);
+        const isNull = FixSizedTypesCodec.decodeBoolean(buffer, offset);
         if (isNull) {
             return null;
         }
-        const mostSignificantBits = this.decodeLong(buffer, offset + BitsUtil.BOOLEAN_SIZE_IN_BYTES);
-        const leastSignificantBits = this.decodeLong(buffer,
+        const mostSignificantBits = FixSizedTypesCodec.decodeLong(buffer, offset + BitsUtil.BOOLEAN_SIZE_IN_BYTES);
+        const leastSignificantBits = FixSizedTypesCodec.decodeLong(buffer,
             offset + BitsUtil.BOOLEAN_SIZE_IN_BYTES + BitsUtil.LONG_SIZE_IN_BYTES);
         return new UUID(mostSignificantBits, leastSignificantBits);
     }

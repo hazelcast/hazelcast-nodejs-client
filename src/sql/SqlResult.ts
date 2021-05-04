@@ -24,6 +24,7 @@ import {SqlQueryId} from './SqlQueryId';
 import {DeferredPromise, deferredPromise} from '../util/Util';
 import {HazelcastSqlException, UUID} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
+import {SerializationService} from '../serialization/SerializationService';
 
 export type SqlRowAsObject = { [key: string]: any };
 export type SqlRowType = SqlRow | SqlRowAsObject;
@@ -142,7 +143,8 @@ export class SqlResultImpl implements SqlResult {
     private rowMetadata: SqlRowMetadata | null;
 
     constructor(
-        private readonly service: SqlServiceImpl,
+        private readonly sqlService: SqlServiceImpl,
+        private readonly serializationService: SerializationService,
         private readonly connection: Connection,
         private readonly queryId: SqlQueryId,
         /** The page size used for pagination */
@@ -172,14 +174,16 @@ export class SqlResultImpl implements SqlResult {
      * Returns new result object. Useful for mocking. (Constructor mocking is hard/impossible)
      */
     static newResult(
-        service: SqlServiceImpl,
+        sqlService: SqlServiceImpl,
+        serializationService: SerializationService,
         connection: Connection,
         queryId: SqlQueryId,
         cursorBufferSize: number,
         returnRawResult: boolean,
         clientUUID: UUID
     ) {
-        return new SqlResultImpl(service, connection, queryId, cursorBufferSize, returnRawResult, clientUUID);
+        return new SqlResultImpl(sqlService, serializationService, connection, queryId, cursorBufferSize,
+            returnRawResult, clientUUID);
     }
 
     getUpdateCount(): Promise<Long> {
@@ -215,7 +219,7 @@ export class SqlResultImpl implements SqlResult {
         if (this.fetchDeferred?.promise)
             this.fetchDeferred.reject(error);
         // Send the close request.
-        this.service.close(this.connection, this.queryId).then(() => {
+        this.sqlService.close(this.connection, this.queryId).then(() => {
             this.closed = true;
             this.closeDeferred.resolve();
         }).catch(this.closeDeferred.reject);
@@ -250,7 +254,7 @@ export class SqlResultImpl implements SqlResult {
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 values.push({
                     name: this.rowMetadata.getColumns()[i].name,
-                    value: this.currentPage.getValue(this.currentPosition, i)
+                    value: this.serializationService.toObject(this.currentPage.getValue(this.currentPosition, i))
                 });
             }
             return new SqlRowImpl(values, this.rowMetadata);
@@ -259,7 +263,9 @@ export class SqlResultImpl implements SqlResult {
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 const columnMetadata = this.rowMetadata.getColumnByIndex(i);
                 if (columnMetadata != null) {
-                    result[columnMetadata.name] = this.currentPage.getValue(this.currentPosition, i);
+                    result[columnMetadata.name] = this.serializationService.toObject(
+                        this.currentPage.getValue(this.currentPosition, i)
+                    );
                 }
             }
             return result;
@@ -302,7 +308,7 @@ export class SqlResultImpl implements SqlResult {
 
         this.fetchDeferred = deferredPromise<SqlPage>();
 
-        this.service.fetch(this.connection, this.queryId, this.cursorBufferSize).then(value => {
+        this.sqlService.fetch(this.connection, this.queryId, this.cursorBufferSize).then(value => {
             this.fetchDeferred.resolve(value);
             this.fetchDeferred = undefined; // Set fetchDeferred to undefined to be able to fetch again
         }).catch(this.fetchDeferred.reject);

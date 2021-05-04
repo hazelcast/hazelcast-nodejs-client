@@ -62,7 +62,7 @@ export class ListMultiFrameCodec {
     }
 
     static decodeNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T[] {
-        return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : this.decode(clientMessage, decoder);
+        return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : ListMultiFrameCodec.decode(clientMessage, decoder);
     }
 
     static decodeContainsNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T[] {

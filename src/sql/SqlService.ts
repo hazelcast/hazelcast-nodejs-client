@@ -235,6 +235,7 @@ export class SqlServiceImpl implements SqlService {
 
             const res = SqlResultImpl.newResult(
                 this,
+                this.serializationService,
                 connection,
                 queryId,
                 cursorBufferSize,
@@ -246,6 +247,7 @@ export class SqlServiceImpl implements SqlService {
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
                 this.handleExecuteResponse(clientMessage, res);
             }).catch(err => {
+                console.log(err);
                 res.onExecuteError(
                     new HazelcastSqlException(
                         connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM, err.message, err

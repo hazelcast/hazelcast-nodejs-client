@@ -1,3 +1,4 @@
+/* eslint-disable mocha/no-skipped-tests */
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -23,12 +24,15 @@ const {
     HzOffsetDateTime,
     HzLocalTime
 } = require('../../../../lib/sql/DatetimeClasses');
-const chai = require('chai');
-const long = require('long');
-const should = chai.should();
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { Client } = require('../../../../');
+
+const chai = require('chai');
+const long = require('long');
+const sinon = require('sinon');
+
+const should = chai.should();
 
 describe('Decode/Serialize Test', function () {
     let client;
@@ -54,18 +58,54 @@ describe('Decode/Serialize Test', function () {
         constructor(street, zipCode) {
             this.zipCode = zipCode;
             this.street = street;
-            this.factoryId = 66;
-            this.classId = 18;
+            this.factoryId = 1000;
+            this.classId = 100;
         }
 
         readData(input) {
-            this.street = input.readString();
+            this.street = new Street();
+            this.street.readData(input);
             this.zipCode = input.readInt();
         }
 
         writeData(output) {
-            output.writeString(this.street);
+            this.street.writeData(output);
             output.writeInt(this.zipCode);
+        }
+    }
+
+    class Addresses {
+        constructor(streets, zipCode) {
+            this.zipCode = zipCode;
+            this.streets = streets;
+            this.factoryId = 1000;
+            this.classId = 102;
+        }
+
+        readData(input) {
+            this.streets = input.readObject();
+            this.zipCode = input.readInt();
+        }
+
+        writeData(output) {
+            output.writeObject(this.streets);
+            output.writeInt(this.zipCode);
+        }
+    }
+
+    class Street {
+        constructor(street) {
+            this.street = street;
+            this.factoryId = 1000;
+            this.classId = 101;
+        }
+
+        readData(input) {
+            this.street = input.readString();
+        }
+
+        writeData(output) {
+            output.writeString(this.street);
         }
     }
 
@@ -74,7 +114,7 @@ describe('Decode/Serialize Test', function () {
             this.age = age;
             this.height = height;
             this.factoryId = 666;
-            this.classId = 6;
+            this.classId = 1;
         }
 
         readPortable(reader) {
@@ -93,7 +133,7 @@ describe('Decode/Serialize Test', function () {
             this.students = students;
             this.className = className;
             this.factoryId = 666;
-            this.classId = 7;
+            this.classId = 2;
         }
 
         readPortable(reader) {
@@ -137,6 +177,12 @@ describe('Decode/Serialize Test', function () {
         if (classId === 100) {
             return new Address();
         }
+        if (classId === 101) {
+            return new Street();
+        }
+        if (classId === 102) {
+            return new Addresses();
+        }
         return null;
     };
 
@@ -159,10 +205,10 @@ describe('Decode/Serialize Test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await RC.createCluster(null, SERVER_CONFIG);
-        await RC.startMember(cluster.id);
+        // cluster = await RC.createCluster(null, SERVER_CONFIG);
+        // await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
+            // clusterName: cluster.id,
             serialization: {
                 dataSerializableFactories: {
                     1000: sampleDataSerializableFactory
@@ -180,7 +226,7 @@ describe('Decode/Serialize Test', function () {
     });
 
     after(async function () {
-        await RC.terminateCluster(cluster.id);
+        // await RC.terminateCluster(cluster.id);
         await client.shutdown();
     });
 
@@ -674,7 +720,8 @@ describe('Decode/Serialize Test', function () {
         }
     });
 
-    it('should be able to decode/serialize OBJECT(portable)', async function () {
+    // pass
+    it.skip('should be able to decode/serialize OBJECT(portable)', async function () {
         const student1 = new Student(long.fromNumber(12), 123.23);
         const student2 = new Student(long.fromNumber(15), null);
         const student3 = new Student(long.fromNumber(17), null);
@@ -708,22 +755,96 @@ describe('Decode/Serialize Test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-    it.skip('portable server config olmadan', function () {});
+    // pass
+    it.skip('should be able to decode/serialize OBJECT(portable) without server config', async function () {
+        const student1 = new Student(long.fromNumber(12), 123.23);
+        const student2 = new Student(long.fromNumber(15), null);
+        const student3 = new Student(long.fromNumber(17), null);
+        await someMap.put(0, student1);
+        await someMap.put(1, student2);
+        await someMap.put(2, student3);
+
+        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE age > ? AND age < ?`,
+            [long.fromNumber(13), long.fromNumber(18)]
+        );
+
+        const rowMetadata = await result.getRowMetadata();
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
+
+        const rows = [];
+
+        for await (const row of result) {
+            rows.push(row);
+        }
+        sortByKey(rows);
+
+        const expectedKeys = [1, 2];
+        const expectedValues = [student2, student3];
+
+        rows.length.should.be.eq(expectedValues.length);
+
+        for (let i = 0; i < rows.length; i++) {
+            (rows[i]['age'].eq(expectedValues[i].age)).should.be.true;
+            (rows[i]['height'] - expectedValues[i].height).should.be.lessThan(1e-5);
+            rows[i]['__key'].should.be.eq(expectedKeys[i]);
+        }
+    });
+    // pass
     it.skip('should be able to decode/serialize OBJECT(identified data serializable)', async function () {
-        const address1 = new Address('a', 2);
-        const address2 = new Address('b', 3);
-        const address3 = new Address('c', 4);
+        const street1 = new Street('a');
+        const street2 = new Street('b');
+        const street3 = new Street('c');
+        const street4 = new Street('d');
+
+        await someMap.put(0, street1);
+        await someMap.put(1, street2);
+        await someMap.put(2, street3);
+        await someMap.put(3, street4);
+
+        // console.log(await someMap.get(0));
+        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE street = ? OR street = ?`,
+            ['b', 'c']);
+
+        const rowMetadata = await result.getRowMetadata();
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('street')).type.should.be.eq(SqlColumnType.VARCHAR);
+
+        const rows = [];
+
+        for await (const row of result) {
+            rows.push(row);
+        }
+        sortByKey(rows);
+
+        const expectedKeys = [1, 2];
+        const expectedValues = ['b', 'c'];
+
+        rows.length.should.be.eq(expectedValues.length);
+
+        for (let i = 0; i < rows.length; i++) {
+            rows[i]['street'].should.be.eq(expectedValues[i]);
+            rows[i]['__key'].should.be.eq(expectedKeys[i]);
+        }
+    });
+    // pass
+    it.skip('identified nested', async function () {
+        const street1 = new Street('a');
+        const street2 = new Street('b');
+        const street3 = new Street('c');
+
+        const address1 = new Address(street1, 2);
+        const address2 = new Address(street2, 3);
+        const address3 = new Address(street3, 4);
 
         await someMap.put(0, address1);
         await someMap.put(1, address2);
         await someMap.put(2, address3);
 
-        // console.log(await someMap.get(0));
         const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE zipCode > ? AND zipCode < ?`,
             [long.fromNumber(2), long.fromNumber(5)]);
 
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('street')).type.should.be.eq(SqlColumnType.VARCHAR);
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('street')).type.should.be.eq(SqlColumnType.OBJECT);
         rowMetadata.getColumnByIndex(rowMetadata.findColumn('zipCode')).type.should.be.eq(SqlColumnType.INTEGER);
 
         const rows = [];
@@ -737,16 +858,52 @@ describe('Decode/Serialize Test', function () {
         const expectedValues = [address2, address3];
 
         rows.length.should.be.eq(expectedValues.length);
-
         for (let i = 0; i < rows.length; i++) {
-            rows[i]['street'].should.be.eq(expectedValues[i].street);
+            sinon.assert.match(expectedValues[i].street, rows[i]['street']);
             rows[i]['zipCode'].should.be.eq(expectedValues[i].zipCode);
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-    it.skip('identified nested', function () {});
-    it.skip('identified nested array', function () {});
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // Error: Failed to resolve value metadata: Problem while reading DataSerializable, namespace: 1000, ID: 102,
+    // class: 'null', exception: com.hazelcast.core.HazelcastJsonValue cannot be cast to [LStreet;
+    it.skip('identified nested array', async function () {
+        const street1 = new Street('a');
+        const street2 = new Street('b');
+        const street3 = new Street('c');
+
+        const addresses1 = new Addresses([street1, street2], 2);
+        const addresses2 = new Addresses([street1, street3], 3);
+        const addresses3 = new Addresses([street2, street3], 4);
+
+        await someMap.put(0, addresses1);
+        await someMap.put(1, addresses2);
+        await someMap.put(2, addresses3);
+
+        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE zipCode > ? AND zipCode < ?`,
+            [long.fromNumber(2), long.fromNumber(5)]);
+
+        const rowMetadata = await result.getRowMetadata();
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('streets')).type.should.be.eq(SqlColumnType.OBJECT);
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('zipCode')).type.should.be.eq(SqlColumnType.INTEGER);
+
+        const rows = [];
+
+        for await (const row of result) {
+            rows.push(row);
+        }
+        sortByKey(rows);
+
+        const expectedKeys = [1, 2];
+        const expectedValues = [addresses2, addresses3];
+
+        rows.length.should.be.eq(expectedValues.length);
+        for (let i = 0; i < rows.length; i++) {
+            sinon.assert.match(expectedValues[i].streets, rows[i]['streets']);
+            rows[i]['zipCode'].should.be.eq(expectedValues[i].zipCode);
+            rows[i]['__key'].should.be.eq(expectedKeys[i]);
+        }
+    });
+    //  Failed to serialize '[Lcom.hazelcast.nio.serialization.Portable;'
     it.skip('should be able to decode/serialize nested portable array', async function () {
         const classroom = new Classroom('asd', [
             new Student(long.fromNumber(12), 123.23),
@@ -766,7 +923,29 @@ describe('Decode/Serialize Test', function () {
         row['students'].should.be.eq(classroom.students);
         row['__key'].should.be.eq(0);
     });
-    it.skip('nested portable array server config olmadan', function () {});
+    // Error: Failed to extract map entry value field "students":
+    // com.hazelcast.nio.serialization.HazelcastSerializationException: Could not find PortableFactory
+    // for factory-id: 666, class-id:1
+    it.skip('nested portable array without server config', async function () {
+        const classroom = new Classroom('asd', [
+            new Student(long.fromNumber(12), 123.23),
+            new Student(long.fromNumber(13), 123.23)
+        ]);
+
+        await someMap.put(0, classroom);
+        // console.log(await someMap.get(0));
+        const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+
+        const rowMetadata = await result.getRowMetadata();
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('students')).type.should.be.eq(SqlColumnType.OBJECT);
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('className')).type.should.be.eq(SqlColumnType.VARCHAR);
+
+        const row = (await result.next()).value;
+        row['className'].should.be.eq(classroom.className);
+        row['students'].should.be.eq(classroom.students);
+        row['__key'].should.be.eq(0);
+    });
+    // pass
     it.skip('should be able to decode/serialize nested portable', async function () {
         const classroom = new SmallClassroom('asd', new Student(long.fromNumber(13), 123.23));
         await someMap.put(0, classroom);
@@ -779,38 +958,81 @@ describe('Decode/Serialize Test', function () {
 
         const row = (await result.next()).value;
         row['className'].should.be.eq(classroom.className);
-        row['student'].should.be.eq(classroom.student);
+        classroom.student.age.eq(long.fromNumber(13)).should.be.true;
+        Math.abs(classroom.student.height - row['student']['height']).should.be.lessThan(1e5);
         row['__key'].should.be.eq(0);
     });
-    it.skip('nested portable server config olmadan', function () {});
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // Error: Failed to extract map entry value field "student": com.hazelcast.nio.serialization.
+    // HazelcastSerializationException: Could not find PortableFactory for factory-id: 666, class-id:1
+    it.skip('nested portable without server config', async function () {
+        const classroom = new SmallClassroom('asd', new Student(long.fromNumber(13), 123.23));
+        await someMap.put(0, classroom);
+
+        const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+
+        const rowMetadata = await result.getRowMetadata();
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('student')).type.should.be.eq(SqlColumnType.OBJECT);
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('className')).type.should.be.eq(SqlColumnType.VARCHAR);
+
+        const row = (await result.next()).value;
+        row['className'].should.be.eq(classroom.className);
+        classroom.student.age.eq(long.fromNumber(13)).should.be.true;
+        Math.abs(classroom.student.height - row['student']['height']).should.be.lessThan(1e5);
+        row['__key'].should.be.eq(0);
+    });
+    /*
+
+        Street street1 = new Street("a");
+        Street street2 = new Street("b");
+        Street street3 = new Street("c");
+
+        Address a1 = new Address(null, 2);
+        Address a2 = new Address(null, 3);
+        Address a3 = new Address(null, 4);
+
+        Map<Double, Address> map = hazelcastInstance.getMap("someMap");
+
+        map.put(0.0, null);
+        map.put(1.0, null);
+        map.put(2.0, null);
+
+     */
+    /*
+
+        Student student1 = new Student(1, (float) 1.2);
+        Student student2 = new Student(1, (float) 1.2);
+        Student student3 = new Student(1, (float) 1.2);
+
+        SmallClassroom a4 = new SmallClassroom("", student1);
+        SmallClassroom a1 = new SmallClassroom("", null);
+        SmallClassroom a2 = new SmallClassroom("", null);
+        SmallClassroom a3 = new SmallClassroom("", null);
+
+        IMap<Object, Object> map = hazelcastInstance.getMap("someMap");
+
+        map.set(5.0, a4);
+        map.set(0.0, a1);
+        map.set(1.0, a2);
+        map.set(2.0, a3);
+     */
+    // pass
     it.skip('should be able to decode NULL in portable field', async function () {
+        /*
         const script = `
             var map = instance_0.getMap("${mapName}");
             for (var key = 0; key < 3; key++) {
                 map.set(new java.lang.Integer(key), new hazelcast.client.test.Classroom(null));
             }
         `;
-
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-        const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('testField')).type.should.be.eq(SqlColumnType.NULL);
+         */
 
-        const rows = [];
+        const result = client.getSqlService().execute('SELECT * FROM someMap WHERE student is NULL');
+        const rowMetadata = await result.getRowMetadata();
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('className')).type.should.be.eq(SqlColumnType.OBJECT);
 
         for await (const row of result) {
-            rows.push(row);
-        }
-        sortByKey(rows);
-
-        const expectedKeys = [0, 1, 2];
-
-        rows.length.should.be.eq(expectedKeys.length);
-
-        for (let i = 0; i < rows.length; i++) {
-            should.equal(rows[i]['testField'], null);
-            rows[i]['__key'].should.be.eq(expectedKeys[i]);
+            should.equal(row['student'], null);
         }
     });
 });
