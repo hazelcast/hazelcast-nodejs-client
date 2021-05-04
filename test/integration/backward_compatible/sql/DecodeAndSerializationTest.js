@@ -40,7 +40,21 @@ describe('Decode/Serialize Test', function () {
     let someMap;
     let mapName;
 
-    const SERVER_CONFIG = `
+    const PORTABLE_SERVER_CONFIG = `
+                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                    <serialization>
+                    <portable-factories>
+                        <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory
+                        </portable-factory>
+                    </portable-factories>
+                    </serialization>
+                </hazelcast>
+            `;
+
+    const IDENTIFIED_SERVER_CONFIG = `
                 <hazelcast xmlns="http://www.hazelcast.com/schema/config"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xsi:schemaLocation="http://www.hazelcast.com/schema/config
@@ -724,7 +738,7 @@ describe('Decode/Serialize Test', function () {
 
     // pass
     it('should be able to decode/serialize OBJECT(portable)', async function () {
-        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
@@ -820,7 +834,7 @@ describe('Decode/Serialize Test', function () {
     });
     // pass, missing class in test jar
     it.skip('should be able to decode/serialize OBJECT(identified data serializable)', async function () {
-        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        cluster = await RC.createCluster(null, IDENTIFIED_SERVER_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
@@ -869,7 +883,7 @@ describe('Decode/Serialize Test', function () {
     });
     // pass, missing class in test jar
     it.skip('identified nested', async function () {
-        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        cluster = await RC.createCluster(null, IDENTIFIED_SERVER_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
@@ -921,7 +935,7 @@ describe('Decode/Serialize Test', function () {
     // Error: Failed to resolve value metadata: Problem while reading DataSerializable, namespace: 1000, ID: 102,
     // class: 'null', exception: com.hazelcast.core.HazelcastJsonValue cannot be cast to [LStreet;
     it.skip('identified nested array', async function () {
-        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        cluster = await RC.createCluster(null, IDENTIFIED_SERVER_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
@@ -972,7 +986,7 @@ describe('Decode/Serialize Test', function () {
     });
     //  Failed to serialize '[Lcom.hazelcast.nio.serialization.Portable;'
     it.skip('should be able to decode/serialize nested portable array', async function () {
-        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
@@ -1040,7 +1054,7 @@ describe('Decode/Serialize Test', function () {
     });
     // pass, missing test class
     it.skip('should be able to decode/serialize nested portable', async function () {
-        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
