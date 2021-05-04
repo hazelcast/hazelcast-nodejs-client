@@ -208,7 +208,7 @@ describe('Decode/Serialize Test', function () {
         cluster = await RC.createCluster(null, SERVER_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
-            // clusterName: cluster.id,
+            clusterName: cluster.id,
             serialization: {
                 dataSerializableFactories: {
                     1000: sampleDataSerializableFactory
