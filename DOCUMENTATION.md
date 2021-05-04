@@ -81,30 +81,31 @@
       * [8.5.2.4. Message Listener](#8524-message-listener)
   * [8.6. Distributed Computing](#86-distributed-computing)
     * [8.6.1. Using EntryProcessor](#861-using-entryprocessor)
-  * [8.7. Distributed Query](#87-distributed-query)
-    * [8.7.1. How Distributed Query Works](#871-how-distributed-query-works)
-      * [8.7.1.1. Employee Map Query Example](#8711-employee-map-query-example)
-      * [8.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#8712-querying-by-combining-predicates-with-and-or-not)
-      * [8.7.1.3. Querying with SQL](#8713-querying-with-sql)
-      * [8.7.1.4. Querying with JSON Strings](#8714-querying-with-json-strings)
-      * [8.7.1.5. Filtering with Paging Predicates](#8715-filtering-with-paging-predicates)
-    * [8.7.2. Fast-Aggregations](#872-fast-aggregations)
-  * [8.8. Performance](#88-performance)
-    * [8.8.1. Partition Aware](#881-partition-aware)
-    * [8.8.2. Near Cache](#882-near-cache)
-      * [8.8.2.1. Configuring Near Cache](#8821-configuring-near-cache)
-      * [8.8.2.2. Near Cache Example for Map](#8822-near-cache-example-for-map)
-      * [8.8.2.3. Near Cache Eviction](#8823-near-cache-eviction)
-      * [8.8.2.4. Near Cache Expiration](#8824-near-cache-expiration)
-      * [8.8.2.5. Near Cache Invalidation](#8825-near-cache-invalidation)
-      * [8.8.2.6. Near Cache Eventual Consistency](#8826-near-cache-eventual-consistency)
-    * [8.8.3. Automated Pipelining](#883-automated-pipelining)
-  * [8.9. Monitoring and Logging](#89-monitoring-and-logging)
-    * [8.9.1. Enabling Client Statistics](#891-enabling-client-statistics)
-    * [8.9.2. Logging Configuration](#892-logging-configuration)
-  * [8.10. Defining Client Labels](#810-defining-client-labels)
-  * [8.11. Defining Instance Name](#811-defining-instance-name)
-  * [8.12. Configuring Load Balancer](#812-configuring-load-balancer)
+  * [8.7. SQL](#87-distributed-query)
+  * [8.8. Distributed Query](#88-distributed-query)
+    * [8.8.1. How Distributed Query Works](#881-how-distributed-query-works)
+      * [8.8.1.1. Employee Map Query Example](#8811-employee-map-query-example)
+      * [8.8.1.2. Querying by Combining Predicates with AND, OR, NOT](#8812-querying-by-combining-predicates-with-and-or-not)
+      * [8.8.1.3. Querying with SQL](#8813-querying-with-sql)
+      * [8.8.1.4. Querying with JSON Strings](#8814-querying-with-json-strings)
+      * [8.8.1.5. Filtering with Paging Predicates](#8815-filtering-with-paging-predicates)
+    * [8.8.2. Fast-Aggregations](#882-fast-aggregations)
+  * [8.9. Performance](#89-performance)
+    * [8.9.1. Partition Aware](#891-partition-aware)
+    * [8.9.2. Near Cache](#892-near-cache)
+      * [8.9.2.1. Configuring Near Cache](#8921-configuring-near-cache)
+      * [8.9.2.2. Near Cache Example for Map](#8922-near-cache-example-for-map)
+      * [8.9.2.3. Near Cache Eviction](#8923-near-cache-eviction)
+      * [8.9.2.4. Near Cache Expiration](#8924-near-cache-expiration)
+      * [8.9.2.5. Near Cache Invalidation](#8925-near-cache-invalidation)
+      * [8.9.2.6. Near Cache Eventual Consistency](#8926-near-cache-eventual-consistency)
+    * [8.9.3. Automated Pipelining](#893-automated-pipelining)
+  * [8.10. Monitoring and Logging](#810-monitoring-and-logging)
+    * [8.10.1. Enabling Client Statistics](#8101-enabling-client-statistics)
+    * [8.10.2. Logging Configuration](#8102-logging-configuration)
+  * [8.11. Defining Client Labels](#811-defining-client-labels)
+  * [8.12. Defining Instance Name](#812-defining-instance-name)
+  * [8.13. Configuring Load Balancer](#813-configuring-load-balancer)
 * [9. Securing Client Connection](#9-securing-client-connection)
   * [9.1. TLS/SSL](#91-tlsssl)
     * [9.1.1. TLS/SSL for Hazelcast Members](#911-tlsssl-for-hazelcast-members)
@@ -2180,11 +2181,163 @@ const value = await map.get('key');
 console.log(value);
 ```
 
-## 8.7. Distributed Query
+## 8.7. SQL
+
+The SQL service provided by Hazelcast Node.js client allows you to query data stored in `IMap` declaratively.
+
+> **WARNING: The SQL feature is currently in beta. The compatibility between versions is not guaranteed. API might change between versions without notice.**
+
+### Example: How to Query an IMap using SQL
+
+This SQL query returns map entries whose values are more than 2:
+
+```javascript
+const map = await client.getMap('my-distributed-map');
+await map.put('key1', 1);
+await map.put('key2', 2);
+await map.put('key3', 3);
+
+const result = client.getSqlService().execute(`SELECT * FROM my-distributed-map WHERE this > 2`);
+
+for await(const row of result){
+    console.log(row); // {__key: 'key3', this: 3}
+}
+```
+
+
+### 8.7.1. Querying IMap
+
+The following subsections describe how you can access Hazelcast map objects and perform queries on them.
+
+#### Names
+
+The SQL service exposes `IMap` objects as tables in the predefined `partitioned` schema using exact names.
+This schema is in the SQL service search path so that you can access the `IMap` objects with or without the schema name.
+
+Schema and table names are case-sensitive; you can access the `employee` map, for example, as employee or `partitioned.employee`,
+but not as `Employee`:
+```sql
+SELECT * FROM employee
+SELECT * FROM partitioned.employee
+```
+
+#### Field
+
+The SQL service resolves fields accessible from the SQL automatically. The service reads the first local entry pair of
+the `IMap` to construct the list of fields. If the `IMap` does not have local entries on the member where the query is
+started, then the list of fields cannot be resolved, and an exception is thrown.
+
+Field names are case-sensitive.
+
+
+##### Key and Value Objects
+
+An `IMap` entry consists of a key and a value. These are accessible through the `__key` and `this` aliases. The following
+query returns the keys and values of all entries in a map:
+
+```sql
+SELECT __key, this FROM employee
+```
+
+##### Key and Value Fields
+
+You may also access the nested fields of a key or a value. The list of exposed fields depends on the serialization format, as described below:
+* For [IdentifiedDataSerializable](#41-identifieddataserializable-serialization) objects, you can use public field name or getter names.
+  See [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/querying-imap.html#key-and-value-fields) for more information.
+* For [Portable](#42-portable-serialization) objects, the fields that are written with `PortableWriter` methods are exposed using their exact names.
+
+> **NOTE: You cannot query JSON fields in SQL. If you want to query JSON, see [Querying with JSON Strings](#8814-querying-with-json-strings).**
+
+For example, consider this portable class:
+
+```javascript
+class Employee {
+    constructor(age, name) {
+        this.age = age;
+        this.name = name;
+        this.factoryId = 321;
+        this.classId = 1;
+    }
+
+    readPortable(reader) {
+        this.age = reader.readInt('age');
+        this.name = reader.readString('name');
+    }
+
+    writePortable(writer) {
+        writer.writeInt('age', this.age);
+        writer.writeString('name', this.name);
+    }
+}
+```
+
+The SQL service can access the following fields:
+
+|  Name  |  Type     |
+|--------|-----------|
+|  name  |  VARCHAR  |
+|  age   |  INTEGER  |
+
+Together with the key and value objects, you may query the following fields from `IMap<number, Employee>`:
+
+```sql
+SELECT __key, this, name, age FROM employee
+```
+
+If both the key and value have fields with the same name, then the field of the value is exposed.
+
+##### "SELECT *" Queries
+
+You may use the `SELECT * FROM <table>` syntax to get all the table fields.
+
+The `__key` and `this` fields are returned by the `SELECT *` queries if they do not have nested fields. For `IMap<number, Employee>`,
+the following query does not return the `this` field, because the value has nested fields `name` and `age`:
+
+```sql
+-- Returns __key, name, age
+SELECT * FROM employee
+```
+
+### 8.7.2. Data types
+
+The SQL service supports a set of SQL data types. Every data type is mapped to a Java class that represents the type’s value. The
+table below shows SQL datatype, and corresponding Java and Javascript types:
+
+| Column Type                  | Java                       | Javascript                                 |
+|------------------------------|----------------------------|--------------------------------------------|
+| **VARCHAR**                  | `java.lang.String`         | `string`                                   |
+| **BOOLEAN**                  | `java.lang.Boolean`        | `boolean`                                  |
+| **TINYINT**                  | `java.lang.Byte`           | `number`                                   |
+| **SMALLINT**                 | `java.lang.Short`          | `number`                                   |
+| **INTEGER**                  | `java.lang.Integer`        | `number`                                   |
+| **BIGINT**                   | `java.lang.Long`           | `long`                                     |
+| **DECIMAL**                  | `java.math.BigDecimal`     | `string`                                   |
+| **REAL**                     | `java.lang.Float`          | `number`                                   |
+| **DOUBLE**                   | `java.lang.Double`         | `number`                                   |
+| **DATE**                     | `java.time.LocalDate`      | `HzLocalDate`                              |
+| **TIME**                     | `java.time.LocalTime`      | `HzLocalTime`                              |
+| **TIMESTAMP**                | `java.time.LocalDateTime`  | `HzLocalDateTime`                          |
+| **TIMESTAMP_WITH_TIME_ZONE** | `java.time.OffsetDateTime` | `HzOffsetDateTime`                         |
+| **OBJECT**                   | Any class(`Object`)        | Any class                                  |
+| **NULL**                     | `Void`                     | `null`                                     |
+
+
+### 8.7.3. SELECT
+
+```javascript
+const map = await client.getMap('my-distributed-map');
+await map.put('key1', 1);
+await map.put('key2', 2);
+await map.put('key3', 3);
+
+client.getSqlService().execute(`SELECT * FROM my-distributed-map WHERE this > 1`);
+```
+
+## 8.8. Distributed Query
 
 Hazelcast partitions your data and spreads it across cluster of members. You can iterate over the map entries and look for certain entries (specified by predicates) you are interested in. However, this is not very efficient because you will have to bring the entire entry set and iterate locally. Instead, Hazelcast allows you to run distributed queries on your distributed map.
 
-### 8.7.1. How Distributed Query Works
+### 8.8.1. How Distributed Query Works
 
 1. The requested predicate is sent to each member in the cluster.
 2. Each member looks at its own local entries and filters them according to the predicate. At this stage, key-value pairs of the entries are deserialized and then passed to the predicate.
@@ -2214,7 +2367,7 @@ Hazelcast offers the following ways for distributed query purposes:
 * Combining Predicates with AND, OR, NOT
 * Distributed SQL Query
 
-#### 8.7.1.1. Employee Map Query Example
+#### 8.8.1.1. Employee Map Query Example
 
 Assume that you have an `employee` map containing the values of `Employee` objects, as shown below.
 
@@ -2251,7 +2404,7 @@ For the non-portable types, you need to implement its Java counterpart and its s
 
 > **NOTE: Querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
-#### 8.7.1.2. Querying by Combining Predicates with AND, OR, NOT
+#### 8.8.1.2. Querying by Combining Predicates with AND, OR, NOT
 
 You can combine predicates by using the `and`, `or` and `not` operators, as shown in the below example.
 
@@ -2273,7 +2426,7 @@ In the above example code, `predicate` verifies whether the entry is active and 
 
 > **NOTE: Predicates can also be applied to `keySet` and `entrySet` methods of the Hazelcast IMDG's distributed map.**
 
-#### 8.7.1.3. Querying with SQL
+#### 8.8.1.3. Querying with SQL
 
 You can query with SQL by using the predicate returned from the `Predicates.sql` function. Its argument takes a regular SQL `where` clause, as shown in the below example.
 
@@ -2373,7 +2526,7 @@ console.log(olderThan27.get(0), olderThan27.get(1));
 
 In this example, the code creates a list with the values greater than or equal to `27`.
 
-#### 8.7.1.4. Querying with JSON Strings
+#### 8.8.1.4. Querying with JSON Strings
 
 You can query the JSON strings stored inside your Hazelcast clusters. To query a JSON string, you can use `HazelcastJsonValue` or plain JavaScript objects.
 
@@ -2503,7 +2656,7 @@ You can configure this using `metadata-policy` element for the map configuration
 </hazelcast>
 ```
 
-#### 8.7.1.5. Filtering with Paging Predicates
+#### 8.8.1.5. Filtering with Paging Predicates
 
 The Node.js client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
 
@@ -2529,7 +2682,7 @@ If you want to sort the result before paging, you need to specify a comparator o
 
 Also, you can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the 100th page, for example, it will get all 100 pages at once instead of reaching the 100th page one by one using the `nextPage` function.
 
-### 8.7.2. Fast-Aggregations
+### 8.8.2. Fast-Aggregations
 
 Fast-Aggregations feature provides some aggregate functions, such as `sum`, `average`, `max`, and `min`, on top of Hazelcast `IMap` entries. Their performance is high since they run in parallel for each partition and are highly optimized for speed and low memory consumption.
 
@@ -2581,9 +2734,9 @@ const avgAge = await map.aggregate(Aggregators.numberAvg());
 console.log('Average age is ' + avgAge);
 ```
 
-## 8.8. Performance
+## 8.9. Performance
 
-### 8.8.1. Partition Aware
+### 8.9.1. Partition Aware
 
 Partition Aware ensures that the related entries exist on the same member. If the related data is on the same member, operations can be executed without the cost of extra network calls and extra wire data, and this improves the performance. This feature is provided by using the same partition keys for related data.
 
@@ -2637,7 +2790,7 @@ await ordersMap.putAll([
 
 For more details, see the [PartitionAware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
 
-### 8.8.2. Near Cache
+### 8.9.2. Near Cache
 
 Map entries in Hazelcast are partitioned across the cluster members. Hazelcast clients do not have local data at all. Suppose you read the key `k` a number of times from a Hazelcast client and `k` is owned by a member in your cluster. Then each `map.get('k')` will be a remote operation, which creates a lot of network trips. If you have a map that is mostly read, then you should consider creating a local Near Cache, so that reads are sped up and less network traffic is created.
 
@@ -2651,7 +2804,7 @@ These benefits do not come for free, please consider the following trade-offs:
 
 Near Cache is highly recommended for maps that are mostly read.
 
-#### 8.8.2.1. Configuring Near Cache
+#### 8.9.2.1. Configuring Near Cache
 
 The following snippets show how a Near Cache is configured in the Node.js client, presenting all available values for each element:
 
@@ -2698,7 +2851,7 @@ Following are the descriptions of all configuration elements:
 
 > **NOTE: When you use `default` as the Near Cache configuration key, it has a special meaning. Hazelcast client will use that configuration as the default one for all Maps, unless there is a specific configuration for a Map.**
 
-#### 8.8.2.2. Near Cache Example for Map
+#### 8.9.2.2. Near Cache Example for Map
 
 The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration, the entries are stored as `OBJECT`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
 
@@ -2715,7 +2868,7 @@ const cfg = {
 };
 ```
 
-#### 8.8.2.3. Near Cache Eviction
+#### 8.9.2.3. Near Cache Eviction
 
 In the scope of Near Cache, eviction means evicting (clearing) the entries selected according to the given `evictionPolicy` when the specified `evictionMaxSize` has been reached.
 
@@ -2723,7 +2876,7 @@ The `evictionMaxSize` defines the entry count when the Near Cache is full and de
 
 Once the eviction is triggered the configured `evictionPolicy` determines which, if any, entries must be evicted.
 
-#### 8.8.2.4. Near Cache Expiration
+#### 8.9.2.4. Near Cache Expiration
 
 Expiration means the eviction of expired records. A record is expired:
 
@@ -2733,11 +2886,11 @@ Expiration means the eviction of expired records. A record is expired:
 
 The actual expiration is performed when a record is accessed: it is checked if the record is expired or not. If it is expired, it is evicted and `undefined` is returned as the value to the caller.
 
-#### 8.8.2.5. Near Cache Invalidation
+#### 8.9.2.5. Near Cache Invalidation
 
 Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original map (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
 
-#### 8.8.2.6. Near Cache Eventual Consistency
+#### 8.9.2.6. Near Cache Eventual Consistency
 
 Near Caches are invalidated by invalidation events. Invalidation events can be lost due to the fire-and-forget fashion of eventing system. If an event is lost, reads from Near Cache can indefinitely be stale.
 
@@ -2749,7 +2902,7 @@ You can configure eventual consistency with entries of the `properties` config o
 
 - `hazelcast.invalidation.reconciliation.interval.seconds`: Default value is `60` seconds. This is a periodic task that scans cluster members periodically to compare generated invalidation events with the received ones from the client Near Cache.
 
-### 8.8.3. Automated Pipelining
+### 8.9.3. Automated Pipelining
 
 Hazelcast Node.js client performs automated pipelining of operations. It means that the library pushes all operations into an internal queue and tries to send them in batches. This reduces the count of executed `Socket.write()` calls and significantly improves throughtput for read operations.
 
@@ -2759,9 +2912,9 @@ You can configure automated operation pipelining with entries of the `properties
 
 - `hazelcast.client.autopipelining.threshold.bytes`: Default value is `65536` bytes (64 KB). This is the coalescing threshold for the internal queue used by automated pipelining. Once the total size of operation payloads taken from the queue reaches this value during batch preparation, these operations are written to the socket. Notice that automated pipelining will still send operations if their total size is smaller than the threshold and there are no more operations in the internal queue.
 
-## 8.9. Monitoring and Logging
+## 8.10. Monitoring and Logging
 
-### 8.9.1. Enabling Client Statistics
+### 8.10.1. Enabling Client Statistics
 
 You can monitor your clients using Hazelcast Management Center.
 
@@ -2786,7 +2939,7 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 
 > **NOTE: Statistics sent by Hazelcast Node.js client 4.0 are compatible with Management Center 4.0. Management Center 4.2020.08 and newer versions will be supported in version 4.1 of the client.**
 
-### 8.9.2. Logging Configuration
+### 8.10.2. Logging Configuration
 
  By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `hazelcast.logging.level` entry of the `properties` config option.
 
@@ -2845,7 +2998,7 @@ const cfg = {
 };
 ```
 
-## 8.10. Defining Client Labels
+## 8.11. Defining Client Labels
 
 Through the client labels, you can assign special roles for your clients and use these roles to perform some actions
 specific to those client connections.
@@ -2863,7 +3016,7 @@ const cfg = {
 };
 ```
 
-## 8.11. Defining Instance Name
+## 8.12. Defining Instance Name
 
 Each client has a name associated with it. By default, it is set to `hz.client_${CLIENT_ID}`. Here `CLIENT_ID` starts from `0` and it is incremented by `1` for each new client. This id is incremented and set by the client, so it may not be unique between different clients used by different applications.
 
@@ -2875,7 +3028,7 @@ const cfg = {
 };
 ```
 
-## 8.12. Configuring Load Balancer
+## 8.13. Configuring Load Balancer
 
 Load Balancer configuration allows you to specify which cluster member to send next operation when queried.
 
