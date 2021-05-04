@@ -81,7 +81,10 @@
       * [8.5.2.4. Message Listener](#8524-message-listener)
   * [8.6. Distributed Computing](#86-distributed-computing)
     * [8.6.1. Using EntryProcessor](#861-using-entryprocessor)
-  * [8.7. SQL](#87-distributed-query)
+  * [8.7. SQL](#87-sql)
+    * [8.7.1. Querying IMap](#871-querying-imap)
+    * [8.7.2. Data Types](#872-data-types)
+    * [8.7.3. SELECT](#873-select)
   * [8.8. Distributed Query](#88-distributed-query)
     * [8.8.1. How Distributed Query Works](#881-how-distributed-query-works)
       * [8.8.1.1. Employee Map Query Example](#8811-employee-map-query-example)
@@ -2324,14 +2327,7 @@ table below shows SQL datatype, and corresponding Java and Javascript types:
 
 ### 8.7.3. SELECT
 
-```javascript
-const map = await client.getMap('my-distributed-map');
-await map.put('key1', 1);
-await map.put('key2', 2);
-await map.put('key3', 3);
-
-client.getSqlService().execute(`SELECT * FROM my-distributed-map WHERE this > 1`);
-```
+todo:
 
 ## 8.8. Distributed Query
 
