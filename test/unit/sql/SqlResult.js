@@ -100,22 +100,26 @@ describe('SqlResultTest', function () {
         let fakeSqlService;
         let fakeConnection;
         let fakeQueryId;
+        let fakeSerializationService;
 
         beforeEach(function () {
             fakeSqlService = sandbox.fake();
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
+            fakeSerializationService = {
+                toObject: sandbox.fake(v => v)
+            };
         });
 
         afterEach(function () {
             sandbox.restore();
         });
 
-        [
-            new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096),
-            new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096, false)
-        ].forEach(async sqlResult => {
-            it('should async iterable, over objects; by default and if returnRawResults is false', async function () {
+        it('should async iterable, over objects; by default and if returnRawResults is false', async function () {
+            for (const sqlResult of [
+                new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId, 4096),
+                new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId, 4096, false)
+            ]) {
                 const rowCount = 3;
                 simulateExecutionResponse(100, sqlResult, rowCount, defaultRowMetadata);
 
@@ -128,12 +132,13 @@ describe('SqlResultTest', function () {
                 (await sqlResult.getRowMetadata()).should.be.eq(defaultRowMetadata);
                 (await sqlResult.isRowSet()).should.be.true;
                 (await sqlResult.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
-            });
+            }
         });
 
         it('should be async iterable, iterating over SqlRowImpls; if returnRawResults is true', async function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
+                fakeSerializationService,
                 fakeConnection,
                 fakeQueryId,
                 4096,
@@ -156,6 +161,7 @@ describe('SqlResultTest', function () {
         it('should be iterable via next()', async function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
+                fakeSerializationService,
                 fakeConnection,
                 fakeQueryId,
                 4096
@@ -178,6 +184,7 @@ describe('SqlResultTest', function () {
         it('should reject for await iteration on execute error', function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
+                fakeSerializationService,
                 fakeConnection,
                 fakeQueryId,
                 4096
@@ -200,6 +207,7 @@ describe('SqlResultTest', function () {
         it('should reject next() iteration on execute error', function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
+                fakeSerializationService,
                 fakeConnection,
                 fakeQueryId,
                 4096
@@ -236,13 +244,13 @@ describe('SqlResultTest', function () {
         });
 
         it('should return the same promise if close() is called again', function () {
-            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, {}, 4096);
             const closePromise = sqlResult.close();
             sqlResult.close().should.be.eq(closePromise);
         });
 
         it('should cancel an ongoing fetch if close() is called', function (done) {
-            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, {}, 4096);
             sqlResult.fetch().then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
@@ -253,7 +261,7 @@ describe('SqlResultTest', function () {
         });
 
         it('should stop an ongoing execute() if close() is called', function (done) {
-            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, {}, 4096);
             const fake = sandbox.replace(sqlResult, 'onExecuteError', sandbox.fake(sqlResult.onExecuteError));
 
             sqlResult.executeDeferred.promise.then(() => {
@@ -270,7 +278,7 @@ describe('SqlResultTest', function () {
         it('should call close() of sql service, and mark result as closed', function () {
             const fakeConnection = {};
             const fakeQueryId = {};
-            const sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, 4096);
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, fakeConnection, fakeQueryId, 4096);
             return sqlResult.close().then(() => {
                 fakeSqlService.close.calledOnceWithExactly(
                     sandbox.match.same(fakeConnection),
@@ -281,7 +289,7 @@ describe('SqlResultTest', function () {
         });
 
         it('should reject close promise if an error occurs during close request', function (done) {
-            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, 4096);
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, {}, 4096);
             const fakeError = new Error('whoops error');
             fakeSqlService.close = sandbox.fake.rejects(fakeError);
 
@@ -296,7 +304,7 @@ describe('SqlResultTest', function () {
     });
     describe('getters', function () {
         it('should resolve after successful execute', function () {
-            const sqlResult1 = new SqlResultImpl({}, {}, {}, 4096);
+            const sqlResult1 = new SqlResultImpl({}, {}, {}, {}, 4096);
 
             const rowMetadata = new SqlRowMetadataImpl([
                 {
@@ -311,7 +319,7 @@ describe('SqlResultTest', function () {
                 }
             ]);
 
-            const sqlResult2 = new SqlResultImpl({}, {}, {}, 4096);
+            const sqlResult2 = new SqlResultImpl({}, {}, {}, {}, 4096);
 
             simulateExecutionResponse(100, sqlResult1, 2, rowMetadata);
             simulateExecutionResponse(100, sqlResult2, 2, null, long.fromNumber(1));
@@ -329,7 +337,7 @@ describe('SqlResultTest', function () {
         });
 
         it('should reject after execute error', async function () {
-            const sqlResult1 = new SqlResultImpl({}, {}, {}, 4096);
+            const sqlResult1 = new SqlResultImpl({}, {}, {}, {}, 4096);
 
             const anError = new Error('oops');
 
@@ -356,7 +364,7 @@ describe('SqlResultTest', function () {
             };
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
-            sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, cursorBufferSize);
+            sqlResult = new SqlResultImpl(fakeSqlService, {}, fakeConnection, fakeQueryId, cursorBufferSize);
         });
 
         afterEach(function () {
@@ -411,6 +419,7 @@ describe('SqlResultTest', function () {
     describe('getCurrentRow', function () {
         let fakeSqlService;
         let fakeConnection;
+        let fakeSerializationService;
         let fakeQueryId;
         let sqlResult;
 
@@ -433,15 +442,25 @@ describe('SqlResultTest', function () {
                 fetch: sandbox.fake.resolves(fakeSqlPage),
                 close: sandbox.fake.resolves()
             };
+            fakeSerializationService = {
+                toObject: sandbox.fake(v => v)
+            };
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
-            sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, cursorBufferSize);
+            fakeConnection = sandbox.fake();
+            sqlResult = new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId,
+                cursorBufferSize);
             sqlResult.rowMetadata = rowMetadata;
             sqlResult.currentPage = new SqlPage([2, 2], [['1', '2'], ['3', '4']], true);
         });
 
         afterEach(function () {
             sandbox.restore();
+        });
+
+        it('should call toObject of serialization service', function () {
+            sqlResult.getCurrentRow();
+            fakeSerializationService.toObject.called.should.be.true;
         });
 
         it('should return object if returnRawResult is false', function () {
@@ -460,6 +479,7 @@ describe('SqlResultTest', function () {
         let fakeSqlService;
         let fakeConnection;
         let fakeQueryId;
+        let fakeSerializationService;
         let sqlResult;
 
         const fakeSqlPage = new SqlPage([2, 2], [['1', '2'], ['3', '4']], true);
@@ -469,9 +489,13 @@ describe('SqlResultTest', function () {
             fakeSqlService = {
                 fetch: sandbox.fake.resolves(fakeSqlPage)
             };
+            fakeSerializationService = {
+                toObject: sandbox.fake(v => v)
+            };
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
-            sqlResult = new SqlResultImpl(fakeSqlService, fakeConnection, fakeQueryId, cursorBufferSize);
+            sqlResult = new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId,
+                cursorBufferSize);
 
         });
 
@@ -524,7 +548,7 @@ describe('SqlResultTest', function () {
     describe('onNextPage', function () {
 
         it('should close on last page', function () {
-            const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
+            const sqlResult = new SqlResultImpl({}, {}, {}, {}, 4096);
             const rowPage = new SqlPage(
                 [], // column types
                 [[]],
@@ -544,7 +568,7 @@ describe('SqlResultTest', function () {
         });
 
         it('should not close on a page other than last page', function () {
-            const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
+            const sqlResult = new SqlResultImpl({}, {}, {}, {}, 4096);
             const rowPage = new SqlPage(
                 [], // column types
                 [[]],
@@ -568,7 +592,7 @@ describe('SqlResultTest', function () {
     });
     describe('onExecuteError', function () {
         it('should reject execute promise and set update count to long(-1)', function (done) {
-            const sqlResult = new SqlResultImpl({}, {}, {}, 4096);
+            const sqlResult = new SqlResultImpl({}, {}, {}, {}, 4096);
             sqlResult.updateCount = long.fromNumber(1); // change update count to see if it's changed
 
             const anError = new HazelcastSqlException();
@@ -587,7 +611,7 @@ describe('SqlResultTest', function () {
 
         let sqlResult;
         beforeEach(function () {
-            sqlResult = new SqlResultImpl({}, {}, {}, 4096);
+            sqlResult = new SqlResultImpl({}, {}, {}, {}, 4096);
         });
 
         it('should close the result and set updateCount if update count result is received ', function (done) {

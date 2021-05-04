@@ -186,6 +186,16 @@ describe('Decode/Serialize Test', function () {
         return null;
     };
 
+    const setupBasicConfig = async () => {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+    };
+
     const sortByKey = (array) => {
         array.sort((a, b) => {
             if (a['__key'] < b['__key']) return -1;
@@ -205,36 +215,16 @@ describe('Decode/Serialize Test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await RC.createCluster(null, SERVER_CONFIG);
-        await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            serialization: {
-                dataSerializableFactories: {
-                    1000: sampleDataSerializableFactory
-                },
-                portableFactories: {
-                    666: portableFactory
-                }
-            }
-        });
-    });
-
-    beforeEach(async function () {
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-    });
-
-    after(async function () {
-        await RC.terminateCluster(cluster.id);
-        await client.shutdown();
     });
 
     afterEach(async function () {
         await someMap.clear();
+        await client.shutdown();
+        await RC.terminateCluster(cluster.id);
     });
 
     it('should be able to decode/serialize VARCHAR', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -262,6 +252,7 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BOOLEAN', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -287,6 +278,7 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize TINYINT', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -315,6 +307,7 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize SMALLINT', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -343,6 +336,7 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize INTEGER', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -371,6 +365,7 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BIGINT', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -404,6 +399,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize DECIMAL', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -441,6 +437,7 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize REAL', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -474,6 +471,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize DOUBLE', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -507,6 +505,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize DATE', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -549,6 +548,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize TIME', async function () {
+        await setupBasicConfig();
         const script = `
                     var map = instance_0.getMap("${mapName}");
                     for (var key = 1; key < 12; key++) {
@@ -592,6 +592,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP', async function () {
+        await setupBasicConfig();
         const script = `
                     var map = instance_0.getMap("${mapName}");
                     for (var key = 1; key < 12; key++) {
@@ -649,6 +650,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP WITH TIMEZONE', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -721,7 +723,20 @@ describe('Decode/Serialize Test', function () {
     });
 
     // pass
-    it.skip('should be able to decode/serialize OBJECT(portable)', async function () {
+    it('should be able to decode/serialize OBJECT(portable)', async function () {
+        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                portableFactories: {
+                    666: portableFactory
+                }
+            }
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
         const student1 = new Student(long.fromNumber(12), 123.23);
         const student2 = new Student(long.fromNumber(15), null);
         const student3 = new Student(long.fromNumber(17), null);
@@ -756,7 +771,20 @@ describe('Decode/Serialize Test', function () {
         }
     });
     // pass
-    it.skip('should be able to decode/serialize OBJECT(portable) without server config', async function () {
+    it('should be able to decode/serialize OBJECT(portable) without server config', async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                portableFactories: {
+                    666: portableFactory
+                }
+            }
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
         const student1 = new Student(long.fromNumber(12), 123.23);
         const student2 = new Student(long.fromNumber(15), null);
         const student3 = new Student(long.fromNumber(17), null);
@@ -790,8 +818,21 @@ describe('Decode/Serialize Test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-    // pass
+    // pass, missing class in test jar
     it.skip('should be able to decode/serialize OBJECT(identified data serializable)', async function () {
+        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                dataSerializableFactories: {
+                    66: sampleDataSerializableFactory
+                }
+            }
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
         const street1 = new Street('a');
         const street2 = new Street('b');
         const street3 = new Street('c');
@@ -826,8 +867,21 @@ describe('Decode/Serialize Test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-    // pass
+    // pass, missing class in test jar
     it.skip('identified nested', async function () {
+        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                dataSerializableFactories: {
+                    66: sampleDataSerializableFactory
+                }
+            }
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
         const street1 = new Street('a');
         const street2 = new Street('b');
         const street3 = new Street('c');
@@ -867,6 +921,19 @@ describe('Decode/Serialize Test', function () {
     // Error: Failed to resolve value metadata: Problem while reading DataSerializable, namespace: 1000, ID: 102,
     // class: 'null', exception: com.hazelcast.core.HazelcastJsonValue cannot be cast to [LStreet;
     it.skip('identified nested array', async function () {
+        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                dataSerializableFactories: {
+                    66: sampleDataSerializableFactory
+                }
+            }
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
         const street1 = new Street('a');
         const street2 = new Street('b');
         const street3 = new Street('c');
@@ -905,6 +972,19 @@ describe('Decode/Serialize Test', function () {
     });
     //  Failed to serialize '[Lcom.hazelcast.nio.serialization.Portable;'
     it.skip('should be able to decode/serialize nested portable array', async function () {
+        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                portableFactories: {
+                    666: portableFactory
+                }
+            }
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
         const classroom = new Classroom('asd', [
             new Student(long.fromNumber(12), 123.23),
             new Student(long.fromNumber(13), 123.23)
@@ -927,6 +1007,19 @@ describe('Decode/Serialize Test', function () {
     // com.hazelcast.nio.serialization.HazelcastSerializationException: Could not find PortableFactory
     // for factory-id: 666, class-id:1
     it.skip('nested portable array without server config', async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                portableFactories: {
+                    666: portableFactory
+                }
+            }
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
         const classroom = new Classroom('asd', [
             new Student(long.fromNumber(12), 123.23),
             new Student(long.fromNumber(13), 123.23)
@@ -945,8 +1038,21 @@ describe('Decode/Serialize Test', function () {
         row['students'].should.be.eq(classroom.students);
         row['__key'].should.be.eq(0);
     });
-    // pass
+    // pass, missing test class
     it.skip('should be able to decode/serialize nested portable', async function () {
+        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                portableFactories: {
+                    666: portableFactory
+                }
+            }
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
         const classroom = new SmallClassroom('asd', new Student(long.fromNumber(13), 123.23));
         await someMap.put(0, classroom);
 
@@ -965,6 +1071,19 @@ describe('Decode/Serialize Test', function () {
     // Error: Failed to extract map entry value field "student": com.hazelcast.nio.serialization.
     // HazelcastSerializationException: Could not find PortableFactory for factory-id: 666, class-id:1
     it.skip('nested portable without server config', async function () {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                portableFactories: {
+                    666: portableFactory
+                }
+            }
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
         const classroom = new SmallClassroom('asd', new Student(long.fromNumber(13), 123.23));
         await someMap.put(0, classroom);
 
@@ -980,23 +1099,6 @@ describe('Decode/Serialize Test', function () {
         Math.abs(classroom.student.height - row['student']['height']).should.be.lessThan(1e5);
         row['__key'].should.be.eq(0);
     });
-    /*
-
-        Street street1 = new Street("a");
-        Street street2 = new Street("b");
-        Street street3 = new Street("c");
-
-        Address a1 = new Address(null, 2);
-        Address a2 = new Address(null, 3);
-        Address a3 = new Address(null, 4);
-
-        Map<Double, Address> map = hazelcastInstance.getMap("someMap");
-
-        map.put(0.0, null);
-        map.put(1.0, null);
-        map.put(2.0, null);
-
-     */
     /*
 
         Student student1 = new Student(1, (float) 1.2);
@@ -1015,9 +1117,21 @@ describe('Decode/Serialize Test', function () {
         map.set(1.0, a2);
         map.set(2.0, a3);
      */
-    // pass
+    // pass, need to write this in nashorn
     it.skip('should be able to decode NULL in portable field', async function () {
-        /*
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            serialization: {
+                portableFactories: {
+                    666: portableFactory
+                }
+            }
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
         const script = `
             var map = instance_0.getMap("${mapName}");
             for (var key = 0; key < 3; key++) {
@@ -1025,7 +1139,6 @@ describe('Decode/Serialize Test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-         */
 
         const result = client.getSqlService().execute('SELECT * FROM someMap WHERE student is NULL');
         const rowMetadata = await result.getRowMetadata();

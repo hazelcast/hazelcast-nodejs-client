@@ -169,6 +169,7 @@ describe('SqlServiceTest', function () {
             sqlService.execute('s', [], { cursorBufferSize: 1 });
             fake.calledOnceWithExactly(
                 sqlService,
+                fakeSerializationService,
                 fakeConnection,
                 fakeQueryId,
                 1,
@@ -183,6 +184,7 @@ describe('SqlServiceTest', function () {
             sqlService.execute('s', [], { returnRawResult: true });
             fake.calledOnceWithExactly(
                 sqlService,
+                fakeSerializationService,
                 fakeConnection,
                 fakeQueryId,
                 SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE,
@@ -197,6 +199,7 @@ describe('SqlServiceTest', function () {
             sqlService.execute('s', [], { returnRawResult: true, cursorBufferSize: 1 });
             fake.calledOnceWithExactly(
                 sqlService,
+                fakeSerializationService,
                 fakeConnection,
                 fakeQueryId,
                 1,
