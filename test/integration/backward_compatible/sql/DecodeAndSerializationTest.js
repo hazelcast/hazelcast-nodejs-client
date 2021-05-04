@@ -205,8 +205,8 @@ describe('Decode/Serialize Test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        // cluster = await RC.createCluster(null, SERVER_CONFIG);
-        // await RC.startMember(cluster.id);
+        cluster = await RC.createCluster(null, SERVER_CONFIG);
+        await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             // clusterName: cluster.id,
             serialization: {
@@ -226,7 +226,7 @@ describe('Decode/Serialize Test', function () {
     });
 
     after(async function () {
-        // await RC.terminateCluster(cluster.id);
+        await RC.terminateCluster(cluster.id);
         await client.shutdown();
     });
 
