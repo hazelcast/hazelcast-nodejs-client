@@ -2195,7 +2195,7 @@ The SQL service provided by Hazelcast Node.js client allows you to query data st
 
 ### Example: How to Query an IMap using SQL
 
-This SQL query returns map entries whose values are more than 2:
+This SQL query returns map entries whose values are more than 1:
 
 ```javascript
 const map = await client.getMap('my-distributed-map');
@@ -2203,13 +2203,44 @@ await map.put('key1', 1);
 await map.put('key2', 2);
 await map.put('key3', 3);
 
-const result = client.getSqlService().execute(`SELECT * FROM my-distributed-map WHERE this > 2`);
+const result = client.getSqlService().execute(`SELECT __key, this FROM my-distributed-map WHERE this > 1`);
 
 for await(const row of result){
-    console.log(row); // {__key: 'key3', this: 3}
+    console.log(row); // {__key: 'key3', this: 3} and {__key: 'key2', this: 2}
 }
 ```
 
+### Casting
+
+When comparing a column with a parameter, your parameter must be of a compatible type. Since Node.js client uses double
+as default number type, to compare with an integer based column you can use long objects or casting.
+
+The similar thing applies to other data types. You can cast string to every SQL type.
+
+#### Using long
+
+In the example below, age column is of type `INTEGER`. Since long objects are sent as `BIGINT`, there is no problem in the
+comparison.
+
+```javascript
+const result = client.getSqlService().execute(
+    'SELECT * FROM myMap WHERE age > ? AND age < ?',
+    [long.fromNumber(13), long.fromNumber(18)]
+);
+```
+
+#### Using casting
+
+In the example below, age column is of type `INTEGER`. The default number type is `double` by default. Since we cast
+doubles as `BIGINT`, there is no problem in the comparison. Note that we can also cast to other types that are be
+comparable with `INTEGER`.
+
+```javascript
+const result = client.getSqlService().execute(
+    'SELECT * FROM myMap WHERE age > CAST(? AS BIGINT) AND age < CAST(? AS BIGINT)',
+    [13, 18]
+);
+```
 
 ### 8.7.1. Querying IMap
 
