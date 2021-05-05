@@ -171,56 +171,60 @@ describe('SqlExecuteTest', function () {
         });
 
         it('should execute without params', async function () {
-            const entryCount = 10;
-            await populateMap(entryCount);
+            for (const _mapName of [mapName, 'partitioned.' + mapName]) {
+                const entryCount = 10;
+                await populateMap(entryCount);
 
-            const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-            const result2 = await client.getSqlService().execute({
-                sql: `SELECT * FROM ${mapName}`
-            });
-            for (const result of [result1, result2]) {
-                const rows = [];
-                for await (const row of result) {
-                    rows.push(row);
+                const result1 = await client.getSqlService().execute(`SELECT * FROM ${_mapName}`);
+                const result2 = await client.getSqlService().execute({
+                    sql: `SELECT * FROM ${_mapName}`
+                });
+                for (const result of [result1, result2]) {
+                    const rows = [];
+                    for await (const row of result) {
+                        rows.push(row);
+                    }
+
+                    sortByKey(rows);
+
+                    for (let i = 0; i < entryCount; i++) {
+                        rows[i]['__key'].should.be.eq(i);
+                        rows[i]['this'].should.be.eq(i + 1);
+                    }
+                    rows.should.have.lengthOf(entryCount);
                 }
-
-                sortByKey(rows);
-
-                for (let i = 0; i < entryCount; i++) {
-                    rows[i]['__key'].should.be.eq(i);
-                    rows[i]['this'].should.be.eq(i + 1);
-                }
-                rows.should.have.lengthOf(entryCount);
             }
         });
 
         it('should execute with params', async function () {
-            const entryCount = 10;
-            const limit = 6;
+            for (const _mapName of [mapName, 'partitioned.' + mapName]) {
+                const entryCount = 10;
+                const limit = 6;
 
-            await populateMap(entryCount);
-            // At this point the map includes [0, 1], [1, 2].. [9, 10]
+                await populateMap(entryCount);
+                // At this point the map includes [0, 1], [1, 2].. [9, 10]
 
-            // There should be "limit" results
-            const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this <= ?`, [limit]);
-            const result2 = await client.getSqlService().execute({
-                sql: `SELECT * FROM ${mapName} WHERE this <= ?`,
-                params: [limit]
-            });
+                // There should be "limit" results
+                const result1 = await client.getSqlService().execute(`SELECT * FROM ${_mapName} WHERE this <= ?`, [limit]);
+                const result2 = await client.getSqlService().execute({
+                    sql: `SELECT * FROM ${_mapName} WHERE this <= ?`,
+                    params: [limit]
+                });
 
-            for (const result of [result1, result2]) {
-                const rows = [];
-                for await (const row of result) {
-                    rows.push(row);
+                for (const result of [result1, result2]) {
+                    const rows = [];
+                    for await (const row of result) {
+                        rows.push(row);
+                    }
+
+                    sortByKey(rows);
+
+                    for (let i = 0; i < limit; i++) {
+                        rows[i]['__key'].should.be.eq(i);
+                        rows[i]['this'].should.be.eq(i + 1);
+                    }
+                    rows.should.have.lengthOf(limit);
                 }
-
-                sortByKey(rows);
-
-                for (let i = 0; i < limit; i++) {
-                    rows[i]['__key'].should.be.eq(i);
-                    rows[i]['this'].should.be.eq(i + 1);
-                }
-                rows.should.have.lengthOf(limit);
             }
         });
     });
