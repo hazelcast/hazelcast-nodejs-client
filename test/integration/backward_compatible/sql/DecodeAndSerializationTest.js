@@ -30,46 +30,71 @@ const { Client } = require('../../../../');
 
 const chai = require('chai');
 const long = require('long');
+require('sinon');
 
 chai.should();
 
-class Student {
-    constructor(age, height) {
-        this.age = age;
-        this.height = height;
-        this.factoryId = 666;
-        this.classId = 1;
-    }
-
-    readPortable(reader) {
-        this.age = reader.readLong('age');
-        this.height = reader.readFloat('height');
-    }
-
-    writePortable(writer) {
-        writer.writeLong('age', this.age);
-        writer.writeFloat('height', this.height);
-    }
-}
-
-const portableFactory = (classId) => {
-    if (classId === 1) return new Student();
-    return null;
-};
-
-const sortByKey = (array) => {
-    array.sort((a, b) => {
-        if (a['__key'] < b['__key']) return -1;
-        else if (a['__key'] > b['__key']) return 1;
-        else return 0;
-    });
-};
-
-describe('Decode/Serialize test without server config', function () {
+describe('Decode/Serialize Test', function () {
     let client;
     let cluster;
     let someMap;
     let mapName;
+
+    const PORTABLE_SERVER_CONFIG = `
+                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                    <serialization>
+                    <portable-factories>
+                        <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory
+                        </portable-factory>
+                    </portable-factories>
+                    </serialization>
+                </hazelcast>
+            `;
+
+    class Student {
+        constructor(age, height) {
+            this.age = age;
+            this.height = height;
+            this.factoryId = 666;
+            this.classId = 1;
+        }
+
+        readPortable(reader) {
+            this.age = reader.readLong('age');
+            this.height = reader.readFloat('height');
+        }
+
+        writePortable(writer) {
+            writer.writeLong('age', this.age);
+            writer.writeFloat('height', this.height);
+        }
+    }
+
+    const portableFactory = (classId) => {
+        if (classId === 1) return new Student();
+        return null;
+    };
+
+    const setupBasicConfig = async () => {
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+    };
+
+    const sortByKey = (array) => {
+        array.sort((a, b) => {
+            if (a['__key'] < b['__key']) return -1;
+            else if (a['__key'] > b['__key']) return 1;
+            else return 0;
+        });
+    };
 
     const validateResults = (rows, expectedKeys, expectedValues) => {
         rows.length.should.be.eq(expectedValues.length);
@@ -82,28 +107,16 @@ describe('Decode/Serialize test without server config', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await RC.createCluster(null, null);
-        await RC.startMember(cluster.id);
-    });
-
-    beforeEach(async function () {
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
     });
 
     afterEach(async function () {
         await someMap.clear();
         await client.shutdown();
-    });
-
-    after(async function () {
         await RC.terminateCluster(cluster.id);
     });
 
     it('should be able to decode/serialize VARCHAR', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -131,6 +144,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BOOLEAN', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -156,6 +170,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize TINYINT', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -184,6 +199,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize SMALLINT', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -212,6 +228,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize INTEGER', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -240,6 +257,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BIGINT', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -273,6 +291,7 @@ describe('Decode/Serialize test without server config', function () {
         }
     });
     it('should be able to decode/serialize DECIMAL', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -310,6 +329,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize REAL', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -343,6 +363,7 @@ describe('Decode/Serialize test without server config', function () {
         }
     });
     it('should be able to decode/serialize DOUBLE', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -376,6 +397,7 @@ describe('Decode/Serialize test without server config', function () {
         }
     });
     it('should be able to decode/serialize DATE', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -418,6 +440,7 @@ describe('Decode/Serialize test without server config', function () {
         }
     });
     it('should be able to decode/serialize TIME', async function () {
+        await setupBasicConfig();
         const script = `
                     var map = instance_0.getMap("${mapName}");
                     for (var key = 1; key < 12; key++) {
@@ -461,6 +484,7 @@ describe('Decode/Serialize test without server config', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP', async function () {
+        await setupBasicConfig();
         const script = `
                     var map = instance_0.getMap("${mapName}");
                     for (var key = 1; key < 12; key++) {
@@ -518,6 +542,7 @@ describe('Decode/Serialize test without server config', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP WITH TIMEZONE', async function () {
+        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -588,7 +613,9 @@ describe('Decode/Serialize test without server config', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-    it('should be able to decode/serialize OBJECT(portable) without server config', async function () {
+    it('should be able to decode/serialize OBJECT(portable)', async function () {
+        cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
+        await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             serialization: {
@@ -633,39 +660,9 @@ describe('Decode/Serialize test without server config', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-});
-
-describe('Decode/Serialize portable with server config', function () {
-    let client;
-    let cluster;
-    let someMap;
-    let mapName;
-
-    const PORTABLE_SERVER_CONFIG = `
-                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-                    <serialization>
-                    <portable-factories>
-                        <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory
-                        </portable-factory>
-                    </portable-factories>
-                    </serialization>
-                </hazelcast>
-            `;
-
-    before(async function () {
-        cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
+    it('should be able to decode/serialize OBJECT(portable) without server config', async function () {
+        cluster = await RC.createCluster(null, null);
         await RC.startMember(cluster.id);
-    });
-    afterEach(async function () {
-        await someMap.clear();
-        await client.shutdown();
-        await RC.terminateCluster(cluster.id);
-    });
-
-    it('should be able to decode/serialize OBJECT(portable)', async function () {
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             serialization: {
@@ -684,12 +681,13 @@ describe('Decode/Serialize portable with server config', function () {
         await someMap.put(1, student2);
         await someMap.put(2, student3);
 
-        const result = client.getSqlService().execute(`SELECT __key, this FROM ${mapName} WHERE age > ? AND age < ?`,
+        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE age > ? AND age < ?`,
             [long.fromNumber(13), long.fromNumber(18)]
         );
 
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.OBJECT);
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
 
         const rows = [];
 
@@ -704,8 +702,8 @@ describe('Decode/Serialize portable with server config', function () {
         rows.length.should.be.eq(expectedValues.length);
 
         for (let i = 0; i < rows.length; i++) {
-            (rows[i]['this']['age'].eq(expectedValues[i].age)).should.be.true;
-            (rows[i]['this']['height'] - expectedValues[i].height).should.be.lessThan(1e-5);
+            (rows[i]['age'].eq(expectedValues[i].age)).should.be.true;
+            (rows[i]['height'] - expectedValues[i].height).should.be.lessThan(1e-5);
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
