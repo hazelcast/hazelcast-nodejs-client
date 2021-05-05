@@ -14,7 +14,7 @@
     "devDependencies": {
         "@types/node": "~10.17.59",
         "@typescript-eslint/eslint-plugin": "~4.22.0",
-        "@typescript-eslint/parser": "~4.22.0",
+        "@typescript-eslint/parser": "~4.22.1",
         "chai": "~4.3.4",
         "chai-as-promised": "~7.1.1",
         "eslint": "~7.25.0",
