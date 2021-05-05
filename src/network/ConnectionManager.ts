@@ -463,6 +463,7 @@ export class ConnectionManager extends EventEmitter {
                 if (translatedAddress == null) {
                     throw new RangeError(`Address translator could not translate address ${address}`);
                 }
+                this.logger.warn('sd','before trigger connect');
                 return this.triggerConnect(translatedAddress);
             })
             .then((socket) => {
@@ -801,7 +802,9 @@ export class ConnectionManager extends EventEmitter {
         const socket = tls.connect(address.port, address.host, configOpts);
 
         const connectTimeoutTimer = setTimeout(() => {
+            this.logger.warn('sd','In connectTimeoutTimer timeout callback tls socket before destroy');
             socket.destroy();
+            this.logger.warn('sd','In connectTimeoutTimer timeout callback tls socket after destroy');
             connectionResolver.reject(new HazelcastError('Connection timed out to address ' + address.toString()));
         }, this.connectionTimeoutMillis);
 
@@ -822,7 +825,9 @@ export class ConnectionManager extends EventEmitter {
         const socket = net.connect(address.port, address.host);
 
         const connectTimeoutTimer = setTimeout(() => {
+            this.logger.warn('sd','In connectTimeoutTimer timeout callback net socket before destroy');
             socket.destroy();
+            this.logger.warn('sd','In connectTimeoutTimer timeout callback net socket after destroy');
             connectionResolver.reject(new HazelcastError('Connection timed out to address ' + address.toString()));
         }, this.connectionTimeoutMillis);
 
