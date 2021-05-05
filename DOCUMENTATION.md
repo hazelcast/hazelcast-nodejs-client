@@ -3061,7 +3061,7 @@ One of the key elements in Hazelcast security is the `Credentials` object, which
 With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
 See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based on user groups.
 
-> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#91-tlsssl)).**
+> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section](#91-tlsssl).**
 
 Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#security) of Hazelcast IMDG Reference Manual for more information.
 
