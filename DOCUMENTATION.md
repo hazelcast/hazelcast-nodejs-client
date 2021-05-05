@@ -85,6 +85,9 @@
     * [8.7.1. Querying IMap](#871-querying-imap)
     * [8.7.2. Data Types](#872-data-types)
     * [8.7.3. SELECT](#873-select)
+    * [8.7.4. Expressions](#874-expressions)
+    * [8.7.5. Lite Members](#875-lite-members)
+    * [8.7.6. More Information](#876-more-information)
   * [8.8. Distributed Query](#88-distributed-query)
     * [8.8.1. How Distributed Query Works](#881-how-distributed-query-works)
       * [8.8.1.1. Employee Map Query Example](#8811-employee-map-query-example)
@@ -2327,7 +2330,47 @@ table below shows SQL datatype, and corresponding Java and Javascript types:
 
 ### 8.7.3. SELECT
 
-todo:
+#### Synopsis
+
+```sql
+SELECT [ * | expression [ [ AS ] expression_alias ] [, ...] ]
+FROM table_name [ [ AS ] table_alias ]
+[WHERE condition]
+```
+
+#### Description
+
+The `SELECT` command retrieves rows from a table. A row is a sequence of expressions defined after the `SELECT` keyword. Expressions may have optional aliases.
+
+`table_name` refers to a single `IMap` data structure. A table may have an optional alias.
+
+An optional `WHERE` clause defines a condition, that is any expression that evaluates to a result of type boolean. Any row that doesn’t satisfy the condition is eliminated from the result.
+
+#### Sorting
+
+You can use the standard SQL clauses ORDER BY, LIMIT, and OFFSET to sort and limit the result set. In order to do so, you need server configuration. See [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/select-statement.html#sorting) for more.
+
+#### Unsupported Features
+
+The following features are **not supported** and are planned for future releases:
+
+* `GROUP BY`/`HAVING`
+* `JOIN`
+* set operators (`UNION`, `INTERSECT`, `MINUS`)
+* subqueries (`SELECT … FROM table WHERE x = (SELECT …)`)
+
+### 8.7.4. Expressions
+
+Hazelcast SQL supports logical predicates, `IS` predicates, comparison operators, mathematical functions and operators, string functions, and special functions.
+Refer to [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/expressions.html) for all possible operations.
+
+### 8.7.5. Lite Members
+
+You cannot start SQL queries on lite members. This limitation will be removed in future releases.
+
+### 8.7.6. More Information
+
+Please refer to [IMDG SQL docs](https://docs.hazelcast.com/imdg/4.2/sql/distributed-sql.html) for more information.
 
 ## 8.8. Distributed Query
 
@@ -3210,7 +3253,7 @@ One of the key elements in Hazelcast security is the `Credentials` object, which
 With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
 See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based on user groups.
 
-> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#91-tlsssl)).**
+> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section](#91-tlsssl).**
 
 Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#security) of Hazelcast IMDG Reference Manual for more information.
 
