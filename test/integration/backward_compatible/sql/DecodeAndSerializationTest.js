@@ -30,193 +30,46 @@ const { Client } = require('../../../../');
 
 const chai = require('chai');
 const long = require('long');
-const sinon = require('sinon');
 
-const should = chai.should();
+chai.should();
 
-describe('Decode/Serialize Test', function () {
+class Student {
+    constructor(age, height) {
+        this.age = age;
+        this.height = height;
+        this.factoryId = 666;
+        this.classId = 1;
+    }
+
+    readPortable(reader) {
+        this.age = reader.readLong('age');
+        this.height = reader.readFloat('height');
+    }
+
+    writePortable(writer) {
+        writer.writeLong('age', this.age);
+        writer.writeFloat('height', this.height);
+    }
+}
+
+const portableFactory = (classId) => {
+    if (classId === 1) return new Student();
+    return null;
+};
+
+const sortByKey = (array) => {
+    array.sort((a, b) => {
+        if (a['__key'] < b['__key']) return -1;
+        else if (a['__key'] > b['__key']) return 1;
+        else return 0;
+    });
+};
+
+describe('Decode/Serialize test without server config', function () {
     let client;
     let cluster;
     let someMap;
     let mapName;
-
-    const PORTABLE_SERVER_CONFIG = `
-                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-                    <serialization>
-                    <portable-factories>
-                        <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory
-                        </portable-factory>
-                    </portable-factories>
-                    </serialization>
-                </hazelcast>
-            `;
-
-    const IDENTIFIED_SERVER_CONFIG = `
-                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-                    <serialization>
-                        <data-serializable-factories>
-                            <data-serializable-factory factory-id="66">com.hazelcast.client.test.IdentifiedFactory
-                            </data-serializable-factory>
-                        </data-serializable-factories>
-                    </serialization>
-                </hazelcast>
-            `;
-
-    class Address {
-        constructor(street, zipCode) {
-            this.zipCode = zipCode;
-            this.street = street;
-            this.factoryId = 1000;
-            this.classId = 100;
-        }
-
-        readData(input) {
-            this.street = new Street();
-            this.street.readData(input);
-            this.zipCode = input.readInt();
-        }
-
-        writeData(output) {
-            this.street.writeData(output);
-            output.writeInt(this.zipCode);
-        }
-    }
-
-    class Addresses {
-        constructor(streets, zipCode) {
-            this.zipCode = zipCode;
-            this.streets = streets;
-            this.factoryId = 1000;
-            this.classId = 102;
-        }
-
-        readData(input) {
-            this.streets = input.readObject();
-            this.zipCode = input.readInt();
-        }
-
-        writeData(output) {
-            output.writeObject(this.streets);
-            output.writeInt(this.zipCode);
-        }
-    }
-
-    class Street {
-        constructor(street) {
-            this.street = street;
-            this.factoryId = 1000;
-            this.classId = 101;
-        }
-
-        readData(input) {
-            this.street = input.readString();
-        }
-
-        writeData(output) {
-            output.writeString(this.street);
-        }
-    }
-
-    class Student {
-        constructor(age, height) {
-            this.age = age;
-            this.height = height;
-            this.factoryId = 666;
-            this.classId = 1;
-        }
-
-        readPortable(reader) {
-            this.age = reader.readLong('age');
-            this.height = reader.readFloat('height');
-        }
-
-        writePortable(writer) {
-            writer.writeLong('age', this.age);
-            writer.writeFloat('height', this.height);
-        }
-    }
-
-    class Classroom {
-        constructor(className, students) {
-            this.students = students;
-            this.className = className;
-            this.factoryId = 666;
-            this.classId = 2;
-        }
-
-        readPortable(reader) {
-            this.className = reader.readString('className');
-            this.students = reader.readPortableArray('students');
-        }
-
-        writePortable(writer) {
-            writer.writeString('className', this.className);
-            writer.writePortableArray('students', this.students);
-        }
-    }
-
-    class SmallClassroom {
-        constructor(className, student) {
-            this.student = student;
-            this.className = className;
-            this.factoryId = 666;
-            this.classId = 3;
-        }
-
-        readPortable(reader) {
-            this.className = reader.readString('className');
-            this.student = reader.readPortable('student');
-        }
-
-        writePortable(writer) {
-            writer.writeString('className', this.className);
-            writer.writePortable('student', this.student);
-        }
-    }
-
-    const portableFactory = (classId) => {
-        if (classId === 1) return new Student();
-        if (classId === 2) return new Classroom();
-        if (classId === 3) return new SmallClassroom();
-        return null;
-    };
-
-    const sampleDataSerializableFactory = (classId) => {
-        if (classId === 100) {
-            return new Address();
-        }
-        if (classId === 101) {
-            return new Street();
-        }
-        if (classId === 102) {
-            return new Addresses();
-        }
-        return null;
-    };
-
-    const setupBasicConfig = async () => {
-        cluster = await RC.createCluster(null, null);
-        await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-    };
-
-    const sortByKey = (array) => {
-        array.sort((a, b) => {
-            if (a['__key'] < b['__key']) return -1;
-            else if (a['__key'] > b['__key']) return 1;
-            else return 0;
-        });
-    };
 
     const validateResults = (rows, expectedKeys, expectedValues) => {
         rows.length.should.be.eq(expectedValues.length);
@@ -229,16 +82,28 @@ describe('Decode/Serialize Test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
+    });
+
+    beforeEach(async function () {
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
     });
 
     afterEach(async function () {
         await someMap.clear();
         await client.shutdown();
+    });
+
+    after(async function () {
         await RC.terminateCluster(cluster.id);
     });
 
     it('should be able to decode/serialize VARCHAR', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -266,7 +131,6 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BOOLEAN', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -292,7 +156,6 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize TINYINT', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -321,7 +184,6 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize SMALLINT', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -350,7 +212,6 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize INTEGER', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -379,7 +240,6 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BIGINT', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -413,7 +273,6 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize DECIMAL', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -451,7 +310,6 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize REAL', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -485,7 +343,6 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize DOUBLE', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -519,7 +376,6 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize DATE', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -562,7 +418,6 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize TIME', async function () {
-        await setupBasicConfig();
         const script = `
                     var map = instance_0.getMap("${mapName}");
                     for (var key = 1; key < 12; key++) {
@@ -606,7 +461,6 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP', async function () {
-        await setupBasicConfig();
         const script = `
                     var map = instance_0.getMap("${mapName}");
                     for (var key = 1; key < 12; key++) {
@@ -664,7 +518,6 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP WITH TIMEZONE', async function () {
-        await setupBasicConfig();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -735,59 +588,7 @@ describe('Decode/Serialize Test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-
-    // pass
-    it('should be able to decode/serialize OBJECT(portable)', async function () {
-        cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
-        await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            serialization: {
-                portableFactories: {
-                    666: portableFactory
-                }
-            }
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-
-        const student1 = new Student(long.fromNumber(12), 123.23);
-        const student2 = new Student(long.fromNumber(15), null);
-        const student3 = new Student(long.fromNumber(17), null);
-        await someMap.put(0, student1);
-        await someMap.put(1, student2);
-        await someMap.put(2, student3);
-
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE age > ? AND age < ?`,
-            [long.fromNumber(13), long.fromNumber(18)]
-        );
-
-        const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
-
-        const rows = [];
-
-        for await (const row of result) {
-            rows.push(row);
-        }
-        sortByKey(rows);
-
-        const expectedKeys = [1, 2];
-        const expectedValues = [student2, student3];
-
-        rows.length.should.be.eq(expectedValues.length);
-
-        for (let i = 0; i < rows.length; i++) {
-            (rows[i]['age'].eq(expectedValues[i].age)).should.be.true;
-            (rows[i]['height'] - expectedValues[i].height).should.be.lessThan(1e-5);
-            rows[i]['__key'].should.be.eq(expectedKeys[i]);
-        }
-    });
-    // pass
     it('should be able to decode/serialize OBJECT(portable) without server config', async function () {
-        cluster = await RC.createCluster(null, null);
-        await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             serialization: {
@@ -832,230 +633,39 @@ describe('Decode/Serialize Test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-    // pass, missing class in test jar
-    it.skip('should be able to decode/serialize OBJECT(identified data serializable)', async function () {
-        cluster = await RC.createCluster(null, IDENTIFIED_SERVER_CONFIG);
-        await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            serialization: {
-                dataSerializableFactories: {
-                    66: sampleDataSerializableFactory
-                }
-            }
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
+});
 
-        const street1 = new Street('a');
-        const street2 = new Street('b');
-        const street3 = new Street('c');
-        const street4 = new Street('d');
+describe('Decode/Serialize portable with server config', function () {
+    let client;
+    let cluster;
+    let someMap;
+    let mapName;
 
-        await someMap.put(0, street1);
-        await someMap.put(1, street2);
-        await someMap.put(2, street3);
-        await someMap.put(3, street4);
+    const PORTABLE_SERVER_CONFIG = `
+                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                    <serialization>
+                    <portable-factories>
+                        <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory
+                        </portable-factory>
+                    </portable-factories>
+                    </serialization>
+                </hazelcast>
+            `;
 
-        // console.log(await someMap.get(0));
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE street = ? OR street = ?`,
-            ['b', 'c']);
-
-        const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('street')).type.should.be.eq(SqlColumnType.VARCHAR);
-
-        const rows = [];
-
-        for await (const row of result) {
-            rows.push(row);
-        }
-        sortByKey(rows);
-
-        const expectedKeys = [1, 2];
-        const expectedValues = ['b', 'c'];
-
-        rows.length.should.be.eq(expectedValues.length);
-
-        for (let i = 0; i < rows.length; i++) {
-            rows[i]['street'].should.be.eq(expectedValues[i]);
-            rows[i]['__key'].should.be.eq(expectedKeys[i]);
-        }
-    });
-    // pass, missing class in test jar
-    it.skip('identified nested', async function () {
-        cluster = await RC.createCluster(null, IDENTIFIED_SERVER_CONFIG);
-        await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            serialization: {
-                dataSerializableFactories: {
-                    66: sampleDataSerializableFactory
-                }
-            }
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-
-        const street1 = new Street('a');
-        const street2 = new Street('b');
-        const street3 = new Street('c');
-
-        const address1 = new Address(street1, 2);
-        const address2 = new Address(street2, 3);
-        const address3 = new Address(street3, 4);
-
-        await someMap.put(0, address1);
-        await someMap.put(1, address2);
-        await someMap.put(2, address3);
-
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE zipCode > ? AND zipCode < ?`,
-            [long.fromNumber(2), long.fromNumber(5)]);
-
-        const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('street')).type.should.be.eq(SqlColumnType.OBJECT);
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('zipCode')).type.should.be.eq(SqlColumnType.INTEGER);
-
-        const rows = [];
-
-        for await (const row of result) {
-            rows.push(row);
-        }
-        sortByKey(rows);
-
-        const expectedKeys = [1, 2];
-        const expectedValues = [address2, address3];
-
-        rows.length.should.be.eq(expectedValues.length);
-        for (let i = 0; i < rows.length; i++) {
-            sinon.assert.match(expectedValues[i].street, rows[i]['street']);
-            rows[i]['zipCode'].should.be.eq(expectedValues[i].zipCode);
-            rows[i]['__key'].should.be.eq(expectedKeys[i]);
-        }
-    });
-    // Error: Failed to resolve value metadata: Problem while reading DataSerializable, namespace: 1000, ID: 102,
-    // class: 'null', exception: com.hazelcast.core.HazelcastJsonValue cannot be cast to [LStreet;
-    it.skip('identified nested array', async function () {
-        cluster = await RC.createCluster(null, IDENTIFIED_SERVER_CONFIG);
-        await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            serialization: {
-                dataSerializableFactories: {
-                    66: sampleDataSerializableFactory
-                }
-            }
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-
-        const street1 = new Street('a');
-        const street2 = new Street('b');
-        const street3 = new Street('c');
-
-        const addresses1 = new Addresses([street1, street2], 2);
-        const addresses2 = new Addresses([street1, street3], 3);
-        const addresses3 = new Addresses([street2, street3], 4);
-
-        await someMap.put(0, addresses1);
-        await someMap.put(1, addresses2);
-        await someMap.put(2, addresses3);
-
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE zipCode > ? AND zipCode < ?`,
-            [long.fromNumber(2), long.fromNumber(5)]);
-
-        const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('streets')).type.should.be.eq(SqlColumnType.OBJECT);
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('zipCode')).type.should.be.eq(SqlColumnType.INTEGER);
-
-        const rows = [];
-
-        for await (const row of result) {
-            rows.push(row);
-        }
-        sortByKey(rows);
-
-        const expectedKeys = [1, 2];
-        const expectedValues = [addresses2, addresses3];
-
-        rows.length.should.be.eq(expectedValues.length);
-        for (let i = 0; i < rows.length; i++) {
-            sinon.assert.match(expectedValues[i].streets, rows[i]['streets']);
-            rows[i]['zipCode'].should.be.eq(expectedValues[i].zipCode);
-            rows[i]['__key'].should.be.eq(expectedKeys[i]);
-        }
-    });
-    //  Failed to serialize '[Lcom.hazelcast.nio.serialization.Portable;'
-    it.skip('should be able to decode/serialize nested portable array', async function () {
+    before(async function () {
         cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
         await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            serialization: {
-                portableFactories: {
-                    666: portableFactory
-                }
-            }
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-
-        const classroom = new Classroom('asd', [
-            new Student(long.fromNumber(12), 123.23),
-            new Student(long.fromNumber(13), 123.23)
-        ]);
-
-        await someMap.put(0, classroom);
-        // console.log(await someMap.get(0));
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-
-        const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('students')).type.should.be.eq(SqlColumnType.OBJECT);
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('className')).type.should.be.eq(SqlColumnType.VARCHAR);
-
-        const row = (await result.next()).value;
-        row['className'].should.be.eq(classroom.className);
-        row['students'].should.be.eq(classroom.students);
-        row['__key'].should.be.eq(0);
     });
-    // Error: Failed to extract map entry value field "students":
-    // com.hazelcast.nio.serialization.HazelcastSerializationException: Could not find PortableFactory
-    // for factory-id: 666, class-id:1
-    it.skip('nested portable array without server config', async function () {
-        cluster = await RC.createCluster(null, null);
-        await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            serialization: {
-                portableFactories: {
-                    666: portableFactory
-                }
-            }
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-
-        const classroom = new Classroom('asd', [
-            new Student(long.fromNumber(12), 123.23),
-            new Student(long.fromNumber(13), 123.23)
-        ]);
-
-        await someMap.put(0, classroom);
-        // console.log(await someMap.get(0));
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-
-        const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('students')).type.should.be.eq(SqlColumnType.OBJECT);
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('className')).type.should.be.eq(SqlColumnType.VARCHAR);
-
-        const row = (await result.next()).value;
-        row['className'].should.be.eq(classroom.className);
-        row['students'].should.be.eq(classroom.students);
-        row['__key'].should.be.eq(0);
+    afterEach(async function () {
+        await someMap.clear();
+        await client.shutdown();
+        await RC.terminateCluster(cluster.id);
     });
-    // pass, missing test class
-    it.skip('should be able to decode/serialize nested portable', async function () {
-        cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
-        await RC.startMember(cluster.id);
+
+    it('should be able to decode/serialize OBJECT(portable)', async function () {
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             serialization: {
@@ -1067,99 +677,36 @@ describe('Decode/Serialize Test', function () {
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
 
-        const classroom = new SmallClassroom('asd', new Student(long.fromNumber(13), 123.23));
-        await someMap.put(0, classroom);
+        const student1 = new Student(long.fromNumber(12), 123.23);
+        const student2 = new Student(long.fromNumber(15), null);
+        const student3 = new Student(long.fromNumber(17), null);
+        await someMap.put(0, student1);
+        await someMap.put(1, student2);
+        await someMap.put(2, student3);
 
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
-
-        const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('student')).type.should.be.eq(SqlColumnType.OBJECT);
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('className')).type.should.be.eq(SqlColumnType.VARCHAR);
-
-        const row = (await result.next()).value;
-        row['className'].should.be.eq(classroom.className);
-        classroom.student.age.eq(long.fromNumber(13)).should.be.true;
-        Math.abs(classroom.student.height - row['student']['height']).should.be.lessThan(1e5);
-        row['__key'].should.be.eq(0);
-    });
-    // Error: Failed to extract map entry value field "student": com.hazelcast.nio.serialization.
-    // HazelcastSerializationException: Could not find PortableFactory for factory-id: 666, class-id:1
-    it.skip('nested portable without server config', async function () {
-        cluster = await RC.createCluster(null, null);
-        await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            serialization: {
-                portableFactories: {
-                    666: portableFactory
-                }
-            }
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-
-        const classroom = new SmallClassroom('asd', new Student(long.fromNumber(13), 123.23));
-        await someMap.put(0, classroom);
-
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+        const result = client.getSqlService().execute(`SELECT __key, this FROM ${mapName} WHERE age > ? AND age < ?`,
+            [long.fromNumber(13), long.fromNumber(18)]
+        );
 
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('student')).type.should.be.eq(SqlColumnType.OBJECT);
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('className')).type.should.be.eq(SqlColumnType.VARCHAR);
+        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.OBJECT);
 
-        const row = (await result.next()).value;
-        row['className'].should.be.eq(classroom.className);
-        classroom.student.age.eq(long.fromNumber(13)).should.be.true;
-        Math.abs(classroom.student.height - row['student']['height']).should.be.lessThan(1e5);
-        row['__key'].should.be.eq(0);
-    });
-    /*
-
-        Student student1 = new Student(1, (float) 1.2);
-        Student student2 = new Student(1, (float) 1.2);
-        Student student3 = new Student(1, (float) 1.2);
-
-        SmallClassroom a4 = new SmallClassroom("", student1);
-        SmallClassroom a1 = new SmallClassroom("", null);
-        SmallClassroom a2 = new SmallClassroom("", null);
-        SmallClassroom a3 = new SmallClassroom("", null);
-
-        IMap<Object, Object> map = hazelcastInstance.getMap("someMap");
-
-        map.set(5.0, a4);
-        map.set(0.0, a1);
-        map.set(1.0, a2);
-        map.set(2.0, a3);
-     */
-    // pass, need to write this in nashorn
-    it.skip('should be able to decode NULL in portable field', async function () {
-        cluster = await RC.createCluster(null, null);
-        await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            serialization: {
-                portableFactories: {
-                    666: portableFactory
-                }
-            }
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-
-        const script = `
-            var map = instance_0.getMap("${mapName}");
-            for (var key = 0; key < 3; key++) {
-                map.set(new java.lang.Integer(key), new hazelcast.client.test.Classroom(null));
-            }
-        `;
-        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-
-        const result = client.getSqlService().execute('SELECT * FROM someMap WHERE student is NULL');
-        const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('className')).type.should.be.eq(SqlColumnType.OBJECT);
+        const rows = [];
 
         for await (const row of result) {
-            should.equal(row['student'], null);
+            rows.push(row);
+        }
+        sortByKey(rows);
+
+        const expectedKeys = [1, 2];
+        const expectedValues = [student2, student3];
+
+        rows.length.should.be.eq(expectedValues.length);
+
+        for (let i = 0; i < rows.length; i++) {
+            (rows[i]['this']['age'].eq(expectedValues[i].age)).should.be.true;
+            (rows[i]['this']['height'] - expectedValues[i].height).should.be.lessThan(1e-5);
+            rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
 });
