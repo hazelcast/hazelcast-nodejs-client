@@ -668,9 +668,22 @@ describe('Decode/Serialize portable with server config', function () {
                 </hazelcast>
             `;
 
-    it('should be able to decode/serialize OBJECT(portable)', async function () {
+    before(async function () {
+        TestUtil.markClientVersionAtLeast(this, '4.2');
         cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
         await RC.startMember(cluster.id);
+    });
+
+    afterEach(async function () {
+        await someMap.clear();
+        await client.shutdown();
+    });
+
+    after(async function () {
+        await RC.terminateCluster(cluster.id);
+    });
+
+    it('should be able to decode/serialize OBJECT(portable)', async function () {
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             serialization: {
@@ -714,5 +727,7 @@ describe('Decode/Serialize portable with server config', function () {
             (rows[i]['height'] - expectedValues[i].height).should.be.lessThan(1e-5);
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
+        await client.shutdown();
+        await RC.terminateCluster(cluster.id);
     });
 });
