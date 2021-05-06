@@ -727,7 +727,5 @@ describe('Decode/Serialize portable with server config', function () {
             (rows[i]['height'] - expectedValues[i].height).should.be.lessThan(1e-5);
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
-        await client.shutdown();
-        await RC.terminateCluster(cluster.id);
     });
 });
