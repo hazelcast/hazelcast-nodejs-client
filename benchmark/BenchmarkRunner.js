@@ -17,6 +17,30 @@
 
 const { Client } = require('../.');
 
+class Student {
+    constructor(age, height) {
+        this.age = age;
+        this.height = height;
+        this.factoryId = 666;
+        this.classId = 1;
+    }
+
+    readPortable(reader) {
+        this.age = reader.readLong('age');
+        this.height = reader.readFloat('height');
+    }
+
+    writePortable(writer) {
+        writer.writeLong('age', this.age);
+        writer.writeFloat('height', this.height);
+    }
+}
+
+const portableFactory = (classId) => {
+    if (classId === 1) return new Student();
+    return null;
+};
+
 class BenchmarkRunner {
 
     constructor(config) {
@@ -67,16 +91,22 @@ async function runBenchmark(config) {
     const client = await Client.newHazelcastClient({
         properties: {
             'hazelcast.logging.level': 'WARN'
+        },
+        serialization: {
+            portableFactories: {
+                666: portableFactory
+            }
         }
     });
-    const map = await client.getMap('default');
+    const map = await client.getMap('someMap');
+    const sqlService = client.getSqlService();
 
     if (prepareOp) {
         await prepareOp(map);
     }
 
     const warmup = new BenchmarkRunner({
-        nextOp: () => nextOp(map),
+        nextOp: () => nextOp(map, sqlService),
         totalOps: totalOps * 0.1,
         concurrency
     });
@@ -85,7 +115,7 @@ async function runBenchmark(config) {
     console.log('Warm-up finished');
 
     const benchmark = new BenchmarkRunner({
-        nextOp: () => nextOp(map),
+        nextOp: () => nextOp(map, sqlService),
         totalOps,
         concurrency
     });
@@ -98,4 +128,5 @@ async function runBenchmark(config) {
     await client.shutdown();
 }
 
-module.exports = runBenchmark;
+module.exports.runBenchmark = runBenchmark;
+module.exports.Student = Student;
