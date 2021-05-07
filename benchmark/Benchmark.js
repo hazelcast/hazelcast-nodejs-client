@@ -141,32 +141,6 @@ function randomOp(map) {
                 };
                 nextOp = (map) => sqlRandomPredicateBigger(map);
                 break;
-            case 'sqlRandomQueryBiggerWithIndex':
-                prepareOp = async (map) => {
-                    await map.addIndex({
-                        type: 'SORTED',
-                        attributes: ['age']
-                    });
-
-                    for (let i = 0; i < numberOfEntriesInMap; i++) {
-                        await map.set(`key${i}`, new Student(long.fromNumber(i), i + 1));
-                    }
-                };
-                nextOp = (map, sqlService) => sqlRandomQueryBigger(map, sqlService);
-                break;
-            case 'sqlRandomPredicateBiggerWithIndex':
-                prepareOp = async (map) => {
-                    await map.addIndex({
-                        type: 'SORTED',
-                        attributes: ['age']
-                    });
-
-                    for (let i = 0; i < numberOfEntriesInMap; i++) {
-                        await map.set(`key${i}`, new Student(long.fromNumber(i), i + 1));
-                    }
-                };
-                nextOp = (map) => sqlRandomPredicateBigger(map);
-                break;
             case 'sqlRandomQueryEqual':
                 prepareOp = async (map) => {
                     for (let i = 0; i < numberOfEntriesInMap; i++) {
@@ -184,7 +158,8 @@ function randomOp(map) {
                 nextOp = (map, sqlService) => sqlRandomPredicateEqual(map, sqlService);
                 break;
             default:
-                console.error(`Unknown command "${type}". Supported commands are "get", "set", "random".`);
+                console.error(`Unknown command "${type}". Supported commands are "get", "set", "random",`
+                            + '"random", "random".');
                 process.exit(1);
         }
 
