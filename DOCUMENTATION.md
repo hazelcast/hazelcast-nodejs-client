@@ -84,10 +84,11 @@
   * [8.7. SQL](#87-sql)
     * [8.7.1. Querying IMap](#871-querying-imap)
     * [8.7.2. Data Types](#872-data-types)
-    * [8.7.3. SELECT](#873-select)
-    * [8.7.4. Expressions](#874-expressions)
-    * [8.7.5. Lite Members](#875-lite-members)
-    * [8.7.6. More Information](#876-more-information)
+    * [8.7.3. Casting](#873-casting)
+    * [8.7.4. SELECT](#874-select)
+    * [8.7.5. Expressions](#875-expressions)
+    * [8.7.6. Lite Members](#876-lite-members)
+    * [8.7.7. More Information](#877-more-information)
   * [8.8. Distributed Query](#88-distributed-query)
     * [8.8.1. How Distributed Query Works](#881-how-distributed-query-works)
       * [8.8.1.1. Employee Map Query Example](#8811-employee-map-query-example)
@@ -2359,7 +2360,41 @@ table below shows SQL datatype, and corresponding Java and Javascript types:
 | **NULL**                     | `Void`                     | `null`                                     |
 
 
-### 8.7.3. SELECT
+### 8.7.3. Casting
+
+You may need to use casting when sending parameters for certain types. In general, you should try to send a parameter
+that has same data type with the related column.
+
+#### How to cast
+
+Casting syntax: `CAST(? AS TYPE)`
+
+Example casting:
+
+```sql
+SELECT * FROM someMap WHERE this = CAST(? AS INTEGER)
+```
+
+
+#### Important notes about comparison and casting
+
+
+* Note that default number type in Node.js client is double by default. This means you need to cast when you are dealing with
+integer based columns. (`TINYINT`, `SMALLINT`, `INTEGER`, `BIGINT`)
+
+* In case of comparison operators (=, <, <>, ...), if one side is `?`, it's assumed to be exactly the other side's type,
+  except that `TINYINT`, `SMALLINT`, `INTEGER` are all converted to `BIGINT`.
+
+* String parameters can be cast to any type. The cast operation may fail though.
+
+* `DECIMAL` must be sent as string with casting and `DECIMAL` results are also strings.
+
+* To send date and time related wrapper classes, you must use casting, because they are sent as strings internally.
+  This might change in the future so that you can omit casting.
+
+* See [SQL data types code sample](code_samples/sql-data-types.js) for example usage of all data types.
+
+### 8.7.4. SELECT
 
 #### Synopsis
 
@@ -2390,18 +2425,22 @@ The following features are **not supported** and are planned for future releases
 * set operators (`UNION`, `INTERSECT`, `MINUS`)
 * subqueries (`SELECT … FROM table WHERE x = (SELECT …)`)
 
-### 8.7.4. Expressions
+### 8.7.5. Expressions
 
 Hazelcast SQL supports logical predicates, `IS` predicates, comparison operators, mathematical functions and operators, string functions, and special functions.
 Refer to [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/expressions.html) for all possible operations.
 
-### 8.7.5. Lite Members
+### 8.7.6. Lite Members
 
 You cannot start SQL queries on lite members. This limitation will be removed in future releases.
 
-### 8.7.6. More Information
+### 8.7.7. More Information
 
 Please refer to [IMDG SQL docs](https://docs.hazelcast.com/imdg/4.2/sql/distributed-sql.html) for more information.
+
+For basic usage of SQL, see [this](code_samples/sql-basic-usage.js) code sample.
+
+For usages of SQL with different data types, see [this](code_samples/sql-data-types.js) code sample.
 
 ## 8.8. Distributed Query
 
