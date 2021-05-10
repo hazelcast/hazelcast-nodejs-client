@@ -178,7 +178,6 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         });
 
         await RC.shutdownMember(cluster.id, member.uuid);
-
         await RC.startMember(cluster.id);
 
         await topic2.publish('message');
