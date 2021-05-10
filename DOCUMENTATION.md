@@ -1259,7 +1259,7 @@ The client executes each operation through the already established connection to
 
 While sending requests to cluster members, the operations may fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for non-read-only operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
-You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in the `properties` option. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
+You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.millis` in the `properties` option. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
 * Member throws an exception.
 * Connection between the client and member is closed.
