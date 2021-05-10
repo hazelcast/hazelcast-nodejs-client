@@ -28,11 +28,23 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     let member;
     let client1;
     let client2;
-    const invocationTimeoutMillis = 2000;
 
     before(async function () {
         cluster = await RC.createCluster(null, null);
         member = await RC.startMember(cluster.id);
+        client1 = undefined;
+        client2 = undefined;
+    });
+
+    after(async function() {
+        await RC.shutdownCluster(cluster.id);
+        if (client1) await client1.shutdown();
+        if (client2) await client2.shutdown();
+    });
+
+    it('should continue on cluster restart when data lost and after invocation timeout', async function () {
+        const invocationTimeoutMillis = 2000;
+
         client1 = await Client.newHazelcastClient({
             clusterName: cluster.id,
             connectionStrategy: {
@@ -55,15 +67,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
                 'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
             }
         });
-    });
-    after(async function() {
-        await RC.shutdownCluster(cluster.id);
-        await client1.shutdown();
-        await client2.shutdown();
-    });
 
-    // https://github.com/hazelcast/hazelcast/pull/16644
-    it('should continue on cluster restart after invocation timeout', async function () {
         let messageArrived = false;
         let messageCount = 0;
 
@@ -75,12 +79,11 @@ describe('ReliableTopicOnClusterRestartTest', function () {
 
         const topic1 = await client1.getReliableTopic(topicName);
         topic1.addMessageListener(() => {
-            console.log('received message');
             messageCount++;
             messageArrived = true;
         });
 
-        await RC.terminateMember(cluster.id, member.uuid);
+        await RC.shutdownMember(cluster.id, member.uuid);
 
         await RC.startMember(cluster.id);
 
@@ -90,13 +93,98 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         await assertTrueEventually(async () => {
             const topic3 = await client2.getReliableTopic(topicName);
             await topic3.publish(`newItem${randomString()}`);
-            console.log('published message');
             await assertTrueEventually(async () => {
                 if (!messageArrived)
                     throw new Error('message not arrived yet');
-            }, 100, 5000);
+            }, undefined, 5000);
         });
 
         messageCount.should.be.greaterThanOrEqual(1);
+    });
+
+    it('should continue on cluster restart after invocation timeout', async function () {
+        const invocationTimeoutMillis = 2000;
+
+        client1 = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
+                }
+            },
+            properties: {
+                'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
+            }
+        });
+
+        let messageArrived = false;
+        const topicName = 'topic';
+
+        const topic1 = await client1.getReliableTopic(topicName);
+        topic1.addMessageListener(() => {
+            messageArrived = true;
+        });
+
+        await RC.shutdownMember(cluster.id, member.uuid);
+
+        // wait for the topic operation to timeout
+        await promiseWaitMilliseconds(invocationTimeoutMillis);
+
+        await RC.startMember(cluster.id);
+
+        client2 = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
+                }
+            }
+        });
+
+        const topic2 = await client2.getReliableTopic(topicName);
+        await topic2.publish('message');
+        await assertTrueEventually(async () => {
+            if (!messageArrived)
+                throw new Error('message not arrived yet');
+        });
+    });
+
+    it('should continue on cluster restart', async function () {
+        client1 = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
+                }
+            }
+        });
+        client2 = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
+                }
+            }
+        });
+
+        const topicName = 'topic';
+        const topic1 = await client1.getReliableTopic(topicName);
+        const topic2 = await client2.getReliableTopic(topicName);
+
+        let messageArrived = false;
+
+        topic1.addMessageListener(() => {
+            messageArrived = true;
+        });
+
+        await RC.shutdownMember(cluster.id, member.uuid);
+
+        await RC.startMember(cluster.id);
+
+        await topic2.publish('message');
+        await assertTrueEventually(async () => {
+            if (!messageArrived)
+                throw new Error('message not arrived yet');
+        });
     });
 });
