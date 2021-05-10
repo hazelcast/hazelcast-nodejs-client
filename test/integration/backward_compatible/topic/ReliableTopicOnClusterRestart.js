@@ -84,7 +84,6 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         });
 
         await RC.shutdownMember(cluster.id, member.uuid);
-
         await RC.startMember(cluster.id);
 
         // wait some time for subscription
