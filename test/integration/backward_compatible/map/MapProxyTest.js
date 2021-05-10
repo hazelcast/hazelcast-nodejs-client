@@ -43,7 +43,7 @@ async function createClient(nearCacheEnabled, clusterName) {
 }
 
 describe('MapProxyTest', function () {
-    [false, true].forEach(function (nearCacheEnabled) {
+    [false, true].forEach((nearCacheEnabled) => {
         describe(' - Near Cache enabled: ' + nearCacheEnabled, function () {
 
             let cluster;
@@ -190,7 +190,7 @@ describe('MapProxyTest', function () {
                 expect(val).to.be.false;
             });
 
-            [true, false].forEach(function (shouldUsePutAll) {
+            [true, false].forEach((shouldUsePutAll) => {
                 it(shouldUsePutAll ? 'putAll' : 'setAll', function (done) {
                     const arr = [
                         ['pa_k0', 'pa_v0'],
@@ -219,7 +219,7 @@ describe('MapProxyTest', function () {
                     } else {
                         promise = map.setAll(arr);
                     }
-                    promise.then(function () {
+                    promise.then(() => {
                         map.get(arr[0][0]).then(verify(arr[0][1]));
                         map.get(arr[1][0]).then(verify(arr[1][1]));
                         map.get(arr[2][0]).then(verify(arr[2][1]));
@@ -425,9 +425,9 @@ describe('MapProxyTest', function () {
             });
 
             it('getEntryView', function (done) {
-                map.get('key0').then(function () {
+                map.get('key0').then(() => {
                     return map.getEntryView('key0');
-                }).then(function (entry) {
+                }).then((entry) => {
                     try {
                         expect(entry.key).to.equal('key0');
                         expect(entry.value).to.equal('val0');
@@ -483,7 +483,7 @@ describe('MapProxyTest', function () {
             it('tryLock_success with timeout', async function () {
                 await RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1);
                 const startTime = Date.now();
-                setTimeout(async function () {
+                setTimeout(async () => {
                     await RC.executeOnController(cluster.id, generateUnlockScript(map.getName(), '"key0"'), 1);
                 }, 1000);
                 const success = await map.tryLock('key0', 2000);
@@ -537,7 +537,7 @@ describe('MapProxyTest', function () {
                     }
                 };
                 map.addEntryListenerWithPredicate(listenerObject, Predicates.sql('this == val10'))
-                    .then(function () {
+                    .then(() => {
                         map.put('key10', 'val10');
                     });
             });
@@ -559,7 +559,7 @@ describe('MapProxyTest', function () {
                     }
                 };
                 map.addEntryListenerWithPredicate(listenerObject, Predicates.sql('this == val10'), 'key10')
-                    .then(function () {
+                    .then(() => {
                         map.put('key10', 'val10');
                     });
             });
@@ -581,7 +581,7 @@ describe('MapProxyTest', function () {
                         }
                     };
                     map.addEntryListenerWithPredicate(listenerObject, Predicates.sql('this == val10'), 'key10', true)
-                        .then(function () {
+                        .then(() => {
                             map.put('key10', 'val10');
                         });
                 }
@@ -604,7 +604,7 @@ describe('MapProxyTest', function () {
                     }
                 };
                 map.addEntryListenerWithPredicate(listenerObject, Predicates.sql('this == val10'), 'key10', true)
-                    .then(function () {
+                    .then(() => {
                         map.put('key10', 'val10');
                     });
             });
@@ -625,7 +625,7 @@ describe('MapProxyTest', function () {
                         }
                     }
                 };
-                map.addEntryListener(listenerObject, undefined, true).then(function () {
+                map.addEntryListener(listenerObject, undefined, true).then(() => {
                     map.put('key10', 'val10');
                 });
             });
@@ -646,7 +646,7 @@ describe('MapProxyTest', function () {
                         }
                     }
                 };
-                map.addEntryListener(listenerObject).then(function () {
+                map.addEntryListener(listenerObject).then(() => {
                     map.put('key0', 'new-val');
                 });
             });
@@ -667,7 +667,7 @@ describe('MapProxyTest', function () {
                         }
                     }
                 };
-                map.addEntryListener(listenerObject, 'key1', false).then(function () {
+                map.addEntryListener(listenerObject, 'key1', false).then(() => {
                     map.remove('key1');
                 });
             });
@@ -688,7 +688,7 @@ describe('MapProxyTest', function () {
                         }
                     }
                 };
-                map.addEntryListener(listenerObject, 'key1', true).then(function () {
+                map.addEntryListener(listenerObject, 'key1', true).then(() => {
                     map.remove('key1');
                 });
             });
@@ -709,7 +709,7 @@ describe('MapProxyTest', function () {
                         }
                     }
                 };
-                map.addEntryListener(listenerObject, 'key1', true).then(function () {
+                map.addEntryListener(listenerObject, 'key1', true).then(() => {
                     map.evict('key1');
                 });
             });
@@ -727,7 +727,7 @@ describe('MapProxyTest', function () {
                         }
                     }
                 };
-                map.addEntryListener(listenerObject).then(function () {
+                map.addEntryListener(listenerObject).then(() => {
                     map.evictAll();
                 });
             });
@@ -745,7 +745,7 @@ describe('MapProxyTest', function () {
                         }
                     }
                 };
-                map.addEntryListener(listenerObject).then(function () {
+                map.addEntryListener(listenerObject).then(() => {
                     map.clear();
                 });
             });
@@ -767,7 +767,7 @@ describe('MapProxyTest', function () {
                     }
                 };
                 map.addEntryListener(listenerObj, undefined, true)
-                    .then(function () {
+                    .then(() => {
                         return map.put('expiringKey', 'expiringValue', 1000);
                     });
             });

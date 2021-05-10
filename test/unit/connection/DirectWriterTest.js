@@ -59,7 +59,7 @@ describe('DirectWriterTest', function () {
         setUpWriteSuccess();
 
         const msg = createMessage('test');
-        mockSocket.on('data', function(data) {
+        mockSocket.on('data', (data) => {
             expect(Buffer.compare(data, msg.toBuffer())).to.be.equal(0);
             done();
         });
@@ -72,7 +72,7 @@ describe('DirectWriterTest', function () {
 
         const msg = createMessage('test');
         let cnt = 0;
-        mockSocket.on('data', function(data) {
+        mockSocket.on('data', (data) => {
             expect(Buffer.compare(data, msg.toBuffer())).to.be.equal(0);
             if (++cnt === 3) {
                 done();

@@ -72,7 +72,7 @@ describe('DefaultSerializersTest', function () {
         uuid
     ];
 
-    parameters.forEach(function (obj) {
+    parameters.forEach((obj) => {
         it('type: ' + typeof obj + ', isArray: ' + Array.isArray(obj) + ', value: ' + JSON.stringify(obj), function () {
                 const config = new SerializationConfigImpl();
                 const serializationService = new SerializationServiceV1(config);
@@ -90,7 +90,7 @@ describe('DefaultSerializersTest', function () {
         'float'
     ];
 
-    defaultNumberTypes.forEach(function (type) {
+    defaultNumberTypes.forEach((type) => {
         it('convert default number type: ' + type, function () {
             let num = 56;
             if (type === 'long') {
@@ -104,7 +104,7 @@ describe('DefaultSerializersTest', function () {
         });
     });
 
-    defaultNumberTypes.forEach(function (type) {
+    defaultNumberTypes.forEach((type) => {
         it('convert array of default number type: ' + type, function () {
             let nums = [56, 101];
             if (type === 'long') {

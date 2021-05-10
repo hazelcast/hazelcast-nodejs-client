@@ -114,7 +114,7 @@ describe('BinaryCompatibilityTest', function () {
     }
 
     before(function () {
-        versions.forEach(function (version) {
+        versions.forEach((version) => {
             const input = new ObjectDataInput(fs.readFileSync(__dirname + '/' + createFileName(version)), 0, null, true, true);
             while (input.available() > 0) {
                 const utflen = input.readUnsignedShort();
@@ -135,8 +135,8 @@ describe('BinaryCompatibilityTest', function () {
         const varName = vn;
         const object = objects[varName];
         if (Object.prototype.hasOwnProperty.call(objects, varName)) {
-            versions.forEach(function (version) {
-                isBigEndianValues.forEach(function (isBigEndian) {
+            versions.forEach((version) => {
+                isBigEndianValues.forEach((isBigEndian) => {
                     it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version, function () {
                         const key = createObjectKey(varName, version, isBigEndian);
                         const service = createSerializationService(isBigEndian, 'integer');

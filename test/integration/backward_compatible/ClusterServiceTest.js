@@ -16,7 +16,6 @@
 'use strict';
 
 const chai = require('chai');
-chai.should();
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 
@@ -72,7 +71,7 @@ describe('ClusterServiceTest', function () {
 
         client.getCluster().addMembershipListener(membershipListener);
 
-        RC.startMember(cluster.id).then(function (res) {
+        RC.startMember(cluster.id).then((res) => {
             member2 = res;
             return RC.shutdownMember(cluster.id, member2.uuid);
         }).catch(done);
@@ -85,7 +84,7 @@ describe('ClusterServiceTest', function () {
             memberRemoved: () => {
                 const remainingMemberList = client.getCluster().getMembers();
                 expect(remainingMemberList).to.have.length(2);
-                const portList = remainingMemberList.map(function (member) {
+                const portList = remainingMemberList.map((member) => {
                     return member.address.port;
                 });
                 expect(portList).to.have.members([member1.port, member3.port]);
@@ -95,10 +94,10 @@ describe('ClusterServiceTest', function () {
 
         client.getCluster().addMembershipListener(membershipListener);
 
-        RC.startMember(cluster.id).then(function (res) {
+        RC.startMember(cluster.id).then((res) => {
             member2 = res;
             return RC.startMember(cluster.id);
-        }).then(function (res) {
+        }).then((res) => {
             member3 = res;
             return RC.shutdownMember(cluster.id, member2.uuid);
         }).catch(done);

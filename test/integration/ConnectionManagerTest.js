@@ -16,7 +16,6 @@
 'use strict';
 
 const chai = require('chai');
-chai.should();
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const sinon = require('sinon');
@@ -117,7 +116,7 @@ describe('ConnectionManagerTest', function () {
         let scheduled;
 
         startUnresponsiveServer(9999).then(() => {
-            scheduled = setTimeout(function () {
+            scheduled = setTimeout(() => {
                 done();
             }, 6000); // 5000 is default timeout. The client should be still trying
             return Client.newHazelcastClient({
@@ -126,13 +125,13 @@ describe('ConnectionManagerTest', function () {
                     connectionTimeout: timeoutTime
                 }
             });
-        }).then(function (cl) {
+        }).then((cl) => {
             client = cl;
             return client.getConnectionManager().getOrConnectToAddress(new AddressImpl('localhost', 9999));
-        }).then(function () {
+        }).then(() => {
             clearTimeout(scheduled);
             done(new Error('Client should be retrying!'));
-        }).catch(function (e) {
+        }).catch((e) => {
             clearTimeout(scheduled);
             if (!testend) {
                 done(new Error('Client should be retrying!\n' + e));

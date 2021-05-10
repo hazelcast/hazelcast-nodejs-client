@@ -16,7 +16,6 @@
 'use strict';
 
 const chai = require('chai');
-chai.should();
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const sinon = require('sinon');
@@ -308,7 +307,7 @@ describe('CPSessionManagerTest', function () {
         it('heartbeatTask: should invalidate sessions when error received', function (done) {
             stubRequestNewSession();
 
-            sandbox.replace(sessionManager, 'requestHeartbeat', function () {
+            sandbox.replace(sessionManager, 'requestHeartbeat', () => {
                 return Promise.reject(new SessionExpiredError());
             });
 
