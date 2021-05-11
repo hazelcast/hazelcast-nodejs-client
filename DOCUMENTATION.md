@@ -543,7 +543,7 @@ Hazelcast Node.js client supports the following data structures and features:
 
 # 3. Configuration Overview
 
-This chapter describes the options to configure your Node.js client.
+This chapter describes the options to configure your Node.js client. If an invalid value is given to any configuration option an `InvalidConfigurationError` error will be thrown.
 
 ## 3.1. Configuration Options
 
@@ -1123,7 +1123,7 @@ The following are configuration element descriptions:
 * `clusterConnectTimeoutMillis`: Timeout value in milliseconds for the client to give up to connect to the current cluster. If set to -1, the client tries to connect forever. If set to 0, the client won't try to connect anymore after the first attempt fails. The default value is `-1` (No timeout).
 * `jitter`: Specifies by how much to randomize backoffs. Its default value is `0`. It must be in range `0` to `1`.
 
-A pseudo-code is as follows:
+A pseudo-code for connection retry logic is as follows:
 
 ```text
 begin_time = getCurrentTime()
