@@ -16,7 +16,7 @@
             "es2017.string"
         ],
         "removeComments": false,
-        "sourceMap": false,
+        "sourceMap": true,
         "stripInternal": true
     },
     "include": [
