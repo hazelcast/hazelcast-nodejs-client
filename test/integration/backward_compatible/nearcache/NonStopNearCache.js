@@ -85,7 +85,7 @@ describe('NonStopNearCacheTest', function () {
         }).catch(err => {
             err.should.be.instanceof(ClientOfflineError);
             done();
-        });
+        }).catch(done);
     });
 
     it('should throw offline exception when cluster is down and client puts to map ', function (done) {
@@ -95,7 +95,7 @@ describe('NonStopNearCacheTest', function () {
         }).catch(err => {
             err.should.be.instanceof(ClientOfflineError);
             done();
-        });
+        }).catch(done);
     });
 
 });
