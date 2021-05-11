@@ -78,7 +78,7 @@ describe('NonStopNearCacheTest', function () {
         }
     });
 
-    it('should throw offline exception when tries to get a non-existent key from cache', function (done) {
+    it('should reject with ClientOfflineError when client tries to get a non-existent key', function (done) {
         // verify that if client ask for non available key, we get offline exception immediately
         map.get(200).then(() => {
             done(new Error('expected to reject but resolved'));
@@ -88,7 +88,7 @@ describe('NonStopNearCacheTest', function () {
         }).catch(done);
     });
 
-    it('should throw offline exception when cluster is down and client puts to map ', function (done) {
+    it('should reject with ClientOfflineError when client puts to map', function (done) {
         // verify that if client tries to put a map with cache when disconnected, we get offline exception immediately
         map.put(1, 2).then(() => {
             done(new Error('expected to reject but resolved'));
