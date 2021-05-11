@@ -32,14 +32,20 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     before(async function () {
         cluster = await RC.createCluster(null, null);
         member = await RC.startMember(cluster.id);
+    });
+
+    beforeEach(async function () {
         client1 = undefined;
         client2 = undefined;
     });
 
-    after(async function() {
-        await RC.shutdownCluster(cluster.id);
+    afterEach(async function () {
         if (client1) await client1.shutdown();
         if (client2) await client2.shutdown();
+    });
+
+    after(async function() {
+        await RC.shutdownCluster(cluster.id);
     });
 
     it('should continue on cluster restart when data lost and after invocation timeout', async function () {
