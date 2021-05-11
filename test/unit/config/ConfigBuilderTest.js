@@ -244,114 +244,116 @@ describe('ConfigBuilderTest', function () {
 });
 
 describe('ConfigBuilderRangeValidationTest', function () {
-    it('should validate initial backoff', function () {
-        const invalidValues = [-1, undefined, null, -0.1, [], {}];
-        const validValues = [0.1, 1, 12, 123123, 12.2131];
-        for (const invalidValue of invalidValues) {
-            expect(() => new ConfigBuilder({
-                connectionStrategy: {
-                    connectionRetry: {
-                        initialBackoffMillis: invalidValue
+    describe('connectionRetryConfig', function () {
+        it('should validate initial backoff', function () {
+            const invalidValues = [-1, undefined, null, -0.1, [], {}];
+            const validValues = [0.1, 1, 12, 123123, 12.2131];
+            for (const invalidValue of invalidValues) {
+                expect(() => new ConfigBuilder({
+                    connectionStrategy: {
+                        connectionRetry: {
+                            initialBackoffMillis: invalidValue
+                        }
                     }
-                }
-            }).build()).to.throw(InvalidConfigurationError);
-        }
-        for (const validValue of validValues) {
-            expect(() => new ConfigBuilder({
-                connectionStrategy: {
-                    connectionRetry: {
-                        initialBackoffMillis: validValue
+                }).build()).to.throw(InvalidConfigurationError);
+            }
+            for (const validValue of validValues) {
+                expect(() => new ConfigBuilder({
+                    connectionStrategy: {
+                        connectionRetry: {
+                            initialBackoffMillis: validValue
+                        }
                     }
-                }
-            }).build()).not.to.throw();
-        }
-    });
-    it('should validate max backoff', function () {
-        const invalidValues = [-1, undefined, null, -0.1, [], {}];
-        const validValues = [0.1, 1, 12, 123123, 12.2131];
-        for (const invalidValue of invalidValues) {
-            expect(() => new ConfigBuilder({
-                connectionStrategy: {
-                    connectionRetry: {
-                        maxBackoffMillis: invalidValue
+                }).build()).not.to.throw();
+            }
+        });
+        it('should validate max backoff', function () {
+            const invalidValues = [-1, undefined, null, -0.1, [], {}];
+            const validValues = [0.1, 1, 12, 123123, 12.2131];
+            for (const invalidValue of invalidValues) {
+                expect(() => new ConfigBuilder({
+                    connectionStrategy: {
+                        connectionRetry: {
+                            maxBackoffMillis: invalidValue
+                        }
                     }
-                }
-            }).build()).to.throw(InvalidConfigurationError);
-        }
-        for (const validValue of validValues) {
-            expect(() => new ConfigBuilder({
-                connectionStrategy: {
-                    connectionRetry: {
-                        maxBackoffMillis: validValue
+                }).build()).to.throw(InvalidConfigurationError);
+            }
+            for (const validValue of validValues) {
+                expect(() => new ConfigBuilder({
+                    connectionStrategy: {
+                        connectionRetry: {
+                            maxBackoffMillis: validValue
+                        }
                     }
-                }
-            }).build()).not.to.throw();
-        }
-    });
-    it('should validate multiplier', function () {
-        const invalidValues = [-1, undefined, null, -0.1, [], {}, 0.99, 0.21];
-        const validValues = [1, 12, 123123, 12.2131];
-        for (const invalidValue of invalidValues) {
-            expect(() => new ConfigBuilder({
-                connectionStrategy: {
-                    connectionRetry: {
-                        multiplier: invalidValue
+                }).build()).not.to.throw();
+            }
+        });
+        it('should validate multiplier', function () {
+            const invalidValues = [-1, undefined, null, -0.1, [], {}, 0.99, 0.21];
+            const validValues = [1, 12, 123123, 12.2131];
+            for (const invalidValue of invalidValues) {
+                expect(() => new ConfigBuilder({
+                    connectionStrategy: {
+                        connectionRetry: {
+                            multiplier: invalidValue
+                        }
                     }
-                }
-            }).build()).to.throw(InvalidConfigurationError);
-        }
-        for (const validValue of validValues) {
-            expect(() => new ConfigBuilder({
-                connectionStrategy: {
-                    connectionRetry: {
-                        multiplier: validValue
+                }).build()).to.throw(InvalidConfigurationError);
+            }
+            for (const validValue of validValues) {
+                expect(() => new ConfigBuilder({
+                    connectionStrategy: {
+                        connectionRetry: {
+                            multiplier: validValue
+                        }
                     }
-                }
-            }).build()).not.to.throw();
-        }
-    });
-    it('should validate cluster connect timeout', function () {
-        const invalidValues = [-2, undefined, null, -0.1, [], {}, -13];
-        const validValues = [-1, 0.1, 1, 12, 123123, 12.2131, 0];
-        for (const invalidValue of invalidValues) {
-            expect(() => new ConfigBuilder({
-                connectionStrategy: {
-                    connectionRetry: {
-                        clusterConnectTimeoutMillis: invalidValue
+                }).build()).not.to.throw();
+            }
+        });
+        it('should validate cluster connect timeout', function () {
+            const invalidValues = [-2, undefined, null, -0.1, [], {}, -13];
+            const validValues = [-1, 0.1, 1, 12, 123123, 12.2131, 0];
+            for (const invalidValue of invalidValues) {
+                expect(() => new ConfigBuilder({
+                    connectionStrategy: {
+                        connectionRetry: {
+                            clusterConnectTimeoutMillis: invalidValue
+                        }
                     }
-                }
-            }).build()).to.throw(InvalidConfigurationError);
-        }
-        for (const validValue of validValues) {
-            expect(() => new ConfigBuilder({
-                connectionStrategy: {
-                    connectionRetry: {
-                        clusterConnectTimeoutMillis: validValue
+                }).build()).to.throw(InvalidConfigurationError);
+            }
+            for (const validValue of validValues) {
+                expect(() => new ConfigBuilder({
+                    connectionStrategy: {
+                        connectionRetry: {
+                            clusterConnectTimeoutMillis: validValue
+                        }
                     }
-                }
-            }).build()).not.to.throw();
-        }
-    });
-    it('should validate jitter', function () {
-        const invalidValues = [-1, undefined, null, -0.1, [], {}, 1.01, 123];
-        const validValues = [0.1, 0, 0.3, 0.99, 1];
-        for (const invalidValue of invalidValues) {
-            expect(() => new ConfigBuilder({
-                connectionStrategy: {
-                    connectionRetry: {
-                        jitter: invalidValue
+                }).build()).not.to.throw();
+            }
+        });
+        it('should validate jitter', function () {
+            const invalidValues = [-1, undefined, null, -0.1, [], {}, 1.01, 123];
+            const validValues = [0.1, 0, 0.3, 0.99, 1];
+            for (const invalidValue of invalidValues) {
+                expect(() => new ConfigBuilder({
+                    connectionStrategy: {
+                        connectionRetry: {
+                            jitter: invalidValue
+                        }
                     }
-                }
-            }).build()).to.throw(InvalidConfigurationError);
-        }
-        for (const validValue of validValues) {
-            expect(() => new ConfigBuilder({
-                connectionStrategy: {
-                    connectionRetry: {
-                        jitter: validValue
+                }).build()).to.throw(InvalidConfigurationError);
+            }
+            for (const validValue of validValues) {
+                expect(() => new ConfigBuilder({
+                    connectionStrategy: {
+                        connectionRetry: {
+                            jitter: validValue
+                        }
                     }
-                }
-            }).build()).not.to.throw();
-        }
+                }).build()).not.to.throw();
+            }
+        });
     });
 });

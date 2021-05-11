@@ -543,7 +543,7 @@ Hazelcast Node.js client supports the following data structures and features:
 
 # 3. Configuration Overview
 
-This chapter describes the options to configure your Node.js client. If an invalid value is given to any configuration option an `InvalidConfigurationError` error will be thrown.
+This chapter describes the options to configure your Node.js client. If an invalid value is given to any configuration option, an `InvalidConfigurationError` error will be thrown.
 
 ## 3.1. Configuration Options
 
