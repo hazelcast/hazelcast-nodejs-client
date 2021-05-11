@@ -44,3 +44,6 @@ coverage
 # Hazelcast Remote Controller output files
 rc_stderr.txt
 rc_stdout.txt
+
+# Eslint cache
+.eslintcache
