@@ -156,6 +156,14 @@ export class ClusterService implements Cluster {
         }
     }
 
+    clearMemberList(connectionRegistry: ConnectionRegistry): void {
+        this.logger.trace('ClusterService', 'Resetting the member list.');
+        const previousMembers = this.memberListSnapshot.memberList;
+        this.memberListSnapshot = EMPTY_SNAPSHOT;
+        const events = this.detectMembershipEvents(previousMembers, [], connectionRegistry);
+        this.fireEvents(events);
+    }
+
     handleMembersViewEvent(
         connectionRegistry: ConnectionRegistry,
         memberListVersion: number,
@@ -222,14 +230,10 @@ export class ClusterService implements Cluster {
         connectionRegistry: ConnectionRegistry
     ): MembershipEvent[] {
         const newMembers = new Array<MemberImpl>();
-
-        const deadMembers = new Map<string, MemberImpl>();
-        for (const member of prevMembers) {
-            deadMembers.set(member.id(), member);
-        }
+        const deadMembers = new Set<MemberImpl>(prevMembers);
 
         for (const member of currentMembers) {
-            if (!deadMembers.delete(member.id())) {
+            if (!deadMembers.delete(member)) {
                 newMembers.push(member);
             }
         }
