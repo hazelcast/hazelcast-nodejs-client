@@ -551,7 +551,7 @@ Hazelcast Node.js client supports the following data structures and features:
 
 # 3. Configuration Overview
 
-This chapter describes the options to configure your Node.js client.
+This chapter describes the options to configure your Node.js client. If an invalid value is given to any configuration option, an `InvalidConfigurationError` error will be thrown.
 
 ## 3.1. Configuration Options
 
@@ -1131,7 +1131,7 @@ The following are configuration element descriptions:
 * `clusterConnectTimeoutMillis`: Timeout value in milliseconds for the client to give up to connect to the current cluster. If set to -1, the client tries to connect forever. If set to 0, the client won't try to connect anymore after the first attempt fails. The default value is `-1` (No timeout).
 * `jitter`: Specifies by how much to randomize backoffs. Its default value is `0`. It must be in range `0` to `1`.
 
-A pseudo-code is as follows:
+A pseudo-code for connection retry logic is as follows:
 
 ```text
 begin_time = getCurrentTime()
@@ -1267,7 +1267,7 @@ The client executes each operation through the already established connection to
 
 While sending requests to cluster members, the operations may fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for non-read-only operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
-You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in the `properties` option. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
+You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.millis` in the `properties` option. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
 * Member throws an exception.
 * Connection between the client and member is closed.
