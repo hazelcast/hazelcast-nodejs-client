@@ -230,10 +230,14 @@ export class ClusterService implements Cluster {
         connectionRegistry: ConnectionRegistry
     ): MembershipEvent[] {
         const newMembers = new Array<MemberImpl>();
-        const deadMembers = new Set<MemberImpl>(prevMembers);
+
+        const deadMembers = new Map<string, MemberImpl>();
+        for (const member of prevMembers) {
+            deadMembers.set(member.id(), member);
+        }
 
         for (const member of currentMembers) {
-            if (!deadMembers.delete(member)) {
+            if (!deadMembers.delete(member.id())) {
                 newMembers.push(member);
             }
         }
