@@ -2192,7 +2192,8 @@ console.log(value);
 
 The SQL service provided by Hazelcast Node.js client allows you to query data stored in `IMap` declaratively.
 
-> **WARNING: The SQL feature is currently in beta. The compatibility between versions is not guaranteed. API might change between versions without notice.**
+> **WARNING: The SQL feature is currently in beta. The compatibility between versions is not guaranteed. API might change between versions without notice. While in beta, SQL feature is tested against the same version of the IMDG, e.g 4.2.x
+> client is tested against 4.2.x IMDG server.**
 
 ### Example: How to Query an IMap using SQL
 
