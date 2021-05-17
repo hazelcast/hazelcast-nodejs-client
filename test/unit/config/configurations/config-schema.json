@@ -159,9 +159,12 @@
             "properties": {
                 "defaultNumberType": {
                     "enum": [
+                        "double",
+                        "short",
                         "integer",
                         "float",
-                        "double"
+                        "byte",
+                        "long"
                     ],
                     "default": "double"
                 },

@@ -87,7 +87,8 @@ describe('DefaultSerializersTest', function () {
         'short',
         'integer',
         'long',
-        'float'
+        'float',
+        'byte'
     ];
 
     defaultNumberTypes.forEach((type) => {
@@ -109,6 +110,9 @@ describe('DefaultSerializersTest', function () {
             let nums = [56, 101];
             if (type === 'long') {
                 nums = [Long.fromNumber(56), Long.fromNumber(101)];
+            }
+            if (type === 'byte') {
+                nums = Buffer.from(nums);
             }
             const config = new SerializationConfigImpl();
             config.defaultNumberType = type;
