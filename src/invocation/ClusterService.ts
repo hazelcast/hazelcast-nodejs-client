@@ -159,7 +159,7 @@ export class ClusterService implements Cluster {
     clearMemberList(connectionRegistry: ConnectionRegistry): void {
         this.logger.trace('ClusterService', 'Resetting the member list.');
         const previousMembers = this.memberListSnapshot.memberList;
-        this.memberListSnapshot = EMPTY_SNAPSHOT;
+        this.memberListSnapshot = Object.assign({}, EMPTY_SNAPSHOT);
         const events = this.detectMembershipEvents(previousMembers, [], connectionRegistry);
         this.fireEvents(events);
     }
