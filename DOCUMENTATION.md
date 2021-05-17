@@ -581,7 +581,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 
 > **NOTE: The `Long` type means the type provided by [long.js library](https://github.com/dcodeIO/long.js).**
 
-> **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the [serialization.defaultNumberType](http://hazelcast.github.io/hazelcast-nodejs-client/api/4.1.0/docs/interfaces/_config_serializationconfig_.serializationconfig.html#defaultnumbertype) config option.
+> **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the [serialization.defaultNumberType](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/interfaces/_config_serializationconfig_.serializationconfig.html#defaultnumbertype) config option.**
 
 Arrays of the `boolean`, `number`, `string`, and `Long` types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
 
