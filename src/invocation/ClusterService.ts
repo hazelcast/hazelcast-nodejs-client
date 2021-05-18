@@ -164,7 +164,7 @@ export class ClusterService implements Cluster {
         // intervene with client failover logic
         if (this.memberListSnapshot !== EMPTY_SNAPSHOT) {
             const previousMembers = this.memberListSnapshot.memberList;
-            this.memberListSnapshot = Object.assign({}, EMPTY_SNAPSHOT);
+            this.memberListSnapshot = new MemberListSnapshot(0, new Map<string, MemberImpl>(), []);
             const events = this.detectMembershipEvents(previousMembers, [], connectionRegistry);
             this.fireEvents(events);
         }
