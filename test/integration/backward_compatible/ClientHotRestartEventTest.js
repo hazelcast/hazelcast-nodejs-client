@@ -107,13 +107,13 @@ describe('ClientHotRestartEventTest', function () {
         const newMember = await RC.startMember(cluster.id);
 
         await TestUtil.assertTrueEventually(async () => {
-            memberRemoved.should.be.true;
+            expect(memberRemoved).to.be.true;
         });
 
         expect(oldMember.uuid).to.be.eq(removedMemberUUID);
 
         await TestUtil.assertTrueEventually(async () => {
-            memberAdded.should.be.true;
+            expect(memberAdded).to.be.true;
         });
 
         expect(newMember.uuid).to.be.eq(addedMemberUUID);
