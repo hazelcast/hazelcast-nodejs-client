@@ -348,7 +348,7 @@ You need to provide the IP address and port of at least one member in your clust
 
 ```javascript
 const cfg = {
-    networkConfig: {
+    network: {
         clusterMembers: [
             'some-ip-address:port'
         ]
@@ -551,7 +551,7 @@ For configuration of the Hazelcast Node.js client, just instantiate a config obj
 
 ```javascript
 const cfg = {
-    networkConfig: {
+    network: {
         clusterMembers: [
             '127.0.0.1:5701'
         ]
