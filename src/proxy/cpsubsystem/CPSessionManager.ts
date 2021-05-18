@@ -33,7 +33,8 @@ import {ILogger} from '../../logging/ILogger';
 import {
     scheduleWithRepetition,
     cancelRepetitionTask,
-    Task
+    Task,
+    delayedPromise
 } from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
 
@@ -87,6 +88,7 @@ export class CPSessionManager {
 
     // <group_id, session_state> map
     private readonly sessions: Map<string, SessionState> = new Map();
+    private readonly sessionsMutexes: Map<string, boolean> = new Map();
     private heartbeatTask: Task;
     private isShutdown = false;
 
@@ -94,7 +96,8 @@ export class CPSessionManager {
         private readonly logger: ILogger,
         private readonly clientName: string,
         private readonly invocationService: InvocationService
-    ) {}
+    ) {
+    }
 
     getSessionId(groupId: RaftGroupId): Long {
         const session = this.sessions.get(groupId.getStringId());
@@ -151,7 +154,19 @@ export class CPSessionManager {
         }
         const session = this.sessions.get(groupId.getStringId());
         if (session === undefined || !session.isValid()) {
-            return this.createNewSession(groupId);
+            const tryCreateNewSession = (): Promise<SessionState> => {
+                if (!this.sessionsMutexes.get(groupId.getStringId())) {
+                    console.log('inside first if');
+                    this.sessionsMutexes.set(groupId.getStringId(), true);
+                    return this.createNewSession(groupId);
+                } else {
+                    console.log('inside second if');
+                    return delayedPromise(1000).then(() => {
+                        return tryCreateNewSession();
+                    });
+                }
+            };
+            return tryCreateNewSession();
         }
         return Promise.resolve(session);
     }
@@ -161,6 +176,7 @@ export class CPSessionManager {
             const state = new SessionState(response.sessionId, groupId, response.ttlMillis.toNumber());
             this.sessions.set(groupId.getStringId(), state);
             this.scheduleHeartbeatTask(response.heartbeatMillis.toNumber());
+            this.sessionsMutexes.set(groupId.getStringId(), false);
             return state;
         });
     }
@@ -183,7 +199,8 @@ export class CPSessionManager {
     private requestHeartbeat(groupId: RaftGroupId, sessionId: Long): Promise<void> {
         const clientMessage = CPSessionHeartbeatSessionCodec.encodeRequest(groupId, sessionId);
         return this.invocationService.invokeOnRandomTarget(clientMessage)
-            .then(() => {});
+            .then(() => {
+            });
     }
 
     private requestGenerateThreadId(groupId: RaftGroupId): Promise<Long> {
