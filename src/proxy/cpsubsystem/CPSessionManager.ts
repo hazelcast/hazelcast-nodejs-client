@@ -34,8 +34,8 @@ import {
     scheduleWithRepetition,
     cancelRepetitionTask,
     Task,
-    delayedPromise,
-    deferredPromise, DeferredPromise
+    deferredPromise,
+    DeferredPromise
 } from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
 
