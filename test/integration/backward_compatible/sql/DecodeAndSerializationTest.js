@@ -57,14 +57,6 @@ const portableFactory = (classId) => {
     return null;
 };
 
-const sortByKey = (array) => {
-    array.sort((a, b) => {
-        if (a['__key'] < b['__key']) return -1;
-        else if (a['__key'] > b['__key']) return 1;
-        else return 0;
-    });
-};
-
 describe('Decode/Serialize test without server config', function () {
     let client;
     let cluster;
@@ -92,6 +84,10 @@ describe('Decode/Serialize test without server config', function () {
         });
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
+        await someMap.addIndex({
+            type: 'SORTED',
+            attributes: ['__key']
+        });
     };
 
     afterEach(async function () {
@@ -114,7 +110,9 @@ describe('Decode/Serialize test without server config', function () {
         `;
 
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this = ? OR this = ?`, ['7', '2']);
+        const result = client.getSqlService().execute(
+            `SELECT * FROM ${mapName} WHERE this = ? OR this = ? ORDER BY __key ASC`, ['7', '2']
+        );
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.VARCHAR);
 
@@ -123,8 +121,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-
-        sortByKey(rows);
 
         const expectedValues = ['2', '7'];
         const expectedKeys = [2, 7];
@@ -141,7 +137,7 @@ describe('Decode/Serialize test without server config', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this = ?`, [true]);
+        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this = ? ORDER BY __key ASC`, [true]);
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BOOLEAN);
 
@@ -151,7 +147,6 @@ describe('Decode/Serialize test without server config', function () {
             rows.push(row);
         }
 
-        sortByKey(rows);
         const expectedKeys = [0, 2, 4, 6, 8];
         const expectedValues = [true, true, true, true, true];
 
@@ -168,7 +163,7 @@ describe('Decode/Serialize test without server config', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(10), long.fromNumber(16)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -179,7 +174,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedValues = [12, 14];
         const expectedKeys = [6, 7];
@@ -197,7 +191,7 @@ describe('Decode/Serialize test without server config', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(8), long.fromNumber(16)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -208,7 +202,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedValues = [10, 12, 14];
         const expectedKeys = [5, 6, 7];
@@ -226,7 +219,7 @@ describe('Decode/Serialize test without server config', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(10), long.fromNumber(20)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -237,7 +230,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedValues = [12, 14, 16, 18];
         const expectedKeys = [6, 7, 8, 9];
@@ -255,7 +247,7 @@ describe('Decode/Serialize test without server config', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(10), long.fromNumber(18)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -266,7 +258,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedValues = [long.fromNumber(12), long.fromNumber(14), long.fromNumber(16)];
         const expectedKeys = [6, 7, 8];
@@ -294,7 +285,7 @@ describe('Decode/Serialize test without server config', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST(? AS DECIMAL) AND this < CAST(? AS DECIMAL)`,
+            `SELECT * FROM ${mapName} WHERE this > CAST(? AS DECIMAL) AND this < CAST(? AS DECIMAL) ORDER BY __key ASC`,
             ['-0.00000000000000000000000000000001', '1.0000000000000231213123123125465462513214653123']
         );
         const rowMetadata = await result.getRowMetadata();
@@ -305,7 +296,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedValues = [
             '0.1111112983672389172378619283677891',
@@ -327,7 +317,7 @@ describe('Decode/Serialize test without server config', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST(? AS REAL) AND this < CAST(? AS REAL)`,
+            `SELECT * FROM ${mapName} WHERE this > CAST(? AS REAL) AND this < CAST(? AS REAL) ORDER BY __key ASC`,
             [-0.5, 0.5]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -338,7 +328,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3, 4];
         const expectedValues = [0.1, 0.2, 0.3, 0.4];
@@ -361,7 +350,8 @@ describe('Decode/Serialize test without server config', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`, // cast it if default number type is different
+            // cast it if default number type is different
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [-0.7, 0.7]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -372,7 +362,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3, 4, 5, 6];
         const expectedValues = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6];
@@ -395,7 +384,7 @@ describe('Decode/Serialize test without server config', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST (? AS DATE)`,
+            `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST (? AS DATE) ORDER BY __key ASC`,
             [new HzLocalDate(1, 1, 1), new HzLocalDate(5, 5, 5)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -406,7 +395,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3];
         const expectedBaseValues = {
@@ -437,7 +425,7 @@ describe('Decode/Serialize test without server config', function () {
                 `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME)`,
+            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME) ORDER BY __key ASC`,
             [new HzLocalTime(1, 0, 0, 0), new HzLocalTime(10, 0, 0, 0)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -448,7 +436,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3, 4, 5, 6];
         const expectedBaseValue = {
@@ -484,7 +471,7 @@ describe('Decode/Serialize test without server config', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP)`,
+            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP) ORDER BY __key ASC`,
             [
                 new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
                 new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1))
@@ -498,7 +485,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3];
         const expectedBaseValue = {
@@ -547,7 +533,7 @@ describe('Decode/Serialize test without server config', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
             `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP_WITH_TIME_ZONE)` +
-            'AND this < CAST (? AS TIMESTAMP_WITH_TIME_ZONE)',
+            'AND this < CAST (? AS TIMESTAMP_WITH_TIME_ZONE) ORDER BY __key ASC',
             [
                 HzOffsetDateTime.fromHzLocalDateTime(
                     new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
@@ -568,7 +554,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3];
         const expectedBaseValue = {
@@ -612,6 +597,10 @@ describe('Decode/Serialize test without server config', function () {
         });
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
+        await someMap.addIndex({
+            type: 'SORTED',
+            attributes: ['__key']
+        });
 
         const student1 = new Student(long.fromNumber(12), 123.23);
         const student2 = new Student(long.fromNumber(15), null);
@@ -620,7 +609,8 @@ describe('Decode/Serialize test without server config', function () {
         await someMap.put(1, student2);
         await someMap.put(2, student3);
 
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE age > ? AND age < ?`,
+        const result = client.getSqlService().execute(
+            `SELECT * FROM ${mapName} WHERE age > ? AND age < ? ORDER BY __key ASC`,
             [long.fromNumber(13), long.fromNumber(18)]
         );
 
@@ -633,7 +623,6 @@ describe('Decode/Serialize test without server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2];
         const expectedValues = [student2, student3];
