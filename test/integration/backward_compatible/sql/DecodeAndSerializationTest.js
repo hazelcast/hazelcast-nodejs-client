@@ -697,6 +697,10 @@ describe('Decode/Serialize portable with server config', function () {
         });
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
+        await someMap.addIndex({
+            type: 'SORTED',
+            attributes: ['__key']
+        });
 
         const student1 = new Student(long.fromNumber(12), 123.23);
         const student2 = new Student(long.fromNumber(15), null);
@@ -705,7 +709,7 @@ describe('Decode/Serialize portable with server config', function () {
         await someMap.put(1, student2);
         await someMap.put(2, student3);
 
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE age > ? AND age < ?`,
+        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE age > ? AND age < ? ORDER BY __key ASC `,
             [long.fromNumber(13), long.fromNumber(18)]
         );
 
