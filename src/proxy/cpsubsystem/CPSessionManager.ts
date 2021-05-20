@@ -161,11 +161,7 @@ export class CPSessionManager {
                 this.sessionCreationDeferredMap.set(groupId.getStringId(), sessionCreateDeferred);
                 const session = this.sessions.get(groupId.getStringId());
                 if (session === undefined || !session.isValid()) {
-                    this.createNewSession(groupId).then(state => {
-                        sessionCreateDeferred.resolve(state);
-                    }).catch(err => {
-                        sessionCreateDeferred.reject(err);
-                    });
+                    this.createNewSession(groupId).then(sessionCreateDeferred.resolve).catch(sessionCreateDeferred.reject);
                     return sessionCreateDeferred.promise;
                 } else {
                     return Promise.resolve(session);
