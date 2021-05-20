@@ -98,8 +98,7 @@ export class CPSessionManager {
         private readonly logger: ILogger,
         private readonly clientName: string,
         private readonly invocationService: InvocationService
-    ) {
-    }
+    ) {}
 
     getSessionId(groupId: RaftGroupId): Long {
         const session = this.sessions.get(groupId.getStringId());
@@ -183,15 +182,6 @@ export class CPSessionManager {
             const state = new SessionState(response.sessionId, groupId, response.ttlMillis.toNumber());
             this.sessions.set(groupId.getStringId(), state);
             this.scheduleHeartbeatTask(response.heartbeatMillis.toNumber());
-            /*
-                let sessionCreateDeferred = this.sessionCreationJobs.get(groupId.getStringId());
-                if (!sessionCreateDeferred) {
-                    sessionCreateDeferred = deferredPromise<SessionState>();
-                    this.sessionCreationJobs.set(groupId.getStringId(), sessionCreateDeferred);
-                }
-                sessionCreateDeferred.resolve(state)
-                return sessionCreateDeferred.promise;
-             */
             return state;
         });
     }
@@ -214,8 +204,7 @@ export class CPSessionManager {
     private requestHeartbeat(groupId: RaftGroupId, sessionId: Long): Promise<void> {
         const clientMessage = CPSessionHeartbeatSessionCodec.encodeRequest(groupId, sessionId);
         return this.invocationService.invokeOnRandomTarget(clientMessage)
-            .then(() => {
-            });
+            .then(() => {});
     }
 
     private requestGenerateThreadId(groupId: RaftGroupId): Promise<Long> {
