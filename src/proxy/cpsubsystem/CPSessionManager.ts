@@ -34,8 +34,6 @@ import {
     scheduleWithRepetition,
     cancelRepetitionTask,
     Task,
-    deferredPromise,
-    DeferredPromise
 } from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
 
@@ -89,8 +87,7 @@ export class CPSessionManager {
 
     // <group_id, session_state> map
     private readonly sessions: Map<string, SessionState> = new Map();
-    // Holds ongoing session creation deferred promises. Used to synchronize concurrent session creation.
-    private readonly sessionCreationDeferredMap: Map<string, DeferredPromise<SessionState>> = new Map();
+    private readonly sessionCreationPromiseMap: Map<string, Promise<void>> = new Map();
     private heartbeatTask: Task;
     private isShutdown = false;
 
@@ -98,7 +95,8 @@ export class CPSessionManager {
         private readonly logger: ILogger,
         private readonly clientName: string,
         private readonly invocationService: InvocationService
-    ) {}
+    ) {
+    }
 
     getSessionId(groupId: RaftGroupId): Long {
         const session = this.sessions.get(groupId.getStringId());
@@ -153,21 +151,35 @@ export class CPSessionManager {
         if (this.isShutdown) {
             return Promise.reject(new IllegalStateError('Session manager is already shut down'));
         }
-        const session = this.sessions.get(groupId.getStringId());
+        let session = this.sessions.get(groupId.getStringId());
         if (session === undefined || !session.isValid()) {
-            const existingCreateSessionDeferred = this.sessionCreationDeferredMap.get(groupId.getStringId());
-            if (!existingCreateSessionDeferred) {
-                const newCreateSessionDeferred = deferredPromise<SessionState>();
-                this.sessionCreationDeferredMap.set(groupId.getStringId(), newCreateSessionDeferred);
-                const session = this.sessions.get(groupId.getStringId());
+            const getSession = (groupId: RaftGroupId) => {
+                session = this.sessions.get(groupId.getStringId());
                 if (session === undefined || !session.isValid()) {
-                    this.createNewSession(groupId).then(newCreateSessionDeferred.resolve).catch(newCreateSessionDeferred.reject);
-                    return newCreateSessionDeferred.promise;
+                    return this.createNewSession(groupId).then(s => {
+                        session = s;
+                    }).catch(() => {
+                    });
                 } else {
-                    return Promise.resolve(session);
+                    return Promise.resolve();
                 }
+            };
+
+            const createNewSession = () => {
+                const sessionCreatePromise = getSession(groupId);
+                this.sessionCreationPromiseMap.set(groupId.getStringId(), sessionCreatePromise);
+                return sessionCreatePromise.then(() => {
+                    return session;
+                });
+            };
+
+            const existingCreateSessionPromise = this.sessionCreationPromiseMap.get(groupId.getStringId());
+            if (!existingCreateSessionPromise) {
+                return createNewSession();
             } else {
-                return existingCreateSessionDeferred.promise;
+                return existingCreateSessionPromise.then(() => {
+                    return createNewSession();
+                });
             }
         }
         return Promise.resolve(session);
@@ -200,7 +212,8 @@ export class CPSessionManager {
     private requestHeartbeat(groupId: RaftGroupId, sessionId: Long): Promise<void> {
         const clientMessage = CPSessionHeartbeatSessionCodec.encodeRequest(groupId, sessionId);
         return this.invocationService.invokeOnRandomTarget(clientMessage)
-            .then(() => {});
+            .then(() => {
+            });
     }
 
     private requestGenerateThreadId(groupId: RaftGroupId): Promise<Long> {
