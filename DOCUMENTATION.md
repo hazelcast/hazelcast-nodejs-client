@@ -348,7 +348,7 @@ You need to provide the IP address and port of at least one member in your clust
 
 ```javascript
 const cfg = {
-    networkConfig: {
+    network: {
         clusterMembers: [
             'some-ip-address:port'
         ]
@@ -543,7 +543,7 @@ Hazelcast Node.js client supports the following data structures and features:
 
 # 3. Configuration Overview
 
-This chapter describes the options to configure your Node.js client.
+This chapter describes the options to configure your Node.js client. If an invalid value is given to any configuration option, an `InvalidConfigurationError` error will be thrown.
 
 ## 3.1. Configuration Options
 
@@ -551,7 +551,7 @@ For configuration of the Hazelcast Node.js client, just instantiate a config obj
 
 ```javascript
 const cfg = {
-    networkConfig: {
+    network: {
         clusterMembers: [
             '127.0.0.1:5701'
         ]
@@ -581,7 +581,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 
 > **NOTE: The `Long` type means the type provided by [long.js library](https://github.com/dcodeIO/long.js).**
 
-> **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `serialization.defaultNumberType` config option.**
+> **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `defaultNumberType` serialization config option. See [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for more information.**
 
 Arrays of the `boolean`, `number`, `string`, and `Long` types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
 
@@ -1123,7 +1123,7 @@ The following are configuration element descriptions:
 * `clusterConnectTimeoutMillis`: Timeout value in milliseconds for the client to give up to connect to the current cluster. If set to -1, the client tries to connect forever. If set to 0, the client won't try to connect anymore after the first attempt fails. The default value is `-1` (No timeout).
 * `jitter`: Specifies by how much to randomize backoffs. Its default value is `0`. It must be in range `0` to `1`.
 
-A pseudo-code is as follows:
+A pseudo-code for connection retry logic is as follows:
 
 ```text
 begin_time = getCurrentTime()
@@ -1259,7 +1259,7 @@ The client executes each operation through the already established connection to
 
 While sending requests to cluster members, the operations may fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for non-read-only operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
-You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in the `properties` option. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
+You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.millis` in the `properties` option. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
 * Member throws an exception.
 * Connection between the client and member is closed.
@@ -3061,7 +3061,7 @@ One of the key elements in Hazelcast security is the `Credentials` object, which
 With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
 See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based on user groups.
 
-> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section]((#91-tlsssl)).**
+> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section](#91-tlsssl).**
 
 Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#security) of Hazelcast IMDG Reference Manual for more information.
 

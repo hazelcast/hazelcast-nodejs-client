@@ -546,7 +546,7 @@ export class HazelcastClient {
         this.getLoggingService().getLogger()
             .info('HazelcastClient', 'Clearing local state of the client, because of a cluster restart.');
         this.nearCacheManager.clearAllNearCaches();
-        this.clusterService.clearMemberListVersion();
+        this.clusterService.clearMemberList(this.connectionRegistry);
     }
 
     /** @internal */

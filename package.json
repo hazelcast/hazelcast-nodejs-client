@@ -5,33 +5,36 @@
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "files": [
-        "lib/"
+        "lib/**/*.js",
+        "lib/**/*.d.ts"
     ],
     "dependencies": {
         "@types/long": "4.0.1",
         "long": "4.0.0"
     },
     "devDependencies": {
-        "@types/node": "~10.17.59",
-        "@typescript-eslint/eslint-plugin": "~4.22.0",
-        "@typescript-eslint/parser": "~4.22.0",
+        "@types/node": "~10.17.60",
+        "@typescript-eslint/eslint-plugin": "~4.24.0",
+        "@typescript-eslint/parser": "~4.24.0",
         "chai": "~4.3.4",
         "chai-as-promised": "~7.1.1",
-        "eslint": "~7.25.0",
+        "eslint": "~7.26.0",
         "eslint-plugin-mocha": "~8.1.0",
+        "husky": "^6.0.0",
         "jsonschema": "~1.4.0",
-        "mocha": "~8.3.2",
+        "mocha": "~8.4.0",
         "mocha-jenkins-reporter": "^0.4.5",
         "mousse": "~0.3.1",
         "nyc": "~15.1.0",
         "rimraf": "~3.0.2",
         "sinon": "~10.0.1",
         "sinon-chai": "~3.6.0",
+        "source-map-support": "^0.5.19",
         "thrift": "~0.14.1",
         "typedoc": "~0.20.36",
         "typescript": "~4.2.4",
         "winston": "~3.3.3",
-        "yargs": "~17.0.0"
+        "yargs": "~17.0.1"
     },
     "engines": {
         "node": ">=10.4.0"
@@ -47,9 +50,10 @@
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --options typedoc.json",
         "generate-docs:watch": "typedoc --watch --options typedoc.json",
-        "lint": "eslint --ext .ts src && eslint --plugin mocha test && eslint code_samples && eslint scripts",
-        "lint:fix": "eslint --fix --ext .ts src && eslint --fix --plugin mocha test && eslint --fix code_samples && eslint --fix scripts",
-        "startrc": "node scripts/test-runner.js startrc"
+        "lint": "eslint --cache --ext .ts src && eslint --cache --plugin mocha test && eslint --cache  code_samples && eslint --cache scripts",
+        "lint:fix": "eslint --cache --fix --ext .ts src && eslint --cache --fix --plugin mocha test && eslint --cache --fix code_samples && eslint --cache --fix scripts",
+        "startrc": "node scripts/test-runner.js startrc",
+        "prepare": "husky install"
     },
     "repository": {
         "type": "git",
