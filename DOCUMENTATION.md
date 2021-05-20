@@ -356,7 +356,7 @@ You need to provide the IP address and port of at least one member in your clust
 
 ```javascript
 const cfg = {
-    networkConfig: {
+    network: {
         clusterMembers: [
             'some-ip-address:port'
         ]
@@ -559,7 +559,7 @@ For configuration of the Hazelcast Node.js client, just instantiate a config obj
 
 ```javascript
 const cfg = {
-    networkConfig: {
+    network: {
         clusterMembers: [
             '127.0.0.1:5701'
         ]
@@ -589,7 +589,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 
 > **NOTE: The `Long` type means the type provided by [long.js library](https://github.com/dcodeIO/long.js).**
 
-> **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `serialization.defaultNumberType` config option.**
+> **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `defaultNumberType` serialization config option. See [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for more information.**
 
 Arrays of the `boolean`, `number`, `string`, and `Long` types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
 

@@ -150,8 +150,22 @@ export class ClusterService implements Cluster {
 
     clearMemberListVersion(): void {
         this.logger.trace('ClusterService', 'Resetting the member list version.');
+        // This check is necessary so that when handling auth response, it will not
+        // intervene with client failover logic
         if (this.memberListSnapshot !== EMPTY_SNAPSHOT) {
             this.memberListSnapshot.version = 0;
+        }
+    }
+
+    clearMemberList(connectionRegistry: ConnectionRegistry): void {
+        this.logger.trace('ClusterService', 'Resetting the member list.');
+        // This check is necessary so that when handling auth response, it will not
+        // intervene with client failover logic
+        if (this.memberListSnapshot !== EMPTY_SNAPSHOT) {
+            const previousMembers = this.memberListSnapshot.memberList;
+            this.memberListSnapshot = new MemberListSnapshot(0, new Map<string, MemberImpl>(), []);
+            const events = this.detectMembershipEvents(previousMembers, [], connectionRegistry);
+            this.fireEvents(events);
         }
     }
 
