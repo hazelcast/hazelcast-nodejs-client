@@ -80,4 +80,45 @@ describe('ClientHotRestartEventTest', function () {
         expect(client.getCluster().getMembers()).to.have.lengthOf(1);
         expect(client.getCluster().getMembers()[0].uuid.toString()).to.be.equal(member.uuid);
     });
+
+    it('should receive membership events when the member is restarted on same address', async function () {
+        const oldMember = await RC.startMember(cluster.id);
+
+        let memberAdded = false;
+        let memberRemoved = false;
+        let removedMemberUUID;
+        let addedMemberUUID;
+
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id
+        });
+        client.getCluster().addMembershipListener({
+            memberAdded(event) {
+                addedMemberUUID = event.member.uuid.toString();
+                memberAdded = true;
+            },
+            memberRemoved(event) {
+                removedMemberUUID = event.member.uuid.toString();
+                memberRemoved = true;
+            }
+        });
+
+        await RC.shutdownMember(cluster.id, oldMember.uuid);
+        const newMember = await RC.startMember(cluster.id);
+
+        await TestUtil.assertTrueEventually(async () => {
+            expect(memberRemoved).to.be.true;
+        });
+
+        expect(oldMember.uuid).to.be.eq(removedMemberUUID);
+
+        await TestUtil.assertTrueEventually(async () => {
+            expect(memberAdded).to.be.true;
+        });
+
+        expect(newMember.uuid).to.be.eq(addedMemberUUID);
+
+        expect(client.getCluster().getMembers()).to.have.lengthOf(1);
+        expect(client.getCluster().getMembers()[0].uuid.toString()).to.be.equal(newMember.uuid);
+    });
 });

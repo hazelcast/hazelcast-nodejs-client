@@ -29,6 +29,7 @@ export class WaitStrategy {
     private logger: ILogger;
     private attempt: number;
     private currentBackoffMillis: number;
+    private readonly clusterConnectTimeoutText: string; // to pretty print infinite timeout
     private clusterConnectAttemptBegin: number;
 
     constructor(initialBackoffMillis: number,
@@ -42,6 +43,10 @@ export class WaitStrategy {
         this.multiplier = multiplier;
         this.clusterConnectTimeoutMillis = clusterConnectTimeoutMillis === -1 ?
             Number.MAX_SAFE_INTEGER : clusterConnectTimeoutMillis;
+        // For a better logging output for the default value, we will
+        // replace "Number.MAX_SAFE_INTEGER ms" with INFINITE in the output.
+        this.clusterConnectTimeoutText = clusterConnectTimeoutMillis === -1 ?
+            'INFINITE' : `${clusterConnectTimeoutMillis} ms`;
         this.jitter = jitter;
         this.logger = logger;
     }
@@ -58,7 +63,7 @@ export class WaitStrategy {
         const timePassed = currentTimeMillis - this.clusterConnectAttemptBegin;
         if (timePassed > this.clusterConnectTimeoutMillis) {
             this.logger.warn('WaitStrategy', 'Unable to get live cluster connection, cluster connect timeout (' +
-                this.clusterConnectTimeoutMillis + ' millis) is reached. Attempt ' + this.attempt);
+                `${this.clusterConnectTimeoutText}) is reached. Attempt ${this.attempt}`);
             return Promise.resolve(false);
         }
 
@@ -69,8 +74,8 @@ export class WaitStrategy {
 
         actualSleepTime = Math.min(actualSleepTime, this.clusterConnectTimeoutMillis - timePassed);
         this.logger.warn('WaitStrategy', 'Unable to get live cluster connection, retry in ' +
-            actualSleepTime + ' ms, attempt: ' + this.attempt + ', cluster connect timeout: ' +
-            this.clusterConnectTimeoutMillis + ' ms, max backoff millis: ' + this.maxBackoffMillis);
+            `${actualSleepTime} ms, attempt: ${this.attempt}, cluster connect timeout: ` +
+            `${this.clusterConnectTimeoutText}, max backoff millis: ${this.maxBackoffMillis}`);
 
         return delayedPromise(actualSleepTime)
             .then(() => {

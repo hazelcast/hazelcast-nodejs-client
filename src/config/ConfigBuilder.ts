@@ -18,6 +18,7 @@
 import {InvalidConfigurationError} from '../core';
 import {TopicOverloadPolicy} from '../proxy';
 import {
+    assertNonNegativeNumber,
     tryGetArray,
     tryGetBoolean,
     tryGetEnum,
@@ -113,19 +114,23 @@ export class ConfigBuilder {
         for (const key in jsonObject) {
             const value = jsonObject[key];
             if (key === 'initialBackoffMillis') {
-                this.effectiveConfig.connectionStrategy.connectionRetry.initialBackoffMillis = tryGetNumber(value);
+                assertNonNegativeNumber(value, 'Initial backoff must be non-negative!');
+                this.effectiveConfig.connectionStrategy.connectionRetry.initialBackoffMillis = value;
             } else if (key === 'maxBackoffMillis') {
-                this.effectiveConfig.connectionStrategy.connectionRetry.maxBackoffMillis = tryGetNumber(value);
+                assertNonNegativeNumber(value, 'Max backoff must be non-negative!');
+                this.effectiveConfig.connectionStrategy.connectionRetry.maxBackoffMillis = value;
             } else if (key === 'multiplier') {
-                this.effectiveConfig.connectionStrategy.connectionRetry.multiplier = tryGetNumber(value);
+                if(typeof value !== 'number' || value < 1.0)
+                    throw new RangeError('Multiplier must be a number that is greater than or equal to 1.0!');
+                this.effectiveConfig.connectionStrategy.connectionRetry.multiplier = value;
             } else if (key === 'clusterConnectTimeoutMillis') {
-                const clusterConnectTimeoutMillis = tryGetNumber(value);
-                if (clusterConnectTimeoutMillis != -1 && clusterConnectTimeoutMillis < 0) {
-                    throw new RangeError('clusterConnectTimeoutMillis can be only non-negative or -1');
-                }
-                this.effectiveConfig.connectionStrategy.connectionRetry.clusterConnectTimeoutMillis = clusterConnectTimeoutMillis;
+                if(typeof value !== 'number' || (value < 0 && value !== -1))
+                    throw new RangeError('ClusterConnectTimeoutMillis can be only non-negative number or -1!');
+                this.effectiveConfig.connectionStrategy.connectionRetry.clusterConnectTimeoutMillis = value;
             } else if (key === 'jitter') {
-                this.effectiveConfig.connectionStrategy.connectionRetry.jitter = tryGetNumber(value);
+                if(typeof value !== 'number' || (value < 0 || value > 1))
+                    throw new RangeError('Jitter must be a number in range [0.0, 1.0]!');
+                this.effectiveConfig.connectionStrategy.connectionRetry.jitter = value;
             }
         }
     }
@@ -222,7 +227,7 @@ export class ConfigBuilder {
     private handleSerialization(jsonObject: any): void {
         for (const key in jsonObject) {
             if (key === 'defaultNumberType') {
-                this.effectiveConfig.serialization.defaultNumberType = tryGetString(jsonObject[key]);
+                this.effectiveConfig.serialization.defaultNumberType = tryGetString(jsonObject[key]).toLowerCase();
             } else if (key === 'isBigEndian') {
                 this.effectiveConfig.serialization.isBigEndian = tryGetBoolean(jsonObject[key]);
             } else if (key === 'portableVersion') {
