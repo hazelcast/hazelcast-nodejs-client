@@ -155,19 +155,19 @@ export class CPSessionManager {
         }
         const session = this.sessions.get(groupId.getStringId());
         if (session === undefined || !session.isValid()) {
-            const createSessionDeferred = this.sessionCreationDeferredMap.get(groupId.getStringId());
-            if (!createSessionDeferred) {
-                const sessionCreateDeferred = deferredPromise<SessionState>();
-                this.sessionCreationDeferredMap.set(groupId.getStringId(), sessionCreateDeferred);
+            const existingCreateSessionDeferred = this.sessionCreationDeferredMap.get(groupId.getStringId());
+            if (!existingCreateSessionDeferred) {
+                const newCreateSessionDeferred = deferredPromise<SessionState>();
+                this.sessionCreationDeferredMap.set(groupId.getStringId(), newCreateSessionDeferred);
                 const session = this.sessions.get(groupId.getStringId());
                 if (session === undefined || !session.isValid()) {
-                    this.createNewSession(groupId).then(sessionCreateDeferred.resolve).catch(sessionCreateDeferred.reject);
-                    return sessionCreateDeferred.promise;
+                    this.createNewSession(groupId).then(newCreateSessionDeferred.resolve).catch(newCreateSessionDeferred.reject);
+                    return newCreateSessionDeferred.promise;
                 } else {
                     return Promise.resolve(session);
                 }
             } else {
-                return createSessionDeferred.promise;
+                return existingCreateSessionDeferred.promise;
             }
         }
         return Promise.resolve(session);
