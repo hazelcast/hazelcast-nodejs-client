@@ -718,7 +718,6 @@ describe('Decode/Serialize portable with server config', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2];
         const expectedValues = [student2, student3];
