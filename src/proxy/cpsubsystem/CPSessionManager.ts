@@ -34,7 +34,8 @@ import {
     scheduleWithRepetition,
     cancelRepetitionTask,
     Task,
-    delayedPromise
+    delayedPromise,
+    deferredPromise, DeferredPromise
 } from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
 
@@ -88,7 +89,8 @@ export class CPSessionManager {
 
     // <group_id, session_state> map
     private readonly sessions: Map<string, SessionState> = new Map();
-    private readonly sessionsMutexes: Map<string, boolean> = new Map();
+    // Holds ongoing session creation deferred promises. Used to synchronize concurrent session creation.
+    private readonly sessionCreationDeferredMap: Map<string, DeferredPromise<SessionState>> = new Map();
     private heartbeatTask: Task;
     private isShutdown = false;
 
@@ -154,19 +156,24 @@ export class CPSessionManager {
         }
         const session = this.sessions.get(groupId.getStringId());
         if (session === undefined || !session.isValid()) {
-            const tryCreateNewSession = (): Promise<SessionState> => {
-                if (!this.sessionsMutexes.get(groupId.getStringId())) {
-                    console.log('inside first if');
-                    this.sessionsMutexes.set(groupId.getStringId(), true);
-                    return this.createNewSession(groupId);
-                } else {
-                    console.log('inside second if');
-                    return delayedPromise(1000).then(() => {
-                        return tryCreateNewSession();
+            const createSessionDeferred = this.sessionCreationDeferredMap.get(groupId.getStringId());
+            if (!createSessionDeferred) {
+                const sessionCreateDeferred = deferredPromise<SessionState>();
+                this.sessionCreationDeferredMap.set(groupId.getStringId(), sessionCreateDeferred);
+                const session = this.sessions.get(groupId.getStringId());
+                if (session === undefined || !session.isValid()) {
+                    this.createNewSession(groupId).then(state => {
+                        sessionCreateDeferred.resolve(state);
+                    }).catch(err => {
+                        sessionCreateDeferred.reject(err);
                     });
+                    return sessionCreateDeferred.promise;
+                } else {
+                    return Promise.resolve(session);
                 }
-            };
-            return tryCreateNewSession();
+            } else {
+                return createSessionDeferred.promise;
+            }
         }
         return Promise.resolve(session);
     }
@@ -176,7 +183,15 @@ export class CPSessionManager {
             const state = new SessionState(response.sessionId, groupId, response.ttlMillis.toNumber());
             this.sessions.set(groupId.getStringId(), state);
             this.scheduleHeartbeatTask(response.heartbeatMillis.toNumber());
-            this.sessionsMutexes.set(groupId.getStringId(), false);
+            /*
+                let sessionCreateDeferred = this.sessionCreationJobs.get(groupId.getStringId());
+                if (!sessionCreateDeferred) {
+                    sessionCreateDeferred = deferredPromise<SessionState>();
+                    this.sessionCreationJobs.set(groupId.getStringId(), sessionCreateDeferred);
+                }
+                sessionCreateDeferred.resolve(state)
+                return sessionCreateDeferred.promise;
+             */
             return state;
         });
     }
