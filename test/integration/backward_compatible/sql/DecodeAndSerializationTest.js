@@ -30,71 +30,38 @@ const { Client } = require('../../../../');
 
 const chai = require('chai');
 const long = require('long');
-require('sinon');
 
 chai.should();
 
-describe('Decode/Serialize Test', function () {
+class Student {
+    constructor(age, height) {
+        this.age = age;
+        this.height = height;
+        this.factoryId = 666;
+        this.classId = 1;
+    }
+
+    readPortable(reader) {
+        this.age = reader.readLong('age');
+        this.height = reader.readFloat('height');
+    }
+
+    writePortable(writer) {
+        writer.writeLong('age', this.age);
+        writer.writeFloat('height', this.height);
+    }
+}
+
+const portableFactory = (classId) => {
+    if (classId === 1) return new Student();
+    return null;
+};
+
+describe('Decode/Serialize test without server config', function () {
     let client;
     let cluster;
     let someMap;
     let mapName;
-
-    const PORTABLE_SERVER_CONFIG = `
-                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-                    <serialization>
-                    <portable-factories>
-                        <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory
-                        </portable-factory>
-                    </portable-factories>
-                    </serialization>
-                </hazelcast>
-            `;
-
-    class Student {
-        constructor(age, height) {
-            this.age = age;
-            this.height = height;
-            this.factoryId = 666;
-            this.classId = 1;
-        }
-
-        readPortable(reader) {
-            this.age = reader.readLong('age');
-            this.height = reader.readFloat('height');
-        }
-
-        writePortable(writer) {
-            writer.writeLong('age', this.age);
-            writer.writeFloat('height', this.height);
-        }
-    }
-
-    const portableFactory = (classId) => {
-        if (classId === 1) return new Student();
-        return null;
-    };
-
-    const setupBasicConfig = async () => {
-        cluster = await RC.createCluster(null, null);
-        await RC.startMember(cluster.id);
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-    };
-
-    const sortByKey = (array) => {
-        array.sort((a, b) => {
-            if (a['__key'] < b['__key']) return -1;
-            else if (a['__key'] > b['__key']) return 1;
-            else return 0;
-        });
-    };
 
     const validateResults = (rows, expectedKeys, expectedValues) => {
         rows.length.should.be.eq(expectedValues.length);
@@ -107,16 +74,33 @@ describe('Decode/Serialize Test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
+        cluster = await RC.createCluster(null, null);
+        await RC.startMember(cluster.id);
     });
+
+    const basicSetup = async () => {
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id
+        });
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+        await someMap.addIndex({
+            type: 'SORTED',
+            attributes: ['__key']
+        });
+    };
 
     afterEach(async function () {
         await someMap.clear();
         await client.shutdown();
+    });
+
+    after(async function () {
         await RC.terminateCluster(cluster.id);
     });
 
     it('should be able to decode/serialize VARCHAR', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -126,7 +110,9 @@ describe('Decode/Serialize Test', function () {
         `;
 
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this = ? OR this = ?`, ['7', '2']);
+        const result = client.getSqlService().execute(
+            `SELECT * FROM ${mapName} WHERE this = ? OR this = ? ORDER BY __key ASC`, ['7', '2']
+        );
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.VARCHAR);
 
@@ -136,15 +122,13 @@ describe('Decode/Serialize Test', function () {
             rows.push(row);
         }
 
-        sortByKey(rows);
-
         const expectedValues = ['2', '7'];
         const expectedKeys = [2, 7];
 
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BOOLEAN', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -153,7 +137,7 @@ describe('Decode/Serialize Test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this = ?`, [true]);
+        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this = ? ORDER BY __key ASC`, [true]);
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BOOLEAN);
 
@@ -163,14 +147,13 @@ describe('Decode/Serialize Test', function () {
             rows.push(row);
         }
 
-        sortByKey(rows);
         const expectedKeys = [0, 2, 4, 6, 8];
         const expectedValues = [true, true, true, true, true];
 
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize TINYINT', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -180,7 +163,7 @@ describe('Decode/Serialize Test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(10), long.fromNumber(16)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -191,15 +174,28 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedValues = [12, 14];
         const expectedKeys = [6, 7];
 
         validateResults(rows, expectedKeys, expectedValues);
+
+        const expectedRowCount = 2;
+        // LIMIT test
+        const result2 = client.getSqlService().execute(
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC LIMIT ${expectedRowCount}`,
+            [long.fromNumber(10), long.fromNumber(16)]
+        );
+
+        const rows2 = [];
+
+        for await (const row of result2) {
+            rows2.push(row);
+        }
+        rows2.length.should.be.eq(expectedRowCount);
     });
     it('should be able to decode/serialize SMALLINT', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -209,7 +205,7 @@ describe('Decode/Serialize Test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(8), long.fromNumber(16)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -220,7 +216,6 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedValues = [10, 12, 14];
         const expectedKeys = [5, 6, 7];
@@ -228,7 +223,7 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize INTEGER', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -238,7 +233,7 @@ describe('Decode/Serialize Test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(10), long.fromNumber(20)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -249,7 +244,6 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedValues = [12, 14, 16, 18];
         const expectedKeys = [6, 7, 8, 9];
@@ -257,7 +251,7 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BIGINT', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -267,7 +261,7 @@ describe('Decode/Serialize Test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(10), long.fromNumber(18)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -278,7 +272,6 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedValues = [long.fromNumber(12), long.fromNumber(14), long.fromNumber(16)];
         const expectedKeys = [6, 7, 8];
@@ -291,7 +284,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize DECIMAL', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -306,7 +299,7 @@ describe('Decode/Serialize Test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST(? AS DECIMAL) AND this < CAST(? AS DECIMAL)`,
+            `SELECT * FROM ${mapName} WHERE this > CAST(? AS DECIMAL) AND this < CAST(? AS DECIMAL) ORDER BY __key ASC`,
             ['-0.00000000000000000000000000000001', '1.0000000000000231213123123125465462513214653123']
         );
         const rowMetadata = await result.getRowMetadata();
@@ -317,7 +310,6 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedValues = [
             '0.1111112983672389172378619283677891',
@@ -329,7 +321,7 @@ describe('Decode/Serialize Test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize REAL', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -339,7 +331,7 @@ describe('Decode/Serialize Test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST(? AS REAL) AND this < CAST(? AS REAL)`,
+            `SELECT * FROM ${mapName} WHERE this > CAST(? AS REAL) AND this < CAST(? AS REAL) ORDER BY __key ASC`,
             [-0.5, 0.5]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -350,7 +342,6 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3, 4];
         const expectedValues = [0.1, 0.2, 0.3, 0.4];
@@ -363,7 +354,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize DOUBLE', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -373,7 +364,8 @@ describe('Decode/Serialize Test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`, // cast it if default number type is different
+            // cast it if default number type is different
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [-0.7, 0.7]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -384,7 +376,6 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3, 4, 5, 6];
         const expectedValues = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6];
@@ -397,7 +388,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize DATE', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -407,7 +398,7 @@ describe('Decode/Serialize Test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST (? AS DATE)`,
+            `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST (? AS DATE) ORDER BY __key ASC`,
             [new HzLocalDate(1, 1, 1), new HzLocalDate(5, 5, 5)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -418,7 +409,6 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3];
         const expectedBaseValues = {
@@ -440,7 +430,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize TIME', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script = `
                     var map = instance_0.getMap("${mapName}");
                     for (var key = 1; key < 12; key++) {
@@ -449,7 +439,7 @@ describe('Decode/Serialize Test', function () {
                 `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME)`,
+            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME) ORDER BY __key ASC`,
             [new HzLocalTime(1, 0, 0, 0), new HzLocalTime(10, 0, 0, 0)]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -460,7 +450,6 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3, 4, 5, 6];
         const expectedBaseValue = {
@@ -484,7 +473,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script = `
                     var map = instance_0.getMap("${mapName}");
                     for (var key = 1; key < 12; key++) {
@@ -496,7 +485,7 @@ describe('Decode/Serialize Test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP)`,
+            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP) ORDER BY __key ASC`,
             [
                 new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
                 new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1))
@@ -510,7 +499,6 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3];
         const expectedBaseValue = {
@@ -542,7 +530,7 @@ describe('Decode/Serialize Test', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP WITH TIMEZONE', async function () {
-        await setupBasicConfig();
+        await basicSetup();
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -559,7 +547,7 @@ describe('Decode/Serialize Test', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
             `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP_WITH_TIME_ZONE)` +
-            'AND this < CAST (? AS TIMESTAMP_WITH_TIME_ZONE)',
+            'AND this < CAST (? AS TIMESTAMP_WITH_TIME_ZONE) ORDER BY __key ASC',
             [
                 HzOffsetDateTime.fromHzLocalDateTime(
                     new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
@@ -580,7 +568,6 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
         const expectedKeys = [1, 2, 3];
         const expectedBaseValue = {
@@ -613,9 +600,7 @@ describe('Decode/Serialize Test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-    it('should be able to decode/serialize OBJECT(portable)', async function () {
-        cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
-        await RC.startMember(cluster.id);
+    it('should be able to decode/serialize OBJECT(portable) without server config', async function () {
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             serialization: {
@@ -626,6 +611,10 @@ describe('Decode/Serialize Test', function () {
         });
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
+        await someMap.addIndex({
+            type: 'SORTED',
+            attributes: ['age']
+        });
 
         const student1 = new Student(long.fromNumber(12), 123.23);
         const student2 = new Student(long.fromNumber(15), null);
@@ -634,7 +623,8 @@ describe('Decode/Serialize Test', function () {
         await someMap.put(1, student2);
         await someMap.put(2, student3);
 
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE age > ? AND age < ?`,
+        const result = client.getSqlService().execute(
+            `SELECT * FROM ${mapName} WHERE age > ? AND age < ? ORDER BY age DESC`,
             [long.fromNumber(13), long.fromNumber(18)]
         );
 
@@ -647,10 +637,9 @@ describe('Decode/Serialize Test', function () {
         for await (const row of result) {
             rows.push(row);
         }
-        sortByKey(rows);
 
-        const expectedKeys = [1, 2];
-        const expectedValues = [student2, student3];
+        const expectedKeys = [2, 1];
+        const expectedValues = [student3, student2];
 
         rows.length.should.be.eq(expectedValues.length);
 
@@ -660,9 +649,44 @@ describe('Decode/Serialize Test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-    it('should be able to decode/serialize OBJECT(portable) without server config', async function () {
-        cluster = await RC.createCluster(null, null);
+});
+
+describe('Decode/Serialize portable with server config', function () {
+    let client;
+    let cluster;
+    let someMap;
+    let mapName;
+
+    const PORTABLE_SERVER_CONFIG = `
+                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                    <serialization>
+                    <portable-factories>
+                        <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory
+                        </portable-factory>
+                    </portable-factories>
+                    </serialization>
+                </hazelcast>
+            `;
+
+    before(async function () {
+        TestUtil.markClientVersionAtLeast(this, '4.2');
+        cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
         await RC.startMember(cluster.id);
+    });
+
+    afterEach(async function () {
+        await someMap.clear();
+        await client.shutdown();
+    });
+
+    after(async function () {
+        await RC.terminateCluster(cluster.id);
+    });
+
+    it('should be able to decode/serialize OBJECT(portable)', async function () {
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             serialization: {
