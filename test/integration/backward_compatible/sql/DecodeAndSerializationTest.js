@@ -179,6 +179,20 @@ describe('Decode/Serialize test without server config', function () {
         const expectedKeys = [6, 7];
 
         validateResults(rows, expectedKeys, expectedValues);
+
+        const expectedRowCount = 2;
+        // LIMIT test
+        const result2 = client.getSqlService().execute(
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC LIMIT ${expectedRowCount}`,
+            [long.fromNumber(10), long.fromNumber(16)]
+        );
+
+        const rows2 = [];
+
+        for await (const row of result2) {
+            rows2.push(row);
+        }
+        rows2.length.should.be.eq(expectedRowCount);
     });
     it('should be able to decode/serialize SMALLINT', async function () {
         await basicSetup();
@@ -599,7 +613,7 @@ describe('Decode/Serialize test without server config', function () {
         someMap = await client.getMap(mapName);
         await someMap.addIndex({
             type: 'SORTED',
-            attributes: ['__key']
+            attributes: ['age']
         });
 
         const student1 = new Student(long.fromNumber(12), 123.23);
@@ -610,7 +624,7 @@ describe('Decode/Serialize test without server config', function () {
         await someMap.put(2, student3);
 
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE age > ? AND age < ? ORDER BY __key ASC`,
+            `SELECT * FROM ${mapName} WHERE age > ? AND age < ? ORDER BY age DESC`,
             [long.fromNumber(13), long.fromNumber(18)]
         );
 
@@ -624,8 +638,8 @@ describe('Decode/Serialize test without server config', function () {
             rows.push(row);
         }
 
-        const expectedKeys = [1, 2];
-        const expectedValues = [student2, student3];
+        const expectedKeys = [2, 1];
+        const expectedValues = [student3, student2];
 
         rows.length.should.be.eq(expectedValues.length);
 
