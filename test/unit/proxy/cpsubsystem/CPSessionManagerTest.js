@@ -245,7 +245,7 @@ describe('CPSessionManagerTest', function () {
             deferred.resolve(Promise.reject(new Error('expected')));
 
             for (const acquireSessionPromise of acquireSessionPromises) {
-                await expect(acquireSessionPromise).to.be.rejectedWith(Error);
+                await expect(acquireSessionPromise).to.be.rejectedWith(Error, 'expected');
             }
 
             expect(stub.withArgs(groupId).callCount).to.be.equal(acquireSessionPromises.length);
