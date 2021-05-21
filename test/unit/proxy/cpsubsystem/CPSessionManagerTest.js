@@ -32,6 +32,7 @@ const {
 } = require('../../../../lib/proxy/cpsubsystem/CPSessionManager');
 const { DefaultLogger } = require('../../../../lib/logging/DefaultLogger');
 const { RaftGroupId } = require('../../../../lib/proxy/cpsubsystem/RaftGroupId');
+const { deferredPromise } = require('../../../../lib/util/Util');
 
 describe('CPSessionManagerTest', function () {
 
@@ -114,13 +115,17 @@ describe('CPSessionManagerTest', function () {
             return new SessionState(Long.fromNumber(SESSION_ID), groupId, TTL_MILLIS);
         }
 
-        function stubRequestNewSession() {
-            const stub = sandbox.stub(sessionManager, 'requestNewSession');
-            stub.returns(Promise.resolve({
+        function prepareNewSessionResponse() {
+            return {
                 sessionId: Long.fromNumber(SESSION_ID),
                 ttlMillis: Long.fromNumber(TTL_MILLIS),
                 heartbeatMillis: Long.fromNumber(HEARTBEAT_MILLIS)
-            }));
+            };
+        }
+
+        function stubRequestNewSession() {
+            const stub = sandbox.stub(sessionManager, 'requestNewSession');
+            stub.returns(Promise.resolve(prepareNewSessionResponse()));
             return stub;
         }
 
@@ -198,6 +203,53 @@ describe('CPSessionManagerTest', function () {
             expect(id.toNumber()).to.be.equal(SESSION_ID);
             expect(requestNewSessionStub.notCalled).to.be.true;
             expect(sessionManager.sessions.get(GROUP_ID_AS_STRING).acquireCount).to.be.equal(1);
+        });
+
+        it('acquireSession: should not request new session for the same group id for concurrent requests', async function () {
+            const stub = sandbox.stub(sessionManager, 'requestNewSession');
+            const deferred = deferredPromise();
+            stub.returns(deferred.promise);
+
+            const groupId = prepareGroupId();
+
+            const acquireSessionPromises = [
+                sessionManager.acquireSession(groupId),
+                sessionManager.acquireSession(groupId),
+                sessionManager.acquireSession(groupId),
+            ];
+
+            expect(sessionManager.inFlightCreateSessionRequests.size).to.be.equal(1);
+
+            deferred.resolve(prepareNewSessionResponse());
+
+            await Promise.all(acquireSessionPromises);
+            expect(stub.withArgs(groupId).calledOnce).to.be.true;
+            expect(sessionManager.inFlightCreateSessionRequests.size).to.be.equal(0);
+        });
+
+        it('acquireSession: should request new sessions for concurrent requests when requests fail', async function () {
+            const stub = sandbox.stub(sessionManager, 'requestNewSession');
+            const deferred = deferredPromise();
+            stub.returns(deferred.promise);
+
+            const groupId = prepareGroupId();
+
+            const acquireSessionPromises = [
+                sessionManager.acquireSession(groupId),
+                sessionManager.acquireSession(groupId),
+                sessionManager.acquireSession(groupId),
+            ];
+
+            expect(sessionManager.inFlightCreateSessionRequests.size).to.be.equal(1);
+
+            deferred.resolve(Promise.reject(new Error('expected')));
+
+            for (const acquireSessionPromise of acquireSessionPromises) {
+                await expect(acquireSessionPromise).to.be.rejectedWith(Error, 'expected');
+            }
+
+            expect(stub.withArgs(groupId).callCount).to.be.equal(acquireSessionPromises.length);
+            expect(sessionManager.inFlightCreateSessionRequests.size).to.be.equal(0);
         });
 
         it('releaseSession: should decrement acquire counter by 1 for known session', function () {
