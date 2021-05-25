@@ -89,8 +89,17 @@ export class Invocation {
 
     /**
      * Connection on which the request was written. May be different from `connection`.
+     *
+     * We achieve synchronization via this field
+     * sentConnection starts as undefined.
+     * This field is set to a non-undefined when `connection` to be sent is determined.
+     * This field is set to null when a response/exception is going to be notified.
+     * This field is trying to be compared and set to null on connection close case with dead connection,
+     * to prevent invocation to be notified which is already retried on another connection.
+     * {@link getPermissionToNotifyForDeadConnection}
+     * {@link getPermissionToNotify}
      */
-    sendConnection: Connection;
+    sentConnection: Connection;
 
     /**
      * Promise managing object.
@@ -171,16 +180,53 @@ export class Invocation {
         return false;
     }
 
+    getPermissionToNotify(responseCorrelationId: number): boolean {
+        const conn = this.sentConnection;
+        if (conn === undefined) {
+            // invocation is being handled.
+            // we don't need to take action
+            return false;
+        }
+
+        const requestCorrelationId = this.request.getCorrelationId();
+
+        if (responseCorrelationId != requestCorrelationId) {
+            // invocation is retried with new correlation id
+            // we should not notify
+            return false;
+        }
+        // we have the permission to notify if we can compareAndSet
+        // otherwise it is being handled, we don't need to notify anymore
+        if (this.sentConnection === conn) {
+            this.sentConnection = undefined;
+            return true;
+        } else return false;
+    }
+
+    getPermissionToNotifyForDeadConnection(deadConnection: Connection): boolean {
+        if (this.sentConnection === deadConnection) {
+            this.sentConnection = undefined;
+            return true;
+        } else return false;
+    }
+
+
+    /**
+     * Only ones that can set a null on `sentConnection` can notify the invocation
+     * @param clientMessage
+     */
     notify(clientMessage: ClientMessage): void {
         assert(clientMessage != null, 'Response can not be null');
         const expectedBackups = clientMessage.getNumberOfBackupAcks();
-        if (expectedBackups > this.backupsAcksReceived) {
-            this.pendingResponseReceivedMillis = Date.now();
-            this.backupsAcksExpected = expectedBackups;
-            this.pendingResponseMessage = clientMessage;
-            return;
+        if (this.getPermissionToNotify(clientMessage.getCorrelationId())) {
+            if (expectedBackups > this.backupsAcksReceived) {
+                this.pendingResponseReceivedMillis = Date.now();
+                this.backupsAcksExpected = expectedBackups;
+                this.pendingResponseMessage = clientMessage;
+                return;
+            }
+            this.complete(clientMessage);
         }
-        this.complete(clientMessage);
     }
 
     notifyBackupComplete(): void {
@@ -256,7 +302,7 @@ export class InvocationService {
     private readonly cleanResourcesMillis: number;
     private readonly redoOperation: boolean;
     private correlationCounter = 1;
-    private cleanResourcesTask: Task;
+    private backupTimeoutTask: Task;
     private isShutdown: boolean;
 
     constructor(
@@ -288,27 +334,19 @@ export class InvocationService {
     }
 
     start(listenerService: ListenerService): Promise<void> {
-        this.cleanResourcesTask = this.scheduleCleanResourcesTask(this.cleanResourcesMillis);
         if (this.backupAckToClientEnabled) {
+            this.backupTimeoutTask = this.scheduleBackupTimeoutTask(this.cleanResourcesMillis);
             return listenerService.registerListener(
-                    backupListenerCodec,
-                    this.backupEventHandler.bind(this)
-                ).then(() => {});
+                backupListenerCodec,
+                this.backupEventHandler.bind(this)
+            ).then(() => {});
         }
         return Promise.resolve();
     }
 
-    private scheduleCleanResourcesTask(periodMillis: number): Task {
+    private scheduleBackupTimeoutTask(periodMillis: number): Task {
         return scheduleWithRepetition(() => {
             for (const invocation of this.pending.values()) {
-                const connection = invocation.sendConnection;
-                if (connection === undefined) {
-                    continue;
-                }
-                if (!connection.isAlive()) {
-                    this.notifyError(invocation, new TargetDisconnectedError(connection.getClosedReason()));
-                    continue;
-                }
                 if (this.backupAckToClientEnabled) {
                     invocation.detectAndHandleBackupTimeout(this.operationBackupTimeoutMillis);
                 }
@@ -321,8 +359,8 @@ export class InvocationService {
             return;
         }
         this.isShutdown = true;
-        if (this.cleanResourcesTask !== undefined) {
-            cancelRepetitionTask(this.cleanResourcesTask);
+        if (this.backupTimeoutTask !== undefined) {
+            cancelRepetitionTask(this.backupTimeoutTask);
         }
         for (const invocation of this.pending.values()) {
             this.notifyError(invocation, new ClientNotActiveError('Client is shutting down.'));
@@ -441,7 +479,9 @@ export class InvocationService {
         const messageType = clientMessage.getMessageType();
         if (messageType === EXCEPTION_MESSAGE_TYPE) {
             const remoteError = this.errorFactory.createErrorFromClientMessage(clientMessage);
-            this.notifyError(pendingInvocation, remoteError);
+            if (pendingInvocation.getPermissionToNotify(correlationId)) {
+                this.notifyError(pendingInvocation, remoteError);
+            }
         } else {
             pendingInvocation.notify(clientMessage);
         }
@@ -537,10 +577,8 @@ export class InvocationService {
             invocation.request.getStartFrame().addFlag(IS_BACKUP_AWARE_FLAG);
         }
         this.registerInvocation(invocation);
-        return connection.write(invocation.request)
-            .then(() => {
-                invocation.sendConnection = connection;
-            });
+        invocation.sentConnection = connection;
+        return connection.write(invocation.request);
     }
 
     private notifyError(invocation: Invocation, error: Error): void {
@@ -555,6 +593,15 @@ export class InvocationService {
             this.doInvoke(invocation);
         } else {
             setTimeout(this.doInvoke.bind(this, invocation), this.invocationRetryPauseMillis);
+        }
+    }
+
+    onConnectionClose(connection: Connection) {
+        for (const invocation of this.pending.values()) {
+            if (invocation.getPermissionToNotifyForDeadConnection(connection)) {
+                const error = new TargetDisconnectedError(connection.getClosedReason());
+                this.notifyError(invocation, error);
+            }
         }
     }
 

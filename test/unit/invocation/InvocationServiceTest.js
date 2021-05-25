@@ -78,7 +78,7 @@ describe('InvocationServiceTest', function () {
         const invocation = new Invocation(service, messageStub);
         const connStub = sandbox.stub(Connection.prototype);
         connStub.isAlive.returns(false);
-        invocation.sendConnection = connStub;
+        invocation.sentConnection = connStub;
         invocation.deferred = deferredPromise();
         service.pending.set(0, invocation);
 

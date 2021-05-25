@@ -476,6 +476,7 @@ export class ConnectionManager extends EventEmitter {
     }
 
     onConnectionClose(connection: Connection): void {
+        this.invocationService.onConnectionClose(connection);
         const endpoint = connection.getRemoteAddress();
         const memberUuid = connection.getRemoteUuid();
 
