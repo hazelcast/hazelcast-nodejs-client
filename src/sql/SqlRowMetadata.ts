@@ -21,25 +21,25 @@ export interface SqlRowMetadata {
 
     /**
      * Gets the number of columns in the row.
-     * @returns {number} Column count
+     * @returns Column count
      */
     getColumnCount(): number;
 
     /**
      *  Gets column metadata of column with given index.
-     *  @returns {SqlColumnMetadata | null} SqlColumnMetadata of column with this index, null if column is not found.
+     *  @returns SqlColumnMetadata of column with this index, undefined if column is not found.
      */
     getColumnByIndex(index: number): SqlColumnMetadata | undefined;
 
     /**
      *  Gets columns metadata.
-     *  @returns {SqlColumnMetadata[]} This row's columns' metadata.
+     *  @returns This row's columns' metadata.
      */
     getColumns(): SqlColumnMetadata[];
 
     /**
      * Find index of the column with the given name. Returned index can be used to get column value from SqlRow.
-     * @returns {number} Column index. If column is not found, -1 is returned.
+     * @returns Column index. If column is not found, -1 is returned.
      * @throws {@link IllegalArgumentError} is thrown if columnName is not string.
      */
     findColumn(columnName: string): number;
@@ -48,7 +48,7 @@ export interface SqlRowMetadata {
 /** @internal */
 export class SqlRowMetadataImpl implements SqlRowMetadata {
     private readonly columns: SqlColumnMetadata[];
-    private static readonly COLUMN_NOT_FOUND = -1
+    static readonly COLUMN_NOT_FOUND = -1
     private readonly nameToIndex: { [key: string]: number };
 
     constructor(columns: SqlColumnMetadata[]) {

@@ -236,9 +236,10 @@ export class SqlResultImpl implements SqlResult {
             this.fetchDeferred.reject(error);
         // Send the close request.
         this.sqlService.close(this.connection, this.queryId).then(() => {
-            this.closed = true;
             this.closeDeferred.resolve();
         }).catch(this.closeDeferred.reject);
+
+        this.closed = true;
 
         return this.closeDeferred.promise
     }
@@ -266,23 +267,19 @@ export class SqlResultImpl implements SqlResult {
     /** Returns the current row. Used by {@link next}. */
     getCurrentRow(): SqlRowType {
         if (this.returnRawResult) { // Return SqlRow
-            const values = [];
-            for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
-                values.push({
-                    name: this.rowMetadata.getColumns()[i].name,
-                    value: this.serializationService.toObject(this.currentPage.getValue(this.currentPosition, i))
-                });
+            const columnCount = this.currentPage.getColumnCount();
+            const values = new Array(columnCount);
+            for (let i = 0; i < columnCount; i++) {
+                values[i] = this.serializationService.toObject(this.currentPage.getValue(this.currentPosition, i));
             }
             return new SqlRowImpl(values, this.rowMetadata);
         } else { // Return objects
             const result: SqlRowAsObject = {};
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 const columnMetadata = this.rowMetadata.getColumnByIndex(i);
-                if (columnMetadata != null) {
-                    result[columnMetadata.name] = this.serializationService.toObject(
-                        this.currentPage.getValue(this.currentPosition, i)
-                    );
-                }
+                result[columnMetadata.name] = this.serializationService.toObject(
+                    this.currentPage.getValue(this.currentPosition, i)
+                );
             }
             return result;
         }
