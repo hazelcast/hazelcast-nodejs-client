@@ -68,7 +68,7 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  *
  * #### Usage for update count
  * ```js
- * const updated = await result.getUpdateCount();
+ * const updateCount = await result.getUpdateCount();
  * ```
  *
  * You don't need to call {@link close} in this case.

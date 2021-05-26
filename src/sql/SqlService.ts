@@ -74,20 +74,13 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
  *
  * If the member that initiates a query doesn't have local entries for the given IMap, the query fails.
  *
- * Consider the following key/value model:
+ * Consider the following key/value model using Portable classes:
  *
- * ```ts
+ * ```js
  * class PersonKey {
  *     constructor(personId, deptId){
  *         this.personId = personId;
  *         this.deptId = deptId;
- *         this.factoryId = 1;
- *         this.classId = 1;
- *     }
- *
- *     readPortable(reader){
- *         this.personId = reader.readLong('personId');
- *         this.deptId = reader.readLong('deptId');
  *     }
  *
  *     writePortable(writer){
@@ -99,11 +92,6 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
  * class Person {
  *     constructor(name){
  *         this.name = name;
- *         this.factoryId = 1;
- *         this.classId = 2;
- *     }
- *     readPortable(reader){
- *         this.name = reader.readString('name');
  *     }
  *
  *     writePortable(writer){
@@ -177,7 +165,7 @@ export class SqlServiceImpl implements SqlService {
 
     static readonly DEFAULT_EXPECTED_RESULT_TYPE = SqlExpectedResultType.ANY;
 
-    static readonly DEFAULT_SCHEMA: string | null = null;
+    static readonly DEFAULT_SCHEMA: null = null;
 
     constructor(
         private readonly connectionRegistry: ConnectionRegistry,
@@ -328,7 +316,7 @@ export class SqlServiceImpl implements SqlService {
                 serializedParams,
                 timeoutMillis,
                 cursorBufferSize,
-                sqlStatement.options?.schema || sqlStatement.options?.schema === '' || sqlStatement.options?.schema === null ?
+                sqlStatement.options?.schema || sqlStatement.options?.schema === '' ?
                     sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA,
                 expectedResultType,
                 queryId
