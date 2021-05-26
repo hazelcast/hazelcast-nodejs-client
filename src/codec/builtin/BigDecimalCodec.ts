@@ -9,16 +9,14 @@ export class BigDecimalCodec {
     static decode(clientMessage: ClientMessage): string {
         const buffer = clientMessage.nextFrame().content;
         const contentSize = FixSizedTypesCodec.decodeInt(buffer, 0);
-        let body = buffer.slice(BitsUtil.INT_SIZE_IN_BYTES, BitsUtil.INT_SIZE_IN_BYTES + contentSize);
-        const byteArray = new Uint8Array(body);
+        const body = buffer.slice(BitsUtil.INT_SIZE_IN_BYTES, BitsUtil.INT_SIZE_IN_BYTES + contentSize);
+
         const signBit = body.readUInt8(0);
         const isNegative = signBit > 127;
         if (isNegative) { // negative, convert two's complement to positive
-            const newByteArray = new Array(byteArray.length);
-            for (const [i, byte] of byteArray.entries()) {
-                newByteArray[i] = ~byte;
+            for (let i = 0; i < body.length; i++) {
+                body[i] = ~body[i];
             }
-            body = Buffer.from(new Uint8Array(newByteArray));
         }
         const hexString = '0x' + body.toString('hex');
 
