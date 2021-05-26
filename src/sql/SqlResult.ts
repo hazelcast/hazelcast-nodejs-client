@@ -104,7 +104,7 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
     getRowMetadata(): Promise<SqlRowMetadata | null>;
 
     /**
-     * Return whether this result has rows to iterate. False if update count is returned, true is rows are returned.
+     * Return whether this result has rows to iterate. False if update count is returned, true if rows are returned.
      * If SQL execution was not successful, this promise is rejected with an error.
      */
     isRowSet(): Promise<boolean>;
@@ -332,9 +332,9 @@ export class SqlResultImpl implements SqlResult {
     /** Returns if there are rows to be iterated. Used by {@link next}. */
     hasNext(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {
-            return this.isRowSet();
-        }).then(isRowSet => {
-            if (!isRowSet) return Promise.reject(new IllegalStateError('This result contains only update count'));
+            if (this.updateCount !== Long.fromInt(-1)) {
+                return Promise.reject(new IllegalStateError('This result contains only update count'));
+            }
             // While loop similar logic is written via recursion when written in async manner
             const checkHasNext = (): Promise<boolean> => {
                 if (this.currentPosition === this.currentRowCount) {
