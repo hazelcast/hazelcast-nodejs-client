@@ -39,10 +39,11 @@ export interface SqlStatementOptions {
     schema?: string | null;
     /**
      * The execution timeout in milliseconds. If the timeout is reached for a running statement, it will be cancelled forcefully.
-     * Zero value means no timeout. -1 means that the timeout in server config will be used. Other negative values are prohibited.
+     * Zero value means no timeout. `-1` means that the timeout in server config will be used.
+     * Other negative values are prohibited.
      * Defaults to `-1`.
      */
-    timeoutMillis?: Long;
+    timeoutMillis?: Long | number;
     /**
      * The cursor buffer size (measured in the number of rows).
      *

@@ -232,9 +232,15 @@ export class SqlServiceImpl implements SqlService {
             tryGetString(sqlStatementOptions.schema);
 
         if (sqlStatementOptions.hasOwnProperty('timeoutMillis')) {
-            const longValue = tryGetLong(sqlStatementOptions.timeoutMillis);
-            if (longValue.lessThan(Long.ZERO) && longValue.neq(Long.fromInt(-1))) {
-                throw new RangeError('Timeout millis can be non-negative or -1');
+            if(typeof sqlStatementOptions.timeoutMillis === 'number'){
+                if(sqlStatementOptions.timeoutMillis < 0 && sqlStatementOptions.timeoutMillis !== -1){
+                    throw new RangeError('Timeout millis can be non-negative or -1');
+                }
+            }else{
+                const longValue = tryGetLong(sqlStatementOptions.timeoutMillis);
+                if (longValue.lessThan(Long.ZERO) && longValue.neq(Long.fromInt(-1))) {
+                    throw new RangeError('Timeout millis can be non-negative or -1');
+                }
             }
         }
 
@@ -288,6 +294,13 @@ export class SqlServiceImpl implements SqlService {
             sqlStatement.options?.expectedResultType ? SqlExpectedResultType[sqlStatement.options.expectedResultType]
                 : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
+        let timeoutMillis: Long;
+        if(sqlStatement.options?.timeoutMillis){
+            if(typeof sqlStatement.options.timeoutMillis === 'number'){
+                timeoutMillis = Long.fromNumber(sqlStatement.options.timeoutMillis);
+            }else timeoutMillis = sqlStatement.options.timeoutMillis;
+        }else timeoutMillis = SqlServiceImpl.DEFAULT_TIMEOUT;
+
         try {
             const serializedParams = [];
             if (Array.isArray(sqlStatement.params)) { // params can be undefined
@@ -301,7 +314,7 @@ export class SqlServiceImpl implements SqlService {
             const requestMessage = SqlExecuteCodec.encodeRequest(
                 sqlStatement.sql,
                 serializedParams,
-                sqlStatement.options?.timeoutMillis ? sqlStatement.options.timeoutMillis : SqlServiceImpl.DEFAULT_TIMEOUT,
+                timeoutMillis,
                 cursorBufferSize,
                 sqlStatement.options?.schema || sqlStatement.options?.schema === '' || sqlStatement.options?.schema === null ?
                     sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA,
