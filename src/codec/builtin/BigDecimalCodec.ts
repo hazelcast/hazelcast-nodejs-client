@@ -14,9 +14,9 @@ export class BigDecimalCodec {
         const signBit = body.slice(0, 1).readUInt8(0);
         const isNegative = signBit > 127;
         if (isNegative) { // negative, convert two's complement to positive
-            const newByteArray = [];
-            for (const byte of byteArray) {
-                newByteArray.push(~byte);
+            const newByteArray = new Array(byteArray.length);
+            for (const [i, byte] of byteArray.entries()) {
+                newByteArray[i] = ~byte;
             }
             body = Buffer.from(new Uint8Array(newByteArray));
         }
@@ -45,7 +45,7 @@ export class BigDecimalCodec {
                     + bigIntString.substring(bigIntString.length - scale);
             } else {
                 const numberOfZerosAfterDecimal = scale - bigIntString.length;
-                return (isNegative ? '-' : '') + '0.' + '0'.repeat(numberOfZerosAfterDecimal) + bigIntString
+                return (isNegative ? '-0.' : '0.') + '0'.repeat(numberOfZerosAfterDecimal) + bigIntString
             }
         } else {
             return (isNegative ? '-' : '') + bigIntString + '0'.repeat(-1 * scale);
