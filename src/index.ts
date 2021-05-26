@@ -30,4 +30,3 @@ export {HazelcastClient as Client} from './HazelcastClient';
 export * from './LifecycleService';
 export * from './PartitionService';
 export * from './CPSubsystem';
-export * from './sql';
