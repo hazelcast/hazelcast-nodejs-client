@@ -370,7 +370,7 @@ describe('SqlExecuteTest', function () {
                 expectedResultType: 'UPDATE_COUNT'
             });
 
-            const result2 = await client.getSqlService().execute({
+            const result2 = await client.getSqlService().executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     expectedResultType: 'UPDATE_COUNT'
@@ -390,8 +390,11 @@ describe('SqlExecuteTest', function () {
             const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
                 returnRawResult: false
             });
-            const result2 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
-                returnRawResult: false
+            const result2 = await client.getSqlService().executeStatement({
+                sql: `SELECT * FROM ${mapName}`,
+                options: {
+                    returnRawResult: false
+                }
             });
 
             for (const result of [result2, result1]) {
@@ -410,8 +413,11 @@ describe('SqlExecuteTest', function () {
                 returnRawResult: true
             });
 
-            const result2 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
-                returnRawResult: true
+            const result2 = await client.getSqlService().executeStatement({
+                sql: `SELECT * FROM ${mapName}`,
+                options: {
+                    returnRawResult: true
+                }
             });
 
             for (const result of [result2, result1]) {
