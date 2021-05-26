@@ -471,9 +471,16 @@ export class UndefinedErrorCodeError extends HazelcastError {
     }
 }
 
+/**
+ * An exception occurred during SQL query execution.
+ */
 export class HazelcastSqlException extends HazelcastError {
     private readonly code: number;
-    private readonly originatingMemberId: UUID;
+    /**
+     * ID of the member that caused or initiated an error condition.
+     * This can be the client's UUID if error is due to the client.
+     */
+    readonly originatingMemberId: UUID;
 
     constructor(
         originatingMemberId: UUID,

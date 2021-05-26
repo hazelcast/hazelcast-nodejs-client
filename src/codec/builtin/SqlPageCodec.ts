@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BEGIN_FRAME, ClientMessage, END_FRAME, Frame} from '../../protocol/ClientMessage';
+import {ClientMessage} from '../../protocol/ClientMessage';
 import {SqlPage} from '../../sql/SqlPage';
 import {ListIntegerCodec} from './ListIntegerCodec';
 import {SqlColumnType} from '../../sql/SqlColumnMetadata';
@@ -36,8 +36,6 @@ import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 import {DataCodec} from './DataCodec';
 import {IllegalStateError} from '../../core';
 import {CodecUtil} from './CodecUtil';
-import assert = require('assert');
-import {BitsUtil} from '../../util/BitsUtil';
 
 /** @internal */
 export class SqlPageCodec {
@@ -56,7 +54,6 @@ export class SqlPageCodec {
         const columns: any[][] = [];
 
         for (const columnTypeId of columnTypeIds) {
-            assert.notStrictEqual(SqlColumnType[columnTypeId], undefined);
             const columnType: SqlColumnType = columnTypeId;
 
             columnTypes.push(columnType);
@@ -105,9 +102,9 @@ export class SqlPageCodec {
                     const frame = clientMessage.nextFrame();
                     const size = FixSizedTypesCodec.decodeInt(frame.content, 0);
 
-                    const column = [];
+                    const column = new Array(size);
                     for (let i = 0; i < size; i++) {
-                        column.push(null);
+                        column[i] = null;
                     }
                     columns.push(column);
                     break;
