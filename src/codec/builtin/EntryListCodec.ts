@@ -16,7 +16,6 @@
 
 import {BEGIN_FRAME, ClientMessage, END_FRAME, NULL_FRAME} from '../../protocol/ClientMessage';
 import {CodecUtil} from './CodecUtil';
-import {ListMultiFrameCodec} from './ListMultiFrameCodec';
 
 /** @internal */
 export class EntryListCodec {
