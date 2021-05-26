@@ -117,7 +117,8 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
  * #### Usage
  *
  * When a query is executed, an {@link SqlResult} is returned. The returned result is an async iterable. It can also be
- * iterated using {@link SqlResult.next} method. The result must be closed at the end.
+ * iterated using {@link SqlResult.next} method. The result should be closed at the end to release server resources.
+ * Fetching the last page closes the result.
  * The code snippet below demonstrates a typical usage pattern:
  *
  * ```
@@ -126,12 +127,15 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
  * for await (const row of result) {
  *    console.log(`${row['__key']}: ${row['this']}`);
  * }
+ * await result.close();
  * await client.shutdown();
  * ```
  */
 export interface SqlService {
     /**
      * Executes SQL and returns an SqlResult.
+     * Converts passed SQL string and parameter values into an {@link SqlStatement} object and invokes {@link executeStatement}.
+     *
      * @param sql SQL string. SQL string placeholder character is question mark(`?`)
      * @param params Parameter list. The parameter count must be equal to number of placeholders in the SQL string
      * @param options Options that are affecting how SQL is executed
@@ -146,7 +150,7 @@ export interface SqlService {
      * @throws {@link IllegalArgumentError} If arguments are not valid
      * @throws {@link HazelcastSqlException} If there is an error running SQL
      */
-    execute(sql: SqlStatement): SqlResult;
+    executeStatement(sql: SqlStatement): SqlResult;
 }
 
 /** @internal */
@@ -203,13 +207,18 @@ export class SqlServiceImpl implements SqlService {
      */
     static validateSqlStatement(sqlStatement: SqlStatement | null): void {
         if (sqlStatement === null) {
-            throw new RangeError('Sql statement cannot be null');
+            throw new RangeError('SQL statement cannot be null');
         }
         tryGetString(sqlStatement.sql);
-        if (sqlStatement.hasOwnProperty('params')) // if params is provided, validate it
+        if (sqlStatement.sql.length === 0){ // empty sql string is disallowed
+            throw new RangeError('Empty SQL string is disallowed.')
+        }
+        if (sqlStatement.hasOwnProperty('params')){ // if params is provided, validate it
             tryGetArray(sqlStatement.params);
-        if (sqlStatement.hasOwnProperty('options')) // if options is provided, validate it
+        }
+        if (sqlStatement.hasOwnProperty('options')){ // if options is provided, validate it
             SqlServiceImpl.validateSqlStatementOptions(sqlStatement.options);
+        }
     }
 
     /**
@@ -219,15 +228,14 @@ export class SqlServiceImpl implements SqlService {
      * @throws RangeError if validation is not successful
      * @internal
      */
-
     static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
-        if (sqlStatementOptions.hasOwnProperty('schema'))
+        if (sqlStatementOptions.hasOwnProperty('schema') && sqlStatementOptions.schema !== null)
             tryGetString(sqlStatementOptions.schema);
 
         if (sqlStatementOptions.hasOwnProperty('timeoutMillis')) {
             const longValue = tryGetLong(sqlStatementOptions.timeoutMillis);
-            if (longValue.lessThanOrEqual(Long.fromInt(-2))) {
-                throw new RangeError('Timeout millis cannot be less than -1');
+            if (longValue.lessThan(Long.ZERO) && longValue.neq(Long.fromInt(-1))) {
+                throw new RangeError('Timeout millis can be non-negative or -1');
             }
         }
 
@@ -235,11 +243,13 @@ export class SqlServiceImpl implements SqlService {
             throw new RangeError('Cursor buffer size cannot be negative');
         }
 
-        if (sqlStatementOptions.hasOwnProperty('expectedResultType'))
+        if (sqlStatementOptions.hasOwnProperty('expectedResultType')){
             tryGetEnum(SqlExpectedResultType, sqlStatementOptions.expectedResultType);
+        }
 
-        if (sqlStatementOptions.hasOwnProperty('returnRawResult'))
+        if (sqlStatementOptions.hasOwnProperty('returnRawResult')){
             tryGetBoolean(sqlStatementOptions.returnRawResult);
+        }
     }
 
     /**
@@ -257,27 +267,7 @@ export class SqlServiceImpl implements SqlService {
         }
     }
 
-    execute(sql: SqlStatement): SqlResult;
-    execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
-    execute(sql: string | SqlStatement, params?: any[], options?: SqlStatementOptions): SqlResult {
-        let sqlStatement: SqlStatement;
-
-        if (typeof sql === 'string') {
-            sqlStatement = {
-                sql: sql
-            };
-            if (params !== undefined) { // todo: document this
-                sqlStatement.params = params;
-            }
-            if (options !== undefined) {
-                sqlStatement.options = options;
-            }
-        } else if (typeof sql === 'object') { // assume SqlStatement is passed
-            sqlStatement = sql;
-        } else {
-            throw new IllegalArgumentError('Sql can be an object or string');
-        }
-
+    executeStatement(sqlStatement: SqlStatement): SqlResult {
         try {
             SqlServiceImpl.validateSqlStatement(sqlStatement);
         } catch (error) {
@@ -314,7 +304,8 @@ export class SqlServiceImpl implements SqlService {
                 serializedParams,
                 sqlStatement.options?.timeoutMillis ? sqlStatement.options.timeoutMillis : SqlServiceImpl.DEFAULT_TIMEOUT,
                 cursorBufferSize,
-                sqlStatement.options?.schema ? sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA,
+                sqlStatement.options?.schema || sqlStatement.options?.schema === '' || sqlStatement.options?.schema === null ?
+                    sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA,
                 expectedResultType,
                 queryId
             );
@@ -333,12 +324,20 @@ export class SqlServiceImpl implements SqlService {
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
                 this.handleExecuteResponse(clientMessage, res);
             }).catch(err => {
-                console.log(err);
-                res.onExecuteError(
-                    new HazelcastSqlException(
-                        connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM, err.message, err
-                    )
-                );
+                if(!connection.isAlive()){
+                    res.onExecuteError(new HazelcastSqlException(
+                        connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM,
+                        'Cluster topology changed while a query was executed:' +
+                        `Member cannot be reached: ${connection.getRemoteAddress()}`,
+                        err
+                    ))
+                } else {
+                    res.onExecuteError(
+                        new HazelcastSqlException(
+                            connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM, err.message, err
+                        )
+                    );
+                }
             });
 
             return res;
@@ -352,10 +351,32 @@ export class SqlServiceImpl implements SqlService {
         }
     }
 
-    close(connection: Connection, queryId: SqlQueryId): Promise<void> {
+    execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult {
+        let sqlStatement: SqlStatement;
+
+        if (typeof sql === 'string') {
+            sqlStatement = {
+                sql: sql
+            };
+            // If params is not provided it won't be validated. Default value for optional parameters is undefined.
+            // So, if they are undefined we don't set it, and in validator method we check for property existence.
+            if (params !== undefined) {
+                sqlStatement.params = params;
+            }
+            if (options !== undefined) {
+                sqlStatement.options = options;
+            }
+        } else if (typeof sql === 'object') {
+            sqlStatement = sql;
+        } else {
+            throw new IllegalArgumentError('Sql can be an object or string');
+        }
+        return this.executeStatement(sqlStatement);
+    }
+
+    close(connection: Connection, queryId: SqlQueryId): Promise<ClientMessage> {
         const requestMessage = SqlCloseCodec.encodeRequest(queryId);
-        return this.invocationService.invokeOnConnection(connection, requestMessage).then(() => {
-        });
+        return this.invocationService.invokeOnConnection(connection, requestMessage);
     }
 
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
@@ -369,7 +390,6 @@ export class SqlServiceImpl implements SqlService {
                     response.error.message
                 );
             }
-            assertNotNull(response.rowPage);
             return response.rowPage;
         });
     }
