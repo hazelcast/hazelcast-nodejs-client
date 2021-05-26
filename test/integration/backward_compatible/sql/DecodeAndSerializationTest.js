@@ -296,11 +296,15 @@ describe('Decode/Serialize test without server config', function () {
             map.set(new java.lang.Integer(2), new java.math.BigDecimal('132165413213543156412374800000000'));
             // scale is zero
             map.set(new java.lang.Integer(3), new java.math.BigDecimal('1234'));
+            // negative value
+            map.set(new java.lang.Integer(4), new java.math.BigDecimal('-0.00000000000000000000000000000000000000001'));
+            // negative value 2
+            map.set(new java.lang.Integer(5), new java.math.BigDecimal('-11.000000000000000000000000000000000000023121'));
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS DECIMAL) AND this < CAST(? AS DECIMAL) ORDER BY __key ASC`,
-            ['-0.00000000000000000000000000000001', '1.0000000000000231213123123125465462513214653123']
+            ['-22.00000000000000000000000000000001', '1.0000000000000231213123123125465462513214653123']
         );
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DECIMAL);
@@ -314,9 +318,11 @@ describe('Decode/Serialize test without server config', function () {
         const expectedValues = [
             '0.1111112983672389172378619283677891',
             '0.00000000000000000000000000000001',
+            '-0.00000000000000000000000000000000000000001',
+            '-11.000000000000000000000000000000000000023121'
         ];
 
-        const expectedKeys = [0, 1];
+        const expectedKeys = [0, 1, 4, 5];
 
         validateResults(rows, expectedKeys, expectedValues);
     });

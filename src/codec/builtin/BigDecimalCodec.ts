@@ -3,44 +3,52 @@ import {CodecUtil} from './CodecUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 import {BitsUtil} from '../../util/BitsUtil';
 
-function bytes2hexString(uint8array: Uint8Array): string { // buffer is an ArrayBuffer
-    return '0x' + [...uint8array].map(x => x.toString(16).padStart(2, '0')).join('');
-}
-
 /** @internal */
 export class BigDecimalCodec {
 
     static decode(clientMessage: ClientMessage): string {
         const buffer = clientMessage.nextFrame().content;
         const contentSize = FixSizedTypesCodec.decodeInt(buffer, 0);
-        const body = new Uint8Array(buffer.slice(BitsUtil.INT_SIZE_IN_BYTES, BitsUtil.INT_SIZE_IN_BYTES + contentSize));
-        const scale = FixSizedTypesCodec.decodeInt(buffer, BitsUtil.INT_SIZE_IN_BYTES + contentSize);
+        let body = buffer.slice(BitsUtil.INT_SIZE_IN_BYTES, BitsUtil.INT_SIZE_IN_BYTES + contentSize);
+        const byteArray = new Uint8Array(body);
+        const signBit = body.slice(0, 1).readUInt8(0);
+        const isNegative = signBit > 127;
+        if (isNegative) { // negative, convert two's complement to positive
+            const newByteArray = [];
+            for (const byte of byteArray) {
+                newByteArray.push(~byte);
+            }
+            body = Buffer.from(new Uint8Array(newByteArray));
+        }
+        const hexString = '0x' + body.toString('hex');
 
-        const hexString = bytes2hexString(body);
-        const bigint = BigInt(hexString);
+        const scale = FixSizedTypesCodec.decodeInt(buffer, BitsUtil.INT_SIZE_IN_BYTES + contentSize);
+        let bigint = BigInt(hexString);
+        if (isNegative) {
+            bigint += BigInt(1);
+        }
 
         const bigIntString = bigint.toString();
-        return BigDecimalCodec.toScale(bigIntString, scale);
+        return BigDecimalCodec.toScale(bigIntString, scale, isNegative);
     }
 
     static decodeNullable(clientMessage: ClientMessage): string {
         return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : BigDecimalCodec.decode(clientMessage);
     }
 
-    static toScale(bigIntString: string, scale: number): string {
+    static toScale(bigIntString: string, scale: number, isNegative: boolean): string {
         if (scale === 0) {
-            return bigIntString;
+            return (isNegative ? '-' : '') + bigIntString;
         } else if (scale > 0) {
-            // '1111'
             if (scale < bigIntString.length) {
-                return bigIntString.substring(0, bigIntString.length - scale) + '.'
+                return (isNegative ? '-' : '') + bigIntString.substring(0, bigIntString.length - scale) + '.'
                     + bigIntString.substring(bigIntString.length - scale);
             } else {
                 const numberOfZerosAfterDecimal = scale - bigIntString.length;
-                return '0.' + '0'.repeat(numberOfZerosAfterDecimal) + bigIntString
+                return (isNegative ? '-' : '') + '0.' + '0'.repeat(numberOfZerosAfterDecimal) + bigIntString
             }
         } else {
-            return bigIntString + '0'.repeat(-1 * scale);
+            return (isNegative ? '-' : '') + bigIntString + '0'.repeat(-1 * scale);
         }
     }
 }
