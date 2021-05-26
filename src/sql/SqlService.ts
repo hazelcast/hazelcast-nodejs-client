@@ -42,6 +42,92 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
 
 /**
  * SQL Service of the client. You can use this service to execute SQL queries.
+ *
+ * The service is in beta state. Behavior and API might change in future releases. Binary compatibility is not
+ * guaranteed between minor or patch releases.
+ *
+ * If this cluster is a Hazelcast Jet cluster, a statement can be executed by either the default SQL backend or by Hazelcast
+ * Jet backend, as a Jet job. If some of the features used in a statement isn't supported by the default backend, the engine will
+ * attempt to execute it using Jet. This class is the API to both backends.
+ *
+ * The text below summarizes features supported by the default SQL engine. For a summary of Hazelcast Jet SQL features
+ * see `com.hazelcast.jet.sql` package javadoc in Hazelcast Jet (once released).
+ *
+ *
+ * ### Overview
+ * Hazelcast is able to execute distributed SQL queries over the following entities:
+ * * IMap
+ *
+ * When an SQL statement is submitted to a member, it is parsed and optimized by the `hazelcast-sql` module, that is based
+ * on <a href="https://calcite.apache.org">Apache Calcite</a>. The `hazelcast-sql` must be in the classpath, otherwise
+ * an exception will be thrown.
+ *
+ * During optimization, a statement is converted into a directed acyclic graph (DAG) that is sent to cluster members
+ * for execution. Results are sent back to the originating member asynchronously and returned to the user via {@link SqlResult}.
+ *
+ * ##### Querying an IMap
+ *
+ * Every IMap instance is exposed as a table with the same name in the `partitioned` schema. The `partitioned`
+ * schema is included into a default search path, therefore an IMap could be referenced in an SQL statement with or without the
+ * schema name.
+ *
+ * ###### Column Resolution
+ * Every table backed by an IMap has a set of columns that are resolved automatically. Column resolution uses IMap entries
+ * located on the member that initiates the query. The engine extracts columns from a key and a value and then merges them
+ * into a single column set. In case the key and the value have columns with the same name, the key takes precedence.
+ *
+ * Columns are extracted from objects as follows:
+ * * For non-Portable objects, public getters and fields are used to populate the column list. For getters, the first
+ *   letter is converted to lower case. A getter takes precedence over a field in case of naming conflict.
+ * * For Portable objects, field names used in the {@link PortableWriter.writePortable} method are used to populate the column
+ * list
+ *
+ * The whole key and value objects could be accessed through a special fields `__key` and `this`, respectively. If
+ * key (value) object has fields, then the whole key (value) field is exposed as a normal field. Otherwise the field is hidden.
+ * Hidden fields can be accessed directly, but are not returned by `SELECT * FROM ...` queries.
+ *
+ * If the member that initiates a query doesn't have local entries for the given IMap, the query fails.
+ *
+ * Consider the following key/value model:
+ *
+ * ```ts
+ * class PersonKey {
+ *         personId: number;
+ *         deptId: number;
+ * }
+ *
+ * class Person {
+ *     name: string;
+ * }
+ * ```
+ * This model will be resolved to the following table columns:
+ * * personId DOUBLE (since default number type is double)
+ * * departmentId DOUBLE
+ * * name VARCHAR
+ * * __key OBJECT (hidden)
+ * * this OBJECT (hidden)
+ *
+ * ##### Consistency
+ *
+ * Results returned from IMap query are weakly consistent:
+ * * If an entry was not updated during iteration, it is guaranteed to be returned exactly once.
+ * * If an entry was modified during iteration, it might be returned zero, one or several times.
+ *
+ *
+ * #### Usage
+ *
+ * When a query is executed, an {@link SqlResult} is returned. The returned result is an async iterable. It can also be
+ * iterated using {@link SqlResult.next} method. The result must be closed at the end.
+ * The code snippet below demonstrates a typical usage pattern:
+ *
+ * ```
+ * const client = await Client.newHazelcastClient();
+ * let result = client.getSqlService().execute('SELECT __key, this FROM myMap WHERE this > ?', [1]);
+ * for await (const row of result) {
+ *    console.log(`${row['__key']}: ${row['this']}`);
+ * }
+ * await client.shutdown();
+ * ```
  */
 export interface SqlService {
     /**
