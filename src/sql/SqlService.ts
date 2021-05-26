@@ -42,24 +42,11 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
 /**
  * SQL Service of the client. You can use this service to execute SQL queries.
  *
- * The service is in beta state. Behavior and API might change in future releases. Binary compatibility is not
- * guaranteed between minor or patch releases.
- *
- * If this cluster is a Hazelcast Jet cluster, a statement can be executed by either the default SQL backend or by Hazelcast
- * Jet backend, as a Jet job. If some of the features used in a statement isn't supported by the default backend, the engine will
- * attempt to execute it using Jet. This class is the API to both backends.
- *
- * The text below summarizes features supported by the default SQL engine. For a summary of Hazelcast Jet SQL features
- * see `com.hazelcast.jet.sql` package javadoc in Hazelcast Jet (once released).
- *
+ * The service is in beta state. Behavior and API might change in future releases.
  *
  * ### Overview
  * Hazelcast is able to execute distributed SQL queries over the following entities:
  * * IMap
- *
- * When an SQL statement is submitted to a member, it is parsed and optimized by the `hazelcast-sql` module, that is based
- * on <a href="https://calcite.apache.org">Apache Calcite</a>. The `hazelcast-sql` must be in the classpath, otherwise
- * an exception will be thrown.
  *
  * During optimization, a statement is converted into a directed acyclic graph (DAG) that is sent to cluster members
  * for execution. Results are sent back to the originating member asynchronously and returned to the user via {@link SqlResult}.
@@ -75,7 +62,7 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
  * located on the member that initiates the query. The engine extracts columns from a key and a value and then merges them
  * into a single column set. In case the key and the value have columns with the same name, the key takes precedence.
  *
- * Columns are extracted from objects as follows:
+ * Columns are extracted from objects as follows(which happens on the server-side):
  * * For non-Portable objects, public getters and fields are used to populate the column list. For getters, the first
  *   letter is converted to lower case. A getter takes precedence over a field in case of naming conflict.
  * * For Portable objects, field names used in the {@link PortableWriter.writePortable} method are used to populate the column
@@ -91,17 +78,42 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
  *
  * ```ts
  * class PersonKey {
- *         personId: number;
- *         deptId: number;
+ *     constructor(personId, deptId){
+ *         this.personId = personId;
+ *         this.deptId = deptId;
+ *         this.factoryId = 1;
+ *         this.classId = 1;
+ *     }
+ *
+ *     readPortable(reader){
+ *         this.personId = reader.readLong('personId');
+ *         this.deptId = reader.readLong('deptId');
+ *     }
+ *
+ *     writePortable(writer){
+ *         writer.writeLong('personId', this.personId);
+ *         writer.writeLong('deptId', this.deptId);
+ *     }
  * }
  *
  * class Person {
- *     name: string;
+ *     constructor(name){
+ *         this.name = name;
+ *         this.factoryId = 1;
+ *         this.classId = 2;
+ *     }
+ *     readPortable(reader){
+ *         this.name = reader.readString('name');
+ *     }
+ *
+ *     writePortable(writer){
+ *         writer.writeString('name', this.name);
+ *     }
  * }
  * ```
  * This model will be resolved to the following table columns:
- * * personId DOUBLE (since default number type is double)
- * * departmentId DOUBLE
+ * * personId BIGINT
+ * * deptId BIGINT
  * * name VARCHAR
  * * __key OBJECT (hidden)
  * * this OBJECT (hidden)
@@ -112,7 +124,6 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
  * * If an entry was not updated during iteration, it is guaranteed to be returned exactly once.
  * * If an entry was modified during iteration, it might be returned zero, one or several times.
  *
- *
  * #### Usage
  *
  * When a query is executed, an {@link SqlResult} is returned. The returned result is an async iterable. It can also be
@@ -122,9 +133,10 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
  *
  * ```
  * const client = await Client.newHazelcastClient();
- * let result = client.getSqlService().execute('SELECT __key, this FROM myMap WHERE this > ?', [1]);
+ * let result = client.getSqlService().execute('SELECT * FROM person');
  * for await (const row of result) {
- *    console.log(`${row['__key']}: ${row['this']}`);
+ *    console.log(row.personId);
+ *    console.log(row.name);
  * }
  * await result.close();
  * await client.shutdown();
