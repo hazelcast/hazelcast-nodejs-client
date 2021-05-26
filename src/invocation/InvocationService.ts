@@ -334,8 +334,8 @@ export class InvocationService {
     }
 
     start(listenerService: ListenerService): Promise<void> {
+        this.backupTimeoutTask = this.scheduleBackupTimeoutTask(this.cleanResourcesMillis);
         if (this.backupAckToClientEnabled) {
-            this.backupTimeoutTask = this.scheduleBackupTimeoutTask(this.cleanResourcesMillis);
             return listenerService.registerListener(
                 backupListenerCodec,
                 this.backupEventHandler.bind(this)

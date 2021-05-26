@@ -42,10 +42,14 @@ describe('InvocationTest', function () {
 
     it('notify: should complete when no expected backups', function () {
         const invocation = new Invocation(clientStub);
+        invocation.sentConnection = {};
+        invocation.request = { getCorrelationId: sandbox.fake.returns(1) };
         const messageStub = sandbox.stub(ClientMessage.prototype);
         messageStub.getNumberOfBackupAcks.returns(0);
+        messageStub.getCorrelationId = sandbox.fake.returns(1);
 
         const completeStub = sandbox.stub(invocation, 'complete');
+
         invocation.notify(messageStub);
 
         expect(completeStub.withArgs(messageStub).calledOnce).to.be.true;
@@ -53,8 +57,11 @@ describe('InvocationTest', function () {
 
     it('notify: should not complete when expected and no received backups', function () {
         const invocation = new Invocation(clientStub);
+        invocation.sentConnection = {};
+        invocation.request = { getCorrelationId: sandbox.fake.returns(1) };
         const messageStub = sandbox.stub(ClientMessage.prototype);
         messageStub.getNumberOfBackupAcks.returns(1);
+        messageStub.getCorrelationId = sandbox.fake.returns(1);
 
         const completeStub = sandbox.stub(invocation, 'complete');
         invocation.notify(messageStub);
@@ -68,8 +75,11 @@ describe('InvocationTest', function () {
     it('notify: should complete when expected and received backups are equal', function () {
         const invocation = new Invocation(clientStub);
         invocation.backupsAcksReceived = 1;
+        invocation.sentConnection = {};
+        invocation.request = { getCorrelationId: sandbox.fake.returns(1) };
         const messageStub = sandbox.stub(ClientMessage.prototype);
         messageStub.getNumberOfBackupAcks.returns(1);
+        messageStub.getCorrelationId = sandbox.fake.returns(1);
 
         const completeStub = sandbox.stub(invocation, 'complete');
         invocation.notify(messageStub);

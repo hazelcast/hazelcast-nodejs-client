@@ -105,7 +105,7 @@ describe('InvocationServiceTest', function () {
         );
         await service.start(client.getListenerService(), client.getConnectionManager());
 
-        expect(service.cleanResourcesTask).to.be.not.undefined;
+        expect(service.backupTimeoutTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.calledOnce).to.be.true;
     });
 
@@ -123,7 +123,7 @@ describe('InvocationServiceTest', function () {
         );
         await service.start(client.getListenerService(), client.getConnectionManager());
 
-        expect(service.cleanResourcesTask).to.be.not.undefined;
+        expect(service.backupTimeoutTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
     });
 
@@ -141,7 +141,7 @@ describe('InvocationServiceTest', function () {
         );
         await service.start(client.getListenerService(), client.getConnectionManager());
 
-        expect(service.cleanResourcesTask).to.be.not.undefined;
+        expect(service.backupTimeoutTask).to.be.not.undefined;
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
     });
 
