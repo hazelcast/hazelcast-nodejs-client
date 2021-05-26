@@ -18,7 +18,6 @@
 const chai = require('chai');
 chai.should();
 const { HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime } = require('../../../lib/core/DatetimeClasses');
-const { IllegalArgumentError } = require('../../../lib/core/HazelcastError.js');
 
 describe('DatetimeClassesTest', function () {
     describe('HzLocalTimeTest', function () {
@@ -30,44 +29,44 @@ describe('DatetimeClassesTest', function () {
             newHzTime.nano.should.be.equal(60000);
         });
 
-        it('should throw IllegalArgumentError if hour is not an integer between 0-23(inclusive)', function () {
-            (() => new HzLocalTime(-1, 1, 1, 1)).should.throw(IllegalArgumentError, 'Hour');
-            (() => new HzLocalTime(1.1, 1, 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(25, 1, 1, 1)).should.throw(IllegalArgumentError, 'Hour');
-            (() => new HzLocalTime('500', 1, 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime({}, 1, 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime([], 1, 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(24, 1, 1, 1)).should.throw(IllegalArgumentError, 'Hour');
+        it('should throw RangeError if hour is not an integer between 0-23(inclusive)', function () {
+            (() => new HzLocalTime(-1, 1, 1, 1)).should.throw(RangeError, 'Hour');
+            (() => new HzLocalTime(1.1, 1, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(25, 1, 1, 1)).should.throw(RangeError, 'Hour');
+            (() => new HzLocalTime('500', 1, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime({}, 1, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime([], 1, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(24, 1, 1, 1)).should.throw(RangeError, 'Hour');
         });
 
-        it('should throw IllegalArgumentError if minute is not an integer between 0-59(inclusive)', function () {
-            (() => new HzLocalTime(1, -1, 1, 1)).should.throw(IllegalArgumentError, 'Minute');
-            (() => new HzLocalTime(1, 1.1, 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, 233, 1, 1)).should.throw(IllegalArgumentError, 'Minute');
-            (() => new HzLocalTime(1, '1', 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, {1: 1}, 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, [], 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, 60, 1, 1)).should.throw(IllegalArgumentError, 'Minute');
+        it('should throw RangeError if minute is not an integer between 0-59(inclusive)', function () {
+            (() => new HzLocalTime(1, -1, 1, 1)).should.throw(RangeError, 'Minute');
+            (() => new HzLocalTime(1, 1.1, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, 233, 1, 1)).should.throw(RangeError, 'Minute');
+            (() => new HzLocalTime(1, '1', 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, {1: 1}, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, [], 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, 60, 1, 1)).should.throw(RangeError, 'Minute');
         });
 
-        it('should throw IllegalArgumentError if seconds is not an integer between 0-59(inclusive)', function () {
-            (() => new HzLocalTime(1, 1, -1, 1)).should.throw(IllegalArgumentError, 'Second');
-            (() => new HzLocalTime(1, 1, 1.1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, 1, 233, 1)).should.throw(IllegalArgumentError, 'Second');
-            (() => new HzLocalTime(1, 1, '1', 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, 1, {1: 1}, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, 1, [], 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, 1, 60, 1)).should.throw(IllegalArgumentError, 'Second');
+        it('should throw RangeError if seconds is not an integer between 0-59(inclusive)', function () {
+            (() => new HzLocalTime(1, 1, -1, 1)).should.throw(RangeError, 'Second');
+            (() => new HzLocalTime(1, 1, 1.1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, 1, 233, 1)).should.throw(RangeError, 'Second');
+            (() => new HzLocalTime(1, 1, '1', 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, 1, {1: 1}, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, 1, [], 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, 1, 60, 1)).should.throw(RangeError, 'Second');
         });
 
-        it('should throw IllegalArgumentError if nano is not an integer between 0-999_999_999(inclusive)', function () {
-            (() => new HzLocalTime(1, 1, 1, -1)).should.throw(IllegalArgumentError, 'Nano');
-            (() => new HzLocalTime(1, 1, 1, 1.1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, 1, 1, 1e23)).should.throw(IllegalArgumentError, 'Nano');
-            (() => new HzLocalTime(1, 1, 1, '1')).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, 1, 1, {1: 1})).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, 1, 1, [])).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalTime(1, 1, 1, 1e9)).should.throw(IllegalArgumentError, 'Nano');
+        it('should throw RangeError if nano is not an integer between 0-999_999_999(inclusive)', function () {
+            (() => new HzLocalTime(1, 1, 1, -1)).should.throw(RangeError, 'Nano');
+            (() => new HzLocalTime(1, 1, 1, 1.1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, 1, 1, 1e23)).should.throw(RangeError, 'Nano');
+            (() => new HzLocalTime(1, 1, 1, '1')).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, 1, 1, {1: 1})).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, 1, 1, [])).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalTime(1, 1, 1, 1e9)).should.throw(RangeError, 'Nano');
         });
 
         it('should convert to string correctly', function () {
@@ -95,20 +94,20 @@ describe('DatetimeClassesTest', function () {
             HzLocalTime.fromString('23:01:01.0000000001').nano.should.be.eq(0);
 
             // invalid hour
-            (() => HzLocalTime.fromString('24:01:01.000000001')).should.throw(IllegalArgumentError);
+            (() => HzLocalTime.fromString('24:01:01.000000001')).should.throw(RangeError);
             // invalid minute
-            (() => HzLocalTime.fromString('23:71:01.000000001')).should.throw(IllegalArgumentError);
+            (() => HzLocalTime.fromString('23:71:01.000000001')).should.throw(RangeError);
             // invalid second
-            (() => HzLocalTime.fromString('23:01:71.000000001')).should.throw(IllegalArgumentError);
+            (() => HzLocalTime.fromString('23:01:71.000000001')).should.throw(RangeError);
             // invalid format
-            (() => HzLocalTime.fromString('23:0171')).should.throw(IllegalArgumentError);
-            (() => HzLocalTime.fromString('-')).should.throw(IllegalArgumentError);
+            (() => HzLocalTime.fromString('23:0171')).should.throw(RangeError);
+            (() => HzLocalTime.fromString('-')).should.throw(RangeError);
             // Non string
-            (() => HzLocalTime.fromString(1)).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalTime.fromString([])).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalTime.fromString({})).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalTime.fromString(null)).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalTime.fromString()).should.throw(IllegalArgumentError, 'String expected');
+            (() => HzLocalTime.fromString(1)).should.throw(RangeError, 'String expected');
+            (() => HzLocalTime.fromString([])).should.throw(RangeError, 'String expected');
+            (() => HzLocalTime.fromString({})).should.throw(RangeError, 'String expected');
+            (() => HzLocalTime.fromString(null)).should.throw(RangeError, 'String expected');
+            (() => HzLocalTime.fromString()).should.throw(RangeError, 'String expected');
         });
     });
     describe('HzLocalDateTest', function () {
@@ -119,38 +118,38 @@ describe('DatetimeClassesTest', function () {
             newHzDate.date.should.be.equal(4);
         });
 
-        it('should throw IllegalArgumentError if year is not an integer between -999_999_999-999_999_999(inclusive)',
+        it('should throw RangeError if year is not an integer between -999_999_999-999_999_999(inclusive)',
             function () {
-            (() => new HzLocalDate(1e9, 1, 1)).should.throw(IllegalArgumentError, 'Year');
-            (() => new HzLocalDate(-1e9, 1, 1)).should.throw(IllegalArgumentError, 'Year');
-            (() => new HzLocalDate(1.1, 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate('1', 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate({1: 1}, 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate([], 1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate(1e12, 1, 1)).should.throw(IllegalArgumentError, 'Year');
+            (() => new HzLocalDate(1e9, 1, 1)).should.throw(RangeError, 'Year');
+            (() => new HzLocalDate(-1e9, 1, 1)).should.throw(RangeError, 'Year');
+            (() => new HzLocalDate(1.1, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate('1', 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate({1: 1}, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate([], 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate(1e12, 1, 1)).should.throw(RangeError, 'Year');
         });
 
-        it('should throw IllegalArgumentError if month is not an integer between 0-59(inclusive)', function () {
-            (() => new HzLocalDate(1, -1, 1)).should.throw(IllegalArgumentError, 'Month');
-            (() => new HzLocalDate(1, 1.1, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate(1, 233, 1)).should.throw(IllegalArgumentError, 'Month');
-            (() => new HzLocalDate(1, '1', 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate(1, {1: 1}, 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate(1, [], 1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate(1, 13, 1)).should.throw(IllegalArgumentError, 'Month');
+        it('should throw RangeError if month is not an integer between 0-59(inclusive)', function () {
+            (() => new HzLocalDate(1, -1, 1)).should.throw(RangeError, 'Month');
+            (() => new HzLocalDate(1, 1.1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate(1, 233, 1)).should.throw(RangeError, 'Month');
+            (() => new HzLocalDate(1, '1', 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate(1, {1: 1}, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate(1, [], 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate(1, 13, 1)).should.throw(RangeError, 'Month');
         });
 
-        it('should throw IllegalArgumentError if date is not an integer between 1-28/31 and it is not valid', function () {
-            (() => new HzLocalDate(1, 1, -1)).should.throw(IllegalArgumentError, 'Invalid date');
-            (() => new HzLocalDate(1, 1, 1.1)).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate(1, 1, 233)).should.throw(IllegalArgumentError, 'Invalid date');
-            (() => new HzLocalDate(1, 1, '1')).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate(1, 1, {1: 1})).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate(1, 1, [])).should.throw(IllegalArgumentError, 'All arguments must be integers');
-            (() => new HzLocalDate(2001, 2, 29)).should.throw(IllegalArgumentError, /Invalid.*not a leap year/);
-            (() => new HzLocalDate(2000, 2, 29)).should.not.throw(IllegalArgumentError, 'Invalid date');
-            (() => new HzLocalDate(2001, 4, 31)).should.throw(IllegalArgumentError, /Invalid.*April/);
-            (() => new HzLocalDate(2001, 4, 30)).should.not.throw(IllegalArgumentError, 'Invalid date');
+        it('should throw RangeError if date is not an integer between 1-28/31 and it is not valid', function () {
+            (() => new HzLocalDate(1, 1, -1)).should.throw(RangeError, 'Invalid date');
+            (() => new HzLocalDate(1, 1, 1.1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate(1, 1, 233)).should.throw(RangeError, 'Invalid date');
+            (() => new HzLocalDate(1, 1, '1')).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate(1, 1, {1: 1})).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate(1, 1, [])).should.throw(RangeError, 'All arguments must be integers');
+            (() => new HzLocalDate(2001, 2, 29)).should.throw(RangeError, /Invalid.*not a leap year/);
+            (() => new HzLocalDate(2000, 2, 29)).should.not.throw(RangeError, 'Invalid date');
+            (() => new HzLocalDate(2001, 4, 31)).should.throw(RangeError, /Invalid.*April/);
+            (() => new HzLocalDate(2001, 4, 30)).should.not.throw(RangeError, 'Invalid date');
         });
 
         it('should convert to string correctly', function () {
@@ -172,26 +171,26 @@ describe('DatetimeClassesTest', function () {
             localtime2.date.should.be.eq(3);
 
             // invalid month
-            (() => HzLocalDate.fromString('2000-24-29')).should.throw(IllegalArgumentError, 'Month');
+            (() => HzLocalDate.fromString('2000-24-29')).should.throw(RangeError, 'Month');
             // invalid date
-            (() => HzLocalDate.fromString('2001-02-29')).should.throw(IllegalArgumentError, 'Invalid date');
-            (() => HzLocalDate.fromString('2000-03-32')).should.throw(IllegalArgumentError, 'Invalid date');
+            (() => HzLocalDate.fromString('2001-02-29')).should.throw(RangeError, 'Invalid date');
+            (() => HzLocalDate.fromString('2000-03-32')).should.throw(RangeError, 'Invalid date');
             // invalid format
-            (() => HzLocalDate.fromString('9999999999-02-29')).should.throw(IllegalArgumentError, 'Invalid format');
-            (() => HzLocalDate.fromString('2301-71')).should.throw(IllegalArgumentError, 'Invalid format');
-            (() => HzLocalDate.fromString('-')).should.throw(IllegalArgumentError, 'Invalid format');
-            (() => HzLocalDate.fromString('2000-02-a')).should.throw(IllegalArgumentError, 'Invalid format');
-            (() => HzLocalDate.fromString('00001-02-12')).should.throw(IllegalArgumentError, 'Invalid format');
-            (() => HzLocalDate.fromString('0001-002-21')).should.throw(IllegalArgumentError, 'Invalid format');
-            (() => HzLocalDate.fromString('0001-02-1')).should.throw(IllegalArgumentError, 'Invalid format');
-            (() => HzLocalDate.fromString('0001-2-10')).should.throw(IllegalArgumentError, 'Invalid format');
-            (() => HzLocalDate.fromString('1-2-10')).should.throw(IllegalArgumentError, 'Invalid format');
+            (() => HzLocalDate.fromString('9999999999-02-29')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDate.fromString('2301-71')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDate.fromString('-')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDate.fromString('2000-02-a')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDate.fromString('00001-02-12')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDate.fromString('0001-002-21')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDate.fromString('0001-02-1')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDate.fromString('0001-2-10')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDate.fromString('1-2-10')).should.throw(RangeError, 'Invalid format');
             // Non string
-            (() => HzLocalDate.fromString(1)).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalDate.fromString({})).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalDate.fromString([])).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalDate.fromString(null)).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalDate.fromString()).should.throw(IllegalArgumentError, 'String expected');
+            (() => HzLocalDate.fromString(1)).should.throw(RangeError, 'String expected');
+            (() => HzLocalDate.fromString({})).should.throw(RangeError, 'String expected');
+            (() => HzLocalDate.fromString([])).should.throw(RangeError, 'String expected');
+            (() => HzLocalDate.fromString(null)).should.throw(RangeError, 'String expected');
+            (() => HzLocalDate.fromString()).should.throw(RangeError, 'String expected');
         });
     });
     describe('HzLocalDateTimeTest', function () {
@@ -208,22 +207,22 @@ describe('DatetimeClassesTest', function () {
             dateTime1.hzLocalTime.nano.should.be.equal(6000000);
         });
 
-        it('should throw IllegalArgumentError if local time is not valid', function () {
+        it('should throw RangeError if local time is not valid', function () {
             (() => new HzLocalDateTime(new HzLocalDate(2000, 2, 29), ''))
-                .should.throw(IllegalArgumentError, 'Invalid local time');
+                .should.throw(RangeError, 'Invalid local time');
             (() => new HzLocalDateTime(new HzLocalDate(2000, 2, 29), 100))
-                .should.throw(IllegalArgumentError, 'Invalid local time');
+                .should.throw(RangeError, 'Invalid local time');
             // hour is too big
             (() => new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(299, 3, 4, 0)))
-                .should.throw(IllegalArgumentError);
+                .should.throw(RangeError);
         });
 
-        it('should throw IllegalArgumentError if local date is not valid', function () {
-            (() => new HzLocalDateTime(1, new HzLocalTime(2, 3, 4, 0))).should.throw(IllegalArgumentError, 'Invalid local date');
-            (() => new HzLocalDateTime('', new HzLocalTime(2, 3, 4, 0))).should.throw(IllegalArgumentError, 'Invalid local date');
+        it('should throw RangeError if local date is not valid', function () {
+            (() => new HzLocalDateTime(1, new HzLocalTime(2, 3, 4, 0))).should.throw(RangeError, 'Invalid local date');
+            (() => new HzLocalDateTime('', new HzLocalTime(2, 3, 4, 0))).should.throw(RangeError, 'Invalid local date');
             // date is not possible
             (() => new HzLocalDateTime(new HzLocalDate(2001, 2, 29), new HzLocalTime(2, 3, 4, 0)))
-                .should.throw(IllegalArgumentError);
+                .should.throw(RangeError);
         });
 
         it('should construct from iso string correctly', function () {
@@ -253,14 +252,14 @@ describe('DatetimeClassesTest', function () {
             localDate2.date.should.be.eq(15);
 
             // invalid format
-            (() => HzLocalDateTime.fromISOString('23:0171')).should.throw(IllegalArgumentError, 'Invalid format');
-            (() => HzLocalDateTime.fromISOString('-')).should.throw(IllegalArgumentError, 'Invalid format');
+            (() => HzLocalDateTime.fromISOString('23:0171')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDateTime.fromISOString('-')).should.throw(RangeError, 'Invalid format');
             // Non string
-            (() => HzLocalDateTime.fromISOString(1)).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalDateTime.fromISOString([])).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalDateTime.fromISOString({})).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalDateTime.fromISOString(null)).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzLocalDateTime.fromISOString()).should.throw(IllegalArgumentError, 'String expected');
+            (() => HzLocalDateTime.fromISOString(1)).should.throw(RangeError, 'String expected');
+            (() => HzLocalDateTime.fromISOString([])).should.throw(RangeError, 'String expected');
+            (() => HzLocalDateTime.fromISOString({})).should.throw(RangeError, 'String expected');
+            (() => HzLocalDateTime.fromISOString(null)).should.throw(RangeError, 'String expected');
+            (() => HzLocalDateTime.fromISOString()).should.throw(RangeError, 'String expected');
         });
 
         const dateTime1 = new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 6000000));
@@ -289,23 +288,23 @@ describe('DatetimeClassesTest', function () {
             dateTime1.hzLocalDateTime.hzLocalTime.minute.should.be.equal(3);
             dateTime1.hzLocalDateTime.hzLocalTime.second.should.be.equal(4);
             dateTime1.hzLocalDateTime.hzLocalTime.nano.should.be.equal(6000000);
-            dateTime1.getOffsetSeconds().should.be.equal(1000);
+            dateTime1.offsetSeconds.should.be.equal(1000);
         });
 
-        it('should throw IllegalArgumentError if date is invalid', function () {
-            (() => new HzOffsetDateTime(new Date(-1), 1)).should.throw(IllegalArgumentError, 'Invalid date');
-            (() => new HzOffsetDateTime(new Date('s', 1))).should.throw(IllegalArgumentError, 'Invalid date');
-            (() => new HzOffsetDateTime(1, 1)).should.throw(IllegalArgumentError, 'Invalid date');
-            (() => new HzOffsetDateTime('s', 1)).should.throw(IllegalArgumentError, 'Invalid date');
-            (() => new HzOffsetDateTime([], 1)).should.throw(IllegalArgumentError, 'Invalid date');
+        it('should throw RangeError if date is invalid', function () {
+            (() => new HzOffsetDateTime(new Date(-1), 1)).should.throw(RangeError, 'Invalid date');
+            (() => new HzOffsetDateTime(new Date('s', 1))).should.throw(RangeError, 'Invalid date');
+            (() => new HzOffsetDateTime(1, 1)).should.throw(RangeError, 'Invalid date');
+            (() => new HzOffsetDateTime('s', 1)).should.throw(RangeError, 'Invalid date');
+            (() => new HzOffsetDateTime([], 1)).should.throw(RangeError, 'Invalid date');
         });
 
-        it('should throw IllegalArgumentError if offset is not an integer between -64800-64800', function () {
-            (() => new HzOffsetDateTime(new Date(), '1')).should.throw(IllegalArgumentError, 'Offset');
-            (() => new HzOffsetDateTime(new Date(), 90000)).should.throw(IllegalArgumentError, 'Offset');
-            (() => new HzOffsetDateTime(new Date(), [])).should.throw(IllegalArgumentError, 'Offset');
-            (() => new HzOffsetDateTime(new Date(), -90000)).should.throw(IllegalArgumentError, 'Offset');
-            (() => new HzOffsetDateTime(new Date(), {})).should.throw(IllegalArgumentError, 'Offset');
+        it('should throw RangeError if offset is not an integer between -64800-64800', function () {
+            (() => new HzOffsetDateTime(new Date(), '1')).should.throw(RangeError, 'Offset');
+            (() => new HzOffsetDateTime(new Date(), 90000)).should.throw(RangeError, 'Offset');
+            (() => new HzOffsetDateTime(new Date(), [])).should.throw(RangeError, 'Offset');
+            (() => new HzOffsetDateTime(new Date(), -90000)).should.throw(RangeError, 'Offset');
+            (() => new HzOffsetDateTime(new Date(), {})).should.throw(RangeError, 'Offset');
         });
 
         const dateTime1 = new HzOffsetDateTime(new Date(Date.UTC(2000, 2, 29, 2, 19, 4, 6)), 1000);
@@ -320,7 +319,7 @@ describe('DatetimeClassesTest', function () {
 
         it('should construct from iso string correctly', function () {
             const offsetDatetime1 = HzOffsetDateTime.fromISOString('2000-02-29T02:03:04+01:30');
-            const offsetSeconds1 = offsetDatetime1.getOffsetSeconds();
+            const offsetSeconds1 = offsetDatetime1.offsetSeconds;
             const localDatetime1 = offsetDatetime1.hzLocalDateTime;
             const localTime1 = localDatetime1.hzLocalTime;
             const localDate1 = localDatetime1.hzLocalDate;
@@ -338,7 +337,7 @@ describe('DatetimeClassesTest', function () {
 
             // use t instead of T
             const offsetDatetime2 = HzOffsetDateTime.fromISOString('2021-04-15t07:33:04.914+02:30');
-            const offsetSeconds2 = offsetDatetime2.getOffsetSeconds();
+            const offsetSeconds2 = offsetDatetime2.offsetSeconds;
             const localDatetime2 = offsetDatetime2.hzLocalDateTime;
             const localTime2 = localDatetime2.hzLocalTime;
             const localDate2 = localDatetime2.hzLocalDate;
@@ -356,7 +355,7 @@ describe('DatetimeClassesTest', function () {
 
             // Use of Z
             const offsetDatetime3 = HzOffsetDateTime.fromISOString('2021-04-15T07:33:04.914Z');
-            const offsetSeconds3 = offsetDatetime3.getOffsetSeconds();
+            const offsetSeconds3 = offsetDatetime3.offsetSeconds;
             const localDatetime3 = offsetDatetime3.hzLocalDateTime;
             const localTime3 = localDatetime3.hzLocalTime;
             const localDate3 = localDatetime3.hzLocalDate;
@@ -374,14 +373,14 @@ describe('DatetimeClassesTest', function () {
 
             // invalid format
             (() => HzOffsetDateTime.fromISOString('2021-04-15T07:33:04.914++02:30'))
-                .should.throw(IllegalArgumentError, 'Invalid format');
-            (() => HzOffsetDateTime.fromISOString('2021-04-15T07:33:04')).should.throw(IllegalArgumentError, 'Invalid format');
+                .should.throw(RangeError, 'Invalid format');
+            (() => HzOffsetDateTime.fromISOString('2021-04-15T07:33:04')).should.throw(RangeError, 'Invalid format');
             // Non string
-            (() => HzOffsetDateTime.fromISOString(1)).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzOffsetDateTime.fromISOString([])).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzOffsetDateTime.fromISOString({})).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzOffsetDateTime.fromISOString(null)).should.throw(IllegalArgumentError, 'String expected');
-            (() => HzOffsetDateTime.fromISOString()).should.throw(IllegalArgumentError, 'String expected');
+            (() => HzOffsetDateTime.fromISOString(1)).should.throw(RangeError, 'String expected');
+            (() => HzOffsetDateTime.fromISOString([])).should.throw(RangeError, 'String expected');
+            (() => HzOffsetDateTime.fromISOString({})).should.throw(RangeError, 'String expected');
+            (() => HzOffsetDateTime.fromISOString(null)).should.throw(RangeError, 'String expected');
+            (() => HzOffsetDateTime.fromISOString()).should.throw(RangeError, 'String expected');
         });
         it('should construct from fromHzLocalDateTime correctly', function () {
             const dateTime3 = HzOffsetDateTime.fromHzLocalDateTime(

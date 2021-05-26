@@ -2,7 +2,6 @@ import {
     getOffsetSecondsFromTimezoneString,
     getTimezoneOffsetFromSeconds
 } from '../util/DatetimeUtil';
-import {IllegalArgumentError} from './index';
 
 /**
  * ### Local time object
@@ -14,7 +13,7 @@ export class HzLocalTime {
      * @param minute Must be between 0-59
      * @param second Must be between 0-24
      * @param nano Must be between 0-999999999
-     * @throws {@link IllegalArgumentError} if any of the arguments are invalid
+     * @throws RangeError if any of the arguments are invalid
      */
     constructor(
         readonly hour: number,
@@ -23,19 +22,19 @@ export class HzLocalTime {
         readonly nano: number
     ) {
         if (!Number.isInteger(hour) || !Number.isInteger(minute) || !Number.isInteger(second) || !Number.isInteger(nano)) {
-            throw new IllegalArgumentError('Illegal arguments given to HzLocalTime. All arguments must be integers.');
+            throw new RangeError('Illegal arguments given to HzLocalTime. All arguments must be integers.');
         }
         if (!(hour >= 0 && hour <= 23)) {
-            throw new IllegalArgumentError('Hour must be between 0-23');
+            throw new RangeError('Hour must be between 0-23');
         }
         if (!(minute >= 0 && minute <= 59)) {
-            throw new IllegalArgumentError('Minute must be between 0-59');
+            throw new RangeError('Minute must be between 0-59');
         }
         if (!(second >= 0 && second <= 59)) {
-            throw new IllegalArgumentError('Second must be between 0-59');
+            throw new RangeError('Second must be between 0-59');
         }
-        if (!(nano >= 0 && nano <= 1e9 - 1)) {
-            throw new IllegalArgumentError('Nano must be between 0-999_999_999');
+        if (!(nano >= 0 && nano <= 999_999_999)) {
+            throw new RangeError('Nano must be between 0-999_999_999');
         }
     }
 
@@ -43,16 +42,16 @@ export class HzLocalTime {
      * Constructs a new {@link HzLocalTime} object from timeString.
      * @param timeString A string in the form hh:mm:ss[.sss]. At most 9 digits allowed for second decimal value. If more than 9
      * digits are given, the first 9 of them are used
-     * @throws {@link IllegalArgumentError} if invalid timeString is given
+     * @throws RangeError if invalid timeString is given
      */
     static fromString(timeString: string): HzLocalTime {
         const timeStringRegex = /(\d\d):(\d\d):(\d\d)(\.\d+)?/;
         if (typeof timeString !== 'string') {
-            throw new IllegalArgumentError('String expected.');
+            throw new RangeError('String expected.');
         }
         let match = timeString.match(timeStringRegex);
         if (!match) {
-            throw new IllegalArgumentError('Illegal time string. Expected a string in hh:mm:ss[.sss] format');
+            throw new RangeError('Illegal time string. Expected a string in hh:mm:ss[.sss] format');
         }
         match = match.slice(1); // Discard first match which is the first complete match
 
@@ -121,7 +120,7 @@ export class HzLocalDate {
      * @param year Must be between -999999999-999999999
      * @param month Must be between 1-12
      * @param date Must be between 1-28/31 depending on year and month
-     * @throws {@link IllegalArgumentError} if any of the arguments are invalid
+     * @throws RangeError if any of the arguments are invalid
      */
     constructor(
         readonly year: number,
@@ -129,17 +128,17 @@ export class HzLocalDate {
         readonly date: number
     ) {
         if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(date)) {
-            throw new IllegalArgumentError('Illegal arguments given to HzLocalTime. All arguments must be integers.');
+            throw new RangeError('Illegal arguments given to HzLocalTime. All arguments must be integers.');
         }
         if (!(month >= 1 && month <= 12)) {
-            throw new IllegalArgumentError('Month must be between 1-12');
+            throw new RangeError('Month must be between 1-12');
         }
         if (!(year >= -999_999_999 && year <= 999_999_999)) {
-            throw new IllegalArgumentError('Year must be between -(1e9-1) - (1e9-1)');
+            throw new RangeError('Year must be between -999_999_999 - 999_999_999');
         }
 
         if (date < 1) {
-            throw new IllegalArgumentError('Invalid date. Date cannot be less than 1');
+            throw new RangeError('Invalid date. Date cannot be less than 1');
         }
 
         if (date > 28) {
@@ -166,9 +165,9 @@ export class HzLocalDate {
 
             if (date > maxDate) {
                 if (date == 29) {
-                    throw new IllegalArgumentError(`Invalid date. February 29 as ${this.year} is not a leap year`);
+                    throw new RangeError(`Invalid date. February 29 as ${this.year} is not a leap year`);
                 }
-                throw new IllegalArgumentError(`Invalid date. ${Months[this.month]} ${this.date}`);
+                throw new RangeError(`Invalid date. ${Months[this.month]} ${this.date}`);
             }
         }
     }
@@ -184,16 +183,16 @@ export class HzLocalDate {
 
     /**
      * Constructs a {@link HzLocalDate} object from string.
-     * @throws {@link IllegalArgumentError} if string is not passed, or string format is wrong
+     * @throws RangeError if string is not passed, or string format is wrong
      * @param dateString String in the form yyyy-mm-dd
      */
     static fromString(dateString: string): HzLocalDate {
         if (typeof dateString !== 'string') {
-            throw new IllegalArgumentError('String expected.');
+            throw new RangeError('String expected.');
         }
         const split = dateString.split('-');
         if (split.length !== 3 || split[0].length !== 4 || split[1].length !== 2 || split[2].length !== 2) {
-            throw new IllegalArgumentError('Invalid format. Expected a string in yyyy-mm-dd format');
+            throw new RangeError('Invalid format. Expected a string in yyyy-mm-dd format');
         }
 
         const yearNumber = +split[0];
@@ -201,7 +200,7 @@ export class HzLocalDate {
         const dateNumber = +split[2];
 
         if (isNaN(yearNumber) || isNaN(monthNumber) || isNaN(dateNumber)) {
-            throw new IllegalArgumentError('Invalid format. Expected a string in yyyy-mm-dd format');
+            throw new RangeError('Invalid format. Expected a string in yyyy-mm-dd format');
         }
         return new HzLocalDate(yearNumber, monthNumber, dateNumber);
     }
@@ -224,17 +223,17 @@ export class HzLocalDate {
  */
 export class HzLocalDateTime {
     /**
-     * @throws {@link IllegalArgumentError} if arguments are invalid
+     * @throws RangeError if arguments are invalid
      */
     constructor(
         readonly hzLocalDate: HzLocalDate,
         readonly hzLocalTime: HzLocalTime
     ) {
         if (!(hzLocalDate instanceof HzLocalDate)) {
-            throw new IllegalArgumentError('Invalid local date.');
+            throw new RangeError('Invalid local date.');
         }
         if (!(hzLocalTime instanceof HzLocalTime)) {
-            throw new IllegalArgumentError('Invalid local time.');
+            throw new RangeError('Invalid local time.');
         }
     }
 
@@ -242,15 +241,15 @@ export class HzLocalDateTime {
      * Constructs HzLocalDateTime from ISO 8601 string.
      * @param isoString Must not include timezone information. The string format is yyyy-mm-ss(T|t)hh:mm:ss[.sss], so, second
      * decimal value can be omitted
-     * @throws {@link IllegalArgumentError} if iso string is invalid or any of the values in iso string is invalid
+     * @throws RangeError if iso string is invalid or any of the values in iso string is invalid
      */
     static fromISOString(isoString: string): HzLocalDateTime {
         if (typeof isoString !== 'string') {
-            throw new IllegalArgumentError('String expected.');
+            throw new RangeError('String expected.');
         }
         const split = isoString.split(/[Tt]/);
         if (split.length !== 2) {
-            throw new IllegalArgumentError('Invalid format. Expected a string in the form yyyy-mm-ss(T|t)hh:mm:ss[.sss]');
+            throw new RangeError('Invalid format. Expected a string in the form yyyy-mm-ss(T|t)hh:mm:ss[.sss]');
         }
         return new HzLocalDateTime(HzLocalDate.fromString(split[0]), HzLocalTime.fromString(split[1]));
     }
@@ -281,10 +280,10 @@ export class HzOffsetDateTime {
      */
     constructor(date: Date, readonly offsetSeconds: number) {
         if (!(date instanceof Date) || isNaN(date.getTime())) {
-            throw new IllegalArgumentError('Invalid date.');
+            throw new RangeError('Invalid date.');
         }
         if (!Number.isInteger(offsetSeconds) || !(offsetSeconds >= -64800 && offsetSeconds <= 64800)) {
-            throw new IllegalArgumentError('Offset seconds can be between -64800(-18:00) and 64800(+18:00).');
+            throw new RangeError('Offset seconds can be between -64800(-18:00) and 64800(+18:00).');
         }
 
         this.hzLocalDateTime = new HzLocalDateTime(
@@ -317,14 +316,14 @@ export class HzOffsetDateTime {
      */
     static fromISOString(isoString: string): HzOffsetDateTime {
         if (typeof isoString !== 'string') {
-            throw new IllegalArgumentError('String expected');
+            throw new RangeError('String expected');
         }
         const timezoneRegex = /([Zz]|[+-]\d\d:\d\d)/;
 
         const indexOfFirstMatch = isoString.search(timezoneRegex);
         const split = isoString.split(isoString[indexOfFirstMatch]);
         if (indexOfFirstMatch === -1 || split.length !== 2) {
-            throw new IllegalArgumentError('Invalid format.');
+            throw new RangeError('Invalid format.');
         }
         const offsetSeconds = getOffsetSecondsFromTimezoneString(isoString[indexOfFirstMatch] + split[1]);
 
