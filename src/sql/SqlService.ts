@@ -29,7 +29,6 @@ import {SqlRowMetadataImpl} from './SqlRowMetadata';
 import {SqlCloseCodec} from '../codec/SqlCloseCodec';
 import {SqlFetchCodec, SqlFetchResponseParams} from '../codec/SqlFetchCodec';
 import {
-    assertNotNull,
     tryGetArray,
     tryGetBoolean,
     tryGetEnum,
