@@ -65,7 +65,7 @@ export class HzLocalTime {
             // make nanoStr 9 digits if it's longer
             if (nanoStr.length > 9) nanoStr = nanoStr.slice(0, 9);
 
-            while (nanoStr.length < 9) nanoStr = nanoStr + '0';
+            nanoStr.padStart(9, '0');
             nano = +nanoStr;
         }
 
@@ -119,7 +119,7 @@ export class HzLocalDate {
     /**
      * @param year Must be between -999999999-999999999
      * @param month Must be between 1-12
-     * @param date Must be between 1-28/31 depending on year and month
+     * @param date Must be between 1-31 depending on year and month
      * @throws RangeError if any of the arguments are invalid
      */
     constructor(
@@ -159,8 +159,6 @@ export class HzLocalDate {
                 case 11:
                     maxDate = 30;
                     break;
-                default:
-                    break;
             }
 
             if (date > maxDate) {
@@ -177,7 +175,7 @@ export class HzLocalDate {
      * Implementation is taken from java IsoChronology.isLeapYear()
      * @param year Year value
      */
-    static isLeapYear(year: number): boolean {
+    private static isLeapYear(year: number): boolean {
         return (year & 3) == 0 && (year % 100 != 0 || year % 400 == 0);
     }
 

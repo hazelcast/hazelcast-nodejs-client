@@ -156,7 +156,10 @@ describe('DatetimeClassesTest', function () {
             (new HzLocalDate(2000, 2, 29)).toString().should.be.eq('2000-02-29');
             (new HzLocalDate(2001, 2, 1)).toString().should.be.eq('2001-02-01');
             (new HzLocalDate(35, 2, 28)).toString().should.be.eq('0035-02-28');
-            (new HzLocalDate(-100, 3, 31)).toString().should.be.eq('-100-03-31');
+            (new HzLocalDate(-100, 3, 31)).toString().should.be.eq('-0100-03-31');
+            (new HzLocalDate(-35, 3, 31)).toString().should.be.eq('-0035-03-31');
+            (new HzLocalDate(-30205, 3, 31)).toString().should.be.eq('-30205-03-31');
+            (new HzLocalDate(30205, 3, 31)).toString().should.be.eq('30205-03-31');
         });
 
         it('should construct from string correctly', function () {
