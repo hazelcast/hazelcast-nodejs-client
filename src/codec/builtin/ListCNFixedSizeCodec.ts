@@ -17,8 +17,6 @@ export class ListCNFixedSizeCodec {
     ): T[] {
         const type = FixSizedTypesCodec.decodeByte(frame.content, 0);
         const count = FixSizedTypesCodec.decodeInt(frame.content, 1);
-        let position = ListCNFixedSizeCodec.HEADER_SIZE;
-        let readCount = 0;
 
         const res = new Array(count);
         switch (type) {
@@ -33,6 +31,11 @@ export class ListCNFixedSizeCodec {
                 }
                 break;
             default:
+                // eslint-disable-next-line no-case-declarations
+                let position = ListCNFixedSizeCodec.HEADER_SIZE;
+                // eslint-disable-next-line no-case-declarations
+                let readCount = 0;
+
                 while (readCount < count) {
                     const bitmask = FixSizedTypesCodec.decodeByte(frame.content, position);
                     for (let i = 0; i < ListCNFixedSizeCodec.ITEMS_PER_BITMASK && readCount < count; i++) {
