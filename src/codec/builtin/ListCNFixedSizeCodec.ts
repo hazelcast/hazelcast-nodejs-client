@@ -38,10 +38,10 @@ export class ListCNFixedSizeCodec {
                     for (let i = 0; i < ListCNFixedSizeCodec.ITEMS_PER_BITMASK && readCount < count; i++) {
                         const mask = 1 << i;
                         if ((bitmask & mask) === mask) {
-                            res[i] = decoder(frame.content, position);
+                            res[readCount] = decoder(frame.content, position);
                             position += itemSizeInBytes;
                         } else {
-                            res[i] = null;
+                            res[readCount] = null;
                         }
                         readCount++;
                     }
