@@ -80,14 +80,20 @@ export interface SqlStatementOptions {
 
 /**
  * Represents an SQL statement. This can be used to prepare SQL statement before {@link SqlService.execute}.
+ *
+ * Properties are read once before the execution is started.
+ * Changes to properties do not affect the behavior of already running statements.
  */
 export interface SqlStatement {
     /**
-     * SQL string. SQL string placeholder character is question mark(`?`).
+     * SQL string. The SQL string cannot be empty. SQL string placeholder character is question mark(`?`). A RangeError
+     * is thrown during execute if `sql` is not valid.
      */
     sql: string;
     /**
-     * Parameters of the SQL. Parameter count must be equal to the placeholder count in the SQL string.
+     * Parameters of the SQL. You may define parameter placeholders in the statement with the `?` character.
+     * For every placeholder, a value must be provided. When the method is called, the contents of the list are copied.
+     * Subsequent changes to the original list don't change the statement parameters.
      */
     params?: any[];
     /**
