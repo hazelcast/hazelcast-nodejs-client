@@ -24,7 +24,7 @@ export class SqlPage {
          The first index is column index, the second one is row index. This is chosen this way because server sends
          SQL pages in columnar format. If row based data was used, additional conversion is necessary.
          */
-        private readonly data: any[][] | null,
+        private readonly columns: any[][],
         private readonly last: boolean
     ) {
     }
@@ -41,7 +41,7 @@ export class SqlPage {
      * Row count is the number of items in the first column
      */
     getRowCount(): number {
-        return this.data[0].length;
+        return this.columns[0].length;
     }
 
     /**
@@ -56,13 +56,13 @@ export class SqlPage {
      * Returns the value in certain row and column
      */
     getValue(rowIndex: number, columnIndex: number): any {
-        return this.data[columnIndex][rowIndex];
+        return this.columns[columnIndex][rowIndex];
     }
 
     /**
      * This is needed for better mocking. Constructor mocking is not trivial with sinon.
      */
-    static newPage(columnTypes: SqlColumnType[], data: any[][], last: boolean): SqlPage {
-        return new SqlPage(columnTypes, data, last);
+    static newPage(columnTypes: SqlColumnType[], columns: any[][], last: boolean): SqlPage {
+        return new SqlPage(columnTypes, columns, last);
     }
 }

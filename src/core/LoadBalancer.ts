@@ -59,7 +59,7 @@ export interface LoadBalancer {
     /**
      * Returns whether this instance supports getting data members through a call to {@link nextDataMember()}.
      *
-     * @return Returns the next member or `null` if no member is available
+     * @return Returns if this load balancer can get a data member.
      */
     canGetNextDataMember(): boolean;
 }

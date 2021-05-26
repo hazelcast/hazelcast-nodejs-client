@@ -19,23 +19,23 @@
  SqlColumnType represents the datatype of a {@link SqlColumnMetadata}. The classes corresponding to each of them in java
  and javascript are given below:
 
- | Column Type                  | Java                       | Javascript                                 |
- |------------------------------|----------------------------|--------------------------------------------|
- | **VARCHAR**                  | `java.lang.String`         | `string`                                   |
- | **BOOLEAN**                  | `java.lang.Boolean`        | `boolean`                                  |
- | **TINYINT**                  | `java.lang.Byte`           | `number`                                   |
- | **SMALLINT**                 | `java.lang.Short`          | `number`                                   |
- | **INTEGER**                  | `java.lang.Integer`        | `number`                                   |
- | **BIGINT**                   | `java.lang.Long`           | [long](https://www.npmjs.com/package/long) |
- | **DECIMAL**                  | `java.math.BigDecimal`     | `string`                                   |
- | **REAL**                     | `java.lang.Float`          | `number`                                   |
- | **DOUBLE**                   | `java.lang.Double`         | `number`                                   |
- | **DATE**                     | `java.time.LocalDate`      | {@link HzLocalDate}                        |
- | **TIME**                     | `java.time.LocalTime`      | {@link HzLocalTime}                        |
- | **TIMESTAMP**                | `java.time.LocalDateTime`  | {@link HzLocalDateTime}                    |
- | **TIMESTAMP_WITH_TIME_ZONE** | `java.time.OffsetDateTime` | {@link HzOffsetDateTime}                   |
- | **OBJECT**                   | Any class(`Object`)        | Any class                                  |
- | **NULL**                     | `Void`                     | `null`                                     |
+ | Column Type                  | Javascript                                 |
+ |------------------------------|--------------------------------------------|
+ | **VARCHAR**                  | `string`                                   |
+ | **BOOLEAN**                  | `boolean`                                  |
+ | **TINYINT**                  | `number`                                   |
+ | **SMALLINT**                 | `number`                                   |
+ | **INTEGER**                  | `number`                                   |
+ | **BIGINT**                   | [long](https://www.npmjs.com/package/long) |
+ | **DECIMAL**                  | `string`                                   |
+ | **REAL**                     | `number`                                   |
+ | **DOUBLE**                   | `number`                                   |
+ | **DATE**                     | {@link HzLocalDate}                        |
+ | **TIME**                     | {@link HzLocalTime}                        |
+ | **TIMESTAMP**                | {@link HzLocalDateTime}                    |
+ | **TIMESTAMP_WITH_TIME_ZONE** | {@link HzOffsetDateTime}                   |
+ | **OBJECT**                   | Any class                                  |
+ | **NULL**                     | `null`                                     |
  */
 export enum SqlColumnType {
     VARCHAR,

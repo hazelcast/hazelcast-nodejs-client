@@ -199,7 +199,6 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
      * Returns a random connection from active connections. If smart routing enabled, connection is returned using
      * load balancer. Otherwise, it is the first connection in connection registry.
      * @param dataMember if only data members should be considered
-     * @return Connection if there is at least one connection, otherwise null
      */
     getRandomConnection(dataMember = false): Connection | null {
         if (this.smartRoutingEnabled) {

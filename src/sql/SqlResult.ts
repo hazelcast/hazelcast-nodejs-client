@@ -22,7 +22,7 @@ import {SqlServiceImpl} from './SqlService';
 import {Connection} from '../network/Connection';
 import {SqlQueryId} from './SqlQueryId';
 import {DeferredPromise, deferredPromise} from '../util/Util';
-import {HazelcastSqlException, UUID} from '../core';
+import {HazelcastSqlException, IllegalStateError, UUID} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
 import {SerializationService} from '../serialization/SerializationService';
 
@@ -66,11 +66,20 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  * }
  * ```
  *
+ * #### Usage for update count
+ * ```js
+ * const updated = result.getUpdateCount();
+ * ```
+ *
+ * You don't need to call {@link close} in this case.
+ *
  */
 export interface SqlResult extends AsyncIterable<SqlRowType> {
     /**
-     *  Returns next {@link SqlRowType} iteration result.
-     *  @returns {IteratorResult<SqlRowType>} An object including "value" and "done" keys. The "done" key indicates if
+     *  Returns next {@link SqlRowType} iteration result. You should not call this method when result does not contains
+     *  rows.
+     *  @throws {@link IllegalStateError} if result does not contain rows, but update count.
+     *  @returns An object including "value" and "done" keys. The "done" key indicates if
      *  iteration is ended, i.e when there are no more results. "value" holds iteration values which are in SqlRowType type.
      *  "value" has undefined value if iteration has ended.
      */
@@ -78,18 +87,24 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
 
     /**
      * Closes the result. This will prevent further iterations.
+     *
+     * Releases the resources associated with the query result.
+     *
+     * The query engine delivers the rows asynchronously. The query may become inactive even before all rows are
+     * consumed. The invocation of this command will cancel the execution of the query on all members if the query
+     * is still active. Otherwise it is no-op. For a result with an update count it is always no-op.
      */
     close(): Promise<void>;
 
     /**
      * Returns row metadata of the result.
-     * @returns SqlRowMetadata if rows exists in the result, otherwise, e.g update count result is received, to null.
+     * @returns SQL row metadata if rows exist in the result; otherwise null.
      * If SQL execution was not successful, this promise is rejected with an error.
      */
     getRowMetadata(): Promise<SqlRowMetadata | null>;
 
     /**
-     * Return whether this result has rows to iterate. False if update count is returned or a response is not received yet.
+     * Return whether this result has rows to iterate. False if update count is returned, true is rows are returned.
      * If SQL execution was not successful, this promise is rejected with an error.
      */
     isRowSet(): Promise<boolean>;
@@ -212,7 +227,8 @@ export class SqlResultImpl implements SqlResult {
 
         this.closeDeferred = deferredPromise<void>();
 
-        const error = new HazelcastSqlException(this.clientUUID, SqlErrorCode.CANCELLED_BY_USER, 'Cancelled by user');
+        const error = new HazelcastSqlException(this.clientUUID, SqlErrorCode.CANCELLED_BY_USER,
+            'Query was cancelled by user');
         // Reject execute with user cancellation error.
         this.onExecuteError(error);
         // Reject ongoing fetch request if there is one.
@@ -319,6 +335,9 @@ export class SqlResultImpl implements SqlResult {
     /** Returns if there are rows to be iterated. Used by {@link next}. */
     hasNext(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {
+            return this.isRowSet();
+        }).then(isRowSet => {
+            if (!isRowSet) return Promise.reject(new IllegalStateError('This result contains only update count'));
             // While loop similar logic is written via recursion when written in async manner
             const checkHasNext = (): Promise<boolean> => {
                 if (this.currentPosition === this.currentRowCount) {
