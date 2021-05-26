@@ -11,7 +11,7 @@ export class BigDecimalCodec {
         const contentSize = FixSizedTypesCodec.decodeInt(buffer, 0);
         let body = buffer.slice(BitsUtil.INT_SIZE_IN_BYTES, BitsUtil.INT_SIZE_IN_BYTES + contentSize);
         const byteArray = new Uint8Array(body);
-        const signBit = body.slice(0, 1).readUInt8(0);
+        const signBit = body.readUInt8(0);
         const isNegative = signBit > 127;
         if (isNegative) { // negative, convert two's complement to positive
             const newByteArray = new Array(byteArray.length);
