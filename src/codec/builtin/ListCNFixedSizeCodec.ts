@@ -30,10 +30,8 @@ export class ListCNFixedSizeCodec {
                     res[i] = decoder(frame.content, ListCNFixedSizeCodec.HEADER_SIZE + i * itemSizeInBytes);
                 }
                 break;
-            default:
-                // eslint-disable-next-line no-case-declarations
+            default: {
                 let position = ListCNFixedSizeCodec.HEADER_SIZE;
-                // eslint-disable-next-line no-case-declarations
                 let readCount = 0;
 
                 while (readCount < count) {
@@ -50,6 +48,8 @@ export class ListCNFixedSizeCodec {
                     }
                 }
                 break;
+            }
+
         }
         return res;
     }
