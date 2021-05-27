@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {IllegalArgumentError} from '../core';
 
 /**
  Constructs and returns timezone for iso string from offsetSeconds
@@ -22,13 +21,12 @@ import {IllegalArgumentError} from '../core';
 
  @param offsetSeconds Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]. If out of
  this range, the limit values are assumed.
- @throws {@link IllegalArgumentError} if offset seconds is not number
+ @throws RangeError if offset seconds is not number
  @return Timezone string, can be 'Z', +hh:mm or -hh:mm
  */
 export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
-
     if (!Number.isInteger(offsetSeconds)) {
-        throw new IllegalArgumentError('Expected integer');
+        throw new RangeError('Expected integer');
     }
 
     if (offsetSeconds > 64800) {
@@ -65,37 +63,42 @@ export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
  @internal
 
  @param timezoneString string, can be 'Z', +hh:mm or -hh:mm
+ @throws RangeError If timezoneString is invalid
  @return Timezone Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]
  */
 export function getOffsetSecondsFromTimezoneString(timezoneString: string): number {
     if (typeof timezoneString !== 'string') {
-        throw new IllegalArgumentError('String expected');
+        throw new RangeError('String expected');
     }
     let positive;
-    if (timezoneString.toUpperCase() === 'Z') return 0;
+    if (timezoneString.toUpperCase() === 'Z') {
+        return 0;
+    }
     else if (timezoneString[0] === '-') {
         positive = false;
     } else if (timezoneString[0] === '+') {
         positive = true;
     } else {
-        throw new IllegalArgumentError('Invalid format');
+        throw new RangeError('Invalid format');
     }
 
     const substring = timezoneString.substring(1);
     const split = substring.split(':');
     if (split.length !== 2) {
-        throw new IllegalArgumentError('Invalid format');
+        throw new RangeError('Invalid format');
     }
     const hourAsNumber = +split[0]
     const minuteAsNumber = +split[1];
 
     if (isNaN(hourAsNumber) || isNaN(minuteAsNumber)) {
-        throw new IllegalArgumentError('Invalid format');
+        throw new RangeError('Invalid format');
     }
 
     const offsetSeconds = hourAsNumber*3600 + minuteAsNumber*60;
 
-    if(offsetSeconds > 64800) throw new IllegalArgumentError('Invalid offset');
+    if(offsetSeconds > 64800){
+        throw new RangeError('Invalid offset');
+    }
     return positive ? offsetSeconds : -offsetSeconds;
 }
 
@@ -107,7 +110,5 @@ export function getOffsetSecondsFromTimezoneString(timezoneString: string): numb
  * @returns Zero padded string
  */
 export function leftZeroPadInteger(value: number, length: number): string {
-    let asStr = value.toString();
-    while (asStr.length < length) asStr = '0' + asStr;
-    return asStr;
+    return value.toString().padStart(length, '0');
 }

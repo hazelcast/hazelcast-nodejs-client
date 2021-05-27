@@ -37,6 +37,7 @@ describe('DatetimeClassesTest', function () {
             (() => new HzLocalTime({}, 1, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
             (() => new HzLocalTime([], 1, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
             (() => new HzLocalTime(24, 1, 1, 1)).should.throw(RangeError, 'Hour');
+            (() => new HzLocalTime(299, 3, 4, 0)).should.throw(RangeError, 'Hour');
         });
 
         it('should throw RangeError if minute is not an integer between 0-59(inclusive)', function () {
@@ -70,10 +71,10 @@ describe('DatetimeClassesTest', function () {
         });
 
         it('should convert to string correctly', function () {
-            (new HzLocalTime(1, 1, 1, 1)).toString().should.be.eq('01:01:01.000000001');
-            (new HzLocalTime(12, 10, 10, 1)).toString().should.be.eq('12:10:10.000000001');
-            (new HzLocalTime(23, 1, 11, 99999)).toString().should.be.eq('23:01:11.000099999');
-            (new HzLocalTime(23, 1, 11, 0)).toString().should.be.eq('23:01:11');
+            new HzLocalTime(1, 1, 1, 1).toString().should.be.eq('01:01:01.000000001');
+            new HzLocalTime(12, 10, 10, 1).toString().should.be.eq('12:10:10.000000001');
+            new HzLocalTime(23, 1, 11, 99999).toString().should.be.eq('23:01:11.000099999');
+            new HzLocalTime(23, 1, 11, 0).toString().should.be.eq('23:01:11');
         });
 
         it('should construct from string correctly', function () {
@@ -92,7 +93,9 @@ describe('DatetimeClassesTest', function () {
             // Nano has 10 digits, first 9 digits is considered.
             HzLocalTime.fromString('23:41:01.0000011111').nano.should.be.eq(1111);
             HzLocalTime.fromString('23:01:01.0000000001').nano.should.be.eq(0);
+        });
 
+        it('should throw RangeError on invalid string', function() {
             // invalid hour
             (() => HzLocalTime.fromString('24:01:01.000000001')).should.throw(RangeError);
             // invalid minute
@@ -101,6 +104,7 @@ describe('DatetimeClassesTest', function () {
             (() => HzLocalTime.fromString('23:01:71.000000001')).should.throw(RangeError);
             // invalid format
             (() => HzLocalTime.fromString('23:0171')).should.throw(RangeError);
+            (() => HzLocalTime.fromString('1:1:1')).should.throw(RangeError);
             (() => HzLocalTime.fromString('-')).should.throw(RangeError);
             // Non string
             (() => HzLocalTime.fromString(1)).should.throw(RangeError, 'String expected');
@@ -153,13 +157,13 @@ describe('DatetimeClassesTest', function () {
         });
 
         it('should convert to string correctly', function () {
-            (new HzLocalDate(2000, 2, 29)).toString().should.be.eq('2000-02-29');
-            (new HzLocalDate(2001, 2, 1)).toString().should.be.eq('2001-02-01');
-            (new HzLocalDate(35, 2, 28)).toString().should.be.eq('0035-02-28');
-            (new HzLocalDate(-100, 3, 31)).toString().should.be.eq('-0100-03-31');
-            (new HzLocalDate(-35, 3, 31)).toString().should.be.eq('-0035-03-31');
-            (new HzLocalDate(-30205, 3, 31)).toString().should.be.eq('-30205-03-31');
-            (new HzLocalDate(30205, 3, 31)).toString().should.be.eq('30205-03-31');
+            new HzLocalDate(2000, 2, 29).toString().should.be.eq('2000-02-29');
+            new HzLocalDate(2001, 2, 1).toString().should.be.eq('2001-02-01');
+            new HzLocalDate(35, 2, 28).toString().should.be.eq('0035-02-28');
+            new HzLocalDate(-100, 3, 31).toString().should.be.eq('-0100-03-31');
+            new HzLocalDate(-35, 3, 31).toString().should.be.eq('-0035-03-31');
+            new HzLocalDate(-30205, 3, 31).toString().should.be.eq('-30205-03-31');
+            new HzLocalDate(30205, 3, 31).toString().should.be.eq('30205-03-31');
         });
 
         it('should construct from string correctly', function () {
@@ -172,7 +176,9 @@ describe('DatetimeClassesTest', function () {
             localtime2.year.should.be.eq(1);
             localtime2.month.should.be.eq(2);
             localtime2.date.should.be.eq(3);
+        });
 
+        it('should throw RangeError on invalid string', function () {
             // invalid month
             (() => HzLocalDate.fromString('2000-24-29')).should.throw(RangeError, 'Month');
             // invalid date
@@ -215,21 +221,18 @@ describe('DatetimeClassesTest', function () {
                 .should.throw(RangeError, 'Invalid local time');
             (() => new HzLocalDateTime(new HzLocalDate(2000, 2, 29), 100))
                 .should.throw(RangeError, 'Invalid local time');
-            // hour is too big
-            (() => new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(299, 3, 4, 0)))
-                .should.throw(RangeError);
+            (() => new HzLocalDateTime('', new HzLocalTime(2, 3, 4, 6000000)))
+                .should.throw(RangeError, 'Invalid local date');
         });
 
         it('should throw RangeError if local date is not valid', function () {
             (() => new HzLocalDateTime(1, new HzLocalTime(2, 3, 4, 0))).should.throw(RangeError, 'Invalid local date');
             (() => new HzLocalDateTime('', new HzLocalTime(2, 3, 4, 0))).should.throw(RangeError, 'Invalid local date');
-            // date is not possible
-            (() => new HzLocalDateTime(new HzLocalDate(2001, 2, 29), new HzLocalTime(2, 3, 4, 0)))
-                .should.throw(RangeError);
+            (() => new HzLocalDateTime(new HzLocalDate(2000, 2, 29), '')).should.throw(RangeError, 'Invalid local time');
         });
 
-        it('should construct from iso string correctly', function () {
-            const localDatetime1 = HzLocalDateTime.fromISOString('2021-04-15T07:33:04.914456789');
+        it('should construct from string correctly', function () {
+            const localDatetime1 = HzLocalDateTime.fromString('2021-04-15T07:33:04.914456789');
             const localTime1 = localDatetime1.hzLocalTime;
             const localDate1 = localDatetime1.hzLocalDate;
             localTime1.nano.should.be.eq(914456789);
@@ -242,7 +245,7 @@ describe('DatetimeClassesTest', function () {
             localDate1.date.should.be.eq(15);
 
             // use t instead of T
-            const localDatetime2 = HzLocalDateTime.fromISOString('2020-04-15t07:35:02.1');
+            const localDatetime2 = HzLocalDateTime.fromString('2020-04-15t07:35:02.1');
             const localTime2 = localDatetime2.hzLocalTime;
             const localDate2 = localDatetime2.hzLocalDate;
             localTime2.nano.should.be.eq(100000000);
@@ -253,16 +256,18 @@ describe('DatetimeClassesTest', function () {
             localDate2.year.should.be.eq(2020);
             localDate2.month.should.be.eq(4);
             localDate2.date.should.be.eq(15);
+        });
 
+        it('should throw RangeError on invalid string', function () {
             // invalid format
-            (() => HzLocalDateTime.fromISOString('23:0171')).should.throw(RangeError, 'Invalid format');
-            (() => HzLocalDateTime.fromISOString('-')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDateTime.fromString('23:0171')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDateTime.fromString('-')).should.throw(RangeError, 'Invalid format');
             // Non string
-            (() => HzLocalDateTime.fromISOString(1)).should.throw(RangeError, 'String expected');
-            (() => HzLocalDateTime.fromISOString([])).should.throw(RangeError, 'String expected');
-            (() => HzLocalDateTime.fromISOString({})).should.throw(RangeError, 'String expected');
-            (() => HzLocalDateTime.fromISOString(null)).should.throw(RangeError, 'String expected');
-            (() => HzLocalDateTime.fromISOString()).should.throw(RangeError, 'String expected');
+            (() => HzLocalDateTime.fromString(1)).should.throw(RangeError, 'String expected');
+            (() => HzLocalDateTime.fromString([])).should.throw(RangeError, 'String expected');
+            (() => HzLocalDateTime.fromString({})).should.throw(RangeError, 'String expected');
+            (() => HzLocalDateTime.fromString(null)).should.throw(RangeError, 'String expected');
+            (() => HzLocalDateTime.fromString()).should.throw(RangeError, 'String expected');
         });
 
         const dateTime1 = new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 6000000));
@@ -320,8 +325,8 @@ describe('DatetimeClassesTest', function () {
             dateTime1.toISOString().should.be.eq('2000-02-29T02:19:04.006000000+00:16');
         });
 
-        it('should construct from iso string correctly', function () {
-            const offsetDatetime1 = HzOffsetDateTime.fromISOString('2000-02-29T02:03:04+01:30');
+        it('should construct from string correctly', function () {
+            const offsetDatetime1 = HzOffsetDateTime.fromString('2000-02-29T02:03:04+01:30');
             const offsetSeconds1 = offsetDatetime1.offsetSeconds;
             const localDatetime1 = offsetDatetime1.hzLocalDateTime;
             const localTime1 = localDatetime1.hzLocalTime;
@@ -339,7 +344,7 @@ describe('DatetimeClassesTest', function () {
             offsetSeconds1.should.be.eq(90*60);
 
             // use t instead of T
-            const offsetDatetime2 = HzOffsetDateTime.fromISOString('2021-04-15t07:33:04.914+02:30');
+            const offsetDatetime2 = HzOffsetDateTime.fromString('2021-04-15t07:33:04.914+02:30');
             const offsetSeconds2 = offsetDatetime2.offsetSeconds;
             const localDatetime2 = offsetDatetime2.hzLocalDateTime;
             const localTime2 = localDatetime2.hzLocalTime;
@@ -357,7 +362,7 @@ describe('DatetimeClassesTest', function () {
             offsetSeconds2.should.be.eq(150*60);
 
             // Use of Z
-            const offsetDatetime3 = HzOffsetDateTime.fromISOString('2021-04-15T07:33:04.914Z');
+            const offsetDatetime3 = HzOffsetDateTime.fromString('2021-04-15T07:33:04.914Z');
             const offsetSeconds3 = offsetDatetime3.offsetSeconds;
             const localDatetime3 = offsetDatetime3.hzLocalDateTime;
             const localTime3 = localDatetime3.hzLocalTime;
@@ -374,17 +379,37 @@ describe('DatetimeClassesTest', function () {
 
             offsetSeconds3.should.be.eq(0);
 
-            // invalid format
-            (() => HzOffsetDateTime.fromISOString('2021-04-15T07:33:04.914++02:30'))
-                .should.throw(RangeError, 'Invalid format');
-            (() => HzOffsetDateTime.fromISOString('2021-04-15T07:33:04')).should.throw(RangeError, 'Invalid format');
-            // Non string
-            (() => HzOffsetDateTime.fromISOString(1)).should.throw(RangeError, 'String expected');
-            (() => HzOffsetDateTime.fromISOString([])).should.throw(RangeError, 'String expected');
-            (() => HzOffsetDateTime.fromISOString({})).should.throw(RangeError, 'String expected');
-            (() => HzOffsetDateTime.fromISOString(null)).should.throw(RangeError, 'String expected');
-            (() => HzOffsetDateTime.fromISOString()).should.throw(RangeError, 'String expected');
+            // Timezone info omitted, UTC should be assumed
+            const offsetDatetime4 = HzOffsetDateTime.fromString('2021-04-15T07:33:04.914Z');
+            const offsetSeconds4 = offsetDatetime4.offsetSeconds;
+            const localDatetime4 = offsetDatetime4.hzLocalDateTime;
+            const localTime4 = localDatetime4.hzLocalTime;
+            const localDate4 = localDatetime4.hzLocalDate;
+
+            localDate4.year.should.be.eq(2021);
+            localDate4.month.should.be.eq(4);
+            localDate4.date.should.be.eq(15);
+
+            localTime4.hour.should.be.eq(7);
+            localTime4.minute.should.be.eq(33);
+            localTime4.second.should.be.eq(4);
+            localTime4.nano.should.be.eq(914*1000000);
+
+            offsetSeconds4.should.be.eq(0);
         });
+
+        it('should throw RangeError on invalid string', function () {
+            // invalid format
+            (() => HzOffsetDateTime.fromString('2021-04-15T07:33:04.914++02:30'))
+                .should.throw(RangeError, 'Invalid format');
+            // Non string
+            (() => HzOffsetDateTime.fromString(1)).should.throw(RangeError, 'String expected');
+            (() => HzOffsetDateTime.fromString([])).should.throw(RangeError, 'String expected');
+            (() => HzOffsetDateTime.fromString({})).should.throw(RangeError, 'String expected');
+            (() => HzOffsetDateTime.fromString(null)).should.throw(RangeError, 'String expected');
+            (() => HzOffsetDateTime.fromString()).should.throw(RangeError, 'String expected');
+        });
+
         it('should construct from fromHzLocalDateTime correctly', function () {
             const dateTime3 = HzOffsetDateTime.fromHzLocalDateTime(
                 new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 12)),
