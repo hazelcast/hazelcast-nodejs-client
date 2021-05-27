@@ -21,12 +21,6 @@ const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
 const { SqlExpectedResultType } = require('../../../lib/sql/SqlStatement');
 const { SqlQueryId } = require('../../../lib/sql/SqlQueryId');
 const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
-const {
-    HzLocalDateTime,
-    HzOffsetDateTime,
-    HzLocalDate,
-    HzLocalTime
-} = require('../../../lib/sql/DatetimeClasses');
 const { SqlExecuteCodec } = require('../../../lib/codec/SqlExecuteCodec');
 const { SqlCloseCodec } = require('../../../lib/codec/SqlCloseCodec');
 const { SqlFetchCodec } = require('../../../lib/codec/SqlFetchCodec');
