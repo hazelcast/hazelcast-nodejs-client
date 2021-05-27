@@ -232,6 +232,7 @@ describe('SqlResultTest', function () {
 
         beforeEach(function () {
             fakeSqlService = {
+                toHazelcastSqlException: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', err)),
                 close: sandbox.fake.resolves(undefined),
                 fetch: sandbox.fake(() => {
                     return delayedPromise(500);
@@ -296,8 +297,7 @@ describe('SqlResultTest', function () {
             sqlResult.close().then(() => {
                 done(new Error('Not expected to run this line'));
             }).catch(err => {
-                err.should.be.eq(fakeError);
-                sqlResult.closed.should.be.false;
+                err.should.be.instanceof(HazelcastSqlException);
                 done();
             }).catch(done);
         });
@@ -359,6 +359,7 @@ describe('SqlResultTest', function () {
 
         beforeEach(function () {
             fakeSqlService = {
+                toHazelcastSqlException: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', err)),
                 fetch: sandbox.fake.resolves(fakeSqlPage),
                 close: sandbox.fake.resolves()
             };
@@ -408,7 +409,7 @@ describe('SqlResultTest', function () {
             fakeSqlService.fetch = sandbox.fake.rejects(anError);
 
             const rejectionReason = await getRejectionReasonOrDummy(sqlResult, 'fetch');
-            rejectionReason.should.be.eq(anError);
+            rejectionReason.should.be.instanceof(HazelcastSqlException);
             fakeSqlService.fetch.calledOnceWithExactly(
                 sandbox.match.same(fakeConnection),
                 sandbox.match.same(fakeQueryId),

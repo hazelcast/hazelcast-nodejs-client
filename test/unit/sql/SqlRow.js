@@ -18,19 +18,22 @@
 const chai = require('chai');
 const should = chai.should();
 const { SqlRowImpl } = require('../../../lib/sql/SqlRow');
+const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
+const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
 const { IndexOutOfBoundsError, IllegalArgumentError } = require('../../../lib/core/HazelcastError');
 
 describe('SqlRowTest', function () {
     const instance = new SqlRowImpl([
-        {
-            name: 'foo',
-            value: 1
-        },
-        {
-            name: 'bar',
-            value: null
-        }
-    ], {});
+        1, null
+    ], new SqlRowMetadataImpl([{
+        name: 'foo',
+        type: SqlColumnType.BIGINT,
+        nullable: true
+    }, {
+        name: 'bar',
+        type: SqlColumnType.VARCHAR,
+        nullable: true
+    }]));
     describe('getObject', function () {
         it('should give correct values', function () {
             instance.getObject('foo').should.be.eq(1);
