@@ -52,7 +52,7 @@ export class HzLocalTime {
         }
         let match = timeString.match(HzLocalTime.timeStringRegex);
         if (!match) {
-            throw new RangeError('Illegal time string. Expected a string in hh:mm:ss[.sss] format');
+            throw new RangeError('Illegal time string. Expected a string in HH:mm:ss.SSS format');
         }
         match = match.slice(1); // Discard first match which is the first complete match
 
@@ -76,7 +76,7 @@ export class HzLocalTime {
     /**
      * Returns the string representation of this local time.
      *
-     * @returns A string in the form hh:mm:ss[.sssssssss] (9 digits, nano second precision). The constructed string is
+     * @returns A string in the form HH:mm:ss.SSS (9 digits, nano second precision). The constructed string is
      * zero-padded from left. If nanosecond is 0, it is not included in the constructed string.
      */
     toString(): string {
@@ -117,6 +117,7 @@ enum Months {
  * * Represents date in year without timezone.
  */
 export class HzLocalDate {
+    private static readonly dateRegex = /(-?\d+)-(\d\d)-(\d\d)/;
     /**
      * @param year Must be between -999999999-999999999
      * @param month Must be between 1-12
@@ -189,14 +190,14 @@ export class HzLocalDate {
         if (typeof dateString !== 'string') {
             throw new RangeError('String expected.');
         }
-        const split = dateString.split('-');
-        if (split.length !== 3 || split[0].length !== 4 || split[1].length !== 2 || split[2].length !== 2) {
+        const match = dateString.match(HzLocalDate.dateRegex);
+        if (!match) {
             throw new RangeError('Invalid format. Expected a string in yyyy-mm-dd format');
         }
 
-        const yearNumber = +split[0];
-        const monthNumber = +split[1];
-        const dateNumber = +split[2];
+        const yearNumber = +match[1];
+        const monthNumber = +match[2];
+        const dateNumber = +match[3];
 
         if (isNaN(yearNumber) || isNaN(monthNumber) || isNaN(dateNumber)) {
             throw new RangeError('Invalid format. Expected a string in yyyy-mm-dd format');
@@ -249,14 +250,14 @@ export class HzLocalDateTime {
         }
         const split = isoString.split(/[Tt]/);
         if (split.length !== 2) {
-            throw new RangeError('Invalid format. Expected a string in the form yyyy-mm-ss(T|t)hh:mm:ss[.sss]');
+            throw new RangeError('Invalid format. Expected a string in the form yyyy-mm-ss(T|t)HH:mm:ss.SSS');
         }
         return new HzLocalDateTime(HzLocalDate.fromString(split[0]), HzLocalTime.fromString(split[1]));
     }
 
     /**
      * Returns the string representation of this local datetime.
-     * @returns A string in the form yyyy:mm:ddThh:mm:ss[.sssssssss]. Values are zero padded from left. If nano second value
+     * @returns A string in the form yyyy:mm:ddTHH:mm:ss.SSS. Values are zero padded from left. If nano second value
      * is zero, second decimal is not include in the returned string
      */
     toString(): string {
@@ -354,8 +355,8 @@ export class HzOffsetDateTime {
 
     /**
      * Returns ISO 8601 string with timezone of this instance.
-     * @returns A string in the format yyyy-mm-ddThh-mm-ss[.sssssssss](Z | (+|-)hh:mm)
-     * Timezone is denoted either with `Z` or timezone string like +-hh:mm
+     * @returns A string in the format yyyy-mm-ddTHH-mm-ss.SSS(Z | (+|-)HH:mm)
+     * Timezone is denoted either with `Z` or timezone string like +-HH:mm
      */
     toISOString(): string {
         const timezoneOffsetString = getTimezoneOffsetFromSeconds(this.offsetSeconds);

@@ -176,6 +176,21 @@ describe('DatetimeClassesTest', function () {
             localtime2.year.should.be.eq(1);
             localtime2.month.should.be.eq(2);
             localtime2.date.should.be.eq(3);
+
+            const localtime3 = HzLocalDate.fromString('-2000-03-29');
+            localtime3.year.should.be.eq(-2000);
+            localtime3.month.should.be.eq(3);
+            localtime3.date.should.be.eq(29);
+
+            const localtime4 = HzLocalDate.fromString('-29999-03-29');
+            localtime4.year.should.be.eq(-29999);
+            localtime4.month.should.be.eq(3);
+            localtime4.date.should.be.eq(29);
+
+            const localtime5 = HzLocalDate.fromString('29999-03-29');
+            localtime5.year.should.be.eq(29999);
+            localtime5.month.should.be.eq(3);
+            localtime5.date.should.be.eq(29);
         });
 
         it('should throw RangeError on invalid string', function () {
@@ -185,11 +200,10 @@ describe('DatetimeClassesTest', function () {
             (() => HzLocalDate.fromString('2001-02-29')).should.throw(RangeError, 'Invalid date');
             (() => HzLocalDate.fromString('2000-03-32')).should.throw(RangeError, 'Invalid date');
             // invalid format
-            (() => HzLocalDate.fromString('9999999999-02-29')).should.throw(RangeError, 'Invalid format');
+            (() => HzLocalDate.fromString('9999999999-02-29')).should.throw(RangeError, 'Year');
             (() => HzLocalDate.fromString('2301-71')).should.throw(RangeError, 'Invalid format');
             (() => HzLocalDate.fromString('-')).should.throw(RangeError, 'Invalid format');
             (() => HzLocalDate.fromString('2000-02-a')).should.throw(RangeError, 'Invalid format');
-            (() => HzLocalDate.fromString('00001-02-12')).should.throw(RangeError, 'Invalid format');
             (() => HzLocalDate.fromString('0001-002-21')).should.throw(RangeError, 'Invalid format');
             (() => HzLocalDate.fromString('0001-02-1')).should.throw(RangeError, 'Invalid format');
             (() => HzLocalDate.fromString('0001-2-10')).should.throw(RangeError, 'Invalid format');
