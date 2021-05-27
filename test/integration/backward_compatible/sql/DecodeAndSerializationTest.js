@@ -405,7 +405,7 @@ describe('Decode/Serialize test without server config', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
             `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST (? AS DATE) ORDER BY __key ASC`,
-            [new HzLocalDate(1, 1, 1), new HzLocalDate(5, 5, 5)]
+            [new HzLocalDate(1, 1, 1).toString(), new HzLocalDate(5, 5, 5).toString()]
         );
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DATE);
@@ -446,7 +446,7 @@ describe('Decode/Serialize test without server config', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
             `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME) ORDER BY __key ASC`,
-            [new HzLocalTime(1, 0, 0, 0), new HzLocalTime(10, 0, 0, 0)]
+            [new HzLocalTime(1, 0, 0, 0).toString(), new HzLocalTime(10, 0, 0, 0).toString()]
         );
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIME);
@@ -493,8 +493,8 @@ describe('Decode/Serialize test without server config', function () {
         const result = client.getSqlService().execute(
             `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP) ORDER BY __key ASC`,
             [
-                new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
-                new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1))
+                new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)).toString(),
+                new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1)).toString()
             ]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -558,11 +558,11 @@ describe('Decode/Serialize test without server config', function () {
                 HzOffsetDateTime.fromHzLocalDateTime(
                     new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
                     0
-                ),
+                ).toISOString(),
                 HzOffsetDateTime.fromHzLocalDateTime(
                     new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1)),
                     0
-                )
+                ).toISOString()
             ]
         );
         const rowMetadata = await result.getRowMetadata();

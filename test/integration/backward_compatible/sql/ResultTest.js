@@ -72,7 +72,7 @@ describe('SqlResultTest', function () {
         } catch (e) {
             e.should.be.instanceof(HazelcastSqlException);
             e.code.should.be.eq(SqlErrorCode.CANCELLED_BY_USER);
-            e.message.should.include('Cancelled');
+            e.message.should.include('cancelled');
             e.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
         }
     });
