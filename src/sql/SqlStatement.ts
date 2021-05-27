@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
-
 /**
  * The expected statement result type.
  */
@@ -49,7 +47,7 @@ export interface SqlStatementOptions {
      * Other negative values are prohibited.
      * Defaults to `-1`.
      */
-    timeoutMillis?: Long | number;
+    timeoutMillis?: number;
     /**
      * The cursor buffer size (measured in the number of rows).
      *

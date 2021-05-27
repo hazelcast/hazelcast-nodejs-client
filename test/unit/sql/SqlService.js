@@ -134,7 +134,7 @@ describe('SqlServiceTest', function () {
             ).should.be.true;
 
             sqlService.execute('s', params, {
-                timeoutMillis: long.ZERO,
+                timeoutMillis: 0,
                 cursorBufferSize: 1,
                 returnRawResult: true,
                 schema: 'sd',
@@ -258,17 +258,17 @@ describe('SqlServiceTest', function () {
             (() => sqlService.execute({ 'random': '' })).should.throw(IllegalArgumentError);
 
             // If timeout is less than -1 throw
-            (() => sqlService.execute({ 'sql': 'ss', options: { timeoutMillis: long.fromNumber(-3) } }))
+            (() => sqlService.execute({ 'sql': 'ss', options: { timeoutMillis: -3 } }))
                 .should.throw(IllegalArgumentError);
-            (() => sqlService.execute({ 'sql': 'ss', options: { timeoutMillis: long.fromNumber(-2) } }))
+            (() => sqlService.execute({ 'sql': 'ss', options: { timeoutMillis: -2 } }))
                 .should.throw(IllegalArgumentError);
             (() => sqlService.execute({
                 'sql': 'ss',
-                options: { timeoutMillis: long.fromNumber(-1) }
+                options: { timeoutMillis: -1 }
             })).should.not.throw();
             (() => sqlService.execute({
                 'sql': 'ss',
-                options: { timeoutMillis: long.fromNumber(0) }
+                options: { timeoutMillis: 0 }
             })).should.not.throw();
 
             // If cursorBufferSize is non positive throw
@@ -332,7 +332,7 @@ describe('SqlServiceTest', function () {
                     (() => sqlService.execute({ 'sql': 'ss', options: { cursorBufferSize: v } })).should.not.throw();
                 }
 
-                if (!long.isLong(v) && typeof v !== 'number') {
+                if (typeof v !== 'number') {
                     // invalid timeoutMillis
                     (() => sqlService.execute('ss', [], { timeoutMillis: v })).should.throw(IllegalArgumentError);
                     (() => sqlService.execute({ 'sql': 'ss', options: { timeoutMillis: v } }))

@@ -32,7 +32,6 @@ import {
     tryGetArray,
     tryGetBoolean,
     tryGetEnum,
-    tryGetLong,
     tryGetNumber,
     tryGetString
 } from '../util/Util';
@@ -48,9 +47,6 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
  * Hazelcast is able to execute distributed SQL queries over the following entities:
  * * IMap
  *
- * During optimization, a statement is converted into a directed acyclic graph (DAG) that is sent to cluster members
- * for execution. Results are sent back to the originating member asynchronously and returned to the user via {@link SqlResult}.
- *
  * ##### Querying an IMap
  *
  * Every IMap instance is exposed as a table with the same name in the `partitioned` schema. The `partitioned`
@@ -58,6 +54,7 @@ import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './Dat
  * schema name.
  *
  * ###### Column Resolution
+ *
  * Every table backed by an IMap has a set of columns that are resolved automatically. Column resolution uses IMap entries
  * located on the member that initiates the query. The engine extracts columns from a key and a value and then merges them
  * into a single column set. In case the key and the value have columns with the same name, the key takes precedence.
@@ -232,15 +229,10 @@ export class SqlServiceImpl implements SqlService {
             tryGetString(sqlStatementOptions.schema);
 
         if (sqlStatementOptions.hasOwnProperty('timeoutMillis')) {
-            if(typeof sqlStatementOptions.timeoutMillis === 'number'){
-                if(sqlStatementOptions.timeoutMillis < 0 && sqlStatementOptions.timeoutMillis !== -1){
-                    throw new RangeError('Timeout millis can be non-negative or -1');
-                }
-            }else{
-                const longValue = tryGetLong(sqlStatementOptions.timeoutMillis);
-                if (longValue.lessThan(Long.ZERO) && longValue.neq(Long.fromInt(-1))) {
-                    throw new RangeError('Timeout millis can be non-negative or -1');
-                }
+            const timeoutMillis = tryGetNumber(sqlStatementOptions.timeoutMillis);
+
+            if(timeoutMillis < 0 && timeoutMillis !== -1){
+                throw new RangeError('Timeout millis can be non-negative or -1');
             }
         }
 
@@ -325,11 +317,11 @@ export class SqlServiceImpl implements SqlService {
                 : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
         let timeoutMillis: Long;
-        if(sqlStatement.options?.timeoutMillis){
-            if(typeof sqlStatement.options.timeoutMillis === 'number'){
-                timeoutMillis = Long.fromNumber(sqlStatement.options.timeoutMillis);
-            }else timeoutMillis = sqlStatement.options.timeoutMillis;
-        }else timeoutMillis = SqlServiceImpl.DEFAULT_TIMEOUT;
+        if(sqlStatement.options?.timeoutMillis || sqlStatement.options?.timeoutMillis === 0){
+            timeoutMillis = Long.fromNumber(sqlStatement.options.timeoutMillis);
+        }else{
+            timeoutMillis = SqlServiceImpl.DEFAULT_TIMEOUT;
+        }
 
         try {
             const serializedParams = [];

@@ -333,30 +333,34 @@ export class SqlResultImpl implements SqlResult {
         return this.fetchDeferred.promise;
     }
 
+    /**
+     * Checks if there are rows to iterate in a recursive manner, similar to a non-blocking while block
+     * @internal
+     */
+    private checkHasNext(): Promise<boolean>{
+        if (this.currentPosition === this.currentRowCount) {
+            // Reached end of the page. Try fetching the next page if there are more.
+            if (!this.last) {
+                return this.fetch().then(page => {
+                    this.onNextPage(page);
+                    return this.checkHasNext();
+                });
+            } else {
+                // No more pages are expected, so resolve false.
+                return Promise.resolve(false);
+            }
+        } else {
+            return Promise.resolve(true);
+        }
+    }
+
     /** Returns if there are rows to be iterated. Used by {@link next}. */
     hasNext(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {
-            if (this.updateCount !== Long.fromInt(-1)) {
+            if (this.rowMetadata === null) {
                 return Promise.reject(new IllegalStateError('This result contains only update count'));
             }
-            // While loop similar logic is written via recursion when written in async manner
-            const checkHasNext = (): Promise<boolean> => {
-                if (this.currentPosition === this.currentRowCount) {
-                    // Reached end of the page. Try fetching the next page if there are more.
-                    if (!this.last) {
-                        return this.fetch().then(page => {
-                            this.onNextPage(page);
-                            return checkHasNext();
-                        });
-                    } else {
-                        // No more pages are expected, so resolve false.
-                        return Promise.resolve(false);
-                    }
-                } else {
-                    return Promise.resolve(true);
-                }
-            }
-            return checkHasNext();
+            return this.checkHasNext();
         });
     }
 
