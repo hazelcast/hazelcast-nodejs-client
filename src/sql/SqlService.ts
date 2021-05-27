@@ -36,7 +36,6 @@ import {
     tryGetString
 } from '../util/Util';
 import {SqlPage} from './SqlPage';
-import {HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from './DatetimeClasses';
 
 /**
  * SQL Service of the client. You can use this service to execute SQL queries.
@@ -250,21 +249,6 @@ export class SqlServiceImpl implements SqlService {
     }
 
     /**
-     * Converts datetime related wrapper classes to string to be able to serialize them. (No default serializers yet)
-     * @internal
-     * @param value
-     */
-    convertToStringIfDatetimeValue(value: any) {
-        if (value instanceof HzLocalTime || value instanceof HzLocalDate || value instanceof HzLocalDateTime) {
-            return value.toString();
-        } else if (value instanceof HzOffsetDateTime) {
-            return value.toISOString();
-        } else {
-            return value;
-        }
-    }
-
-    /**
      * Converts an error to HazelcastSqlException and returns it. Used by execute, close and fetch
      * @internal
      * @param err
@@ -326,8 +310,7 @@ export class SqlServiceImpl implements SqlService {
         try {
             const serializedParams = [];
             if (Array.isArray(sqlStatement.params)) { // params can be undefined
-                for (let param of sqlStatement.params) {
-                    param = this.convertToStringIfDatetimeValue(param);
+                for (const param of sqlStatement.params) {
                     serializedParams.push(this.serializationService.toData(param));
                 }
             }

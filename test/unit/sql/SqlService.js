@@ -106,20 +106,6 @@ describe('SqlServiceTest', function () {
             fakeSerializationService.toData.thirdCall.calledWithExactly(3).should.be.true;
         });
 
-        it('should call toData with string if datetime related wrapper classes are passed', function () {
-            const params = [
-                new HzLocalDate(1999, 12, 3),
-                new HzLocalTime(10, 19, 10, 10),
-                new HzOffsetDateTime(new Date(), 100),
-                new HzLocalDateTime(new HzLocalDate(1999, 12, 3), new HzLocalTime(10, 19, 10, 10))
-            ];
-            sqlService.execute('s', params, {});
-            fakeSerializationService.toData.getCall(0).args[0].should.be.a('string');
-            fakeSerializationService.toData.getCall(1).args[0].should.be.a('string');
-            fakeSerializationService.toData.getCall(2).args[0].should.be.a('string');
-            fakeSerializationService.toData.getCall(3).args[0].should.be.a('string');
-        });
-
         it('should call encodeRequest with correct params', function () {
             const params = [1, 2, 3];
             sqlService.execute('s', params, {}); // default options
