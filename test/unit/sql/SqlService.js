@@ -300,7 +300,7 @@ describe('SqlServiceTest', function () {
                     (() => sqlService.execute({ 'sql': v })).should.not.throw();
                 }
 
-                if (typeof v !== 'string' && v !== null) {
+                if (typeof v !== 'string') {
                     // invalid schema
                     (() => sqlService.execute('', undefined, { schema: v })).should.throw(IllegalArgumentError);
                     (() => sqlService.execute({ 'sql': 'ss', options: { schema: v } }))

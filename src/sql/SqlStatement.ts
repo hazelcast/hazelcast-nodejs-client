@@ -40,7 +40,7 @@ export interface SqlStatementOptions {
      * * The schema name is case sensitive. For example, `foo` and `Foo` are different schemas.
      * * The default value is `null` meaning only the default search path is used.
      */
-    schema?: string | null;
+    schema?: string;
     /**
      * The execution timeout in milliseconds. If the timeout is reached for a running statement, it will be cancelled forcefully.
      * Zero value means no timeout. `-1` means that the timeout in server config will be used.

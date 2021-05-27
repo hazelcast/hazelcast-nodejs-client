@@ -225,7 +225,7 @@ export class SqlServiceImpl implements SqlService {
      * @internal
      */
     static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
-        if (sqlStatementOptions.hasOwnProperty('schema') && sqlStatementOptions.schema !== null)
+        if (sqlStatementOptions.hasOwnProperty('schema'))
             tryGetString(sqlStatementOptions.schema);
 
         if (sqlStatementOptions.hasOwnProperty('timeoutMillis')) {
@@ -338,8 +338,7 @@ export class SqlServiceImpl implements SqlService {
                 serializedParams,
                 timeoutMillis,
                 cursorBufferSize,
-                sqlStatement.options?.schema || sqlStatement.options?.schema === '' ?
-                    sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA,
+                sqlStatement.options?.hasOwnProperty('schema') ? sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA,
                 expectedResultType,
                 queryId
             );
