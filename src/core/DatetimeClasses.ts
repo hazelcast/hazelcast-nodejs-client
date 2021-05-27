@@ -317,6 +317,9 @@ export class HzOffsetDateTime {
 
     private static readonly timezoneRegex = /([Zz]|[+-]\d\d:\d\d)/;
 
+    /**
+     * Constructs new HzOffsetDateTime from {@link HzLocalDateTime} and offset seconds.
+     */
     constructor(private readonly hzLocalDateTime: HzLocalDateTime, private readonly offsetSeconds: number) {
     }
 
@@ -332,21 +335,7 @@ export class HzOffsetDateTime {
         if (!Number.isInteger(offsetSeconds) || !(offsetSeconds >= -64800 && offsetSeconds <= 64800)) {
             throw new RangeError('Offset seconds can be between -64800(-18:00) and 64800(+18:00).');
         }
-        const hzLocalDateTime = new HzLocalDateTime(
-            new HzLocalDate(
-                date.getUTCFullYear(),
-                date.getUTCMonth(),
-                date.getUTCDate()
-            ),
-            new HzLocalTime(
-                date.getUTCHours(),
-                date.getUTCMinutes(),
-                date.getUTCSeconds(),
-                date.getUTCMilliseconds() * 1_000_000
-            )
-        );
-
-        return new HzOffsetDateTime(hzLocalDateTime, offsetSeconds);
+        return new HzOffsetDateTime(HzLocalDateTime.fromDate(date), offsetSeconds);
     }
 
     /**
@@ -376,18 +365,7 @@ export class HzOffsetDateTime {
      * effectively get a timestamp.(an instance in time without timezone)
      */
     asDate(): Date {
-        return new Date(
-            Date.UTC(
-                this.hzLocalDateTime.hzLocalDate.year,
-                this.hzLocalDateTime.hzLocalDate.month - 1, // month start with 0 in Date
-                this.hzLocalDateTime.hzLocalDate.date,
-                this.hzLocalDateTime.hzLocalTime.hour,
-                this.hzLocalDateTime.hzLocalTime.minute,
-                this.hzLocalDateTime.hzLocalTime.second,
-                Math.floor(this.hzLocalDateTime.hzLocalTime.nano / 1_000_000)
-            )
-            - this.offsetSeconds * 1000
-        );
+        return new Date(this.hzLocalDateTime.asDate().getTime() - this.offsetSeconds * 1000);
     }
 
     /**

@@ -53,12 +53,12 @@ describe('DatetimeUtilTest', function () {
                 getTimezoneOffsetFromSeconds(-36061)
             ).to.be.equal('-10:01');
         });
-        it('should give -18:00 if too low offset is given', function () {
+        it('should throw RangeError if too low offset is given', function () {
             expect(
                 () => getTimezoneOffsetFromSeconds(-80000)
             ).to.throw(RangeError);
         });
-        it('should give +18:00 if too high offset is given', function () {
+        it('should throw RangeError if too high offset is given', function () {
             expect(
                 () => getTimezoneOffsetFromSeconds(99999)
             ).to.throw(RangeError);
