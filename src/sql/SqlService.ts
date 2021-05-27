@@ -272,6 +272,36 @@ export class SqlServiceImpl implements SqlService {
         }
     }
 
+    /**
+     * Converts an error to HazelcastSqlException and returns it. Used by execute, close and fetch
+     * @internal
+     * @param err
+     * @param connection
+     */
+    toHazelcastSqlException(err: any, connection: Connection) : HazelcastSqlException {
+        if(!connection.isAlive()){
+            return new HazelcastSqlException(
+                connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM,
+                'Cluster topology changed while a query was executed:' +
+                `Member cannot be reached: ${connection.getRemoteAddress()}`,
+                err
+            )
+        } else {
+            if(err instanceof HazelcastSqlException){
+                return err;
+            }
+            let originatingMemberId;
+            if(err.hasOwnProperty('originatingMemberId')){
+                originatingMemberId = err.originatingMemberId;
+            }else{
+                originatingMemberId = this.connectionManager.getClientUuid();
+            }
+            return new HazelcastSqlException(
+                originatingMemberId, SqlErrorCode.GENERIC, err.message, err
+            );
+        }
+    }
+
     executeStatement(sqlStatement: SqlStatement): SqlResult {
         try {
             SqlServiceImpl.validateSqlStatement(sqlStatement);
@@ -336,30 +366,14 @@ export class SqlServiceImpl implements SqlService {
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
                 this.handleExecuteResponse(clientMessage, res);
             }).catch(err => {
-                if(!connection.isAlive()){
-                    res.onExecuteError(new HazelcastSqlException(
-                        connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM,
-                        'Cluster topology changed while a query was executed:' +
-                        `Member cannot be reached: ${connection.getRemoteAddress()}`,
-                        err
-                    ))
-                } else {
-                    res.onExecuteError(
-                        new HazelcastSqlException(
-                            connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM, err.message, err
-                        )
-                    );
-                }
+                res.onExecuteError(
+                    this.toHazelcastSqlException(err, connection)
+                );
             });
 
             return res;
         } catch (error) {
-            throw new HazelcastSqlException(
-                connection.getRemoteUuid(),
-                SqlErrorCode.GENERIC,
-                `An error occurred during SQL execution: ${error.message}`,
-                error
-            );
+            throw this.toHazelcastSqlException(error, connection);
         }
     }
 

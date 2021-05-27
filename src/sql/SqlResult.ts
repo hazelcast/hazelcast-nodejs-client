@@ -237,7 +237,9 @@ export class SqlResultImpl implements SqlResult {
         // Send the close request.
         this.sqlService.close(this.connection, this.queryId).then(() => {
             this.closeDeferred.resolve();
-        }).catch(this.closeDeferred.reject);
+        }).catch(err => {
+            this.closeDeferred.reject(this.sqlService.toHazelcastSqlException(err, this.connection));
+        });
 
         this.closed = true;
 
@@ -324,7 +326,9 @@ export class SqlResultImpl implements SqlResult {
         this.sqlService.fetch(this.connection, this.queryId, this.cursorBufferSize).then(value => {
             this.fetchDeferred.resolve(value);
             this.fetchDeferred = undefined; // Set fetchDeferred to undefined to be able to fetch again
-        }).catch(this.fetchDeferred.reject);
+        }).catch(err => {
+            this.fetchDeferred.reject(this.sqlService.toHazelcastSqlException(err, this.connection));
+        });
 
         return this.fetchDeferred.promise;
     }
