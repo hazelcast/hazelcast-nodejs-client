@@ -55,13 +55,13 @@ describe('DatetimeUtilTest', function () {
         });
         it('should give -18:00 if too low offset is given', function () {
             expect(
-                getTimezoneOffsetFromSeconds(-80000)
-            ).to.be.equal('-18:00');
+                () => getTimezoneOffsetFromSeconds(-80000)
+            ).to.throw(RangeError);
         });
         it('should give +18:00 if too high offset is given', function () {
             expect(
-                getTimezoneOffsetFromSeconds(99999)
-            ).to.be.equal('+18:00');
+                () => getTimezoneOffsetFromSeconds(99999)
+            ).to.throw(RangeError);
         });
     });
     describe('getOffsetSecondsFromTimezoneString', function () {

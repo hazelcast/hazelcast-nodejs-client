@@ -16,7 +16,7 @@
 
 
 /**
- Constructs and returns timezone for iso string from offsetSeconds
+ Constructs and returns timezone for ISO string from offsetSeconds
  @internal
 
  @param offsetSeconds Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]. If out of
@@ -29,10 +29,8 @@ export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
         throw new RangeError('Expected integer');
     }
 
-    if (offsetSeconds > 64800) {
-        return '+18:00';
-    } else if (offsetSeconds < -64800) {
-        return '-18:00';
+    if (offsetSeconds > 64800 || offsetSeconds  < -64800) {
+        throw new RangeError('Offset seconds should be in the range [-64800,64800]');
     }
 
     const offsetMinutes = Math.floor(Math.abs(offsetSeconds) / 60);

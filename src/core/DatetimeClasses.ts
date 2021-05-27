@@ -224,6 +224,7 @@ export class HzLocalDate {
  * * Represents date and time without timezone.
  */
 export class HzLocalDateTime {
+    private static tRegex = /[Tt]/;
     /**
      * @throws RangeError if arguments are invalid
      */
@@ -249,7 +250,7 @@ export class HzLocalDateTime {
         if (typeof isoString !== 'string') {
             throw new RangeError('String expected.');
         }
-        const split = isoString.split(/[Tt]/);
+        const split = isoString.split(HzLocalDateTime.tRegex);
         if (split.length !== 2) {
             throw new RangeError('Invalid format. Expected a string in the form yyyy-mm-ss(T|t)HH:mm:ss.SSS');
         }
