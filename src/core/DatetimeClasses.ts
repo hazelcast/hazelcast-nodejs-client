@@ -50,19 +50,17 @@ export class HzLocalTime {
         if (typeof timeString !== 'string') {
             throw new RangeError('String expected.');
         }
-        let match = timeString.match(HzLocalTime.timeStringRegex);
+        const match = timeString.match(HzLocalTime.timeStringRegex);
         if (!match) {
             throw new RangeError('Illegal time string. Expected a string in HH:mm:ss.SSS format');
         }
-        match = match.slice(1); // Discard first match which is the first complete match
-
-        const hours = +match[0];
-        const minutes = +match[1];
-        const seconds = +match[2];
+        const hours = +match[1];
+        const minutes = +match[2];
+        const seconds = +match[3];
 
         let nano = 0;
-        if (match[3] !== undefined) { // nano second included
-            let nanoStr = match[3].substring(1, 10); // does not include first dot
+        if (match[4] !== undefined) { // nano second included
+            let nanoStr = match[4].substring(1, 10); // does not include first dot
             nanoStr = nanoStr.padEnd(9, '0');
             nano = +nanoStr;
         }
