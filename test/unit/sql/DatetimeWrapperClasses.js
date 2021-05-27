@@ -297,11 +297,30 @@ describe('DatetimeClassesTest', function () {
             dateTime1.toString().should.be.eq('2000-02-29T02:03:04.006000000');
         });
 
+        it('fromDate should throw RangeError if date is invalid', function () {
+            (() => HzLocalDateTime.fromDate(new Date(-1))).should.throw(RangeError, 'Invalid date');
+            (() => HzLocalDateTime.fromDate(new Date('s'))).should.throw(RangeError, 'Invalid date');
+            (() => HzLocalDateTime.fromDate(1, 1)).should.throw(RangeError, 'Invalid date');
+            (() => HzLocalDateTime.fromDate('s', 1)).should.throw(RangeError, 'Invalid date');
+            (() => HzLocalDateTime.fromDate([], 1)).should.throw(RangeError, 'Invalid date');
+        });
+
+        it('should construct from fromDate correctly', function () {
+            const dateTime = HzLocalDateTime.fromDate(new Date(Date.UTC(2000, 2, 29, 2, 3, 4, 6)));
+            dateTime.toString().should.be.eq('2000-02-29T02:03:04.006000000');
+        });
+
+        it('should convert to date correctly', function () {
+            const dateTime = new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 19, 4, 6000000));
+            dateTime.asDate().toISOString().should.be.eq('2000-02-29T02:19:04.006Z');
+        });
     });
     describe('HzOffsetDateTimeTest', function () {
 
         it('should return parse values correctly', function () {
-            const dateTime1 = new HzOffsetDateTime(new Date(Date.UTC(2000, 2, 29, 2, 3, 4, 6)), 1000);
+            const dateTime1 = new HzOffsetDateTime(new HzLocalDateTime(
+                new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 6)), 1000
+            );
 
             dateTime1.hzLocalDateTime.hzLocalDate.year.should.be.equal(2000);
             dateTime1.hzLocalDateTime.hzLocalDate.month.should.be.equal(2);
@@ -309,34 +328,45 @@ describe('DatetimeClassesTest', function () {
             dateTime1.hzLocalDateTime.hzLocalTime.hour.should.be.equal(2);
             dateTime1.hzLocalDateTime.hzLocalTime.minute.should.be.equal(3);
             dateTime1.hzLocalDateTime.hzLocalTime.second.should.be.equal(4);
-            dateTime1.hzLocalDateTime.hzLocalTime.nano.should.be.equal(6000000);
+            dateTime1.hzLocalDateTime.hzLocalTime.nano.should.be.equal(6);
             dateTime1.offsetSeconds.should.be.equal(1000);
         });
 
-        it('should throw RangeError if date is invalid', function () {
-            (() => new HzOffsetDateTime(new Date(-1), 1)).should.throw(RangeError, 'Invalid date');
-            (() => new HzOffsetDateTime(new Date('s', 1))).should.throw(RangeError, 'Invalid date');
-            (() => new HzOffsetDateTime(1, 1)).should.throw(RangeError, 'Invalid date');
-            (() => new HzOffsetDateTime('s', 1)).should.throw(RangeError, 'Invalid date');
-            (() => new HzOffsetDateTime([], 1)).should.throw(RangeError, 'Invalid date');
+        it('fromDate should throw RangeError if date is invalid', function () {
+            (() => HzOffsetDateTime.fromDate(new Date(-1), 1)).should.throw(RangeError, 'Invalid date');
+            (() => HzOffsetDateTime.fromDate(new Date('s'), 1)).should.throw(RangeError, 'Invalid date');
+            (() => HzOffsetDateTime.fromDate(1, 1)).should.throw(RangeError, 'Invalid date');
+            (() => HzOffsetDateTime.fromDate('s', 1)).should.throw(RangeError, 'Invalid date');
+            (() => HzOffsetDateTime.fromDate([], 1)).should.throw(RangeError, 'Invalid date');
         });
 
-        it('should throw RangeError if offset is not an integer between -64800-64800', function () {
-            (() => new HzOffsetDateTime(new Date(), '1')).should.throw(RangeError, 'Offset');
-            (() => new HzOffsetDateTime(new Date(), 90000)).should.throw(RangeError, 'Offset');
-            (() => new HzOffsetDateTime(new Date(), [])).should.throw(RangeError, 'Offset');
-            (() => new HzOffsetDateTime(new Date(), -90000)).should.throw(RangeError, 'Offset');
-            (() => new HzOffsetDateTime(new Date(), {})).should.throw(RangeError, 'Offset');
+        it('fromDate should throw RangeError if offset is not an integer between -64800-64800', function () {
+            (() => HzOffsetDateTime.fromDate(new Date(), '1')).should.throw(RangeError, 'Offset');
+            (() => HzOffsetDateTime.fromDate(new Date(), 90000)).should.throw(RangeError, 'Offset');
+            (() => HzOffsetDateTime.fromDate(new Date(), [])).should.throw(RangeError, 'Offset');
+            (() => HzOffsetDateTime.fromDate(new Date(), -90000)).should.throw(RangeError, 'Offset');
+            (() => HzOffsetDateTime.fromDate(new Date(), {})).should.throw(RangeError, 'Offset');
         });
 
-        const dateTime1 = new HzOffsetDateTime(new Date(Date.UTC(2000, 2, 29, 2, 19, 4, 6)), 1000);
+        it('should construct from fromDate correctly', function () {
+            const dateTime3 = HzOffsetDateTime.fromDate(
+                new Date(Date.UTC(2000, 2, 29, 2, 3, 4, 6)),
+                1800
+            );
+            dateTime3.toString().should.be.eq('2000-02-29T02:03:04.006000000+00:30');
+        });
+
+        const dateTime1 = new HzOffsetDateTime(
+            new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 19, 4, 6000000)),
+            1000
+        );
 
         it('should convert to date correctly', function () {
             dateTime1.asDate().toISOString().should.be.eq('2000-02-29T02:02:24.006Z');
         });
 
         it('should convert to string correctly', function () {
-            dateTime1.toISOString().should.be.eq('2000-02-29T02:19:04.006000000+00:16');
+            dateTime1.toString().should.be.eq('2000-02-29T02:19:04.006000000+00:16');
         });
 
         it('should construct from string correctly', function () {
@@ -422,14 +452,6 @@ describe('DatetimeClassesTest', function () {
             (() => HzOffsetDateTime.fromString({})).should.throw(RangeError, 'String expected');
             (() => HzOffsetDateTime.fromString(null)).should.throw(RangeError, 'String expected');
             (() => HzOffsetDateTime.fromString()).should.throw(RangeError, 'String expected');
-        });
-
-        it('should construct from fromHzLocalDateTime correctly', function () {
-            const dateTime3 = HzOffsetDateTime.fromHzLocalDateTime(
-                new HzLocalDateTime(new HzLocalDate(2000, 2, 29), new HzLocalTime(2, 3, 4, 12)),
-                1800
-            );
-            dateTime3.toISOString().should.be.eq('2000-02-29T02:03:04.000000012+00:30');
         });
     });
 });

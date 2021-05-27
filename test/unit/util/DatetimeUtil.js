@@ -22,8 +22,6 @@ const {
     getOffsetSecondsFromTimezoneString
 } = require('../../../lib/util/DatetimeUtil');
 
-const { IllegalArgumentError } = require('../../../lib/core/HazelcastError');
-
 describe('DatetimeUtilTest', function () {
     describe('getTimezoneOffsetFromSecondsTest', function () {
         it('should extract 0 seconds correctly', function () {
@@ -98,11 +96,11 @@ describe('DatetimeUtilTest', function () {
         });
 
         it('should throw if offset more than 18 hours is given', function () {
-            expect(() => getOffsetSecondsFromTimezoneString('+19:00')).to.throw(IllegalArgumentError);
+            expect(() => getOffsetSecondsFromTimezoneString('+19:00')).to.throw(RangeError);
         });
 
         it('should throw if offset less than -18 hours is given', function () {
-            expect(() => getOffsetSecondsFromTimezoneString('-19:00')).to.throw(IllegalArgumentError);
+            expect(() => getOffsetSecondsFromTimezoneString('-19:00')).to.throw(RangeError);
         });
     });
     describe('leftZeroPadIntegerTest', function () {
