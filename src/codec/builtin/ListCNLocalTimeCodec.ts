@@ -2,7 +2,7 @@ import {ClientMessage} from '../../protocol/ClientMessage';
 import {ListCNFixedSizeCodec} from './ListCNFixedSizeCodec';
 import {BitsUtil} from '../../util/BitsUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
-import {HzLocalTime} from '../../sql/DatetimeClasses';
+import {HzLocalTime} from '../../core';
 
 /** @internal */
 export class ListCNLocalTimeCodec {

@@ -17,7 +17,7 @@
 import * as Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
 import {UUID} from '../../core/UUID';
-import {HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime} from '../../sql/DatetimeClasses';
+import {HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime} from '../../core';
 
 // Taken from long.js, https://github.com/dcodeIO/long.js/blob/master/src/long.js
 const TWO_PWR_16_DBL = 1 << 16;
@@ -52,7 +52,7 @@ export class FixSizedTypesCodec {
     static decodeOffsetDateTime(buffer: Buffer, offset: number): HzOffsetDateTime {
         const localDateTime = FixSizedTypesCodec.decodeLocalDatetime(buffer, offset);
         const offsetSeconds = FixSizedTypesCodec.decodeInt(buffer, offset + BitsUtil.LOCAL_DATETIME_SIZE_IN_BYTES);
-        return HzOffsetDateTime.fromHzLocalDateTime(localDateTime, offsetSeconds);
+        return new HzOffsetDateTime(localDateTime, offsetSeconds);
     }
 
     /*
