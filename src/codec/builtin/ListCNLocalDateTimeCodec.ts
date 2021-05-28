@@ -6,7 +6,6 @@ import {HzLocalDateTime} from '../../core';
 
 /** @internal */
 export class ListCNLocalDateTimeCodec {
-
     static decode(clientMessage: ClientMessage): HzLocalDateTime[] {
         return ListCNFixedSizeCodec.decode(
             clientMessage.nextFrame(),

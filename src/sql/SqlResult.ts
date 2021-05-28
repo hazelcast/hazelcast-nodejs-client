@@ -76,7 +76,7 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  */
 export interface SqlResult extends AsyncIterable<SqlRowType> {
     /**
-     *  Returns next {@link SqlRowType} iteration result. You should not call this method when result does not contains
+     *  Returns next {@link SqlRowType} iteration result. You should not call this method when result does not contain
      *  rows.
      *  @throws {@link IllegalStateError} if result does not contain rows, but update count.
      *  @returns An object including "value" and "done" keys. The "done" key indicates if

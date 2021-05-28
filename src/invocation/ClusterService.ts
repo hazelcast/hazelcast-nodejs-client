@@ -74,7 +74,7 @@ export class ClusterService implements Cluster {
     /**
      * Gets the member with the given UUID.
      *
-     * @param {string} uuid The UUID of the member as string.
+     * @param {string} uuid The UUID of the member as a string.
      * @return {MemberImpl | undefined} The member that was found, or undefined if not found.
      */
     getMember(uuid: string): MemberImpl {

@@ -62,7 +62,7 @@ export class SqlPage {
     /**
      * This is needed for better mocking. Constructor mocking is not trivial with sinon.
      */
-    static newPage(columnTypes: SqlColumnType[], columns: any[][], last: boolean): SqlPage {
+    static fromColumns(columnTypes: SqlColumnType[], columns: any[][], last: boolean): SqlPage {
         return new SqlPage(columnTypes, columns, last);
     }
 }

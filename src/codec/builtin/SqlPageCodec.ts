@@ -118,7 +118,7 @@ export class SqlPageCodec {
         }
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return SqlPage.newPage(columnTypes, columns, isLast);
+        return SqlPage.fromColumns(columnTypes, columns, isLast);
     }
 
 }

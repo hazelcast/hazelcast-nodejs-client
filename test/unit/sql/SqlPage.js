@@ -35,9 +35,9 @@ describe('SqlPageTest', function () {
     const isLast = true;
 
     const instance = new SqlPage(columnTypes, data, isLast);
-    const staticInstance = SqlPage.newPage(columnTypes, data, isLast);
+    const staticInstance = SqlPage.fromColumns(columnTypes, data, isLast);
 
-    describe('newPage', function () {
+    describe('fromColumns', function () {
         it('should construct same page as new', function () {
             staticInstance.getRowCount().should.be.eq(instance.getRowCount());
             staticInstance.getColumnCount().should.be.eq(instance.getColumnCount());
