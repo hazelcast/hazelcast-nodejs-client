@@ -221,7 +221,7 @@ export class SqlResultImpl implements SqlResult {
         }
 
         // If already closed, return a resolved promise
-        if(this.closed){
+        if (this.closed) {
             return Promise.resolve();
         }
 
@@ -233,7 +233,7 @@ export class SqlResultImpl implements SqlResult {
         this.onExecuteError(error);
         // Reject ongoing fetch request if there is one.
         if (this.fetchDeferred?.promise)
-            this.fetchDeferred.reject(error);
+            {this.fetchDeferred.reject(error);}
         // Send the close request.
         this.sqlService.close(this.connection, this.queryId).then(() => {
             this.closeDeferred.resolve();
@@ -260,7 +260,7 @@ export class SqlResultImpl implements SqlResult {
 
     /** Called when an error is occurred during SQL execute */
     onExecuteError(error: HazelcastSqlException): void {
-        if (this.closed) return;
+        if (this.closed) {return;}
         this.updateCount = Long.fromInt(-1);
         this.rowMetadata = null;
         this.executeDeferred.reject(error);
@@ -293,7 +293,7 @@ export class SqlResultImpl implements SqlResult {
     /** Called when a execute response is received. */
     onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage, updateCount: Long) {
         // Ignore the response if SQL result is closed.
-        if (this.closed) return;
+        if (this.closed) {return;}
 
         if (rowMetadata !== null) { // Result that including rows
             this.rowMetadata = rowMetadata;
@@ -313,7 +313,7 @@ export class SqlResultImpl implements SqlResult {
     fetch(): Promise<SqlPage> {
         // If there is an ongoing fetch, return that promise
         if (this.fetchDeferred?.promise)
-            return this.fetchDeferred.promise;
+            {return this.fetchDeferred.promise;}
 
         // Do not start a fetch if close is called
         if (this.closeDeferred?.promise) {
@@ -342,7 +342,7 @@ export class SqlResultImpl implements SqlResult {
      * Checks if there are rows to iterate in a recursive manner, similar to a non-blocking while block
      * @internal
      */
-    private checkHasNext(): Promise<boolean>{
+    private checkHasNext(): Promise<boolean> {
         if (this.currentPosition === this.currentRowCount) {
             // Reached end of the page. Try fetching the next page if there are more.
             if (!this.last) {

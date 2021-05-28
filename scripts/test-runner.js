@@ -116,7 +116,9 @@ const shutdownProcesses = () => {
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', testProcess.pid, '/f', '/t']); // simple sigkill not enough on windows
     } else {
-        if (testProcess && testProcess.exitCode === null) testProcess.kill('SIGKILL');
+        if (testProcess && testProcess.exitCode === null) {
+            testProcess.kill('SIGKILL');
+        }
     }
 };
 
@@ -124,7 +126,9 @@ const shutdownRC = () => {
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', rcProcess.pid, '/f', '/t']);
     } else {
-        if (rcProcess && rcProcess.exitCode === null) rcProcess.kill('SIGKILL');
+        if (rcProcess && rcProcess.exitCode === null) {
+            rcProcess.kill('SIGKILL');
+        }
     }
 };
 

@@ -42,5 +42,9 @@ module.exports = {
         'prefer-rest-params': 'off',
         'max-len': [ 'error', 130, 4 ],
         'quotes': ['error', 'single'],
+        'keyword-spacing': 'error',
+        'space-before-blocks': 'warn',
+        'space-in-parens': 'error',
+        'curly': 'error',
     }
 };

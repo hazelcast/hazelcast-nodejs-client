@@ -207,13 +207,13 @@ export class SqlServiceImpl implements SqlService {
             throw new RangeError('SQL statement cannot be null');
         }
         tryGetString(sqlStatement.sql);
-        if (sqlStatement.sql.length === 0){ // empty sql string is disallowed
+        if (sqlStatement.sql.length === 0) { // empty sql string is disallowed
             throw new RangeError('Empty SQL string is disallowed.')
         }
-        if (sqlStatement.hasOwnProperty('params')){ // if params is provided, validate it
+        if (sqlStatement.hasOwnProperty('params')) { // if params is provided, validate it
             tryGetArray(sqlStatement.params);
         }
-        if (sqlStatement.hasOwnProperty('options')){ // if options is provided, validate it
+        if (sqlStatement.hasOwnProperty('options')) { // if options is provided, validate it
             SqlServiceImpl.validateSqlStatementOptions(sqlStatement.options);
         }
     }
@@ -227,12 +227,12 @@ export class SqlServiceImpl implements SqlService {
      */
     private static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
         if (sqlStatementOptions.hasOwnProperty('schema'))
-            tryGetString(sqlStatementOptions.schema);
+            {tryGetString(sqlStatementOptions.schema);}
 
         if (sqlStatementOptions.hasOwnProperty('timeoutMillis')) {
             const timeoutMillis = tryGetNumber(sqlStatementOptions.timeoutMillis);
 
-            if(timeoutMillis < 0 && timeoutMillis !== -1){
+            if (timeoutMillis < 0 && timeoutMillis !== -1) {
                 throw new RangeError('Timeout millis can be non-negative or -1');
             }
         }
@@ -241,11 +241,11 @@ export class SqlServiceImpl implements SqlService {
             throw new RangeError('Cursor buffer size cannot be negative');
         }
 
-        if (sqlStatementOptions.hasOwnProperty('expectedResultType')){
+        if (sqlStatementOptions.hasOwnProperty('expectedResultType')) {
             tryGetEnum(SqlExpectedResultType, sqlStatementOptions.expectedResultType);
         }
 
-        if (sqlStatementOptions.hasOwnProperty('returnRawResult')){
+        if (sqlStatementOptions.hasOwnProperty('returnRawResult')) {
             tryGetBoolean(sqlStatementOptions.returnRawResult);
         }
     }
@@ -258,7 +258,7 @@ export class SqlServiceImpl implements SqlService {
      * @returns {@link HazelcastSqlException}
      */
     toHazelcastSqlException(err: any, connection: Connection) : HazelcastSqlException {
-        if(!connection.isAlive()){
+        if (!connection.isAlive()) {
             return new HazelcastSqlException(
                 connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM,
                 'Cluster topology changed while a query was executed:' +
@@ -266,13 +266,13 @@ export class SqlServiceImpl implements SqlService {
                 err
             )
         } else {
-            if(err instanceof HazelcastSqlException){
+            if (err instanceof HazelcastSqlException) {
                 return err;
             }
             let originatingMemberId;
-            if(err.hasOwnProperty('originatingMemberId')){
+            if (err.hasOwnProperty('originatingMemberId')) {
                 originatingMemberId = err.originatingMemberId;
-            }else{
+            } else {
                 originatingMemberId = this.connectionManager.getClientUuid();
             }
             return new HazelcastSqlException(
@@ -303,9 +303,9 @@ export class SqlServiceImpl implements SqlService {
                 SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
         let timeoutMillis: Long;
-        if(sqlStatement.options?.hasOwnProperty('timeoutMillis')){
+        if (sqlStatement.options?.hasOwnProperty('timeoutMillis')) {
             timeoutMillis = Long.fromNumber(sqlStatement.options.timeoutMillis);
-        }else{
+        } else {
             timeoutMillis = SqlServiceImpl.DEFAULT_TIMEOUT;
         }
 

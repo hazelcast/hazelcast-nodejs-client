@@ -98,7 +98,7 @@ export class SqlPageCodec {
                 case SqlColumnType.DECIMAL:
                     columns[i] = ListMultiFrameCodec.decode(clientMessage, BigDecimalCodec.decodeNullable);
                     break;
-                case SqlColumnType.NULL:
+                case SqlColumnType.NULL: {
                     const frame = clientMessage.nextFrame();
                     const size = FixSizedTypesCodec.decodeInt(frame.content, 0);
 
@@ -108,6 +108,7 @@ export class SqlPageCodec {
                     }
                     columns[i] = (column);
                     break;
+                }
                 case SqlColumnType.OBJECT:
                     columns[i] = ListMultiFrameCodec.decode(clientMessage, DataCodec.decodeNullable);
                     break;

@@ -6,6 +6,8 @@ import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 /** @internal */
 export class ListCNBooleanCodec {
     static decode(clientMessage: ClientMessage): boolean[] {
-        return ListCNFixedSizeCodec.decode(clientMessage.nextFrame(), BitsUtil.BOOLEAN_SIZE_IN_BYTES, FixSizedTypesCodec.decodeBoolean);
+        return ListCNFixedSizeCodec.decode(
+            clientMessage.nextFrame(), BitsUtil.BOOLEAN_SIZE_IN_BYTES, FixSizedTypesCodec.decodeBoolean
+        );
     }
 }

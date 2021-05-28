@@ -120,16 +120,19 @@ export class ConfigBuilder {
                 assertNonNegativeNumber(value, 'Max backoff must be non-negative!');
                 this.effectiveConfig.connectionStrategy.connectionRetry.maxBackoffMillis = value;
             } else if (key === 'multiplier') {
-                if(typeof value !== 'number' || value < 1.0)
+                if (typeof value !== 'number' || value < 1.0) {
                     throw new RangeError('Multiplier must be a number that is greater than or equal to 1.0!');
+                }
                 this.effectiveConfig.connectionStrategy.connectionRetry.multiplier = value;
             } else if (key === 'clusterConnectTimeoutMillis') {
-                if(typeof value !== 'number' || (value < 0 && value !== -1))
+                if (typeof value !== 'number' || (value < 0 && value !== -1)) {
                     throw new RangeError('ClusterConnectTimeoutMillis can be only non-negative number or -1!');
+                }
                 this.effectiveConfig.connectionStrategy.connectionRetry.clusterConnectTimeoutMillis = value;
             } else if (key === 'jitter') {
-                if(typeof value !== 'number' || (value < 0 || value > 1))
+                if (typeof value !== 'number' || (value < 0 || value > 1)) {
                     throw new RangeError('Jitter must be a number in range [0.0, 1.0]!');
+                }
                 this.effectiveConfig.connectionStrategy.connectionRetry.jitter = value;
             }
         }
