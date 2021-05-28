@@ -428,9 +428,9 @@ describe('Decode/Serialize test without server config', function () {
             const date = rows[i]['this'];
             date.should.be.instanceof(HzLocalDate);
 
-            date.getYear().should.be.eq(expectedBaseValues.year + i);
-            date.getMonth().should.be.eq(expectedBaseValues.month + i);
-            date.getDate().should.be.eq(expectedBaseValues.date + i);
+            date.year.should.be.eq(expectedBaseValues.year + i);
+            date.month.should.be.eq(expectedBaseValues.month + i);
+            date.date.should.be.eq(expectedBaseValues.date + i);
 
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
@@ -470,10 +470,10 @@ describe('Decode/Serialize test without server config', function () {
             const time = rows[i]['this'];
             time.should.be.instanceof(HzLocalTime);
 
-            time.getHour().should.be.eq(expectedBaseValue.hour + i);
-            time.getMinute().should.be.eq(expectedBaseValue.minute + i);
-            time.getSecond().should.be.eq(expectedBaseValue.second + i);
-            time.getNano().should.be.eq(expectedBaseValue.nano + i);
+            time.hour.should.be.eq(expectedBaseValue.hour + i);
+            time.minute.should.be.eq(expectedBaseValue.minute + i);
+            time.second.should.be.eq(expectedBaseValue.second + i);
+            time.nano.should.be.eq(expectedBaseValue.nano + i);
 
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
@@ -523,14 +523,14 @@ describe('Decode/Serialize test without server config', function () {
             const datetime = rows[i]['this'];
             datetime.should.be.instanceof(HzLocalDateTime);
 
-            datetime.getHzLocalDate().getYear().should.be.eq(expectedBaseValue.year + i);
-            datetime.getHzLocalDate().getMonth().should.be.eq(expectedBaseValue.month + i);
-            datetime.getHzLocalDate().getDate().should.be.eq(expectedBaseValue.date + i);
+            datetime.hzLocalDate.year.should.be.eq(expectedBaseValue.year + i);
+            datetime.hzLocalDate.month.should.be.eq(expectedBaseValue.month + i);
+            datetime.hzLocalDate.date.should.be.eq(expectedBaseValue.date + i);
 
-            datetime.getHzLocalTime().getHour().should.be.eq(expectedBaseValue.hour + i);
-            datetime.getHzLocalTime().getMinute().should.be.eq(expectedBaseValue.minute + i);
-            datetime.getHzLocalTime().getSecond().should.be.eq(expectedBaseValue.second + i);
-            datetime.getHzLocalTime().getNano().should.be.eq(expectedBaseValue.nano + i);
+            datetime.hzLocalTime.hour.should.be.eq(expectedBaseValue.hour + i);
+            datetime.hzLocalTime.minute.should.be.eq(expectedBaseValue.minute + i);
+            datetime.hzLocalTime.second.should.be.eq(expectedBaseValue.second + i);
+            datetime.hzLocalTime.nano.should.be.eq(expectedBaseValue.nano + i);
 
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
@@ -555,14 +555,14 @@ describe('Decode/Serialize test without server config', function () {
             `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP_WITH_TIME_ZONE)` +
             'AND this < CAST (? AS TIMESTAMP_WITH_TIME_ZONE) ORDER BY __key ASC',
             [
-                HzOffsetDateTime.fromHzLocalDateTime(
+                new HzOffsetDateTime(
                     new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
                     0
-                ).toISOString(),
-                HzOffsetDateTime.fromHzLocalDateTime(
+                ).toString(),
+                new HzOffsetDateTime(
                     new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1)),
                     0
-                ).toISOString()
+                ).toString()
             ]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -592,16 +592,16 @@ describe('Decode/Serialize test without server config', function () {
             const datetimeWithOffset = rows[i]['this'];
             datetimeWithOffset.should.be.instanceof(HzOffsetDateTime);
 
-            datetimeWithOffset.getHzLocalDateTime().getHzLocalDate().getYear().should.be.eq(expectedBaseValue.year + i);
-            datetimeWithOffset.getHzLocalDateTime().getHzLocalDate().getMonth().should.be.eq(expectedBaseValue.month + i);
-            datetimeWithOffset.getHzLocalDateTime().getHzLocalDate().getDate().should.be.eq(expectedBaseValue.date + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalDate.year.should.be.eq(expectedBaseValue.year + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalDate.month.should.be.eq(expectedBaseValue.month + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalDate.date.should.be.eq(expectedBaseValue.date + i);
 
-            datetimeWithOffset.getHzLocalDateTime().getHzLocalTime().getHour().should.be.eq(expectedBaseValue.hour + i);
-            datetimeWithOffset.getHzLocalDateTime().getHzLocalTime().getMinute().should.be.eq(expectedBaseValue.minute + i);
-            datetimeWithOffset.getHzLocalDateTime().getHzLocalTime().getSecond().should.be.eq(expectedBaseValue.second + i);
-            datetimeWithOffset.getHzLocalDateTime().getHzLocalTime().getNano().should.be.eq(expectedBaseValue.nano + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalTime.hour.should.be.eq(expectedBaseValue.hour + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalTime.minute.should.be.eq(expectedBaseValue.minute + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalTime.second.should.be.eq(expectedBaseValue.second + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalTime.nano.should.be.eq(expectedBaseValue.nano + i);
 
-            datetimeWithOffset.getOffsetSeconds().should.be.eq((expectedBaseValue.offsetSeconds + i) ** 3);
+            datetimeWithOffset.offsetSeconds.should.be.eq((expectedBaseValue.offsetSeconds + i) ** 3);
 
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
