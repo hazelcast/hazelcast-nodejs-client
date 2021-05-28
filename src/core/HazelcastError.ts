@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {UUID} from './UUID';
+
 /** @internal */
 export interface HazelcastErrorConstructor {
     readonly prototype: Error;
@@ -466,5 +468,30 @@ export class UndefinedErrorCodeError extends HazelcastError {
     constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
         super(msg, cause, serverStackTrace);
         Object.setPrototypeOf(this, UndefinedErrorCodeError.prototype);
+    }
+}
+
+/**
+ * An exception occurred during SQL query execution.
+ */
+export class HazelcastSqlException extends HazelcastError {
+    private readonly code: number;
+    /**
+     * ID of the member that caused or initiated an error condition.
+     * This can be the client's UUID if error is due to the client.
+     */
+    readonly originatingMemberId: UUID;
+
+    constructor(
+        originatingMemberId: UUID,
+        code: number,
+        msg: string,
+        cause?: Error,
+        serverStackTrace?: ServerErrorStackElement[]
+    ) {
+        super(msg, cause, serverStackTrace);
+        Object.setPrototypeOf(this, HazelcastSqlException.prototype);
+        this.code = code;
+        this.originatingMemberId = originatingMemberId;
     }
 }

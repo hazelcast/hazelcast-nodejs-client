@@ -29,7 +29,6 @@ import {TranslateAddressProvider} from '../network/TranslateAddressProvider';
 import {
     Cluster,
     MemberImpl,
-    UUID,
     MembershipListener,
     MembershipEvent,
     MemberEvent,
@@ -75,12 +74,12 @@ export class ClusterService implements Cluster {
     /**
      * Gets the member with the given UUID.
      *
-     * @param uuid The UUID of the member.
-     * @return The member that was found, or undefined if not found.
+     * @param {string} uuid The UUID of the member as a string.
+     * @return {MemberImpl | undefined} The member that was found, or undefined if not found.
      */
-    getMember(uuid: UUID): MemberImpl {
+    getMember(uuid: string): MemberImpl {
         assertNotNull(uuid);
-        return this.memberListSnapshot.members.get(uuid.toString());
+        return this.memberListSnapshot.members.get(uuid);
     }
 
     getMembers(selector?: MemberSelector): MemberImpl[] {

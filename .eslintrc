@@ -97,5 +97,8 @@
             ]
         }],
         "space-in-parens": "error"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018
     }
 }

@@ -108,6 +108,13 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
+    /**
+     * Serializes object to data
+     *
+     * @param object Object to serialize
+     * @param partitioningStrategy
+     * @throws RangeError if object is not serializable
+     */
     toData(object: any, partitioningStrategy: PartitionStrategy = defaultPartitionStrategy): Data {
         if (this.isData(object)) {
             return object as Data;

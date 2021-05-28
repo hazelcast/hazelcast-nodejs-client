@@ -715,7 +715,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         const toObject = this.toObject.bind(this);
         const entryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number,
                                    uuid: UUID, numberOfAffectedEntries: number): void => {
-            const member = this.clusterService.getMember(uuid);
+            const member = this.clusterService.getMember(uuid.toString());
             const name = this.name;
 
             const entryEvent = new EntryEvent(

@@ -1,6 +1,7 @@
 {
     "env": {
-        "mocha": true
+        "mocha": true,
+        "es2020": true
     },
     "plugins": [
         "mocha"
