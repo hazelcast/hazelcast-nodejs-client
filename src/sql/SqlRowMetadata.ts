@@ -18,7 +18,6 @@ import {SqlColumnMetadata} from './SqlColumnMetadata';
 import {IllegalArgumentError} from '../core';
 
 export interface SqlRowMetadata {
-
     /**
      * Gets the number of columns in the row.
      * @returns column count

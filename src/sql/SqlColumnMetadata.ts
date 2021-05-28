@@ -54,7 +54,6 @@ export enum SqlColumnType {
 }
 
 /**
- * ### SQL column metadata
  * Represents column metadata for SQL result.
  */
 export interface SqlColumnMetadata {
