@@ -30,16 +30,16 @@ export type SqlRowAsObject = { [key: string]: any };
 export type SqlRowType = SqlRow | SqlRowAsObject;
 
 /**
- * ## SQL Result
- *
- * Represents an SQL result. {@link SqlService.execute} returns an SqlResult.
+ * SQL query result. Depending on the statement type it represents a stream of rows or an update count.
  *
  * ### Iteration
  *
  * The SqlResult is an async iterable of {@link SqlRowType} which is either an {@link SqlRow} or regular objects.
- * By default it returns regular javascript objects, containing key and values. Keys represent column names, whereas
+ * By default it returns regular JavaScript objects, containing key and values. Keys represent column names, whereas
  * values represent row values. The default object returning behavior can be changed via the option
  * {@link SqlStatementOptions.returnRawResult}. If it is true, {@link SqlRow} objects are returned instead of regular objects.
+ *
+ * Use {@link close} to release the resources associated with the result.
  *
  * #### for-await... of
  *
@@ -66,7 +66,7 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  * }
  * ```
  *
- * #### Usage for update count
+ * ### Usage for update count
  * ```js
  * const updateCount = await result.getUpdateCount();
  * ```
@@ -79,15 +79,13 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
      *  Returns next {@link SqlRowType} iteration result. You should not call this method when result does not contain
      *  rows.
      *  @throws {@link IllegalStateError} if result does not contain rows, but update count.
-     *  @returns An object including "value" and "done" keys. The "done" key indicates if
-     *  iteration is ended, i.e when there are no more results. "value" holds iteration values which are in SqlRowType type.
-     *  "value" has undefined value if iteration has ended.
+     *  @returns an object including `value` and `done` keys. The `done` key indicates if
+     *  iteration is ended, i.e when there are no more results. `value` holds iteration values which are in SqlRowType type.
+     *  `value` has undefined value if iteration has ended.
      */
     next(): Promise<IteratorResult<SqlRowType>>;
 
     /**
-     * Closes the result. This will prevent further iterations.
-     *
      * Releases the resources associated with the query result.
      *
      * The query engine delivers the rows asynchronously. The query may become inactive even before all rows are
@@ -99,23 +97,19 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
     /**
      * Returns row metadata of the result.
      * @returns SQL row metadata if rows exist in the result; otherwise null.
-     * If SQL execution was not successful, this promise is rejected with an error.
      */
     getRowMetadata(): Promise<SqlRowMetadata | null>;
 
     /**
      * Return whether this result has rows to iterate. False if update count is returned, true if rows are returned.
-     * If SQL execution was not successful, this promise is rejected with an error.
      */
     isRowSet(): Promise<boolean>;
 
     /**
-     * Returns the number of rows updated by the statement or -1 if this result is a row set.
-     * If SQL execution was not successful, this promise is rejected with an error.
-     * @returns Update count
+     * Returns the number of rows updated by the statement or `-1` if this result is a row set.
+     * @returns update count
      */
     getUpdateCount(): Promise<Long>;
-
 }
 
 /** @internal */
@@ -148,7 +142,7 @@ export class SqlResultImpl implements SqlResult {
 
     /**
      * Whether the result is closed or not. The result is closed if an update count or the last page is received.
-     * When true, there is no need to send the "cancel" request to the server.
+     * When true, there is no need to send the `cancel` request to the server.
      */
     private closed: boolean;
 
@@ -186,7 +180,8 @@ export class SqlResultImpl implements SqlResult {
     }
 
     /**
-     * Returns new result object. Useful for mocking. (Constructor mocking is hard/impossible)
+     * Useful for mocking. (Constructor mocking is hard/impossible)
+     * @returns new result object.
      */
     static newResult(
         sqlService: SqlServiceImpl,
@@ -252,12 +247,12 @@ export class SqlResultImpl implements SqlResult {
     }
 
     /** Called when next page of the result is received. */
-    onNextPage(page: SqlPage) {
+    private onNextPage(page: SqlPage) {
         this.currentPage = page;
         this.currentRowCount = page.getRowCount();
         this.currentPosition = 0;
 
-        if (page.isLast()) {
+        if (page.last) {
             this.last = true;
             this.closed = true;
         }
@@ -271,8 +266,11 @@ export class SqlResultImpl implements SqlResult {
         this.executeDeferred.reject(error);
     }
 
-    /** Returns the current row. Used by {@link next}. */
-    getCurrentRow(): SqlRowType {
+    /**
+     * Used by {@link next}.
+     * @returns the current row.
+     */
+    private getCurrentRow(): SqlRowType {
         if (this.returnRawResult) { // Return SqlRow
             const columnCount = this.currentPage.getColumnCount();
             const values = new Array(columnCount);
@@ -283,7 +281,7 @@ export class SqlResultImpl implements SqlResult {
         } else { // Return objects
             const result: SqlRowAsObject = {};
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
-                const columnMetadata = this.rowMetadata.getColumnByIndex(i);
+                const columnMetadata = this.rowMetadata.getColumn(i);
                 result[columnMetadata.name] = this.serializationService.toObject(
                     this.currentPage.getValue(this.currentPosition, i)
                 );
@@ -319,7 +317,9 @@ export class SqlResultImpl implements SqlResult {
 
         // Do not start a fetch if close is called
         if (this.closeDeferred?.promise) {
-            return Promise.reject('Cannot fetch, close() is called');
+            return Promise.reject(
+                new HazelcastSqlException(this.clientUUID, SqlErrorCode.CANCELLED_BY_USER, 'Query was cancelled by user')
+            );
         }
         // Do not start a fetch if the result is already closed
         if (this.closed) {
@@ -359,8 +359,11 @@ export class SqlResultImpl implements SqlResult {
         }
     }
 
-    /** Returns if there are rows to be iterated. Used by {@link next}. */
-    hasNext(): Promise<boolean> {
+    /**
+     * Used by {@link next}.
+     * @returns if there are rows to be iterated.
+     */
+    private hasNext(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {
             if (this.rowMetadata === null) {
                 return Promise.reject(new IllegalStateError('This result contains only update count'));

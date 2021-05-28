@@ -55,9 +55,6 @@ export class FixSizedTypesCodec {
         return new HzOffsetDateTime(localDateTime, offsetSeconds);
     }
 
-    /*
-    Decodes local time from buffer
-    */
     static decodeLocalTime(buffer: Buffer, offset: number): HzLocalTime {
         const hour = FixSizedTypesCodec.decodeByte(buffer, offset);
         const minute = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES);
@@ -67,24 +64,12 @@ export class FixSizedTypesCodec {
         return new HzLocalTime(hour, minute, second, nano);
     }
 
-    static encodeShort(buffer: Buffer, offset: number, value: number): void {
-        buffer.writeInt16LE(value, offset);
-    }
-
     static decodeShort(buffer: Buffer, offset: number): number {
         return buffer.readInt16LE(offset);
     }
 
-    static encodeFloat(buffer: Buffer, offset: number, value: number): void {
-        buffer.writeFloatLE(value, offset);
-    }
-
     static decodeFloat(buffer: Buffer, offset: number): number {
         return buffer.readFloatLE(offset);
-    }
-
-    static encodeDouble(buffer: Buffer, offset: number, value: number): void {
-        buffer.writeDoubleLE(value, offset);
     }
 
     static decodeDouble(buffer: Buffer, offset: number): number {

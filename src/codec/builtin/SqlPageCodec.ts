@@ -48,55 +48,55 @@ export class SqlPageCodec {
 
         // Read column types.
         const columnTypeIds: number[] = ListIntegerCodec.decode(clientMessage);
-        const columnTypes: SqlColumnType[] = [];
+        const columnTypes: SqlColumnType[] = new Array<SqlColumnType>(columnTypeIds.length);
 
         // Read columns
-        const columns: any[][] = [];
+        const columns: any[][] = new Array(columnTypeIds.length);
 
-        for (const columnTypeId of columnTypeIds) {
+        for (const [i, columnTypeId] of columnTypeIds.entries()) {
             const columnType: SqlColumnType = columnTypeId;
 
-            columnTypes.push(columnType);
+            columnTypes[i] = columnType;
 
             switch (columnType) {
                 case SqlColumnType.VARCHAR:
-                    columns.push(ListMultiFrameCodec.decodeContainsNullable(clientMessage, StringCodec.decode));
+                    columns[i] = ListMultiFrameCodec.decodeContainsNullable(clientMessage, StringCodec.decode);
                     break;
                 case SqlColumnType.BOOLEAN:
-                    columns.push(ListCNBooleanCodec.decode(clientMessage));
+                    columns[i] = ListCNBooleanCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.TINYINT:
-                    columns.push(ListCNByteCodec.decode(clientMessage));
+                    columns[i] = ListCNByteCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.SMALLINT:
-                    columns.push(ListCNShortCodec.decode(clientMessage));
+                    columns[i] = ListCNShortCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.INTEGER:
-                    columns.push(ListCNIntegerCodec.decode(clientMessage));
+                    columns[i] = ListCNIntegerCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.BIGINT:
-                    columns.push(ListCNLongCodec.decode(clientMessage));
+                    columns[i] = ListCNLongCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.REAL:
-                    columns.push(ListCNFloatCodec.decode(clientMessage));
+                    columns[i] = ListCNFloatCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.DOUBLE:
-                    columns.push(ListCNDoubleCodec.decode(clientMessage));
+                    columns[i] = ListCNDoubleCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.DATE:
-                    columns.push(ListCNLocalDateCodec.decode(clientMessage));
+                    columns[i] = ListCNLocalDateCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.TIME:
-                    columns.push(ListCNLocalTimeCodec.decode(clientMessage));
+                    columns[i] = ListCNLocalTimeCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.TIMESTAMP:
-                    columns.push(ListCNLocalDateTimeCodec.decode(clientMessage));
+                    columns[i] = ListCNLocalDateTimeCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.TIMESTAMP_WITH_TIME_ZONE:
-                    columns.push(ListCNOffsetDateTimeCodec.decode(clientMessage));
+                    columns[i] = ListCNOffsetDateTimeCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.DECIMAL:
-                    columns.push(ListMultiFrameCodec.decode(clientMessage, BigDecimalCodec.decodeNullable));
+                    columns[i] = ListMultiFrameCodec.decode(clientMessage, BigDecimalCodec.decodeNullable);
                     break;
                 case SqlColumnType.NULL:
                     const frame = clientMessage.nextFrame();
@@ -106,10 +106,10 @@ export class SqlPageCodec {
                     for (let i = 0; i < size; i++) {
                         column[i] = null;
                     }
-                    columns.push(column);
+                    columns[i] = (column);
                     break;
                 case SqlColumnType.OBJECT:
-                    columns.push(ListMultiFrameCodec.decode(clientMessage, DataCodec.decodeNullable));
+                    columns[i] = ListMultiFrameCodec.decode(clientMessage, DataCodec.decodeNullable);
                     break;
                 default:
                     throw new IllegalStateError('Unknown type ' + columnType);

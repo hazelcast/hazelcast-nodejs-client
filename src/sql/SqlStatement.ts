@@ -41,6 +41,7 @@ export interface SqlStatementOptions {
      * * The default value is `null` meaning only the default search path is used.
      */
     schema?: string;
+
     /**
      * The execution timeout in milliseconds. If the timeout is reached for a running statement, it will be cancelled forcefully.
      * Zero value means no timeout. `-1` means that the timeout in server config will be used.
@@ -48,6 +49,7 @@ export interface SqlStatementOptions {
      * Defaults to `-1`.
      */
     timeoutMillis?: number;
+
     /**
      * The cursor buffer size (measured in the number of rows).
      *
@@ -64,11 +66,13 @@ export interface SqlStatementOptions {
      * Defaults to `4096`.
      */
     cursorBufferSize?: number;
+
     /**
      * Expected result type of SQL query. By default, set to `ANY`. Available values
      * are `ANY`, `ROWS`, and `UPDATE_COUNT`.
      */
     expectedResultType?: SqlExpectedResultTypeStrings;
+
     /**
      * If true, SQL result will iterate over {@link SqlRow}s. If false SQL result, will iterate over regular objects.
      * Defaults to `false`.
@@ -88,12 +92,14 @@ export interface SqlStatement {
      * is thrown during execute if `sql` is not valid.
      */
     sql: string;
+
     /**
      * Parameters of the SQL. You may define parameter placeholders in the statement with the `?` character.
      * For every placeholder, a value must be provided. When the method is called, the contents of the list are copied.
      * Subsequent changes to the original list don't change the statement parameters.
      */
     params?: any[];
+
     /**
      * Options of the SQL statement.
      */

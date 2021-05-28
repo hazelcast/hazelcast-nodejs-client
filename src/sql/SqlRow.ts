@@ -17,7 +17,6 @@ import {SqlRowMetadata, SqlRowMetadataImpl} from './SqlRowMetadata';
 import {IllegalArgumentError, IndexOutOfBoundsError} from '../core';
 
 export interface SqlRow {
-
     /**
      Gets the value of the column by column index or column name.
      The class of the returned value depends on the SQL type of the column. See {@link SqlColumnType}
@@ -34,7 +33,6 @@ export interface SqlRow {
      * @returns row metadata
      */
     getMetadata(): SqlRowMetadata;
-
 }
 
 /** @internal */

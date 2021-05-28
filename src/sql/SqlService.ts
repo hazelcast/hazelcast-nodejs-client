@@ -27,7 +27,7 @@ import {ClientMessage} from '../protocol/ClientMessage';
 import {Connection} from '../network/Connection';
 import {SqlRowMetadataImpl} from './SqlRowMetadata';
 import {SqlCloseCodec} from '../codec/SqlCloseCodec';
-import {SqlFetchCodec, SqlFetchResponseParams} from '../codec/SqlFetchCodec';
+import {SqlFetchCodec} from '../codec/SqlFetchCodec';
 import {
     tryGetArray,
     tryGetBoolean,
@@ -62,7 +62,7 @@ import {SqlPage} from './SqlPage';
  * * For non-Portable objects, public getters and fields are used to populate the column list. For getters, the first
  *   letter is converted to lower case. A getter takes precedence over a field in case of naming conflict.
  * * For Portable objects, field names used in the {@link PortableWriter.writePortable} method are used to populate the column
- * list
+ *   list
  *
  * The whole key and value objects could be accessed through a special fields `__key` and `this`, respectively. If
  * key (value) object has fields, then the whole key (value) field is exposed as a normal field. Otherwise the field is hidden.
@@ -133,9 +133,10 @@ export interface SqlService {
      *
      * @param sql SQL string. SQL string placeholder character is question mark(`?`)
      * @param params Parameter list. The parameter count must be equal to number of placeholders in the SQL string
-     * @param options Options that are affecting how SQL is executed
+     * @param options Options that are affecting how the query is executed
      * @throws {@link IllegalArgumentError} If arguments are not valid
-     * @throws {@link HazelcastSqlException} If there is an error running SQL
+     * @throws {@link HazelcastSqlException} in case of execution error
+     * @returns {@link SqlResult}
      */
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
 
@@ -144,6 +145,7 @@ export interface SqlService {
      * @param sql SQL statement object
      * @throws {@link IllegalArgumentError} If arguments are not valid
      * @throws {@link HazelcastSqlException} If there is an error running SQL
+     * @returns {@link SqlResult}
      */
     executeStatement(sql: SqlStatement): SqlResult;
 }
@@ -176,7 +178,7 @@ export class SqlServiceImpl implements SqlService {
      * @param clientMessage The response message
      * @param res SQL result for this response
      */
-    handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
+    private static handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
         if (response.error !== null) {
             res.onExecuteError(
@@ -200,7 +202,7 @@ export class SqlServiceImpl implements SqlService {
      * @throws RangeError if validation is not successful
      * @internal
      */
-    static validateSqlStatement(sqlStatement: SqlStatement | null): void {
+    private static validateSqlStatement(sqlStatement: SqlStatement | null): void {
         if (sqlStatement === null) {
             throw new RangeError('SQL statement cannot be null');
         }
@@ -223,7 +225,7 @@ export class SqlServiceImpl implements SqlService {
      * @throws RangeError if validation is not successful
      * @internal
      */
-    static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
+    private static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
         if (sqlStatementOptions.hasOwnProperty('schema'))
             tryGetString(sqlStatementOptions.schema);
 
@@ -253,6 +255,7 @@ export class SqlServiceImpl implements SqlService {
      * @internal
      * @param err
      * @param connection
+     * @returns {@link HazelcastSqlException}
      */
     toHazelcastSqlException(err: any, connection: Connection) : HazelcastSqlException {
         if(!connection.isAlive()){
@@ -296,32 +299,38 @@ export class SqlServiceImpl implements SqlService {
 
         const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
 
-        const expectedResultType: SqlExpectedResultType =
-            sqlStatement.options?.expectedResultType ? SqlExpectedResultType[sqlStatement.options.expectedResultType]
-                : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
+        const expectedResultType: SqlExpectedResultType = sqlStatement.options?.hasOwnProperty('expectedResultType') ?
+                SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
         let timeoutMillis: Long;
-        if(sqlStatement.options?.timeoutMillis || sqlStatement.options?.timeoutMillis === 0){
+        if(sqlStatement.options?.hasOwnProperty('timeoutMillis')){
             timeoutMillis = Long.fromNumber(sqlStatement.options.timeoutMillis);
         }else{
             timeoutMillis = SqlServiceImpl.DEFAULT_TIMEOUT;
         }
 
         try {
-            const serializedParams = [];
+            const serializedParams = new Array(sqlStatement.params.length);
             if (Array.isArray(sqlStatement.params)) { // params can be undefined
-                for (const param of sqlStatement.params) {
-                    serializedParams.push(this.serializationService.toData(param));
+                for (const [i, param] of sqlStatement.params.entries()) {
+                    serializedParams[i] = this.serializationService.toData(param);
                 }
             }
-            const cursorBufferSize = sqlStatement.options?.cursorBufferSize ?
+            const cursorBufferSize = sqlStatement.options?.hasOwnProperty('cursorBufferSize') ?
                 sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE;
+
+            const returnRawResult = sqlStatement.options?.hasOwnProperty('returnRawResult') ?
+                sqlStatement.options.returnRawResult : SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT;
+
+            const schema = sqlStatement.options?.hasOwnProperty('schema') ?
+                sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA;
+
             const requestMessage = SqlExecuteCodec.encodeRequest(
                 sqlStatement.sql,
                 serializedParams,
                 timeoutMillis,
                 cursorBufferSize,
-                sqlStatement.options?.hasOwnProperty('schema') ? sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA,
+                schema,
                 expectedResultType,
                 queryId
             );
@@ -332,13 +341,12 @@ export class SqlServiceImpl implements SqlService {
                 connection,
                 queryId,
                 cursorBufferSize,
-                sqlStatement.options?.hasOwnProperty('returnRawResult') ?
-                    sqlStatement.options.returnRawResult : SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT,
+                returnRawResult,
                 this.connectionManager.getClientUuid()
             );
 
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
-                this.handleExecuteResponse(clientMessage, res);
+                SqlServiceImpl.handleExecuteResponse(clientMessage, res);
             }).catch(err => {
                 res.onExecuteError(
                     this.toHazelcastSqlException(err, connection)
@@ -382,7 +390,7 @@ export class SqlServiceImpl implements SqlService {
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
         const requestMessage = SqlFetchCodec.encodeRequest(queryId, cursorBufferSize);
         return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
-            const response: SqlFetchResponseParams = SqlFetchCodec.decodeResponse(clientMessage);
+            const response = SqlFetchCodec.decodeResponse(clientMessage);
             if (response.error !== null) {
                 throw new HazelcastSqlException(
                     response.error.originatingMemberId,
