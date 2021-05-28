@@ -225,6 +225,11 @@ export class SqlResultImpl implements SqlResult {
             return this.closeDeferred.promise;
         }
 
+        // If already closed, return a resolved promise
+        if(this.closed){
+            return Promise.resolve();
+        }
+
         this.closeDeferred = deferredPromise<void>();
 
         const error = new HazelcastSqlException(this.clientUUID, SqlErrorCode.CANCELLED_BY_USER,
