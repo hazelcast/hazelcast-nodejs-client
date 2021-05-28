@@ -48,31 +48,36 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         await RC.shutdownCluster(cluster.id);
     });
 
+    const createInvocationTimeoutSetClient = async (invocationTimeoutMillis) => {
+        return await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
+                }
+            },
+            properties: {
+                'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
+            }
+        });
+    };
+
+    const createClient = async () => {
+        return await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            connectionStrategy: {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
+                }
+            }
+        });
+    };
+
     it('should continue on cluster restart when data lost and after invocation timeout', async function () {
         const invocationTimeoutMillis = 2000;
 
-        client1 = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            connectionStrategy: {
-                connectionRetry: {
-                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
-                }
-            },
-            properties: {
-                'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
-            }
-        });
-        client2 = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            connectionStrategy: {
-                connectionRetry: {
-                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
-                }
-            },
-            properties: {
-                'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
-            }
-        });
+        client1 = await createInvocationTimeoutSetClient(invocationTimeoutMillis);
+        client2 = await createInvocationTimeoutSetClient(invocationTimeoutMillis);
 
         let messageArrived = false;
         let messageCount = 0;
@@ -98,10 +103,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         await assertTrueEventually(async () => {
             const topic3 = await client2.getReliableTopic(topicName);
             await topic3.publish(`newItem${randomString()}`);
-            await assertTrueEventually(async () => {
-                if (!messageArrived)
-                    throw new Error('message not arrived yet');
-            }, undefined, 5000);
+            await assertTrueEventually(async () => messageArrived.should.be.true, undefined, 5000);
         });
 
         messageCount.should.be.greaterThanOrEqual(1);
@@ -110,17 +112,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     it('should continue on cluster restart after invocation timeout', async function () {
         const invocationTimeoutMillis = 2000;
 
-        client1 = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            connectionStrategy: {
-                connectionRetry: {
-                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
-                }
-            },
-            properties: {
-                'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
-            }
-        });
+        client1 = await createInvocationTimeoutSetClient(invocationTimeoutMillis);
 
         let messageArrived = false;
         const topicName = 'topic';
@@ -137,40 +129,16 @@ describe('ReliableTopicOnClusterRestartTest', function () {
 
         await RC.startMember(cluster.id);
 
-        client2 = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            connectionStrategy: {
-                connectionRetry: {
-                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
-                }
-            }
-        });
+        client2 = await createClient();
 
         const topic2 = await client2.getReliableTopic(topicName);
         await topic2.publish('message');
-        await assertTrueEventually(async () => {
-            if (!messageArrived)
-                throw new Error('message not arrived yet');
-        });
+        await assertTrueEventually(async () => messageArrived.should.be.true);
     });
 
     it('should continue on cluster restart', async function () {
-        client1 = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            connectionStrategy: {
-                connectionRetry: {
-                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
-                }
-            }
-        });
-        client2 = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            connectionStrategy: {
-                connectionRetry: {
-                    clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
-                }
-            }
-        });
+        client1 = await createClient();
+        client2 = await createClient();
 
         const topicName = 'topic';
         const topic1 = await client1.getReliableTopic(topicName);
@@ -186,9 +154,6 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         await RC.startMember(cluster.id);
 
         await topic2.publish('message');
-        await assertTrueEventually(async () => {
-            if (!messageArrived)
-                throw new Error('message not arrived yet');
-        });
+        await assertTrueEventually(async () => messageArrived.should.be.true);
     });
 });
