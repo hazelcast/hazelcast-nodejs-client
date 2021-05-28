@@ -17,7 +17,7 @@
 
 const chai = require('chai');
 chai.should();
-const { HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime } = require('../../../lib/sql/DatetimeClasses');
+const { HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime } = require('../../../lib/core/DatetimeClasses');
 const { IllegalArgumentError } = require('../../../lib/core/HazelcastError.js');
 
 describe('DatetimeClassesTest', function () {

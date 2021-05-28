@@ -23,7 +23,7 @@ const {
     HzLocalDateTime,
     HzOffsetDateTime,
     HzLocalTime
-} = require('../../../../lib/sql/DatetimeClasses');
+} = require('../../../../lib/core/DatetimeClasses');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { Client } = require('../../../../');
