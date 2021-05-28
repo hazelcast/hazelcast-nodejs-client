@@ -40,8 +40,12 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     });
 
     afterEach(async function () {
-        if (client1) await client1.shutdown();
-        if (client2) await client2.shutdown();
+        if (client1) {
+            await client1.shutdown();
+        }
+        if (client2) {
+            await client2.shutdown();
+        }
     });
 
     after(async function() {

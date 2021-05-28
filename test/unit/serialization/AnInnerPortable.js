@@ -33,12 +33,15 @@ AnInnerPortable.prototype.readPortable = function (reader) {
 };
 
 AnInnerPortable.prototype.equals = function (other) {
-    if (other === this)
+    if (other === this) {
         return true;
-    if (this.anInt !== other.anInt)
+    }
+    if (this.anInt !== other.anInt) {
         return false;
-    if (this.aFloat > other.aFloat + Number.EPSILON || this.aFloat < other.aFloat - Number.EPSILON)
+    }
+    if (this.aFloat > other.aFloat + Number.EPSILON || this.aFloat < other.aFloat - Number.EPSILON) {
         return false;
+    }
     return true;
 };
 
