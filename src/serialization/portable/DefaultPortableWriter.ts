@@ -23,7 +23,7 @@ import {Portable, FieldType, PortableWriter} from '../Portable';
 import * as Long from 'long';
 
 /** @internal */
-export class DefaultPortableWriter implements PortableWriter{
+export class DefaultPortableWriter implements PortableWriter {
 
     private serializer: PortableSerializer;
     private readonly output: PositionalDataOutput;

@@ -21,7 +21,9 @@ class APortable {
                 doubles, shorts, floats, ints, longs, strings, portables,
                 identifiedDataSerializable, customStreamSerializableObject,
                 customByteArraySerializableObject, data) {
-        if (arguments.length === 0) return;
+        if (arguments.length === 0) {
+            return;
+        }
         this.bool = bool;
         this.b = b;
         this.c = c;
