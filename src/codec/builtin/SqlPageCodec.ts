@@ -53,8 +53,8 @@ export class SqlPageCodec {
         // Read columns
         const columns: any[][] = new Array(columnTypeIds.length);
 
-        for (const [i, columnTypeId] of columnTypeIds.entries()) {
-            const columnType: SqlColumnType = columnTypeId;
+        for (let i = 0; i < columnTypeIds.length; i++) {
+            const columnType: SqlColumnType = columnTypeIds[i];
 
             columnTypes[i] = columnType;
 

@@ -226,8 +226,9 @@ export class SqlServiceImpl implements SqlService {
      * @internal
      */
     private static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
-        if (sqlStatementOptions.hasOwnProperty('schema'))
-            {tryGetString(sqlStatementOptions.schema);}
+        if (sqlStatementOptions.hasOwnProperty('schema')) {
+            tryGetString(sqlStatementOptions.schema);
+        }
 
         if (sqlStatementOptions.hasOwnProperty('timeoutMillis')) {
             const timeoutMillis = tryGetNumber(sqlStatementOptions.timeoutMillis);
@@ -312,8 +313,8 @@ export class SqlServiceImpl implements SqlService {
         try {
             const serializedParams = new Array(sqlStatement.params.length);
             if (Array.isArray(sqlStatement.params)) { // params can be undefined
-                for (const [i, param] of sqlStatement.params.entries()) {
-                    serializedParams[i] = this.serializationService.toData(param);
+                for (let i = 0; i < sqlStatement.params.length; i++) {
+                    serializedParams[i] = this.serializationService.toData(sqlStatement.params[i]);
                 }
             }
             const cursorBufferSize = sqlStatement.options?.hasOwnProperty('cursorBufferSize') ?

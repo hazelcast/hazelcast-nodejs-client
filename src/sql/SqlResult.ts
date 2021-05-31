@@ -102,6 +102,7 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
 
     /**
      * Return whether this result has rows to iterate. False if update count is returned, true if rows are returned.
+     * @returns whether this result is a row set
      */
     isRowSet(): Promise<boolean>;
 
@@ -231,9 +232,11 @@ export class SqlResultImpl implements SqlResult {
             'Query was cancelled by user');
         // Reject execute with user cancellation error.
         this.onExecuteError(error);
-        // Reject ongoing fetch request if there is one.
-        if (this.fetchDeferred?.promise)
-            {this.fetchDeferred.reject(error);}
+        // Prevent ongoing/future fetch requests
+        if (!this.fetchDeferred?.promise) {
+            this.fetchDeferred = deferredPromise<SqlPage>();
+        }
+        this.fetchDeferred.reject(error);
         // Send the close request.
         this.sqlService.close(this.connection, this.queryId).then(() => {
             this.closeDeferred.resolve();
@@ -260,7 +263,9 @@ export class SqlResultImpl implements SqlResult {
 
     /** Called when an error is occurred during SQL execute */
     onExecuteError(error: HazelcastSqlException): void {
-        if (this.closed) {return;}
+        if (this.closed) {
+            return;
+        }
         this.updateCount = Long.fromInt(-1);
         this.rowMetadata = null;
         this.executeDeferred.reject(error);
@@ -293,7 +298,9 @@ export class SqlResultImpl implements SqlResult {
     /** Called when a execute response is received. */
     onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage, updateCount: Long) {
         // Ignore the response if SQL result is closed.
-        if (this.closed) {return;}
+        if (this.closed) {
+            return;
+        }
 
         if (rowMetadata !== null) { // Result that including rows
             this.rowMetadata = rowMetadata;
@@ -312,15 +319,10 @@ export class SqlResultImpl implements SqlResult {
      */
     fetch(): Promise<SqlPage> {
         // If there is an ongoing fetch, return that promise
-        if (this.fetchDeferred?.promise)
-            {return this.fetchDeferred.promise;}
-
-        // Do not start a fetch if close is called
-        if (this.closeDeferred?.promise) {
-            return Promise.reject(
-                new HazelcastSqlException(this.clientUUID, SqlErrorCode.CANCELLED_BY_USER, 'Query was cancelled by user')
-            );
+        if (this.fetchDeferred?.promise) {
+            return this.fetchDeferred.promise;
         }
+
         // Do not start a fetch if the result is already closed
         if (this.closed) {
             return Promise.reject('Cannot fetch, the result is already closed');
