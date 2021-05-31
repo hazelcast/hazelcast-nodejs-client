@@ -25,6 +25,7 @@ const {
     Client,
     ClientConfigImpl,
     ClientNotActiveError,
+    TargetDisconnectedError
 } = require('../../../');
 const { Invocation, InvocationService } = require('../../../lib/invocation/InvocationService');
 const { ListenerService } = require('../../../lib/listener/ListenerService');
@@ -81,7 +82,7 @@ describe('InvocationServiceTest', function () {
         invocation.deferred = deferredPromise();
         service.pending.set(0, invocation);
 
-        return invocation;
+        return { invocation: invocation, connection: connStub };
     }
 
     afterEach(function () {
@@ -91,7 +92,7 @@ describe('InvocationServiceTest', function () {
         }
     });
 
-    it('should start clean resource task and register listener for smart client and enabled acks', async function () {
+    it('should start backup timeout task and register listener for smart client and enabled acks', async function () {
         const config = new ClientConfigImpl();
         const client = mockClient(config);
 
@@ -108,7 +109,7 @@ describe('InvocationServiceTest', function () {
         expect(client.getListenerService().registerListener.calledOnce).to.be.true;
     });
 
-    it('should start clean resource task without listener registration for unisocket client', async function () {
+    it('should start backup timeout task without listener registration for unisocket client', async function () {
         const config = new ClientConfigImpl();
         config.network.smartRouting = false;
         const client = mockClient(config);
@@ -126,7 +127,7 @@ describe('InvocationServiceTest', function () {
         expect(client.getListenerService().registerListener.notCalled).to.be.true;
     });
 
-    it('should start clean resource task without listener registration for disabled acks', async function () {
+    it('should start backup timeout task without listener registration for disabled acks', async function () {
         const config = new ClientConfigImpl();
         config.backupAckToClientEnabled = false;
         const client = mockClient(config);
@@ -145,10 +146,18 @@ describe('InvocationServiceTest', function () {
     });
 
     it('should reject pending invocations on shutdown', async function () {
-        const invocation = await preparePendingInvocationWithClosedConn();
+        const invocation = (await preparePendingInvocationWithClosedConn()).invocation;
 
         invocation.invocationService.shutdown();
 
         await expect(invocation.deferred.promise).to.be.rejectedWith(ClientNotActiveError);
+    });
+
+    it('should reject pending invocations with closed connections when onConnectionClose is called', async function () {
+        const obj = await preparePendingInvocationWithClosedConn();
+        const invocation = obj.invocation;
+
+        service.onConnectionClose(obj.connection);
+        await expect(invocation.deferred.promise).to.be.rejectedWith(TargetDisconnectedError);
     });
 });
