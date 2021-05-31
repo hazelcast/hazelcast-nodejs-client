@@ -76,7 +76,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
                     responseObject = this.toObject(item);
                 }
 
-                const member = this.clusterService.getMember(uuid);
+                const member = this.clusterService.getMember(uuid.toString());
                 const name = this.name;
                 const itemEvent = new ItemEvent(name, eventType, responseObject, member);
 

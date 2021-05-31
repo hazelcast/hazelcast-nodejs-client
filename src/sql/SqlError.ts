@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @ignore *//** */
+
+import {UUID} from '../core';
 
 /**
- * Public API re-exports.
+ * A server-side error that is propagated to the client.
+ * @internal
  */
-
-export * from './aggregation';
-export * from './config';
-export * from './connection';
-export * from './core';
-export * from './logging';
-export * from './proxy';
-export * from './serialization';
-export {HazelcastClient as Client} from './HazelcastClient';
-export * from './LifecycleService';
-export * from './PartitionService';
-export * from './CPSubsystem';
-export * from './sql';
+export class SqlError {
+    constructor(
+        readonly code: number,
+        readonly message: string,
+        readonly originatingMemberId: UUID
+    ) {
+    }
+}

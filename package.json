@@ -37,7 +37,7 @@
         "yargs": "~17.0.1"
     },
     "engines": {
-        "node": ">=10"
+        "node": ">=10.4.0"
     },
     "scripts": {
         "clean": "rimraf lib *.jar *.log",
@@ -49,6 +49,7 @@
         "coverage": "node scripts/test-runner.js coverage",
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --options typedoc.json",
+        "generate-docs:watch": "typedoc --watch --options typedoc.json",
         "lint": "eslint --cache --ext .ts src && eslint --cache --plugin mocha test && eslint --cache  code_samples && eslint --cache scripts",
         "lint:fix": "eslint --cache --fix --ext .ts src && eslint --cache --fix --plugin mocha test && eslint --cache --fix code_samples && eslint --cache --fix scripts",
         "startrc": "node scripts/test-runner.js startrc",

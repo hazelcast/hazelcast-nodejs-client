@@ -153,7 +153,7 @@ export class DateSerializer implements Serializer<Date> {
     }
 
     write(output: DataOutput, object: Date): void {
-        output.writeLong(Long.fromNumber(object.getMilliseconds()));
+        output.writeLong(Long.fromNumber(object.getTime()));
     }
 }
 

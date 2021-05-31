@@ -60,4 +60,20 @@ export class ListMultiFrameCodec {
         clientMessage.nextFrame();
         return result;
     }
+
+    static decodeNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T[] {
+        return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : ListMultiFrameCodec.decode(clientMessage, decoder);
+    }
+
+    static decodeContainsNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T[] {
+        const result: T[] = [];
+        // begin frame
+        clientMessage.nextFrame();
+        while (!CodecUtil.nextFrameIsDataStructureEndFrame(clientMessage)) {
+            result.push(CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : decoder(clientMessage));
+        }
+        // end frame
+        clientMessage.nextFrame();
+        return result;
+    }
 }
