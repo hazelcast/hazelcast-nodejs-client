@@ -233,7 +233,7 @@ export class SqlResultImpl implements SqlResult {
         // Reject execute with user cancellation error.
         this.onExecuteError(error);
         // Prevent ongoing/future fetch requests
-        if (!this.fetchDeferred?.promise) {
+        if (!this.fetchDeferred) {
             this.fetchDeferred = deferredPromise<SqlPage>();
         }
         this.fetchDeferred.reject(error);
