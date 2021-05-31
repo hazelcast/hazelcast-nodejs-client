@@ -276,6 +276,34 @@ describe('SqlResultTest', function () {
             sqlResult.close();
         });
 
+        it('should not call onExecuteError and change properties after a response is received', function (done) {
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, {}, 4096);
+            const onExecuteErrorFake = sandbox.replace(sqlResult, 'onExecuteError', sandbox.fake(sqlResult.onExecuteError));
+            // simulate a response then call close()
+            setTimeout(async () => {
+                const data = [];
+
+                for (let i = 0; i < 2; i++) { // row number
+                    const column = [];
+                    for (let j = 0; j < 2; j++) {
+                        column.push((i * 2 + j).toString());
+                    }
+                    data.push(column);
+                }
+
+                const rowPage = new SqlPage(
+                    [0, 0], // column types
+                    data,
+                    false // last is false, so the result is not closed yet
+                );
+
+                sqlResult.onExecuteResponse(defaultRowMetadata, rowPage, long.fromNumber(-1));
+                await sqlResult.close();
+                onExecuteErrorFake.called.should.be.false;
+                done();
+            }, 100);
+        });
+
         it('should call close() of sql service, and mark result as closed', function () {
             const fakeConnection = {};
             const fakeQueryId = {};
