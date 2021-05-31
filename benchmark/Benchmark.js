@@ -15,20 +15,11 @@
  */
 'use strict';
 
-const { Predicates } = require('..');
-const long = require('long');
-
 const argv = require('yargs')
     .usage('Usage: $0 <command> [options]')
     .command('get', 'Run get benchmark')
     .command('set', 'Run set benchmark')
     .command('random', 'Run random op (get, set, delete) benchmark')
-    .command('sqlRandomQueryBigger', 'Run sql benchmark with a random bigger query')
-    .command('sqlRandomPredicateBigger', 'Run predicate benchmark with a random bigger query')
-    .command('sqlRandomQueryBiggerWithIndex', 'Run sql benchmark with a random bigger query and index')
-    .command('sqlRandomPredicateBiggerWithIndex', 'Run predicate benchmark with a random bigger query and index')
-    .command('sqlRandomQueryEqual', 'Run sql benchmark with a random equality query')
-    .command('sqlRandomPredicateEqual', 'Run predicate benchmark with a random equality query')
     .number('t')
     .describe('t', 'Total number of operations to run')
     .number('c')
@@ -37,7 +28,7 @@ const argv = require('yargs')
     .describe('s', 'Size of values to use (for ASCII strings)')
     .help('h')
     .argv;
-const { runBenchmark, Student } = require('./BenchmarkRunner');
+const runBenchmark = require('./BenchmarkRunner');
 
 const KEY = '00000000-0000-0000-0000-000000000000';
 const VALUE_SIZE = argv.s || 1024;
@@ -55,46 +46,6 @@ function randomString(len) {
         res += charSet.substring(pos, pos + 1);
     }
     return res;
-}
-
-const numberOfEntriesInMap = 1000;
-
-async function sqlRandomQueryBigger(map, sqlService) {
-    const result = sqlService.execute('SELECT * FROM someMap WHERE age > ?',
-        [long.fromNumber(Math.floor(Math.random() * numberOfEntriesInMap))]
-    );
-    // eslint-disable-next-line no-unused-vars
-    for await (const row of result) {
-        // no-op
-    }
-}
-
-async function sqlRandomPredicateBigger(map) {
-    const predicate = Predicates.sql(`age > ${Math.floor(Math.random() * numberOfEntriesInMap)}`);
-    const values = await map.valuesWithPredicate(predicate);
-    // eslint-disable-next-line no-unused-vars
-    for (const value of values) {
-        // no-op
-    }
-}
-
-async function sqlRandomQueryEqual(map, sqlService) {
-    const result = sqlService.execute('SELECT * FROM someMap WHERE age = ?',
-        [long.fromNumber(Math.floor(Math.random() * numberOfEntriesInMap))]
-    );
-    // eslint-disable-next-line no-unused-vars
-    for await (const row of result) {
-        // no-op
-    }
-}
-
-async function sqlRandomPredicateEqual(map) {
-    const predicate = Predicates.sql(`age = ${Math.floor(Math.random() * numberOfEntriesInMap)}`);
-    const values = await map.valuesWithPredicate(predicate);
-    // eslint-disable-next-line no-unused-vars
-    for (const value of values) {
-        // no-op
-    }
 }
 
 function randomOp(map) {
@@ -115,52 +66,19 @@ function randomOp(map) {
         let prepareOp;
         let nextOp;
         switch (type) {
-            case 'get':
-                prepareOp = (map) => map.set(KEY, VAL);
-                nextOp = (map) => map.get(KEY);
-                break;
-            case 'set':
-                nextOp = (map) => map.set(KEY, VAL);
-                break;
-            case 'random':
-                nextOp = (map) => randomOp(map);
-                break;
-            case 'sqlRandomQueryBigger':
-                prepareOp = async (map) => {
-                    for (let i = 0; i < numberOfEntriesInMap; i++) {
-                        await map.set(`key${i}`, new Student(long.fromNumber(i), i + 1));
-                    }
-                };
-                nextOp = (map, sqlService) => sqlRandomQueryBigger(map, sqlService);
-                break;
-            case 'sqlRandomPredicateBigger':
-                prepareOp = async (map) => {
-                    for (let i = 0; i < numberOfEntriesInMap; i++) {
-                        await map.set(`key${i}`, new Student(long.fromNumber(i), i + 1));
-                    }
-                };
-                nextOp = (map) => sqlRandomPredicateBigger(map);
-                break;
-            case 'sqlRandomQueryEqual':
-                prepareOp = async (map) => {
-                    for (let i = 0; i < numberOfEntriesInMap; i++) {
-                        await map.set(`key${i}`, new Student(long.fromNumber(i), i + 1));
-                    }
-                };
-                nextOp = (map, sqlService) => sqlRandomQueryEqual(map, sqlService);
-                break;
-            case 'sqlRandomPredicateEqual':
-                prepareOp = async (map) => {
-                    for (let i = 0; i < numberOfEntriesInMap; i++) {
-                        await map.set(`key${i}`, new Student(long.fromNumber(i), i + 1));
-                    }
-                };
-                nextOp = (map, sqlService) => sqlRandomPredicateEqual(map, sqlService);
-                break;
-            default:
-                console.error(`Unknown command "${type}". Supported commands are "get", "set", "random",`
-                            + '"random", "random".');
-                process.exit(1);
+        case 'get':
+            prepareOp = (map) => map.set(KEY, VAL);
+            nextOp = (map) => map.get(KEY);
+            break;
+        case 'set':
+            nextOp = (map) => map.set(KEY, VAL);
+            break;
+        case 'random':
+            nextOp = (map) => randomOp(map);
+            break;
+        default:
+            console.error(`Unknown command "${type}". Supported commands are "get", "set", "random".`);
+            process.exit(1);
         }
 
         console.log('Benchmark type:', type);
