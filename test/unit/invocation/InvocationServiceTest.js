@@ -25,7 +25,6 @@ const {
     Client,
     ClientConfigImpl,
     ClientNotActiveError,
-    TargetDisconnectedError
 } = require('../../../');
 const { Invocation, InvocationService } = require('../../../lib/invocation/InvocationService');
 const { ListenerService } = require('../../../lib/listener/ListenerService');
@@ -151,11 +150,5 @@ describe('InvocationServiceTest', function () {
         invocation.invocationService.shutdown();
 
         await expect(invocation.deferred.promise).to.be.rejectedWith(ClientNotActiveError);
-    });
-
-    it('should reject pending invocations with closed connections when clean resource task runs', async function () {
-        const invocation = await preparePendingInvocationWithClosedConn();
-
-        await expect(invocation.deferred.promise).to.be.rejectedWith(TargetDisconnectedError);
     });
 });
