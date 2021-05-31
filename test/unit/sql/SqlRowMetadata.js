@@ -28,9 +28,9 @@ describe('SqlRowMetadataTest', function () {
            const columnMetadata2 = {};
 
            const instance = new SqlRowMetadataImpl([columnMetadata1, columnMetadata2]);
-           instance.getColumnByIndex(0).should.be.eq(columnMetadata1);
-           instance.getColumnByIndex(1).should.be.eq(columnMetadata2);
-           should.equal(instance.getColumnByIndex(3), undefined);
+           instance.getColumn(0).should.be.eq(columnMetadata1);
+           instance.getColumn(1).should.be.eq(columnMetadata2);
+           should.equal(instance.getColumn(3), undefined);
        });
     });
     describe('findColumn', function () {

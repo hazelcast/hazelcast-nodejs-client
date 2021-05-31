@@ -311,11 +311,14 @@ export class SqlServiceImpl implements SqlService {
         }
 
         try {
-            const serializedParams = new Array(sqlStatement.params.length);
+            let serializedParams;
             if (Array.isArray(sqlStatement.params)) { // params can be undefined
+                serializedParams = new Array(sqlStatement.params.length);
                 for (let i = 0; i < sqlStatement.params.length; i++) {
                     serializedParams[i] = this.serializationService.toData(sqlStatement.params[i]);
                 }
+            } else {
+                serializedParams = [];
             }
             const cursorBufferSize = sqlStatement.options?.hasOwnProperty('cursorBufferSize') ?
                 sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE;

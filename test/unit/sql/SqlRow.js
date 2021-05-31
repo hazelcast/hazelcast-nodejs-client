@@ -20,7 +20,7 @@ const should = chai.should();
 const { SqlRowImpl } = require('../../../lib/sql/SqlRow');
 const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
 const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
-const { IndexOutOfBoundsError, IllegalArgumentError } = require('../../../lib/core/HazelcastError');
+const { IllegalArgumentError } = require('../../../lib/core/HazelcastError');
 
 describe('SqlRowTest', function () {
     const instance = new SqlRowImpl([
@@ -40,9 +40,8 @@ describe('SqlRowTest', function () {
             should.equal(instance.getObject('bar'), null);
             instance.getObject(0).should.be.eq(1);
             should.equal(instance.getObject(1), null);
-
-            (() => instance.getObject(2)).should.throw(IndexOutOfBoundsError, /Index .* does not exists/);
-            (() => instance.getObject(-1)).should.throw(IndexOutOfBoundsError, /Index .* does not exists/);
+            should.equal(instance.getObject(2), undefined);
+            should.equal(instance.getObject(-1), undefined);
 
             (() => instance.getObject('unexisted')).should.throw(IllegalArgumentError, /Could not find a column with name .*/);
 

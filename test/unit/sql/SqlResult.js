@@ -390,8 +390,8 @@ describe('SqlResultTest', function () {
         it('should not start a new fetch if result is closed', async function () {
             await sqlResult.close();
             const rejectionReason = await getRejectionReasonOrDummy(sqlResult, 'fetch');
-            rejectionReason.should.be.a('string');
-            rejectionReason.should.include('close() is called');
+            rejectionReason.should.be.instanceof(HazelcastSqlException);
+            rejectionReason.message.should.include('was cancelled');
         });
 
         it('should return a promise that resolves an sql page', async function () {
@@ -556,11 +556,9 @@ describe('SqlResultTest', function () {
                 true // isLast
             );
 
-            const fake = sandbox.replace(rowPage, 'isLast', sandbox.fake(rowPage.isLast));
-
             sqlResult.onNextPage(rowPage);
 
-            fake.called.should.be.true;
+            rowPage.last.should.be.true;
 
             sqlResult.last.should.be.true;
             sqlResult.closed.should.be.true;
@@ -577,13 +575,9 @@ describe('SqlResultTest', function () {
             );
 
             rowPage.getRowCount();
-
-            const fake = sandbox.replace(rowPage, 'isLast', sandbox.fake(rowPage.isLast));
-
             sqlResult.onNextPage(rowPage);
 
-            fake.called.should.be.true;
-
+            rowPage.last.should.be.false;
             sqlResult.last.should.be.false;
             sqlResult.closed.should.be.false;
 

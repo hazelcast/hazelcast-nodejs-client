@@ -41,8 +41,8 @@ describe('SqlPageTest', function () {
         it('should construct same page as new', function () {
             staticInstance.getRowCount().should.be.eq(instance.getRowCount());
             staticInstance.getColumnCount().should.be.eq(instance.getColumnCount());
-            staticInstance.getColumnTypes().should.be.eq(instance.getColumnTypes());
-            staticInstance.isLast().should.be.eq(instance.isLast());
+            staticInstance.columns.should.be.eq(instance.columns);
+            staticInstance.last.should.be.eq(instance.last);
         });
     });
     describe('getValue', function () {
