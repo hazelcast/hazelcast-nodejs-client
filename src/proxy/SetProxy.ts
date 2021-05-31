@@ -100,7 +100,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
         const handler = (message: ClientMessage): void => {
             SetAddListenerCodec.handle(message, (item: Data, uuid: UUID, eventType: number) => {
                 const responseObject = this.toObject(item);
-                const member = this.clusterService.getMember(uuid);
+                const member = this.clusterService.getMember(uuid.toString());
                 const name = this.name;
                 const itemEvent = new ItemEvent(name, eventType, responseObject, member);
 

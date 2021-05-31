@@ -192,7 +192,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
                                    eventType: number,
                                    uuid: UUID,
                                    numberOfAffectedEntries: number): void => {
-            const member = this.clusterService.getMember(uuid);
+            const member = this.clusterService.getMember(uuid.toString());
             const name = this.name;
 
             key = toObject(keyData);

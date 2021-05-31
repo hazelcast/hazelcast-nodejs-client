@@ -38,6 +38,6 @@ export class DataCodec {
     }
 
     static decodeNullable(clientMessage: ClientMessage): Data {
-        return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : this.decode(clientMessage);
+        return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : DataCodec.decode(clientMessage);
     }
 }
