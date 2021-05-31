@@ -17,13 +17,6 @@
 'use strict';
 
 const { Lang } = require('../../remote_controller/remote-controller_types');
-const { SqlColumnType } = require('../../../../lib/sql/SqlColumnMetadata');
-const {
-    HzLocalDate,
-    HzLocalDateTime,
-    HzOffsetDateTime,
-    HzLocalTime
-} = require('../../../../lib/core/DatetimeClasses');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { Client } = require('../../../../');
@@ -51,6 +44,15 @@ class Student {
         writer.writeFloat('height', this.height);
     }
 }
+
+const getSqlColumnType = () => {
+    const { SqlColumnType } = require('../../../../lib/sql/SqlColumnMetadata');
+    return SqlColumnType;
+};
+
+const getDatetimeUtil = () => {
+    return require('../../../../lib/util/DatetimeUtil');
+};
 
 const portableFactory = (classId) => {
     if (classId === 1) {
@@ -102,6 +104,7 @@ describe('Decode/Serialize test without server config', function () {
     });
 
     it('should be able to decode/serialize VARCHAR', async function () {
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -116,7 +119,7 @@ describe('Decode/Serialize test without server config', function () {
             `SELECT * FROM ${mapName} WHERE this = ? OR this = ? ORDER BY __key ASC`, ['7', '2']
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.VARCHAR);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.VARCHAR);
 
         const rows = [];
 
@@ -130,6 +133,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BOOLEAN', async function () {
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -141,7 +145,7 @@ describe('Decode/Serialize test without server config', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this = ? ORDER BY __key ASC`, [true]);
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BOOLEAN);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BOOLEAN);
 
         const rows = [];
 
@@ -155,6 +159,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize TINYINT', async function () {
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -169,7 +174,7 @@ describe('Decode/Serialize test without server config', function () {
             [long.fromNumber(10), long.fromNumber(16)]
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TINYINT);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TINYINT);
 
         const rows = [];
 
@@ -197,6 +202,7 @@ describe('Decode/Serialize test without server config', function () {
         rows2.length.should.be.eq(expectedRowCount);
     });
     it('should be able to decode/serialize SMALLINT', async function () {
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -211,7 +217,7 @@ describe('Decode/Serialize test without server config', function () {
             [long.fromNumber(8), long.fromNumber(16)]
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.SMALLINT);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.SMALLINT);
 
         const rows = [];
 
@@ -225,6 +231,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize INTEGER', async function () {
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -239,7 +246,7 @@ describe('Decode/Serialize test without server config', function () {
             [long.fromNumber(10), long.fromNumber(20)]
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.INTEGER);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.INTEGER);
 
         const rows = [];
 
@@ -253,6 +260,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BIGINT', async function () {
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -267,7 +275,7 @@ describe('Decode/Serialize test without server config', function () {
             [long.fromNumber(10), long.fromNumber(18)]
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
 
         const rows = [];
 
@@ -286,6 +294,7 @@ describe('Decode/Serialize test without server config', function () {
         }
     });
     it('should be able to decode/serialize DECIMAL', async function () {
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -309,7 +318,7 @@ describe('Decode/Serialize test without server config', function () {
             ['-22.00000000000000000000000000000001', '1.0000000000000231213123123125465462513214653123']
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DECIMAL);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DECIMAL);
 
         const rows = [];
 
@@ -329,6 +338,7 @@ describe('Decode/Serialize test without server config', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize REAL', async function () {
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -343,7 +353,7 @@ describe('Decode/Serialize test without server config', function () {
             [-0.5, 0.5]
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.REAL);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.REAL);
 
         const rows = [];
 
@@ -362,6 +372,7 @@ describe('Decode/Serialize test without server config', function () {
         }
     });
     it('should be able to decode/serialize DOUBLE', async function () {
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -377,7 +388,7 @@ describe('Decode/Serialize test without server config', function () {
             [-0.7, 0.7]
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DOUBLE);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DOUBLE);
 
         const rows = [];
 
@@ -396,6 +407,8 @@ describe('Decode/Serialize test without server config', function () {
         }
     });
     it('should be able to decode/serialize DATE', async function () {
+        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -407,10 +420,10 @@ describe('Decode/Serialize test without server config', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
             `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST (? AS DATE) ORDER BY __key ASC`,
-            [new HzLocalDate(1, 1, 1).toString(), new HzLocalDate(5, 5, 5).toString()]
+            ['0001-01-01', '0005-05-05']
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DATE);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DATE);
 
         const rows = [];
 
@@ -428,16 +441,15 @@ describe('Decode/Serialize test without server config', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const date = rows[i]['this'];
-            date.should.be.instanceof(HzLocalDate);
-
-            date.year.should.be.eq(expectedBaseValues.year + i);
-            date.month.should.be.eq(expectedBaseValues.month + i);
-            date.date.should.be.eq(expectedBaseValues.date + i);
-
+            date.should.be.eq(`${leftZeroPadInteger(expectedBaseValues.year + i, 4)}-`
+                + `${leftZeroPadInteger(expectedBaseValues.month + i, 2)}-`
+                + `${leftZeroPadInteger(expectedBaseValues.date + i, 2)}`);
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
     it('should be able to decode/serialize TIME', async function () {
+        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script = `
                     var map = instance_0.getMap("${mapName}");
@@ -448,10 +460,10 @@ describe('Decode/Serialize test without server config', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
             `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME) ORDER BY __key ASC`,
-            [new HzLocalTime(1, 0, 0, 0).toString(), new HzLocalTime(10, 0, 0, 0).toString()]
+            ['01:00:00', '10:00:00']
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIME);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIME);
 
         const rows = [];
 
@@ -470,17 +482,17 @@ describe('Decode/Serialize test without server config', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const time = rows[i]['this'];
-            time.should.be.instanceof(HzLocalTime);
-
-            time.hour.should.be.eq(expectedBaseValue.hour + i);
-            time.minute.should.be.eq(expectedBaseValue.minute + i);
-            time.second.should.be.eq(expectedBaseValue.second + i);
-            time.nano.should.be.eq(expectedBaseValue.nano + i);
+            time.should.be.eq(`${leftZeroPadInteger(expectedBaseValue.hour + i, 2)}:`
+                + `${leftZeroPadInteger(expectedBaseValue.minute + i, 2)}:`
+                + `${leftZeroPadInteger(expectedBaseValue.second + i, 2)}.`
+                + `${leftZeroPadInteger(expectedBaseValue.nano + i, 9)}`);
 
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
     it('should be able to decode/serialize TIMESTAMP', async function () {
+        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script = `
                     var map = instance_0.getMap("${mapName}");
@@ -495,12 +507,12 @@ describe('Decode/Serialize test without server config', function () {
         const result = client.getSqlService().execute(
             `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP) ORDER BY __key ASC`,
             [
-                new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)).toString(),
-                new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1)).toString()
+                '0001-06-05T04:03:02.000000001',
+                '0009-06-05T04:03:02.000000001'
             ]
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIMESTAMP);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIMESTAMP);
 
         const rows = [];
 
@@ -523,21 +535,22 @@ describe('Decode/Serialize test without server config', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const datetime = rows[i]['this'];
-            datetime.should.be.instanceof(HzLocalDateTime);
-
-            datetime.hzLocalDate.year.should.be.eq(expectedBaseValue.year + i);
-            datetime.hzLocalDate.month.should.be.eq(expectedBaseValue.month + i);
-            datetime.hzLocalDate.date.should.be.eq(expectedBaseValue.date + i);
-
-            datetime.hzLocalTime.hour.should.be.eq(expectedBaseValue.hour + i);
-            datetime.hzLocalTime.minute.should.be.eq(expectedBaseValue.minute + i);
-            datetime.hzLocalTime.second.should.be.eq(expectedBaseValue.second + i);
-            datetime.hzLocalTime.nano.should.be.eq(expectedBaseValue.nano + i);
-
+            datetime.should.be.eq(`${leftZeroPadInteger(expectedBaseValue.year + i, 4)}-`
+                + `${leftZeroPadInteger(expectedBaseValue.month + i, 2)}-`
+                + `${leftZeroPadInteger(expectedBaseValue.date + i, 2)}T`
+                + `${leftZeroPadInteger(expectedBaseValue.hour + i, 2)}:`
+                + `${leftZeroPadInteger(expectedBaseValue.minute + i, 2)}:`
+                + `${leftZeroPadInteger(expectedBaseValue.second + i, 2)}.`
+                + `${leftZeroPadInteger(expectedBaseValue.nano + i, 9)}`);
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
     it('should be able to decode/serialize TIMESTAMP WITH TIMEZONE', async function () {
+        const datetimeUtil = getDatetimeUtil();
+        const leftZeroPadInteger = datetimeUtil.leftZeroPadInteger;
+        const getTimezoneOffsetFromSeconds = datetimeUtil.getTimezoneOffsetFromSeconds;
+
+        const SqlColumnType = getSqlColumnType();
         await basicSetup();
         const script =
             `
@@ -557,19 +570,12 @@ describe('Decode/Serialize test without server config', function () {
             `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP_WITH_TIME_ZONE)` +
             'AND this < CAST (? AS TIMESTAMP_WITH_TIME_ZONE) ORDER BY __key ASC',
             [
-                new HzOffsetDateTime(
-                    new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
-                    0
-                ).toString(),
-                new HzOffsetDateTime(
-                    new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1)),
-                    0
-                ).toString()
+                '0001-06-05T04:03:02.000000001Z',
+                '0009-06-05T04:03:02.000000001Z'
             ]
         );
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('this'))
-            .type.should.be.eq(SqlColumnType.TIMESTAMP_WITH_TIME_ZONE);
+        rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIMESTAMP_WITH_TIME_ZONE);
 
         const rows = [];
 
@@ -592,23 +598,21 @@ describe('Decode/Serialize test without server config', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const datetimeWithOffset = rows[i]['this'];
-            datetimeWithOffset.should.be.instanceof(HzOffsetDateTime);
+            datetimeWithOffset.should.be.a('string');
 
-            datetimeWithOffset.hzLocalDateTime.hzLocalDate.year.should.be.eq(expectedBaseValue.year + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalDate.month.should.be.eq(expectedBaseValue.month + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalDate.date.should.be.eq(expectedBaseValue.date + i);
-
-            datetimeWithOffset.hzLocalDateTime.hzLocalTime.hour.should.be.eq(expectedBaseValue.hour + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalTime.minute.should.be.eq(expectedBaseValue.minute + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalTime.second.should.be.eq(expectedBaseValue.second + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalTime.nano.should.be.eq(expectedBaseValue.nano + i);
-
-            datetimeWithOffset.offsetSeconds.should.be.eq((expectedBaseValue.offsetSeconds + i) ** 3);
-
+            datetimeWithOffset.should.be.eq(`${leftZeroPadInteger(expectedBaseValue.year + i, 4)}-`
+                + `${leftZeroPadInteger(expectedBaseValue.month + i, 2)}-`
+                + `${leftZeroPadInteger(expectedBaseValue.date + i, 2)}T`
+                + `${leftZeroPadInteger(expectedBaseValue.hour + i, 2)}:`
+                + `${leftZeroPadInteger(expectedBaseValue.minute + i, 2)}:`
+                + `${leftZeroPadInteger(expectedBaseValue.second + i, 2)}.`
+                + `${leftZeroPadInteger(expectedBaseValue.nano + i, 9)}`
+                + `${getTimezoneOffsetFromSeconds((expectedBaseValue.offsetSeconds + i) ** 3)}`);
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
     it('should be able to decode/serialize OBJECT(portable) without server config', async function () {
+        const SqlColumnType = getSqlColumnType();
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             serialization: {
@@ -637,8 +641,8 @@ describe('Decode/Serialize test without server config', function () {
         );
 
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
+        rowMetadata.getColumn(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
+        rowMetadata.getColumn(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
 
         const rows = [];
 
@@ -695,6 +699,7 @@ describe('Decode/Serialize portable with server config', function () {
     });
 
     it('should be able to decode/serialize OBJECT(portable)', async function () {
+        const SqlColumnType = getSqlColumnType();
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             serialization: {
@@ -722,8 +727,8 @@ describe('Decode/Serialize portable with server config', function () {
         );
 
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
-        rowMetadata.getColumnByIndex(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
+        rowMetadata.getColumn(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
+        rowMetadata.getColumn(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
 
         const rows = [];
 

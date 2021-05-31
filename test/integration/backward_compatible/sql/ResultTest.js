@@ -22,9 +22,21 @@ const long = require('long');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { Client } = require('../../../../');
-const { SqlErrorCode } = require('../../../../lib/sql/SqlErrorCode');
-const { SqlRowMetadataImpl } = require('../../../../lib/sql/SqlRowMetadata');
-const { HazelcastSqlException } = require('../../../../lib/core/HazelcastError');
+
+const getHazelcastSqlException = () => {
+    const { HazelcastSqlException } = require('../../../../lib/core/HazelcastError');
+    return HazelcastSqlException;
+};
+
+const getSqlErrorCode = () => {
+    const { SqlErrorCode } = require('../../../../lib/sql/SqlErrorCode');
+    return SqlErrorCode;
+};
+
+const getSqlRowMetadataImpl = () => {
+    const { SqlRowMetadataImpl } = require('../../../../lib/sql/SqlRowMetadata');
+    return SqlRowMetadataImpl;
+};
 
 describe('SqlResultTest', function () {
     let client;
@@ -70,8 +82,8 @@ describe('SqlResultTest', function () {
             }
             throw new Error('dummy');
         } catch (e) {
-            e.should.be.instanceof(HazelcastSqlException);
-            e.code.should.be.eq(SqlErrorCode.CANCELLED_BY_USER);
+            e.should.be.instanceof(getHazelcastSqlException());
+            e.code.should.be.eq(getSqlErrorCode().CANCELLED_BY_USER);
             e.message.should.include('cancelled');
             e.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
         }
@@ -79,7 +91,7 @@ describe('SqlResultTest', function () {
 
     it('getters should work', async function () {
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.should.be.instanceof(SqlRowMetadataImpl);
+        rowMetadata.should.be.instanceof(getSqlRowMetadataImpl());
         rowMetadata.getColumnCount().should.be.eq(2);
 
         const isRowSet = await result.isRowSet();
