@@ -322,7 +322,6 @@ export class SqlResultImpl implements SqlResult {
         if (this.fetchDeferred?.promise) {
             return this.fetchDeferred.promise;
         }
-
         // Do not start a fetch if the result is already closed
         if (this.closed) {
             return Promise.reject('Cannot fetch, the result is already closed');
