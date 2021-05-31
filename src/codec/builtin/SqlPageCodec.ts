@@ -106,7 +106,7 @@ export class SqlPageCodec {
                     for (let i = 0; i < size; i++) {
                         column[i] = null;
                     }
-                    columns[i] = (column);
+                    columns[i] = column;
                     break;
                 }
                 case SqlColumnType.OBJECT:
@@ -114,7 +114,6 @@ export class SqlPageCodec {
                     break;
                 default:
                     throw new IllegalStateError('Unknown type ' + columnType);
-
             }
         }
         CodecUtil.fastForwardToEndFrame(clientMessage);

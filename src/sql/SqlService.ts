@@ -74,23 +74,23 @@ import {SqlPage} from './SqlPage';
  *
  * ```js
  * class PersonKey {
- *     constructor(personId, deptId){
+ *     constructor(personId, deptId) {
  *         this.personId = personId;
  *         this.deptId = deptId;
  *     }
  *
- *     writePortable(writer){
+ *     writePortable(writer) {
  *         writer.writeLong('personId', this.personId);
  *         writer.writeLong('deptId', this.deptId);
  *     }
  * }
  *
  * class Person {
- *     constructor(name){
+ *     constructor(name) {
  *         this.name = name;
  *     }
  *
- *     writePortable(writer){
+ *     writePortable(writer) {
  *         writer.writeString('name', this.name);
  *     }
  * }
@@ -134,8 +134,8 @@ export interface SqlService {
      * @param sql SQL string. SQL string placeholder character is question mark(`?`)
      * @param params Parameter list. The parameter count must be equal to number of placeholders in the SQL string
      * @param options Options that are affecting how the query is executed
-     * @throws {@link IllegalArgumentError} If arguments are not valid
-     * @throws {@link HazelcastSqlException} in case of execution error
+     * @throws {@link IllegalArgumentError} if arguments are not valid
+     * @throws {@link HazelcastSqlException} in case of an execution error
      * @returns {@link SqlResult}
      */
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
@@ -143,8 +143,8 @@ export interface SqlService {
     /**
      * Executes SQL and returns an SqlResult.
      * @param sql SQL statement object
-     * @throws {@link IllegalArgumentError} If arguments are not valid
-     * @throws {@link HazelcastSqlException} If there is an error running SQL
+     * @throws {@link IllegalArgumentError} if arguments are not valid
+     * @throws {@link HazelcastSqlException} in case of an execution error
      * @returns {@link SqlResult}
      */
     executeStatement(sql: SqlStatement): SqlResult;
@@ -361,24 +361,16 @@ export class SqlServiceImpl implements SqlService {
     }
 
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult {
-        let sqlStatement: SqlStatement;
-
-        if (typeof sql === 'string') {
-            sqlStatement = {
-                sql: sql
-            };
-            // If params is not provided it won't be validated. Default value for optional parameters is undefined.
-            // So, if they are undefined we don't set it, and in validator method we check for property existence.
-            if (params !== undefined) {
-                sqlStatement.params = params;
-            }
-            if (options !== undefined) {
-                sqlStatement.options = options;
-            }
-        } else if (typeof sql === 'object') {
-            sqlStatement = sql;
-        } else {
-            throw new IllegalArgumentError('Sql can be an object or string');
+        const sqlStatement: SqlStatement = {
+            sql: sql
+        };
+        // If params is not provided it won't be validated. Default value for optional parameters is undefined.
+        // So, if they are undefined we don't set it, and in validator method we check for property existence.
+        if (params !== undefined) {
+            sqlStatement.params = params;
+        }
+        if (options !== undefined) {
+            sqlStatement.options = options;
         }
         return this.executeStatement(sqlStatement);
     }

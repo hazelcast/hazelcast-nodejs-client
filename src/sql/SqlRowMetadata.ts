@@ -70,7 +70,6 @@ export class SqlRowMetadataImpl implements SqlRowMetadata {
         return this.columns;
     }
 
-
     findColumn(columnName: string): number {
         if (typeof columnName !== 'string') {
             throw new IllegalArgumentError(`Expected string got type ${typeof columnName}`);

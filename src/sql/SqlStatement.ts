@@ -20,8 +20,10 @@
 export enum SqlExpectedResultType {
     /** The statement may produce either rows or an update count. */
     ANY,
+
     /** The statement must produce rows. An exception is thrown if the statement produces an update count. */
     ROWS,
+
     /** The statement must produce an update count. An exception is thrown if the statement produces rows. */
     UPDATE_COUNT
 }

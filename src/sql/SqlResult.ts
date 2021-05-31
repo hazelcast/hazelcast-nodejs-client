@@ -47,7 +47,7 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  * page for more information.
  *
  * ```js
- * for await(const row of result){
+ * for await (const row of result) {
  *     console.log(row);
  * }
  * ```
@@ -148,6 +148,11 @@ export class SqlResultImpl implements SqlResult {
     private closed: boolean;
 
     /**
+     * Whether a response is received or not from server. The response can be an error message or a success message.
+     */
+    private responseReceived: boolean;
+
+    /**
      * Row metadata of the result. Initially null.
      */
     private rowMetadata: SqlRowMetadata | null;
@@ -165,6 +170,7 @@ export class SqlResultImpl implements SqlResult {
     ) {
         this.closed = false;
         this.last = false;
+        this.responseReceived = false;
         this.rowMetadata = null;
         this.currentPage = null;
         this.executeDeferred = deferredPromise<boolean>();
@@ -217,7 +223,7 @@ export class SqlResultImpl implements SqlResult {
 
     close(): Promise<void> {
         // Return the close promise if a close request is already started
-        if (this.closeDeferred?.promise) {
+        if (this.closeDeferred) {
             return this.closeDeferred.promise;
         }
 
@@ -225,13 +231,14 @@ export class SqlResultImpl implements SqlResult {
         if (this.closed) {
             return Promise.resolve();
         }
-
         this.closeDeferred = deferredPromise<void>();
 
         const error = new HazelcastSqlException(this.clientUUID, SqlErrorCode.CANCELLED_BY_USER,
             'Query was cancelled by user');
-        // Reject execute with user cancellation error.
-        this.onExecuteError(error);
+        // Reject execution with user cancellation error if the cancellation is initiated before a response is received.
+        if (!this.responseReceived) {
+            this.onExecuteError(error);
+        }
         // Prevent ongoing/future fetch requests
         if (!this.fetchDeferred) {
             this.fetchDeferred = deferredPromise<SqlPage>();
@@ -245,8 +252,7 @@ export class SqlResultImpl implements SqlResult {
         });
 
         this.closed = true;
-
-        return this.closeDeferred.promise
+        return this.closeDeferred.promise;
     }
 
     /** Called when next page of the result is received. */
@@ -263,9 +269,11 @@ export class SqlResultImpl implements SqlResult {
 
     /** Called when an error is occurred during SQL execute */
     onExecuteError(error: HazelcastSqlException): void {
+        // Ignore the error if SQL result is closed.
         if (this.closed) {
             return;
         }
+        this.responseReceived = true;
         this.updateCount = Long.fromInt(-1);
         this.rowMetadata = null;
         this.executeDeferred.reject(error);
@@ -310,6 +318,7 @@ export class SqlResultImpl implements SqlResult {
             this.updateCount = updateCount;
             this.closed = true;
         }
+        this.responseReceived = true;
         this.executeDeferred.resolve(true);
     }
 
@@ -319,7 +328,7 @@ export class SqlResultImpl implements SqlResult {
      */
     fetch(): Promise<SqlPage> {
         // If there is an ongoing fetch, return that promise
-        if (this.fetchDeferred?.promise) {
+        if (this.fetchDeferred) {
             return this.fetchDeferred.promise;
         }
         // Do not start a fetch if the result is already closed
@@ -374,7 +383,7 @@ export class SqlResultImpl implements SqlResult {
     }
 
     next(): Promise<IteratorResult<SqlRowType, SqlRowType | undefined>> {
-        return this.hasNext().then((hasNext: boolean) => {
+        return this.hasNext().then(hasNext => {
             if (hasNext) {
                 const row = this.getCurrentRow();
                 this.currentPosition++;
