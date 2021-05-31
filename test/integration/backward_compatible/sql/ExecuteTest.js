@@ -44,9 +44,13 @@ describe('SqlExecuteTest', function () {
     // Sorts sql result rows by __key, first the smallest __key
     const sortByKey = (array) => {
         array.sort((a, b) => {
-            if (a['__key'] < b['__key']) return -1;
-            else if (a['__key'] > b['__key']) return 1;
-            else return 0;
+            if (a['__key'] < b['__key']) {
+                return -1;
+            } else if (a['__key'] > b['__key']) {
+                return 1;
+            } else {
+                return 0;
+            }
         });
     };
 
@@ -254,9 +258,13 @@ describe('SqlExecuteTest', function () {
         // Sorts sql result rows by __key, first the smallest __key
         const sortByKey = (array) => {
             array.sort((a, b) => {
-                if (a['__key'] < b['__key']) return -1;
-                else if (a['__key'] > b['__key']) return 1;
-                else return 0;
+                if (a['__key'] < b['__key']) {
+                    return -1;
+                } else if (a['__key'] > b['__key']) {
+                    return 1;
+                } else {
+                    return 0;
+                }
             });
         };
 

@@ -53,7 +53,9 @@ class Student {
 }
 
 const portableFactory = (classId) => {
-    if (classId === 1) return new Student();
+    if (classId === 1) {
+        return new Student();
+    }
     return null;
 };
 

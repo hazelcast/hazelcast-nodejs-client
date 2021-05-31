@@ -213,8 +213,9 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
             const connection = entry[1];
             if (dataMember) {
                 const member = this.clusterService.getMember(uuid);
-                if (!member || member.liteMember)
+                if (!member || member.liteMember) {
                     continue;
+                }
             }
             return connection;
         }

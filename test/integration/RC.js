@@ -23,7 +23,9 @@ const controller = new RC('localhost', 9701);
 function createCluster(hzVersion, config) {
     const deferred = deferredPromise();
     controller.createCluster(hzVersion, config, (err, cluster) => {
-        if (err) return deferred.reject(err);
+        if (err) {
+            return deferred.reject(err);
+        }
         return deferred.resolve(cluster);
     });
     return deferred.promise;
@@ -32,7 +34,9 @@ function createCluster(hzVersion, config) {
 function createClusterKeepClusterName(hzVersion, config) {
     const deferred = deferredPromise();
     controller.createClusterKeepClusterName(hzVersion, config, (err, cluster) => {
-        if (err) return deferred.reject(err);
+        if (err) {
+            return deferred.reject(err);
+        }
         return deferred.resolve(cluster);
     });
     return deferred.promise;
@@ -41,7 +45,9 @@ function createClusterKeepClusterName(hzVersion, config) {
 function startMember(clusterId) {
     const deferred = deferredPromise();
     controller.startMember(clusterId, (err, member) => {
-        if (err) return deferred.reject(err);
+        if (err) {
+            return deferred.reject(err);
+        }
         return deferred.resolve(member);
     });
     return deferred.promise;
@@ -50,7 +56,9 @@ function startMember(clusterId) {
 function exit() {
     const deferred = deferredPromise();
     controller.exit((err, res) => {
-        if (err) return deferred.reject(err);
+        if (err) {
+            return deferred.reject(err);
+        }
         return deferred.resolve(res);
     });
     return deferred.promise;
@@ -59,7 +67,9 @@ function exit() {
 function shutdownMember(clusterId, memberUuid) {
     const deferred = deferredPromise();
     controller.shutdownMember(clusterId, memberUuid, (err, res) => {
-        if (err) return deferred.reject(err);
+        if (err) {
+            return deferred.reject(err);
+        }
         return deferred.resolve(res);
     });
     return deferred.promise;
@@ -68,7 +78,9 @@ function shutdownMember(clusterId, memberUuid) {
 function shutdownCluster(clusterId) {
     const deferred = deferredPromise();
     controller.shutdownCluster(clusterId, (err, res) => {
-        if (err) return deferred.reject(err);
+        if (err) {
+            return deferred.reject(err);
+        }
         return deferred.resolve(res);
     });
     return deferred.promise;
@@ -77,7 +89,9 @@ function shutdownCluster(clusterId) {
 function terminateMember(clusterId, memberUuid) {
     const deferred = deferredPromise();
     controller.terminateMember(clusterId, memberUuid, (err, res) => {
-        if (err) return deferred.reject(err);
+        if (err) {
+            return deferred.reject(err);
+        }
         return deferred.resolve(res);
     });
     return deferred.promise;
@@ -86,7 +100,9 @@ function terminateMember(clusterId, memberUuid) {
 function terminateCluster(clusterId) {
     const deferred = deferredPromise();
     controller.terminateCluster(clusterId, (err, res) => {
-        if (err) return deferred.reject(err);
+        if (err) {
+            return deferred.reject(err);
+        }
         return deferred.resolve(res);
     });
     return deferred.promise;
@@ -95,8 +111,12 @@ function terminateCluster(clusterId) {
 function executeOnController(clusterId, script, lang) {
     const deferred = deferredPromise();
     controller.executeOnController(clusterId, script, lang, (err, res) => {
-        if (err) return deferred.reject(err);
-        if (res.success === false) return deferred.reject(res.message);
+        if (err) {
+            return deferred.reject(err);
+        }
+        if (res.success === false) {
+            return deferred.reject(res.message);
+        }
         return deferred.resolve(res);
     });
     return deferred.promise;

@@ -4,11 +4,11 @@ import {BitsUtil} from '../../util/BitsUtil';
 
 /** @internal */
 export class ListCNFixedSizeCodec {
-    static readonly TYPE_NULL_ONLY = 1;
-    static readonly TYPE_NOT_NULL_ONLY = 2;
-    static readonly TYPE_MIXED = 3;
-    static readonly HEADER_SIZE = BitsUtil.BYTE_SIZE_IN_BYTES + BitsUtil.INT_SIZE_IN_BYTES;
-    static readonly ITEMS_PER_BITMASK = 8;
+    private static readonly TYPE_NULL_ONLY = 1;
+    private static readonly TYPE_NOT_NULL_ONLY = 2;
+    private static readonly TYPE_MIXED = 3;
+    private static readonly HEADER_SIZE = BitsUtil.BYTE_SIZE_IN_BYTES + BitsUtil.INT_SIZE_IN_BYTES;
+    private static readonly ITEMS_PER_BITMASK = 8;
 
     static decode<T>(
         frame: Frame,
@@ -35,7 +35,7 @@ export class ListCNFixedSizeCodec {
                 let readCount = 0;
 
                 while (readCount < count) {
-                    const bitmask = FixSizedTypesCodec.decodeByte(frame.content, position);
+                    const bitmask = FixSizedTypesCodec.decodeByte(frame.content, position++);
                     for (let i = 0; i < ListCNFixedSizeCodec.ITEMS_PER_BITMASK && readCount < count; i++) {
                         const mask = 1 << i;
                         if ((bitmask & mask) === mask) {
@@ -47,7 +47,6 @@ export class ListCNFixedSizeCodec {
                         readCount++;
                     }
                 }
-                break;
             }
 
         }

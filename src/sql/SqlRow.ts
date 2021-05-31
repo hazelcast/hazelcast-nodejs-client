@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 import {SqlRowMetadata, SqlRowMetadataImpl} from './SqlRowMetadata';
-import {IllegalArgumentError, IndexOutOfBoundsError} from '../core';
+import {IllegalArgumentError} from '../core';
 
 export interface SqlRow {
-
     /**
      Gets the value of the column by column index or column name.
      The class of the returned value depends on the SQL type of the column. See {@link SqlColumnType}
      @param columnNameOrIndex Column name or index
-     @returns value in specified column of this row
+     @returns value in specified column of this row, or undefined if there is no value at the provided index.
      @throws {@link IllegalArgumentError} if columnNameOrIndex is string and column specified with name does not exist
-     @throws {@link IndexOutOfBoundsError} if columnNameOrIndex is number and there is no index with its value
      @throws {@link IllegalArgumentError} if columnNameOrIndex is not string or number
      */
     getObject<T>(columnNameOrIndex: string | number): T;
@@ -34,7 +32,6 @@ export interface SqlRow {
      * @returns row metadata
      */
     getMetadata(): SqlRowMetadata;
-
 }
 
 /** @internal */
@@ -47,9 +44,6 @@ export class SqlRowImpl implements SqlRow {
         let columnIndex;
         if (typeof columnNameOrIndex === 'number') {
             columnIndex = columnNameOrIndex;
-            if (columnIndex < 0 || columnIndex >= this.values.length) {
-                throw new IndexOutOfBoundsError(`Index ${columnIndex} does not exists in SqlRow.`);
-            }
         } else if (typeof columnNameOrIndex === 'string') {
             columnIndex = this.rowMetadata.findColumn(columnNameOrIndex);
             if (columnIndex === SqlRowMetadataImpl.COLUMN_NOT_FOUND) {

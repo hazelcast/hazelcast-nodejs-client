@@ -25,16 +25,8 @@ export class SqlPage {
          SQL pages in columnar format. If row based data was used, additional conversion is necessary.
          */
         private readonly columns: any[][],
-        private readonly last: boolean
+        public readonly last: boolean
     ) {
-    }
-
-    isLast(): boolean {
-        return this.last;
-    }
-
-    getColumnTypes(): SqlColumnType[] {
-        return this.columnTypes;
     }
 
     /**
@@ -53,7 +45,7 @@ export class SqlPage {
     }
 
     /**
-     * Returns the value in certain row and column
+     * @returns the value in certain row and column
      */
     getValue(rowIndex: number, columnIndex: number): any {
         return this.columns[columnIndex][rowIndex];

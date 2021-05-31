@@ -59,6 +59,7 @@ export class EntryListCodec {
     static decodeNullable<K, V>(clientMessage: ClientMessage,
                                 keyDecoder: (msg: ClientMessage) => K,
                                 valueDecoder: (msg: ClientMessage) => V): Array<[K, V]> {
-        return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : EntryListCodec.decode(clientMessage, keyDecoder, valueDecoder);
+        return CodecUtil.nextFrameIsNullFrame(clientMessage) ?
+            null : EntryListCodec.decode(clientMessage, keyDecoder, valueDecoder);
     }
 }

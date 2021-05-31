@@ -97,7 +97,7 @@ export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembe
         this.setMembers();
     }
 
-    protected getDataMembers(): Member[]{
+    protected getDataMembers(): Member[] {
         return this.dataMembers;
     }
 

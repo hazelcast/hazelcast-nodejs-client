@@ -19,15 +19,15 @@ export class BigDecimalCodec {
         }
         const hexString = '0x' + body.toString('hex');
 
-        const scale = FixSizedTypesCodec.decodeInt(buffer, BitsUtil.INT_SIZE_IN_BYTES + contentSize);
         let bigint = BigInt(hexString);
         if (isNegative) {
-            // When converting from 2 s complement need to add 1 to the inverted bits.
+            // When converting from 2 s complement, need to add 1 to the inverted bits.
             // Since adding 1 to a buffer is hard, it is done here.
             bigint += BigInt(1);
         }
 
         const bigIntString = bigint.toString();
+        const scale = FixSizedTypesCodec.decodeInt(buffer, BitsUtil.INT_SIZE_IN_BYTES + contentSize);
         return BigDecimalCodec.toScale(bigIntString, scale, isNegative);
     }
 

@@ -6,6 +6,8 @@ import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 /** @internal */
 export class ListCNShortCodec {
     static decode(clientMessage: ClientMessage): number[] {
-        return ListCNFixedSizeCodec.decode(clientMessage.nextFrame(), BitsUtil.SHORT_SIZE_IN_BYTES, FixSizedTypesCodec.decodeShort);
+        return ListCNFixedSizeCodec.decode(
+            clientMessage.nextFrame(), BitsUtil.SHORT_SIZE_IN_BYTES, FixSizedTypesCodec.decodeShort
+        );
     }
 }

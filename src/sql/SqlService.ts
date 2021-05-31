@@ -27,7 +27,7 @@ import {ClientMessage} from '../protocol/ClientMessage';
 import {Connection} from '../network/Connection';
 import {SqlRowMetadataImpl} from './SqlRowMetadata';
 import {SqlCloseCodec} from '../codec/SqlCloseCodec';
-import {SqlFetchCodec, SqlFetchResponseParams} from '../codec/SqlFetchCodec';
+import {SqlFetchCodec} from '../codec/SqlFetchCodec';
 import {
     tryGetArray,
     tryGetBoolean,
@@ -62,7 +62,7 @@ import {SqlPage} from './SqlPage';
  * * For non-Portable objects, public getters and fields are used to populate the column list. For getters, the first
  *   letter is converted to lower case. A getter takes precedence over a field in case of naming conflict.
  * * For Portable objects, field names used in the {@link PortableWriter.writePortable} method are used to populate the column
- * list
+ *   list
  *
  * The whole key and value objects could be accessed through a special fields `__key` and `this`, respectively. If
  * key (value) object has fields, then the whole key (value) field is exposed as a normal field. Otherwise the field is hidden.
@@ -74,23 +74,23 @@ import {SqlPage} from './SqlPage';
  *
  * ```js
  * class PersonKey {
- *     constructor(personId, deptId){
+ *     constructor(personId, deptId) {
  *         this.personId = personId;
  *         this.deptId = deptId;
  *     }
  *
- *     writePortable(writer){
+ *     writePortable(writer) {
  *         writer.writeLong('personId', this.personId);
  *         writer.writeLong('deptId', this.deptId);
  *     }
  * }
  *
  * class Person {
- *     constructor(name){
+ *     constructor(name) {
  *         this.name = name;
  *     }
  *
- *     writePortable(writer){
+ *     writePortable(writer) {
  *         writer.writeString('name', this.name);
  *     }
  * }
@@ -133,17 +133,19 @@ export interface SqlService {
      *
      * @param sql SQL string. SQL string placeholder character is question mark(`?`)
      * @param params Parameter list. The parameter count must be equal to number of placeholders in the SQL string
-     * @param options Options that are affecting how SQL is executed
-     * @throws {@link IllegalArgumentError} If arguments are not valid
-     * @throws {@link HazelcastSqlException} If there is an error running SQL
+     * @param options Options that are affecting how the query is executed
+     * @throws {@link IllegalArgumentError} if arguments are not valid
+     * @throws {@link HazelcastSqlException} in case of an execution error
+     * @returns {@link SqlResult}
      */
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
 
     /**
      * Executes SQL and returns an SqlResult.
      * @param sql SQL statement object
-     * @throws {@link IllegalArgumentError} If arguments are not valid
-     * @throws {@link HazelcastSqlException} If there is an error running SQL
+     * @throws {@link IllegalArgumentError} if arguments are not valid
+     * @throws {@link HazelcastSqlException} in case of an execution error
+     * @returns {@link SqlResult}
      */
     executeStatement(sql: SqlStatement): SqlResult;
 }
@@ -176,7 +178,7 @@ export class SqlServiceImpl implements SqlService {
      * @param clientMessage The response message
      * @param res SQL result for this response
      */
-    handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
+    private static handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
         if (response.error !== null) {
             res.onExecuteError(
@@ -200,18 +202,18 @@ export class SqlServiceImpl implements SqlService {
      * @throws RangeError if validation is not successful
      * @internal
      */
-    static validateSqlStatement(sqlStatement: SqlStatement | null): void {
+    private static validateSqlStatement(sqlStatement: SqlStatement | null): void {
         if (sqlStatement === null) {
             throw new RangeError('SQL statement cannot be null');
         }
         tryGetString(sqlStatement.sql);
-        if (sqlStatement.sql.length === 0){ // empty sql string is disallowed
+        if (sqlStatement.sql.length === 0) { // empty sql string is disallowed
             throw new RangeError('Empty SQL string is disallowed.')
         }
-        if (sqlStatement.hasOwnProperty('params')){ // if params is provided, validate it
+        if (sqlStatement.hasOwnProperty('params')) { // if params is provided, validate it
             tryGetArray(sqlStatement.params);
         }
-        if (sqlStatement.hasOwnProperty('options')){ // if options is provided, validate it
+        if (sqlStatement.hasOwnProperty('options')) { // if options is provided, validate it
             SqlServiceImpl.validateSqlStatementOptions(sqlStatement.options);
         }
     }
@@ -223,14 +225,15 @@ export class SqlServiceImpl implements SqlService {
      * @throws RangeError if validation is not successful
      * @internal
      */
-    static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
-        if (sqlStatementOptions.hasOwnProperty('schema'))
+    private static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
+        if (sqlStatementOptions.hasOwnProperty('schema')) {
             tryGetString(sqlStatementOptions.schema);
+        }
 
         if (sqlStatementOptions.hasOwnProperty('timeoutMillis')) {
             const timeoutMillis = tryGetNumber(sqlStatementOptions.timeoutMillis);
 
-            if(timeoutMillis < 0 && timeoutMillis !== -1){
+            if (timeoutMillis < 0 && timeoutMillis !== -1) {
                 throw new RangeError('Timeout millis can be non-negative or -1');
             }
         }
@@ -239,11 +242,11 @@ export class SqlServiceImpl implements SqlService {
             throw new RangeError('Cursor buffer size cannot be negative');
         }
 
-        if (sqlStatementOptions.hasOwnProperty('expectedResultType')){
+        if (sqlStatementOptions.hasOwnProperty('expectedResultType')) {
             tryGetEnum(SqlExpectedResultType, sqlStatementOptions.expectedResultType);
         }
 
-        if (sqlStatementOptions.hasOwnProperty('returnRawResult')){
+        if (sqlStatementOptions.hasOwnProperty('returnRawResult')) {
             tryGetBoolean(sqlStatementOptions.returnRawResult);
         }
     }
@@ -253,9 +256,10 @@ export class SqlServiceImpl implements SqlService {
      * @internal
      * @param err
      * @param connection
+     * @returns {@link HazelcastSqlException}
      */
     toHazelcastSqlException(err: any, connection: Connection) : HazelcastSqlException {
-        if(!connection.isAlive()){
+        if (!connection.isAlive()) {
             return new HazelcastSqlException(
                 connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM,
                 'Cluster topology changed while a query was executed:' +
@@ -263,13 +267,13 @@ export class SqlServiceImpl implements SqlService {
                 err
             )
         } else {
-            if(err instanceof HazelcastSqlException){
+            if (err instanceof HazelcastSqlException) {
                 return err;
             }
             let originatingMemberId;
-            if(err.hasOwnProperty('originatingMemberId')){
+            if (err.hasOwnProperty('originatingMemberId')) {
                 originatingMemberId = err.originatingMemberId;
-            }else{
+            } else {
                 originatingMemberId = this.connectionManager.getClientUuid();
             }
             return new HazelcastSqlException(
@@ -296,32 +300,38 @@ export class SqlServiceImpl implements SqlService {
 
         const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
 
-        const expectedResultType: SqlExpectedResultType =
-            sqlStatement.options?.expectedResultType ? SqlExpectedResultType[sqlStatement.options.expectedResultType]
-                : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
+        const expectedResultType: SqlExpectedResultType = sqlStatement.options?.hasOwnProperty('expectedResultType') ?
+                SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
         let timeoutMillis: Long;
-        if(sqlStatement.options?.timeoutMillis || sqlStatement.options?.timeoutMillis === 0){
+        if (sqlStatement.options?.hasOwnProperty('timeoutMillis')) {
             timeoutMillis = Long.fromNumber(sqlStatement.options.timeoutMillis);
-        }else{
+        } else {
             timeoutMillis = SqlServiceImpl.DEFAULT_TIMEOUT;
         }
 
         try {
-            const serializedParams = [];
+            const serializedParams = new Array(sqlStatement.params.length);
             if (Array.isArray(sqlStatement.params)) { // params can be undefined
-                for (const param of sqlStatement.params) {
-                    serializedParams.push(this.serializationService.toData(param));
+                for (let i = 0; i < sqlStatement.params.length; i++) {
+                    serializedParams[i] = this.serializationService.toData(sqlStatement.params[i]);
                 }
             }
-            const cursorBufferSize = sqlStatement.options?.cursorBufferSize ?
+            const cursorBufferSize = sqlStatement.options?.hasOwnProperty('cursorBufferSize') ?
                 sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE;
+
+            const returnRawResult = sqlStatement.options?.hasOwnProperty('returnRawResult') ?
+                sqlStatement.options.returnRawResult : SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT;
+
+            const schema = sqlStatement.options?.hasOwnProperty('schema') ?
+                sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA;
+
             const requestMessage = SqlExecuteCodec.encodeRequest(
                 sqlStatement.sql,
                 serializedParams,
                 timeoutMillis,
                 cursorBufferSize,
-                sqlStatement.options?.hasOwnProperty('schema') ? sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA,
+                schema,
                 expectedResultType,
                 queryId
             );
@@ -332,13 +342,12 @@ export class SqlServiceImpl implements SqlService {
                 connection,
                 queryId,
                 cursorBufferSize,
-                sqlStatement.options?.hasOwnProperty('returnRawResult') ?
-                    sqlStatement.options.returnRawResult : SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT,
+                returnRawResult,
                 this.connectionManager.getClientUuid()
             );
 
             this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
-                this.handleExecuteResponse(clientMessage, res);
+                SqlServiceImpl.handleExecuteResponse(clientMessage, res);
             }).catch(err => {
                 res.onExecuteError(
                     this.toHazelcastSqlException(err, connection)
@@ -352,24 +361,16 @@ export class SqlServiceImpl implements SqlService {
     }
 
     execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult {
-        let sqlStatement: SqlStatement;
-
-        if (typeof sql === 'string') {
-            sqlStatement = {
-                sql: sql
-            };
-            // If params is not provided it won't be validated. Default value for optional parameters is undefined.
-            // So, if they are undefined we don't set it, and in validator method we check for property existence.
-            if (params !== undefined) {
-                sqlStatement.params = params;
-            }
-            if (options !== undefined) {
-                sqlStatement.options = options;
-            }
-        } else if (typeof sql === 'object') {
-            sqlStatement = sql;
-        } else {
-            throw new IllegalArgumentError('Sql can be an object or string');
+        const sqlStatement: SqlStatement = {
+            sql: sql
+        };
+        // If params is not provided it won't be validated. Default value for optional parameters is undefined.
+        // So, if they are undefined we don't set it, and in validator method we check for property existence.
+        if (params !== undefined) {
+            sqlStatement.params = params;
+        }
+        if (options !== undefined) {
+            sqlStatement.options = options;
         }
         return this.executeStatement(sqlStatement);
     }
@@ -382,7 +383,7 @@ export class SqlServiceImpl implements SqlService {
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
         const requestMessage = SqlFetchCodec.encodeRequest(queryId, cursorBufferSize);
         return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
-            const response: SqlFetchResponseParams = SqlFetchCodec.decodeResponse(clientMessage);
+            const response = SqlFetchCodec.decodeResponse(clientMessage);
             if (response.error !== null) {
                 throw new HazelcastSqlException(
                     response.error.originatingMemberId,

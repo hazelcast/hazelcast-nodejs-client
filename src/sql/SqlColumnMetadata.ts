@@ -15,48 +15,59 @@
  */
 
 /**
- ### SQL column type
- SqlColumnType represents the datatype of a {@link SqlColumnMetadata}. The classes corresponding to each of them in java
- and javascript are given below:
-
- | Column Type                  | Javascript                                 |
- |------------------------------|--------------------------------------------|
- | **VARCHAR**                  | `string`                                   |
- | **BOOLEAN**                  | `boolean`                                  |
- | **TINYINT**                  | `number`                                   |
- | **SMALLINT**                 | `number`                                   |
- | **INTEGER**                  | `number`                                   |
- | **BIGINT**                   | [long](https://www.npmjs.com/package/long) |
- | **DECIMAL**                  | `string`                                   |
- | **REAL**                     | `number`                                   |
- | **DOUBLE**                   | `number`                                   |
- | **DATE**                     | {@link HzLocalDate}                        |
- | **TIME**                     | {@link HzLocalTime}                        |
- | **TIMESTAMP**                | {@link HzLocalDateTime}                    |
- | **TIMESTAMP_WITH_TIME_ZONE** | {@link HzOffsetDateTime}                   |
- | **OBJECT**                   | Any class                                  |
- | **NULL**                     | `null`                                     |
+  SqlColumnType represents the datatype of a {@link SqlColumnMetadata}.
  */
 export enum SqlColumnType {
+    /** VARCHAR type, represented by `string`. */
     VARCHAR,
+
+    /** BOOLEAN type, represented by `boolean`. */
     BOOLEAN,
+
+    /** TINYINT type, represented by `number`. */
     TINYINT,
+
+    /** SMALLINT type, represented by `number`. */
     SMALLINT,
+
+    /** INTEGER type, represented by `number`. */
     INTEGER,
+
+    /** BIGINT type, represented by [long](https://www.npmjs.com/package/long). */
     BIGINT,
+
+    /** DECIMAL type, represented by `string`. */
     DECIMAL,
+
+    /** REAL type, represented by `number`. */
     REAL,
+
+    /** DOUBLE type, represented by `number`. */
     DOUBLE,
+
+    /** DATE type, represented by {@link HzLocalDate}. */
     DATE,
+
+    /** TIME type, represented by {@link HzLocalTime}. */
     TIME,
+
+    /** TIMESTAMP type, represented by {@link HzLocalDateTime}. */
     TIMESTAMP,
+
+    /** TIMESTAMP_WITH_TIME_ZONE type, represented by {@link HzOffsetDateTime}. */
     TIMESTAMP_WITH_TIME_ZONE,
+
+    /** OBJECT type, could be represented by any class. */
     OBJECT,
+
+    /**
+     * The type of the generic SQL `NULL` literal.
+     * The only valid value of `NULL` type is `null`.
+     */
     NULL
 }
 
 /**
- * ### SQL column metadata
  * Represents column metadata for SQL result.
  */
 export interface SqlColumnMetadata {
