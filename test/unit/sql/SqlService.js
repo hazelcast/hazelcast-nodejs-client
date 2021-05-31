@@ -495,9 +495,7 @@ describe('SqlServiceTest', function () {
             sqlService = new SqlServiceImpl(
                 {},
                 {},
-                {
-                    invokeOnConnection: fakeInvokeOnConnection
-                },
+                {invokeOnConnection: fakeInvokeOnConnection},
                 {}
             );
         });
