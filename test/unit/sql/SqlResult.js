@@ -304,6 +304,18 @@ describe('SqlResultTest', function () {
             }, 100);
         });
 
+        it('should not call onExecuteError and change properties after an error is received', function (done) {
+            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, {}, 4096);
+            const onExecuteErrorFake = sandbox.replace(sqlResult, 'onExecuteError', sandbox.fake(sqlResult.onExecuteError));
+            // simulate a response then call close()
+            setTimeout(async () => {
+                sqlResult.onExecuteError(new Error('whoops'));
+                await sqlResult.close();
+                onExecuteErrorFake.callCount.should.be.eq(1);
+                done();
+            }, 100);
+        });
+
         it('should call close() of sql service, and mark result as closed', function () {
             const fakeConnection = {};
             const fakeQueryId = {};
