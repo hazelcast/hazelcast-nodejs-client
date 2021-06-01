@@ -59,7 +59,7 @@ export interface LoadBalancer {
     /**
      * Returns whether this instance supports getting data members through a call to {@link nextDataMember()}.
      *
-     * @return Returns the next member or `null` if no member is available
+     * @return Returns `true` if this load balancer can get a data member.
      */
     canGetNextDataMember(): boolean;
 }
@@ -97,7 +97,7 @@ export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembe
         this.setMembers();
     }
 
-    protected getDataMembers(): Member[]{
+    protected getDataMembers(): Member[] {
         return this.dataMembers;
     }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BEGIN_FRAME, ClientMessage, END_FRAME, Frame} from '../../protocol/ClientMessage';
+import {ClientMessage} from '../../protocol/ClientMessage';
 import {SqlPage} from '../../sql/SqlPage';
 import {ListIntegerCodec} from './ListIntegerCodec';
 import {SqlColumnType} from '../../sql/SqlColumnMetadata';
@@ -36,8 +36,6 @@ import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 import {DataCodec} from './DataCodec';
 import {IllegalStateError} from '../../core';
 import {CodecUtil} from './CodecUtil';
-import assert = require('assert');
-import {BitsUtil} from '../../util/BitsUtil';
 
 /** @internal */
 export class SqlPageCodec {
@@ -50,78 +48,77 @@ export class SqlPageCodec {
 
         // Read column types.
         const columnTypeIds: number[] = ListIntegerCodec.decode(clientMessage);
-        const columnTypes: SqlColumnType[] = [];
+        const columnTypes: SqlColumnType[] = new Array<SqlColumnType>(columnTypeIds.length);
 
         // Read columns
-        const columns: any[][] = [];
+        const columns: any[][] = new Array(columnTypeIds.length);
 
-        for (const columnTypeId of columnTypeIds) {
-            assert.notStrictEqual(SqlColumnType[columnTypeId], undefined);
-            const columnType: SqlColumnType = columnTypeId;
+        for (let i = 0; i < columnTypeIds.length; i++) {
+            const columnType: SqlColumnType = columnTypeIds[i];
 
-            columnTypes.push(columnType);
+            columnTypes[i] = columnType;
 
             switch (columnType) {
                 case SqlColumnType.VARCHAR:
-                    columns.push(ListMultiFrameCodec.decodeContainsNullable(clientMessage, StringCodec.decode));
+                    columns[i] = ListMultiFrameCodec.decodeContainsNullable(clientMessage, StringCodec.decode);
                     break;
                 case SqlColumnType.BOOLEAN:
-                    columns.push(ListCNBooleanCodec.decode(clientMessage));
+                    columns[i] = ListCNBooleanCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.TINYINT:
-                    columns.push(ListCNByteCodec.decode(clientMessage));
+                    columns[i] = ListCNByteCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.SMALLINT:
-                    columns.push(ListCNShortCodec.decode(clientMessage));
+                    columns[i] = ListCNShortCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.INTEGER:
-                    columns.push(ListCNIntegerCodec.decode(clientMessage));
+                    columns[i] = ListCNIntegerCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.BIGINT:
-                    columns.push(ListCNLongCodec.decode(clientMessage));
+                    columns[i] = ListCNLongCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.REAL:
-                    columns.push(ListCNFloatCodec.decode(clientMessage));
+                    columns[i] = ListCNFloatCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.DOUBLE:
-                    columns.push(ListCNDoubleCodec.decode(clientMessage));
+                    columns[i] = ListCNDoubleCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.DATE:
-                    columns.push(ListCNLocalDateCodec.decode(clientMessage));
+                    columns[i] = ListCNLocalDateCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.TIME:
-                    columns.push(ListCNLocalTimeCodec.decode(clientMessage));
+                    columns[i] = ListCNLocalTimeCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.TIMESTAMP:
-                    columns.push(ListCNLocalDateTimeCodec.decode(clientMessage));
+                    columns[i] = ListCNLocalDateTimeCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.TIMESTAMP_WITH_TIME_ZONE:
-                    columns.push(ListCNOffsetDateTimeCodec.decode(clientMessage));
+                    columns[i] = ListCNOffsetDateTimeCodec.decode(clientMessage);
                     break;
                 case SqlColumnType.DECIMAL:
-                    columns.push(ListMultiFrameCodec.decode(clientMessage, BigDecimalCodec.decodeNullable));
+                    columns[i] = ListMultiFrameCodec.decode(clientMessage, BigDecimalCodec.decodeNullable);
                     break;
-                case SqlColumnType.NULL:
+                case SqlColumnType.NULL: {
                     const frame = clientMessage.nextFrame();
                     const size = FixSizedTypesCodec.decodeInt(frame.content, 0);
 
-                    const column = [];
+                    const column = new Array(size);
                     for (let i = 0; i < size; i++) {
-                        column.push(null);
+                        column[i] = null;
                     }
-                    columns.push(column);
+                    columns[i] = column;
                     break;
+                }
                 case SqlColumnType.OBJECT:
-                    columns.push(ListMultiFrameCodec.decode(clientMessage, DataCodec.decodeNullable));
+                    columns[i] = ListMultiFrameCodec.decode(clientMessage, DataCodec.decodeNullable);
                     break;
                 default:
                     throw new IllegalStateError('Unknown type ' + columnType);
-
             }
         }
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return SqlPage.newPage(columnTypes, columns, isLast);
+        return SqlPage.fromColumns(columnTypes, columns, isLast);
     }
 
 }

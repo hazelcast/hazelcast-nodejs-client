@@ -1605,7 +1605,7 @@ There is a simple solution for this problem. Lock holders are ordered by a monot
 
 You can read more about the fencing token idea in Martin Kleppmann's "How to do distributed locking" blog post and Google's Chubby paper.
 
-FencedLocks in Hazelcast Node.js client are different from the Java implementation as they *non-reentrant*. Once a caller acquires the lock, it can not acquire the lock reentrantly in the same asynchronous call chain. So, the next acquire attempt made within the same async chain will lead to a dead lock.
+FencedLocks in Hazelcast Node.js client are different from the Java implementation as they are *non-reentrant*. Once a caller acquires the lock, it can not acquire the lock reentrantly in the same asynchronous call chain. So, the next acquire attempt made within the same async chain will lead to a dead lock.
 
 ```javascript
 const fence = await lock.lock();

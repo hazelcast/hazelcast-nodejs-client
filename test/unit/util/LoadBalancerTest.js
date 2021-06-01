@@ -95,7 +95,9 @@ describe('LoadBalancerTest', function () {
 
         let dataMemberCounter = 0;
         mockMembers.forEach(v => {
-            if (!v.liteMember) dataMemberCounter++;
+            if (!v.liteMember) {
+                dataMemberCounter++;
+            }
         });
 
         expect(members.size).to.be.below(dataMemberCounter + 1);
@@ -155,8 +157,9 @@ describe('LoadBalancerTest', function () {
         const dataMembers = [];
         // Find data members
         mockMembers.forEach((member) => {
-            if (!member.liteMember)
+            if (!member.liteMember) {
                 dataMembers.push(member);
+            }
         });
 
         // Find index of first data member in data members. Load balancer should continue iterating from this index.

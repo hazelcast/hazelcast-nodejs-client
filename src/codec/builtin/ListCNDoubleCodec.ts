@@ -6,6 +6,8 @@ import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 /** @internal */
 export class ListCNDoubleCodec {
     static decode(clientMessage: ClientMessage): number[] {
-        return ListCNFixedSizeCodec.decode(clientMessage.nextFrame(), BitsUtil.DOUBLE_SIZE_IN_BYTES, FixSizedTypesCodec.decodeDouble);
+        return ListCNFixedSizeCodec.decode(
+            clientMessage.nextFrame(), BitsUtil.DOUBLE_SIZE_IN_BYTES, FixSizedTypesCodec.decodeDouble
+        );
     }
 }

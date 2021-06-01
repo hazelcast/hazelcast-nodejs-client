@@ -23,14 +23,34 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const { Client } = require('../../../../lib');
-const { HazelcastSqlException } = require('../../../../lib/core/HazelcastError');
-const { SqlServiceImpl } = require('../../../../lib/sql/SqlService');
-const { SqlResultImpl } = require('../../../../lib/sql/SqlResult');
-const { SqlRowImpl } = require('../../../../lib/sql/SqlRow');
-const { SqlErrorCode } = require('../../../../lib/sql/SqlErrorCode');
 
 const TestUtil = require('../../../TestUtil');
 const RC = require('../../RC');
+
+const getHazelcastSqlException = () => {
+    const { HazelcastSqlException } = require('../../../../lib/core/HazelcastError');
+    return HazelcastSqlException;
+};
+
+const getSqlServiceImpl = () => {
+    const { SqlServiceImpl } = require('../../../../lib/sql/SqlService');
+    return SqlServiceImpl;
+};
+
+const getSqlResultImpl = () => {
+    const { SqlResultImpl } = require('../../../../lib/sql/SqlResult');
+    return SqlResultImpl;
+};
+
+const getSqlRowImpl = () => {
+    const { SqlRowImpl } = require('../../../../lib/sql/SqlRow');
+    return SqlRowImpl;
+};
+
+const getSqlErrorCode = () => {
+    const { SqlErrorCode } = require('../../../../lib/sql/SqlErrorCode');
+    return SqlErrorCode;
+};
 
 /**
  * Sql tests
@@ -44,13 +64,17 @@ describe('SqlExecuteTest', function () {
     // Sorts sql result rows by __key, first the smallest __key
     const sortByKey = (array) => {
         array.sort((a, b) => {
-            if (a['__key'] < b['__key']) return -1;
-            else if (a['__key'] > b['__key']) return 1;
-            else return 0;
+            if (a['__key'] < b['__key']) {
+                return -1;
+            } else if (a['__key'] > b['__key']) {
+                return 1;
+            } else {
+                return 0;
+            }
         });
     };
 
-    beforeEach(function () {
+    before(function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
     });
 
@@ -118,7 +142,7 @@ describe('SqlExecuteTest', function () {
             for (const testCase of testCases) {
                 for (const validParams of testCase.validParamsArray) {
                     const result1 = await client.getSqlService().execute(testCase.sql, validParams);
-                    const result2 = await client.getSqlService().execute({
+                    const result2 = await client.getSqlService().executeStatement({
                         sql: testCase.sql,
                         params: validParams
                     });
@@ -136,12 +160,12 @@ describe('SqlExecuteTest', function () {
             for (const testCase of testCases) {
                 for (const invalidParams of testCase.invalidParamsArray) {
                     const result1 = await client.getSqlService().execute(testCase.sql, invalidParams);
-                    const result2 = await client.getSqlService().execute({
+                    const result2 = await client.getSqlService().executeStatement({
                         sql: testCase.sql,
                         params: invalidParams
                     });
                     for (const result of [result1, result2]) {
-                        await result.next().should.eventually.be.rejectedWith(HazelcastSqlException, 'parameter count');
+                        await result.next().should.eventually.be.rejectedWith(getHazelcastSqlException(), 'parameter count');
                     }
                 }
             }
@@ -176,7 +200,7 @@ describe('SqlExecuteTest', function () {
                 await populateMap(entryCount);
 
                 const result1 = await client.getSqlService().execute(`SELECT * FROM ${_mapName}`);
-                const result2 = await client.getSqlService().execute({
+                const result2 = await client.getSqlService().executeStatement({
                     sql: `SELECT * FROM ${_mapName}`
                 });
                 for (const result of [result1, result2]) {
@@ -206,7 +230,7 @@ describe('SqlExecuteTest', function () {
 
                 // There should be "limit" results
                 const result1 = await client.getSqlService().execute(`SELECT * FROM ${_mapName} WHERE this <= ?`, [limit]);
-                const result2 = await client.getSqlService().execute({
+                const result2 = await client.getSqlService().executeStatement({
                     sql: `SELECT * FROM ${_mapName} WHERE this <= ?`,
                     params: [limit]
                 });
@@ -251,19 +275,10 @@ describe('SqlExecuteTest', function () {
             await someMap.clear();
         });
 
-        // Sorts sql result rows by __key, first the smallest __key
-        const sortByKey = (array) => {
-            array.sort((a, b) => {
-                if (a['__key'] < b['__key']) return -1;
-                else if (a['__key'] > b['__key']) return 1;
-                else return 0;
-            });
-        };
-
         it('should paginate according to cursorBufferSize', async function () {
             const entryCount = 10;
-            const resultSpy = sinon.spy(SqlResultImpl.prototype, 'fetch');
-            const serviceSpy = sinon.spy(SqlServiceImpl.prototype, 'fetch');
+            const resultSpy = sinon.spy(getSqlResultImpl().prototype, 'fetch');
+            const serviceSpy = sinon.spy(getSqlServiceImpl().prototype, 'fetch');
 
             await populateMap(entryCount);
 
@@ -291,12 +306,12 @@ describe('SqlExecuteTest', function () {
 
         it('should paginate according to cursorBufferSize with sql statement', async function () {
             const entryCount = 10;
-            const resultSpy = sinon.spy(SqlResultImpl.prototype, 'fetch');
-            const serviceSpy = sinon.spy(SqlServiceImpl.prototype, 'fetch');
+            const resultSpy = sinon.spy(getSqlResultImpl().prototype, 'fetch');
+            const serviceSpy = sinon.spy(getSqlServiceImpl().prototype, 'fetch');
 
             await populateMap(entryCount);
 
-            const result = await client.getSqlService().execute({
+            const result = await client.getSqlService().executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     cursorBufferSize: 2
@@ -330,7 +345,7 @@ describe('SqlExecuteTest', function () {
                 expectedResultType: 'ROWS'
             });
 
-            const result2 = await client.getSqlService().execute({
+            const result2 = await client.getSqlService().executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     expectedResultType: 'ROWS'
@@ -350,7 +365,7 @@ describe('SqlExecuteTest', function () {
                 expectedResultType: 'ANY'
             });
 
-            const result2 = await client.getSqlService().execute({
+            const result2 = await client.getSqlService().executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     expectedResultType: 'ANY'
@@ -370,7 +385,7 @@ describe('SqlExecuteTest', function () {
                 expectedResultType: 'UPDATE_COUNT'
             });
 
-            const result2 = await client.getSqlService().execute({
+            const result2 = await client.getSqlService().executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     expectedResultType: 'UPDATE_COUNT'
@@ -378,8 +393,10 @@ describe('SqlExecuteTest', function () {
             });
 
             for (const result of [result2, result1]) {
-                const rejectionReason = await TestUtil.getRejectionReasonOrDummy(result, 'next');
-                rejectionReason.should.be.instanceof(HazelcastSqlException);
+                const rejectionReason = await TestUtil.getRejectionReasonOrThrow(async () => {
+                    await result.next();
+                });
+                rejectionReason.should.be.instanceof(getHazelcastSqlException());
                 rejectionReason.message.should.include('update count');
             }
         });
@@ -390,13 +407,16 @@ describe('SqlExecuteTest', function () {
             const result1 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
                 returnRawResult: false
             });
-            const result2 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
-                returnRawResult: false
+            const result2 = await client.getSqlService().executeStatement({
+                sql: `SELECT * FROM ${mapName}`,
+                options: {
+                    returnRawResult: false
+                }
             });
 
             for (const result of [result2, result1]) {
                 for await (const row of result) {
-                    row.should.not.be.instanceof(SqlRowImpl);
+                    row.should.not.be.instanceof(getSqlRowImpl());
                     row.should.have.property('this');
                     row.should.have.property('__key');
                 }
@@ -410,13 +430,16 @@ describe('SqlExecuteTest', function () {
                 returnRawResult: true
             });
 
-            const result2 = await client.getSqlService().execute(`SELECT * FROM ${mapName}`, undefined, {
-                returnRawResult: true
+            const result2 = await client.getSqlService().executeStatement({
+                sql: `SELECT * FROM ${mapName}`,
+                options: {
+                    returnRawResult: true
+                }
             });
 
             for (const result of [result2, result1]) {
                 for await (const row of result) {
-                    row.should.be.instanceof(SqlRowImpl);
+                    row.should.be.instanceof(getSqlRowImpl());
                     row.should.not.have.property('this');
                     row.should.not.have.property('__key');
                 }
@@ -447,20 +470,22 @@ describe('SqlExecuteTest', function () {
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
 
-            const error1 = TestUtil.getThrownErrorOrDummy(client.getSqlService(), 'execute', `SELECT * FROM ${mapName}`);
-            error1.should.be.instanceof(HazelcastSqlException);
-            error1.code.should.be.eq(SqlErrorCode.CONNECTION_PROBLEM);
+            const error1 = TestUtil.getThrownErrorOrThrow(() => {
+                client.getSqlService().execute(`SELECT * FROM ${mapName}`);
+            });
+            error1.should.be.instanceof(getHazelcastSqlException());
+            error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
             error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
 
-            const error2 = TestUtil.getThrownErrorOrDummy(client.getSqlService(), 'execute',
-                {
-                    sql: `SELECT * FROM ${mapName}`,
-                    params: [],
-                    options: {}
-                }
-            );
-            error2.should.be.instanceof(HazelcastSqlException);
-            error2.code.should.be.eq(SqlErrorCode.CONNECTION_PROBLEM);
+            const error2 = TestUtil.getThrownErrorOrThrow(() => {
+                client.getSqlService().executeStatement({
+                        sql: `SELECT * FROM ${mapName}`,
+                        params: [],
+                        options: {}
+                });
+            });
+            error2.should.be.instanceof(getHazelcastSqlException());
+            error2.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
             error2.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
 
             await RC.terminateCluster(cluster.id);
@@ -480,9 +505,11 @@ describe('SqlExecuteTest', function () {
 
             const result1 = client.getSqlService().execute(`SELECT * FROM ${mapName}`);
 
-            const error1 = await TestUtil.getRejectionReasonOrDummy(result1, 'next');
-            error1.should.be.instanceof(HazelcastSqlException);
-            error1.code.should.be.eq(SqlErrorCode.CONNECTION_PROBLEM);
+            const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
+                await result1.next();
+            });
+            error1.should.be.instanceof(getHazelcastSqlException());
+            error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
             error1.originatingMemberId.toString().should.be.eq(member.uuid);
 
             await RC.terminateCluster(cluster.id);
@@ -500,15 +527,17 @@ describe('SqlExecuteTest', function () {
 
             await RC.terminateMember(cluster.id, member.uuid);
 
-            const result1 = client.getSqlService().execute({
+            const result1 = client.getSqlService().executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 params: [],
                 options: {}
             });
 
-            const error1 = await TestUtil.getRejectionReasonOrDummy(result1, 'next');
-            error1.should.be.instanceof(HazelcastSqlException);
-            error1.code.should.be.eq(SqlErrorCode.CONNECTION_PROBLEM);
+            const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
+                await result1.next();
+            });
+            error1.should.be.instanceof(getHazelcastSqlException());
+            error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
             error1.originatingMemberId.toString().should.be.eq(member.uuid);
 
             await RC.terminateCluster(cluster.id);
@@ -526,20 +555,24 @@ describe('SqlExecuteTest', function () {
 
             const result1 = client.getSqlService().execute('asdasd');
 
-            const error1 = await TestUtil.getRejectionReasonOrDummy(result1, 'next');
-            error1.should.be.instanceof(HazelcastSqlException);
-            error1.code.should.be.eq(SqlErrorCode.PARSING);
+            const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
+                await result1.next();
+            });
+            error1.should.be.instanceof(getHazelcastSqlException());
+            error1.code.should.be.eq(getSqlErrorCode().PARSING);
             error1.originatingMemberId.toString().should.be.eq(member.uuid);
 
-            const result2 = client.getSqlService().execute({
+            const result2 = client.getSqlService().executeStatement({
                 sql: `--SELECT * FROM ${mapName}`,
                 params: [],
                 options: {}
             });
 
-            const error2 = await TestUtil.getRejectionReasonOrDummy(result2, 'next');
-            error2.should.be.instanceof(HazelcastSqlException);
-            error2.code.should.be.eq(SqlErrorCode.PARSING);
+            const error2 = await TestUtil.getRejectionReasonOrThrow(async () => {
+                await result2.next();
+            });
+            error2.should.be.instanceof(getHazelcastSqlException());
+            error2.code.should.be.eq(getSqlErrorCode().PARSING);
             error2.originatingMemberId.toString().should.be.eq(member.uuid);
 
             await RC.terminateCluster(cluster.id);

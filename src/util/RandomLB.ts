@@ -28,7 +28,7 @@ export class RandomLB extends AbstractLoadBalancer {
         return this._next(false);
     }
 
-    _next(dataMember: boolean): Member | null {
+    private _next(dataMember: boolean): Member | null {
         const members = dataMember ? this.getDataMembers() : this.getMembers();
         if (members == null || members.length === 0) {
             return null;

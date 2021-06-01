@@ -16,7 +16,6 @@
 
 import {BEGIN_FRAME, ClientMessage, END_FRAME, NULL_FRAME} from '../../protocol/ClientMessage';
 import {CodecUtil} from './CodecUtil';
-import {ListMultiFrameCodec} from './ListMultiFrameCodec';
 
 /** @internal */
 export class EntryListCodec {
@@ -60,6 +59,7 @@ export class EntryListCodec {
     static decodeNullable<K, V>(clientMessage: ClientMessage,
                                 keyDecoder: (msg: ClientMessage) => K,
                                 valueDecoder: (msg: ClientMessage) => V): Array<[K, V]> {
-        return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : EntryListCodec.decode(clientMessage, keyDecoder, valueDecoder);
+        return CodecUtil.nextFrameIsNullFrame(clientMessage) ?
+            null : EntryListCodec.decode(clientMessage, keyDecoder, valueDecoder);
     }
 }

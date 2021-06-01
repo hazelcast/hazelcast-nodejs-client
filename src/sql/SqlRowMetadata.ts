@@ -18,28 +18,27 @@ import {SqlColumnMetadata} from './SqlColumnMetadata';
 import {IllegalArgumentError} from '../core';
 
 export interface SqlRowMetadata {
-
     /**
      * Gets the number of columns in the row.
-     * @returns {number} Column count
+     * @returns column count
      */
     getColumnCount(): number;
 
     /**
      *  Gets column metadata of column with given index.
-     *  @returns {SqlColumnMetadata | null} SqlColumnMetadata of column with this index, null if column is not found.
+     *  @returns SqlColumnMetadata of column with this index, undefined if column is not found.
      */
-    getColumnByIndex(index: number): SqlColumnMetadata | undefined;
+    getColumn(index: number): SqlColumnMetadata | undefined;
 
     /**
-     *  Gets columns metadata.
-     *  @returns {SqlColumnMetadata[]} This row's columns' metadata.
+     *  Get column metadata objects.
+     *  @returns this row's SqlColumnMetadata objects.
      */
     getColumns(): SqlColumnMetadata[];
 
     /**
      * Find index of the column with the given name. Returned index can be used to get column value from SqlRow.
-     * @returns {number} Column index. If column is not found, -1 is returned.
+     * @returns Column index. If a column is not found, `-1` is returned.
      * @throws {@link IllegalArgumentError} is thrown if columnName is not string.
      */
     findColumn(columnName: string): number;
@@ -48,7 +47,7 @@ export interface SqlRowMetadata {
 /** @internal */
 export class SqlRowMetadataImpl implements SqlRowMetadata {
     private readonly columns: SqlColumnMetadata[];
-    private static readonly COLUMN_NOT_FOUND = -1
+    static readonly COLUMN_NOT_FOUND = -1
     private readonly nameToIndex: { [key: string]: number };
 
     constructor(columns: SqlColumnMetadata[]) {
@@ -63,14 +62,13 @@ export class SqlRowMetadataImpl implements SqlRowMetadata {
         return this.columns.length;
     }
 
-    getColumnByIndex(index: number): SqlColumnMetadata | undefined {
+    getColumn(index: number): SqlColumnMetadata | undefined {
         return this.columns[index];
     }
 
     getColumns(): SqlColumnMetadata[] {
         return this.columns;
     }
-
 
     findColumn(columnName: string): number {
         if (typeof columnName !== 'string') {
@@ -80,4 +78,3 @@ export class SqlRowMetadataImpl implements SqlRowMetadata {
         return columnIndex !== undefined ? columnIndex : SqlRowMetadataImpl.COLUMN_NOT_FOUND;
     }
 }
-

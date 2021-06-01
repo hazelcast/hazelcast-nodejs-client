@@ -235,7 +235,7 @@ export class ProxyManager {
                 this.clusterService,
                 this.connectionRegistry
             );
-        } else if (serviceName === ProxyManager.MULTIMAP_SERVICE){
+        } else if (serviceName === ProxyManager.MULTIMAP_SERVICE) {
             localProxy = new MultiMapProxy(
                 serviceName,
                 name,
@@ -248,7 +248,7 @@ export class ProxyManager {
                 this.lockReferenceIdGenerator,
                 this.connectionRegistry
             );
-        } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE){
+        } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE) {
             localProxy = new ReliableTopicProxy(
                 serviceName,
                 name,
@@ -262,7 +262,7 @@ export class ProxyManager {
                 this.clusterService,
                 this.connectionRegistry
             );
-        } else if (serviceName === ProxyManager.FLAKEID_SERVICE){
+        } else if (serviceName === ProxyManager.FLAKEID_SERVICE) {
             localProxy = new FlakeIdGeneratorProxy(
                 serviceName,
                 name,

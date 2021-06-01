@@ -66,19 +66,19 @@ function randomOp(map) {
         let prepareOp;
         let nextOp;
         switch (type) {
-        case 'get':
-            prepareOp = (map) => map.set(KEY, VAL);
-            nextOp = (map) => map.get(KEY);
-            break;
-        case 'set':
-            nextOp = (map) => map.set(KEY, VAL);
-            break;
-        case 'random':
-            nextOp = (map) => randomOp(map);
-            break;
-        default:
-            console.error(`Unknown command "${type}". Supported commands are "get", "set", "random".`);
-            process.exit(1);
+            case 'get':
+                prepareOp = (map) => map.set(KEY, VAL);
+                nextOp = (map) => map.get(KEY);
+                break;
+            case 'set':
+                nextOp = (map) => map.set(KEY, VAL);
+                break;
+            case 'random':
+                nextOp = (map) => randomOp(map);
+                break;
+            default:
+                console.error(`Unknown command "${type}". Supported commands are "get", "set", "random".`);
+                process.exit(1);
         }
 
         console.log('Benchmark type:', type);

@@ -22,9 +22,21 @@ const long = require('long');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { Client } = require('../../../../');
-const { SqlErrorCode } = require('../../../../lib/sql/SqlErrorCode');
-const { SqlRowMetadataImpl } = require('../../../../lib/sql/SqlRowMetadata');
-const { HazelcastSqlException } = require('../../../../lib/core/HazelcastError');
+
+const getHazelcastSqlException = () => {
+    const { HazelcastSqlException } = require('../../../../lib/core/HazelcastError');
+    return HazelcastSqlException;
+};
+
+const getSqlErrorCode = () => {
+    const { SqlErrorCode } = require('../../../../lib/sql/SqlErrorCode');
+    return SqlErrorCode;
+};
+
+const getSqlRowMetadataImpl = () => {
+    const { SqlRowMetadataImpl } = require('../../../../lib/sql/SqlRowMetadata');
+    return SqlRowMetadataImpl;
+};
 
 describe('SqlResultTest', function () {
     let client;
@@ -64,22 +76,20 @@ describe('SqlResultTest', function () {
     it('should reject iteration after close()', async function () {
         await result.close();
 
-        try {
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            // eslint-disable-next-line no-empty,no-unused-vars
             for await (const row of result) {
-                console.log(row);
             }
-            throw new Error('dummy');
-        } catch (e) {
-            e.should.be.instanceof(HazelcastSqlException);
-            e.code.should.be.eq(SqlErrorCode.CANCELLED_BY_USER);
-            e.message.should.include('Cancelled');
-            e.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
-        }
+        });
+        error.should.be.instanceof(getHazelcastSqlException());
+        error.code.should.be.eq(getSqlErrorCode().CANCELLED_BY_USER);
+        error.message.should.include('cancelled');
+        error.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
     });
 
     it('getters should work', async function () {
         const rowMetadata = await result.getRowMetadata();
-        rowMetadata.should.be.instanceof(SqlRowMetadataImpl);
+        rowMetadata.should.be.instanceof(getSqlRowMetadataImpl());
         rowMetadata.getColumnCount().should.be.eq(2);
 
         const isRowSet = await result.isRowSet();

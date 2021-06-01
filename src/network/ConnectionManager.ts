@@ -178,29 +178,14 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         return this.activeConnections.size === 0;
     }
 
-    /**
-     * Returns all active connections in the registry
-     * @return Array of Connection objects
-     */
     getConnections(): Connection[] {
         return Array.from(this.activeConnections.values());
     }
 
-    /**
-     * Returns connection by UUID
-     * @param uuid UUID that identifies the connection
-     * @return Connection if there is a connection with the UUID, undefined otherwise
-     */
     getConnection(uuid: UUID): Connection | undefined {
         return this.activeConnections.get(uuid.toString());
     }
 
-    /**
-     * Returns a random connection from active connections. If smart routing enabled, connection is returned using
-     * load balancer. Otherwise, it is the first connection in connection registry.
-     * @param dataMember if only data members should be considered
-     * @return Connection if there is at least one connection, otherwise null
-     */
     getRandomConnection(dataMember = false): Connection | null {
         if (this.smartRoutingEnabled) {
             let member;
@@ -228,8 +213,9 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
             const connection = entry[1];
             if (dataMember) {
                 const member = this.clusterService.getMember(uuid);
-                if (!member || member.liteMember)
+                if (!member || member.liteMember) {
                     continue;
+                }
             }
             return connection;
         }
@@ -241,11 +227,6 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         this.activeConnections.forEach(fn);
     }
 
-    /**
-     * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
-     * and there is at least one active connection.
-     * @return An error if invocation is not allowed, null if it is allowed
-     */
     checkIfInvocationAllowed(): Error | null {
         const state = this.connectionState;
         if (state === ConnectionState.INITIALIZED_ON_CLUSTER && this.activeConnections.size > 0) {

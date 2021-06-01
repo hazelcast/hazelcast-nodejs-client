@@ -151,9 +151,8 @@ const downloadRC = () => {
                 shell: ON_WINDOWS
             });
             if (subprocess.status !== 0) {
-                const subprocessTraceString = subprocess.error ? subprocess.error.stack : '';
-                throw `Failed download hazelcast jar com.hazelcast:hazelcast-all:${HAZELCAST_VERSION}`
-                    + subprocessTraceString;
+                const subprocessTrace = subprocess.error ? subprocess.error.stack : '';
+                throw `Failed download hazelcast jar com.hazelcast:hazelcast:${HAZELCAST_VERSION} ${subprocessTrace}`;
             }
         }
     }

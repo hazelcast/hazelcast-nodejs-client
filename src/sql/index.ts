@@ -19,7 +19,6 @@
  * Public API re-exports.
  */
 
-export * from './DatetimeClasses';
 export * from './SqlColumnMetadata';
 export * from './SqlRowMetadata';
 export * from './SqlStatement';
