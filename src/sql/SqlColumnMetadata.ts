@@ -45,16 +45,16 @@ export enum SqlColumnType {
     /** DOUBLE type, represented by `number`. */
     DOUBLE,
 
-    /** DATE type, represented by {@link HzLocalDate}. */
+    /** DATE type, represented by `string`. */
     DATE,
 
-    /** TIME type, represented by {@link HzLocalTime}. */
+    /** TIME type, represented by `string`. */
     TIME,
 
-    /** TIMESTAMP type, represented by {@link HzLocalDateTime}. */
+    /** TIMESTAMP type, represented by `string`. */
     TIMESTAMP,
 
-    /** TIMESTAMP_WITH_TIME_ZONE type, represented by {@link HzOffsetDateTime}. */
+    /** TIMESTAMP_WITH_TIME_ZONE type, represented by `string`. */
     TIMESTAMP_WITH_TIME_ZONE,
 
     /** OBJECT type, could be represented by any class. */

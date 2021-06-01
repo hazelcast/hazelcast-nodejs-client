@@ -15,8 +15,8 @@
  */
 'use strict';
 
-const { Client, SqlColumnType, HzLocalDate, HzLocalDateTime, HzOffsetDateTime, HzLocalTime } =
-    require('hazelcast-client');
+const { Client, SqlColumnType } =
+    require('..');
 const long = require('long');
 
 // Portable class
@@ -49,7 +49,9 @@ const varcharExample = async (client) => {
 
     const result = client.getSqlService().execute('SELECT * FROM varcharMap WHERE this = ? OR this = ?', ['7', '2']);
     const rowMetadata = await result.getRowMetadata();
-    console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // VARCHAR
+    const columnIndex = rowMetadata.findColumn('this');
+    const columnMetadata = rowMetadata.getColumn(columnIndex);
+    console.log(SqlColumnType[columnMetadata.type]); // VARCHAR
 
     for await (const row of result) {
         console.log(row);
@@ -66,7 +68,9 @@ const booleanExample = async (client) => {
 
     const result = client.getSqlService().execute('SELECT * FROM booleanMap WHERE this = ?', [true]);
     const rowMetadata = await result.getRowMetadata();
-    console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // BOOLEAN
+    const columnIndex = rowMetadata.findColumn('this');
+    const columnMetadata = rowMetadata.getColumn(columnIndex);
+    console.log(SqlColumnType[columnMetadata.type]); // BOOLEAN
 
     for await (const row of result) {
         console.log(row);
@@ -77,8 +81,7 @@ const booleanExample = async (client) => {
     Note for TINYINT, SMALLINT, INTEGER AND BIGINT
 
     Since Node.js client sends all numbers as double by default, giving a number as parameter will not work for these
-    types. Instead, you can use `long` objects or you can use explicit casting which converts doubles to integers. The
-    casting behaviour is Java's casting behaviour. So, e.g, 3.1 becomes 3.
+    types. Instead, you can use `long` objects or you can use explicit casting which converts doubles to integers.
 */
 const integersExample = async (client) => {
     console.log('----------TINYINT, SMALLINT, INTEGER AND BIGINT Example----------');
@@ -93,7 +96,9 @@ const integersExample = async (client) => {
         [long.fromNumber(10), long.fromNumber(18)]
     );
     const rowMetadata = await result.getRowMetadata();
-    console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // BIGINT
+    const columnIndex = rowMetadata.findColumn('this');
+    const columnMetadata = rowMetadata.getColumn(columnIndex);
+    console.log(SqlColumnType[columnMetadata.type]); // BIGINT
 
     for await (const row of result) {
         console.log(row);
@@ -113,6 +118,8 @@ const integersExample = async (client) => {
 // Arbitrary precision decimal
 const decimalExample = async (client) => {
     console.log('----------DECIMAL Example----------');
+    await client.getMap('decimalMap');
+
     // Pretend that there are decimal entries in the map added by another client. Then the query would be as follows.
     const result = client.getSqlService().execute(
         // We need these casts since we are sending strings.
@@ -120,17 +127,17 @@ const decimalExample = async (client) => {
         ['-0.00000000000000000000000000000001', '1.0000000000000231213123123125465462513214653123']
     );
 
-    try {
-        const rowMetadata = await result.getRowMetadata();
-        console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // DOUBLE
+    const rowMetadata = await result.getRowMetadata();
+    const columnIndex = rowMetadata.findColumn('this');
+    const columnMetadata = rowMetadata.getColumn(columnIndex);
+    console.log(SqlColumnType[columnMetadata.type]); // DECIMAL
 
-        for await (const row of result) {
-            console.log(row);
-        }
-    } catch (e) { // throws since map does not exist
-        console.log(e);
+    for await (const row of result) {
+        const decimal = row['this'];
+        console.log(typeof decimal); // string
+
+        console.log(decimal);
     }
-
 };
 
 const realExample = async (client) => {
@@ -143,7 +150,9 @@ const realExample = async (client) => {
 
     try {
         const rowMetadata = await result.getRowMetadata();
-        console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // REAL
+        const columnIndex = rowMetadata.findColumn('this');
+        const columnMetadata = rowMetadata.getColumn(columnIndex);
+        console.log(SqlColumnType[columnMetadata.type]); // REAL
 
         for await (const row of result) {
             console.log(row);
@@ -168,7 +177,9 @@ const doubleExample = async (client) => {
         [-0.7, 0.7]
     );
     const rowMetadata = await result.getRowMetadata();
-    console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // DOUBLE
+    const columnIndex = rowMetadata.findColumn('this');
+    const columnMetadata = rowMetadata.getColumn(columnIndex);
+    console.log(SqlColumnType[columnMetadata.type]); // DOUBLE
 
     for await (const row of result) {
         console.log(row);
@@ -180,21 +191,21 @@ const dateExample = async (client) => {
 
     // pretend that there are date objects in the map, then the query would be as follows:
     const result = client.getSqlService().execute(
-        // we need casting because a string is transmitted internally
         'SELECT * FROM dateMap WHERE this > CAST (? AS DATE) AND this < CAST (? AS DATE)',
-        [new HzLocalDate(1, 1, 1), new HzLocalDate(5, 5, 5)]
+        ['0001-01-01', '0005-05-05']
     );
 
     try {
         const rowMetadata = await result.getRowMetadata();
-        console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // DATE
+        const columnIndex = rowMetadata.findColumn('this');
+        const columnMetadata = rowMetadata.getColumn(columnIndex);
+        console.log(SqlColumnType[columnMetadata.type]); // DATE
 
         for await (const row of result) {
-            const date = row['this']; // HzLocalDate
+            const date = row['this'];
+            console.log(typeof date); // string
 
-            console.log(date.getYear());
-            console.log(date.getMonth());
-            console.log(date.getDate());
+            console.log(date);
         }
     } catch (e) { // throws since map does not exist
         console.log(e);
@@ -206,22 +217,20 @@ const timeExample = async (client) => {
 
     // pretend that there are time objects in the map, then the query would be as follows:
     const result = client.getSqlService().execute(
-        // we need casting because a string is transmitted internally
         'SELECT * FROM timeMap WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME)',
-        [new HzLocalTime(1, 0, 0, 0), new HzLocalTime(10, 0, 0, 0)]
+        ['01:00:00', '10:00:00']
     );
 
     try {
         const rowMetadata = await result.getRowMetadata();
-        console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // TIME
+        const columnIndex = rowMetadata.findColumn('this');
+        const columnMetadata = rowMetadata.getColumn(columnIndex);
+        console.log(SqlColumnType[columnMetadata.type]); // TIME
 
         for await (const row of result) {
-            const time = row['this']; // HzLocalTime
-
-            console.log(time.getHour());
-            console.log(time.getMinute());
-            console.log(time.getSecond());
-            console.log(time.getNano());
+            const time = row['this'];
+            console.log(typeof time); // string
+            console.log(time);
         }
     } catch (e) { // throws since map does not exist
         console.log(e);
@@ -236,25 +245,21 @@ const timestampExample = async (client) => {
         // we need casting because a string is transmitted internally
         'SELECT * FROM timestampMap WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP)',
         [
-            new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
-            new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1))
+            '0001-06-05T04:03:02.000000001',
+            '0009-06-05T04:03:02.000000001'
         ]
     );
 
     try {
         const rowMetadata = await result.getRowMetadata();
-        console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // TIMESTAMP
+        const columnIndex = rowMetadata.findColumn('this');
+        const columnMetadata = rowMetadata.getColumn(columnIndex);
+        console.log(SqlColumnType[columnMetadata.type]); // TIMESTAMP
 
         for await (const row of result) {
-            const datetime = row['this']; // HzLocalDateTime
-
-            console.log(datetime.getHzLocalDate().getYear());
-            console.log(datetime.getHzLocalDate().getMonth());
-            console.log(datetime.getHzLocalDate().getDate());
-            console.log(datetime.getHzLocalTime().getHour());
-            console.log(datetime.getHzLocalTime().getMinute());
-            console.log(datetime.getHzLocalTime().getSecond());
-            console.log(datetime.getHzLocalTime().getNano());
+            const datetime = row['this'];
+            console.log(typeof datetime); // string
+            console.log(datetime);
         }
 
     } catch (e) { // throws since map does not exist
@@ -271,37 +276,21 @@ const timestampWithTimezoneExample = async (client) => {
         'SELECT * FROM timestampWithTimezoneMap WHERE this > CAST (? AS TIMESTAMP_WITH_TIME_ZONE)' +
         'AND this < CAST (? AS TIMESTAMP_WITH_TIME_ZONE)',
         [
-            HzOffsetDateTime.fromHzLocalDateTime(
-                new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
-                0
-            ),
-            HzOffsetDateTime.fromHzLocalDateTime(
-                new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1)),
-                0
-            )
+            '0001-06-05T04:03:02.000000001Z',
+            '0009-06-05T04:03:02.000000001Z'
         ]
     );
 
     try {
         const rowMetadata = await result.getRowMetadata();
-        console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // DATE
+        const columnIndex = rowMetadata.findColumn('this');
+        const columnMetadata = rowMetadata.getColumn(columnIndex);
+        console.log(SqlColumnType[columnMetadata.type]); // DATE
 
         for await (const row of result) {
-            const offsetDatetime = row['this']; // HzOffsetDateTime
-            const localDatetime = offsetDatetime.getHzLocalDateTime();
-            const localDate = localDatetime.getHzLocalDate();
-            const localTime = localDatetime.getHzLocalTime();
-
-            console.log(localDate.getYear());
-            console.log(localDate.getMonth());
-            console.log(localDate.getDate());
-
-            console.log(localTime.getHour());
-            console.log(localTime.getMinute());
-            console.log(localTime.getSecond());
-            console.log(localTime.getNano());
-
-            console.log(offsetDatetime.getOffsetSeconds());
+            const offsetDatetime = row['this'];
+            console.log(typeof offsetDatetime); // string
+            console.log(offsetDatetime);
         }
     } catch (e) { // throws since map does not exist
         console.log(e);
@@ -323,7 +312,9 @@ const objectExample = async (client) => {
     );
 
     const rowMetadata = await result.getRowMetadata();
-    console.log(SqlColumnType[rowMetadata.getColumnByIndex(rowMetadata.findColumn('this')).type]); // OBJECT
+    const columnIndex = rowMetadata.findColumn('this');
+    const columnMetadata = rowMetadata.getColumn(columnIndex);
+    console.log(SqlColumnType[columnMetadata.type]); // OBJECT
 
     for await (const row of result) {
         const student = row['this']; // Student

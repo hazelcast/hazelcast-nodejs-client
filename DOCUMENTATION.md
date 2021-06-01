@@ -2207,41 +2207,9 @@ await map.put('key3', 3);
 
 const result = client.getSqlService().execute(`SELECT __key, this FROM my-distributed-map WHERE this > 1`);
 
-for await(const row of result){
+for await (const row of result){
     console.log(row); // {__key: 'key3', this: 3} and {__key: 'key2', this: 2}
 }
-```
-
-### Casting
-
-When comparing a column with a parameter, your parameter must be of a compatible type. Since Node.js client uses double
-as default number type, to compare with an integer based column you can use long objects or casting.
-
-The similar thing applies to other data types. You can cast string to every SQL type.
-
-#### Using long
-
-In the example below, age column is of type `INTEGER`. Since long objects are sent as `BIGINT`, there is no problem in the
-comparison.
-
-```javascript
-const result = client.getSqlService().execute(
-    'SELECT * FROM myMap WHERE age > ? AND age < ?',
-    [long.fromNumber(13), long.fromNumber(18)]
-);
-```
-
-#### Using casting
-
-In the example below, age column is of type `INTEGER`. The default number type is `double` by default. Since we cast
-doubles as `BIGINT`, there is no problem in the comparison. Note that we can also cast to other types that are be
-comparable with `INTEGER`.
-
-```javascript
-const result = client.getSqlService().execute(
-    'SELECT * FROM myMap WHERE age > CAST(? AS BIGINT) AND age < CAST(? AS BIGINT)',
-    [13, 18]
-);
 ```
 
 ### 8.7.1. Querying IMap
@@ -2260,7 +2228,7 @@ SELECT * FROM employee
 SELECT * FROM partitioned.employee
 ```
 
-#### Field
+#### Fields
 
 The SQL service resolves fields accessible from the SQL automatically. The service reads the first local entry pair of
 the `IMap` to construct the list of fields. If the `IMap` does not have local entries on the member where the query is
@@ -2280,10 +2248,11 @@ SELECT __key, this FROM employee
 
 ##### Key and Value Fields
 
-You may also access the nested fields of a key or a value. The list of exposed fields depends on the serialization format, as described below:
+You may also access the nested fields of a key or value. The list of exposed fields depends on the serialization format, as described below:
+
 * For [IdentifiedDataSerializable](#41-identifieddataserializable-serialization) objects, you can use public field name or getter names.
   See [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/querying-imap.html#key-and-value-fields) for more information.
-* For [Portable](#42-portable-serialization) objects, the fields that are written with `PortableWriter` methods are exposed using their exact names.
+* For [Portable](#42-portable-serialization) objects, the fields written with `PortableWriter` methods are exposed using their exact names.
 
 > **NOTE: You cannot query JSON fields in SQL. If you want to query JSON, see [Querying with JSON Strings](#8814-querying-with-json-strings).**
 
@@ -2337,36 +2306,54 @@ the following query does not return the `this` field, because the value has nest
 SELECT * FROM employee
 ```
 
-### 8.7.2. Data types
+### 8.7.2. Data Types
 
-The SQL service supports a set of SQL data types. Every data type is mapped to a Java class that represents the type’s value. The
-table below shows SQL datatype, and corresponding Java and Javascript types:
+The SQL service supports a set of SQL data types. The
+table below shows SQL datatype, and corresponding Javascript types:
 
-| Column Type                  | Java                       | Javascript                                 |
-|------------------------------|----------------------------|--------------------------------------------|
-| **VARCHAR**                  | `java.lang.String`         | `string`                                   |
-| **BOOLEAN**                  | `java.lang.Boolean`        | `boolean`                                  |
-| **TINYINT**                  | `java.lang.Byte`           | `number`                                   |
-| **SMALLINT**                 | `java.lang.Short`          | `number`                                   |
-| **INTEGER**                  | `java.lang.Integer`        | `number`                                   |
-| **BIGINT**                   | `java.lang.Long`           | `long`                                     |
-| **DECIMAL**                  | `java.math.BigDecimal`     | `string`                                   |
-| **REAL**                     | `java.lang.Float`          | `number`                                   |
-| **DOUBLE**                   | `java.lang.Double`         | `number`                                   |
-| **DATE**                     | `java.time.LocalDate`      | `HzLocalDate`                              |
-| **TIME**                     | `java.time.LocalTime`      | `HzLocalTime`                              |
-| **TIMESTAMP**                | `java.time.LocalDateTime`  | `HzLocalDateTime`                          |
-| **TIMESTAMP_WITH_TIME_ZONE** | `java.time.OffsetDateTime` | `HzOffsetDateTime`                         |
-| **OBJECT**                   | Any class(`Object`)        | Any class                                  |
-| **NULL**                     | `Void`                     | `null`                                     |
+| Column Type                   Javascript           |
+|------------------------------|---------------------|
+| **VARCHAR**                  | `string`            |
+| **BOOLEAN**                  | `boolean`           |
+| **TINYINT**                  | `number`            |
+| **SMALLINT**                 | `number`            |
+| **INTEGER**                  | `number`            |
+| **BIGINT**                   | `long`              |
+| **DECIMAL**                  | `string`            |
+| **REAL**                     | `number`            |
+| **DOUBLE**                   | `number`            |
+| **DATE**                     | `string`            |
+| **TIME**                     | `string`            |
+| **TIMESTAMP**                | `string`            |
+| **TIMESTAMP_WITH_TIME_ZONE** | `string`            |
+| **OBJECT**                   | Any class           |
+| **NULL**                     | `null`              |
 
+#### Date String Format
+
+Date SQL type is sent and received as strings. The string format is `yyyy-mm-dd`.
+
+#### Time String Format
+
+Time SQL type is sent and received as strings. The string format is `HH:mm:ss.SSS` where `SSS` represents nano seconds and can
+be at most 9 digits long.
+
+#### Timestamp String Format
+
+Timestamp SQL type is sent and received as strings. The string format is `yyyy-mm-dd(T|t)HH:mm:ss.SSS` which is the combination of
+Date and Time strings. There must be a `T` letter in between which can be in any case.
+
+#### Timestamp with Timezone String Format
+
+Timestamp SQL type is sent and received as strings. The string format is `yyyy-mm-dd(T|t)HH:mm:ss.SSS{timezoneString}` which is the combination of
+Timestamp string, timezone string. The offset string is can be one of `Z`, `+hh:mm` or `-hh:mm` where `hh` represents hour-in-day, and `mm` represents minutes-in-hour.
 
 ### 8.7.3. Casting
 
 You may need to use casting when sending parameters for certain types. In general, you should try to send a parameter
 that has same data type with the related column.
 
-#### How to cast
+#### How to Cast
 
 Casting syntax: `CAST(? AS TYPE)`
 
@@ -2376,11 +2363,41 @@ Example casting:
 SELECT * FROM someMap WHERE this = CAST(? AS INTEGER)
 ```
 
+#### Casting Between Types
 
-#### Important notes about comparison and casting
+When comparing a column with a parameter, your parameter must be of a compatible type. Since Node.js client uses double
+as default number type, to compare with an integer based column you can use long objects or casting.
 
+The similar thing applies to other data types. You can cast string to every SQL type.
 
-* Note that default number type in Node.js client is double by default. This means you need to cast when you are dealing with
+##### Using Long
+
+In the example below, age column is of type `INTEGER`. Since long objects are sent as `BIGINT`, there is no problem in the
+comparison.
+
+```javascript
+const result = client.getSqlService().execute(
+    'SELECT * FROM myMap WHERE age > ? AND age < ?',
+    [long.fromNumber(13), long.fromNumber(18)]
+);
+```
+
+#### An Example of Casting
+
+In the example below, age column is of type `INTEGER`. The default number type is `double` in Node.js client. Since we cast
+doubles as `BIGINT`, there is no problem in the comparison. Note that we can also cast to other types that are
+comparable with `INTEGER`.
+
+```javascript
+const result = client.getSqlService().execute(
+    'SELECT * FROM myMap WHERE age > CAST(? AS BIGINT) AND age < CAST(? AS BIGINT)',
+    [13, 18]
+);
+```
+
+##### Important Notes About Comparison and Casting
+
+* Note that default number type in Node.js client is double. This means you need to cast when you are dealing with
 integer based columns. (`TINYINT`, `SMALLINT`, `INTEGER`, `BIGINT`)
 
 * In case of comparison operators (=, <, <>, ...), if one side is `?`, it's assumed to be exactly the other side's type,
@@ -2390,10 +2407,9 @@ integer based columns. (`TINYINT`, `SMALLINT`, `INTEGER`, `BIGINT`)
 
 * `DECIMAL` must be sent as string with casting and `DECIMAL` results are also strings.
 
-* To send date and time related wrapper classes, you must use casting, because they are sent as strings internally.
-  This might change in the future so that you can omit casting.
+* To send date and time related types, use strings. This might change in the future.
 
-* See [SQL data types code sample](code_samples/sql-data-types.js) for example usage of all data types.
+* See [SQL data types code samples](code_samples/sql-data-types.js) for example usage of all data types.
 
 ### 8.7.4. SELECT
 
