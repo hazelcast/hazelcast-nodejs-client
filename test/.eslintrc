@@ -18,8 +18,5 @@
         "mocha/prefer-arrow-callback": ["error", {
             "allowNamedFunctions": true
         }]
-    },
-    "parserOptions": {
-        "ecmaVersion": 2018
     }
 }

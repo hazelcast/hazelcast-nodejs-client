@@ -111,7 +111,7 @@ export function leftZeroPadInteger(value: number, length: number): string {
 }
 
 /**
- * Months for HzLocalDate
+ * Months for getLocalDateString
  * @internal
  */
 enum Months {
@@ -134,12 +134,12 @@ enum Months {
  * @param year Must be between -999999999-999999999
  * @param month Must be between 1-12
  * @param date Must be between 1-31 depending on year and month
- * @returns A string in the form yyyy:mm:dd. Values are zero padded from left
+ * @returns A string in the form yyyy-mm-dd. Values are zero padded from left
  * @throws RangeError if any of the arguments are invalid
  */
 export function getLocalDateString(year: number, month: number, date: number): string {
     if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(date)) {
-        throw new RangeError('Illegal arguments given to HzLocalTime. All arguments must be integers.');
+        throw new RangeError('Illegal arguments given. All arguments must be integers.');
     }
     if (!(month >= 1 && month <= 12)) {
         throw new RangeError('Month must be between 1-12');
@@ -199,7 +199,7 @@ export function getLocalDateString(year: number, month: number, date: number): s
  */
 export function getLocalTimeString(hour: number, minute: number, second: number, nano: number): string {
     if (!Number.isInteger(hour) || !Number.isInteger(minute) || !Number.isInteger(second) || !Number.isInteger(nano)) {
-        throw new RangeError('Illegal arguments given to HzLocalTime. All arguments must be integers.');
+        throw new RangeError('Illegal arguments given. All arguments must be integers.');
     }
     if (!(hour >= 0 && hour <= 23)) {
         throw new RangeError('Hour-of-day must be between 0-23');
