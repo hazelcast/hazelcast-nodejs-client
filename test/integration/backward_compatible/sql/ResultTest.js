@@ -76,17 +76,15 @@ describe('SqlResultTest', function () {
     it('should reject iteration after close()', async function () {
         await result.close();
 
-        try {
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            // eslint-disable-next-line no-empty,no-unused-vars
             for await (const row of result) {
-                console.log(row);
             }
-            throw new Error('dummy');
-        } catch (e) {
-            e.should.be.instanceof(getHazelcastSqlException());
-            e.code.should.be.eq(getSqlErrorCode().CANCELLED_BY_USER);
-            e.message.should.include('cancelled');
-            e.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
-        }
+        });
+        error.should.be.instanceof(getHazelcastSqlException());
+        error.code.should.be.eq(getSqlErrorCode().CANCELLED_BY_USER);
+        error.message.should.include('cancelled');
+        error.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
     });
 
     it('getters should work', async function () {

@@ -63,7 +63,7 @@ describe('ConnectionRegistryTest', function () {
             expect(loadBalancerStub.nextDataMember.called).to.be.false;
         });
 
-        it('by default should call load balancer\'s next() when in smart mode', function () {
+        it('should call load balancer\'s next() when in smart mode', function () {
             const loadBalancerStub = {};
             loadBalancerStub.next = sandbox.fake.returns(null);
             loadBalancerStub.nextDataMember = sandbox.spy();

@@ -61,7 +61,7 @@ const portableFactory = (classId) => {
     return null;
 };
 
-describe('Decode/Serialize test without server config', function () {
+describe('Decode/Serialize test', function () {
     let client;
     let cluster;
     let someMap;
@@ -186,20 +186,6 @@ describe('Decode/Serialize test without server config', function () {
         const expectedKeys = [6, 7];
 
         validateResults(rows, expectedKeys, expectedValues);
-
-        const expectedRowCount = 2;
-        // LIMIT test
-        const result2 = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC LIMIT ${expectedRowCount}`,
-            [long.fromNumber(10), long.fromNumber(16)]
-        );
-
-        const rows2 = [];
-
-        for await (const row of result2) {
-            rows2.push(row);
-        }
-        rows2.length.should.be.eq(expectedRowCount);
     });
     it('should be able to decode/serialize SMALLINT', async function () {
         const SqlColumnType = getSqlColumnType();
@@ -652,92 +638,6 @@ describe('Decode/Serialize test without server config', function () {
 
         const expectedKeys = [2, 1];
         const expectedValues = [student3, student2];
-
-        rows.length.should.be.eq(expectedValues.length);
-
-        for (let i = 0; i < rows.length; i++) {
-            (rows[i]['age'].eq(expectedValues[i].age)).should.be.true;
-            (rows[i]['height'] - expectedValues[i].height).should.be.lessThan(1e-5);
-            rows[i]['__key'].should.be.eq(expectedKeys[i]);
-        }
-    });
-});
-
-describe('Decode/Serialize portable with server config', function () {
-    let client;
-    let cluster;
-    let someMap;
-    let mapName;
-
-    const PORTABLE_SERVER_CONFIG = `
-                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-                    <serialization>
-                    <portable-factories>
-                        <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory
-                        </portable-factory>
-                    </portable-factories>
-                    </serialization>
-                </hazelcast>
-            `;
-
-    before(async function () {
-        TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await RC.createCluster(null, PORTABLE_SERVER_CONFIG);
-        await RC.startMember(cluster.id);
-    });
-
-    afterEach(async function () {
-        await someMap.clear();
-        await client.shutdown();
-    });
-
-    after(async function () {
-        await RC.terminateCluster(cluster.id);
-    });
-
-    it('should be able to decode/serialize OBJECT(portable)', async function () {
-        const SqlColumnType = getSqlColumnType();
-        client = await Client.newHazelcastClient({
-            clusterName: cluster.id,
-            serialization: {
-                portableFactories: {
-                    666: portableFactory
-                }
-            }
-        });
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-        await someMap.addIndex({
-            type: 'SORTED',
-            attributes: ['__key']
-        });
-
-        const student1 = new Student(long.fromNumber(12), 123.23);
-        const student2 = new Student(long.fromNumber(15), null);
-        const student3 = new Student(long.fromNumber(17), null);
-        await someMap.put(0, student1);
-        await someMap.put(1, student2);
-        await someMap.put(2, student3);
-
-        const result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE age > ? AND age < ? ORDER BY __key ASC `,
-            [long.fromNumber(13), long.fromNumber(18)]
-        );
-
-        const rowMetadata = await result.getRowMetadata();
-        rowMetadata.getColumn(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
-        rowMetadata.getColumn(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
-
-        const rows = [];
-
-        for await (const row of result) {
-            rows.push(row);
-        }
-
-        const expectedKeys = [1, 2];
-        const expectedValues = [student2, student3];
 
         rows.length.should.be.eq(expectedValues.length);
 

@@ -32,10 +32,10 @@ exports.promiseLater = function (time, func) {
 /**
  * Returns rejection reason if rejected, otherwise returns a dummy error.
  */
-exports.getRejectionReasonOrDummy = async function (object, asyncMethodName, ...params) {
+exports.getRejectionReasonOrThrow = async function (asyncFn) {
     try {
-        await object[asyncMethodName](...params);
-        return new Error('dummy error');
+        await asyncFn();
+        throw new Error('Expected the call the throw, but it didn\'t.');
     } catch (e) {
         return e;
     }
@@ -44,10 +44,10 @@ exports.getRejectionReasonOrDummy = async function (object, asyncMethodName, ...
 /**
  * Returns thrown error if thrown, otherwise returns a dummy error.
  */
-exports.getThrownErrorOrDummy = function (object, asyncMethodName, ...params) {
+exports.getThrownErrorOrDummy = function (fn) {
     try {
-        object[asyncMethodName](...params);
-        return new Error('dummy error');
+        fn();
+        throw new Error('Expected the call the throw, but it didn\'t.');
     } catch (e) {
         return e;
     }
