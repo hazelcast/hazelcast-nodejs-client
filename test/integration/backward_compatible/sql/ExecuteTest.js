@@ -470,14 +470,14 @@ describe('SqlExecuteTest', function () {
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
 
-            const error1 = TestUtil.getThrownErrorOrDummy(() => {
+            const error1 = TestUtil.getThrownErrorOrThrow(() => {
                 client.getSqlService().execute(`SELECT * FROM ${mapName}`);
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
             error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
 
-            const error2 = TestUtil.getThrownErrorOrDummy(() => {
+            const error2 = TestUtil.getThrownErrorOrThrow(() => {
                 client.getSqlService().executeStatement({
                         sql: `SELECT * FROM ${mapName}`,
                         params: [],

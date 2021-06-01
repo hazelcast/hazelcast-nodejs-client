@@ -30,27 +30,27 @@ exports.promiseLater = function (time, func) {
 };
 
 /**
- * Returns rejection reason if rejected, otherwise returns a dummy error.
+ * Returns rejection reason if rejected, otherwise throws an error.
  */
 exports.getRejectionReasonOrThrow = async function (asyncFn) {
     try {
         await asyncFn();
-        throw new Error('Expected the call the throw, but it didn\'t.');
     } catch (e) {
         return e;
     }
+    throw new Error('Expected the call the throw, but it didn\'t.');
 };
 
 /**
- * Returns thrown error if thrown, otherwise returns a dummy error.
+ * Returns thrown error if thrown, otherwise throws an error.
  */
-exports.getThrownErrorOrDummy = function (fn) {
+exports.getThrownErrorOrThrow = function (fn) {
     try {
         fn();
-        throw new Error('Expected the call the throw, but it didn\'t.');
     } catch (e) {
         return e;
     }
+    throw new Error('Expected the call the throw, but it didn\'t.');
 };
 
 exports.promiseWaitMilliseconds = function (milliseconds) {
