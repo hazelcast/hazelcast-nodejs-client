@@ -2330,7 +2330,7 @@ table below shows SQL datatype, and corresponding Javascript types:
 
 #### Decimal String Format
 
-Decimal SQL type is sent and received as strings.
+SQL `DECIMAL` type is sent and received as strings.
 
 #### Date String Format
 
