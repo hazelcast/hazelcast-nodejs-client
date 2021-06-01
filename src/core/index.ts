@@ -23,7 +23,6 @@ export * from './Address';
 export * from './ClientInfo';
 export * from './Cluster';
 export * from './Comparator';
-export * from './DatetimeClasses';
 export * from './DistributedObject';
 export * from './DistributedObjectListener';
 export * from './HazelcastError';

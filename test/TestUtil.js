@@ -17,7 +17,6 @@
 
 const { expect } = require('chai');
 const { BuildInfo } = require('../lib/BuildInfo');
-const { UuidUtil } = require('../lib/util/UuidUtil');
 
 exports.promiseLater = function (time, func) {
     if (func === undefined) {
@@ -28,6 +27,30 @@ exports.promiseLater = function (time, func) {
             resolve(func());
         }, time);
     }));
+};
+
+/**
+ * Returns rejection reason if rejected, otherwise throws an error.
+ */
+exports.getRejectionReasonOrThrow = async function (asyncFn) {
+    try {
+        await asyncFn();
+    } catch (e) {
+        return e;
+    }
+    throw new Error('Expected the call the throw, but it didn\'t.');
+};
+
+/**
+ * Returns thrown error if thrown, otherwise throws an error.
+ */
+exports.getThrownErrorOrThrow = function (fn) {
+    try {
+        fn();
+    } catch (e) {
+        return e;
+    }
+    throw new Error('Expected the call the throw, but it didn\'t.');
 };
 
 exports.promiseWaitMilliseconds = function (milliseconds) {
@@ -166,8 +189,14 @@ exports.getRandomInt = function (lowerLim, upperLim) {
     return Math.floor(Math.random() * (upperLim - lowerLim)) + lowerLim;
 };
 
-exports.randomString = function () {
-    return UuidUtil.generate().toString();
+exports.randomString = function (length) {
+    const result = [];
+    const characters = 'abcdefghijklmnopqrstuvwxyz';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
+    }
+    return result.join('');
 };
 
 class CountingMembershipListener {
