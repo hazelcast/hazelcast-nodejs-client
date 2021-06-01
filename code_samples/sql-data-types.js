@@ -59,8 +59,9 @@ const varcharExample = async (client) => {
 };
 
 /*
-    Since Node.js client sends all numbers as double by default, giving a number as parameter will not work for these
-    types. Instead, you can use `long` objects or you can use explicit casting which converts doubles to integers.
+    Since Node.js client sends all numbers as double by default, giving a number as parameter
+    will not work for `BIGINT` type. Instead, you can use `long` objects or you can use explicit
+    casting which can convert doubles to other integer types.
 */
 const integersExample = async (client) => {
     console.log('---------- BIGINT Example----------');
@@ -83,7 +84,7 @@ const integersExample = async (client) => {
         console.log(row);
     }
 
-    // Casting example
+    // Casting example. Casting to other integer types is also possible.
     const result2 = client.getSqlService().execute(
         'SELECT * FROM bigintMap WHERE this > CAST(? AS BIGINT) AND this < CAST(? AS BIGINT)',
         [10, 18]
