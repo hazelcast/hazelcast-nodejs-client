@@ -2207,7 +2207,7 @@ await map.put('key3', 3);
 
 const result = client.getSqlService().execute(`SELECT __key, this FROM my-distributed-map WHERE this > 1`);
 
-for await (const row of result){
+for await (const row of result) {
     console.log(row); // {__key: 'key3', this: 3} and {__key: 'key2', this: 2}
 }
 ```
@@ -2235,7 +2235,6 @@ the `IMap` to construct the list of fields. If the `IMap` does not have local en
 started, then the list of fields cannot be resolved, and an exception is thrown.
 
 Field names are case-sensitive.
-
 
 ##### Key and Value Objects
 
@@ -2311,7 +2310,7 @@ SELECT * FROM employee
 The SQL service supports a set of SQL data types. The
 table below shows SQL datatype, and corresponding Javascript types:
 
-| Column Type                   Javascript           |
+| Column Type                  | Javascript          |
 |------------------------------|---------------------|
 | **VARCHAR**                  | `string`            |
 | **BOOLEAN**                  | `boolean`           |
@@ -2329,24 +2328,29 @@ table below shows SQL datatype, and corresponding Javascript types:
 | **OBJECT**                   | Any class           |
 | **NULL**                     | `null`              |
 
+#### Decimal String Format
+
+Decimal SQL type is sent and received as strings.
+
 #### Date String Format
 
-Date SQL type is sent and received as strings. The string format is `yyyy-mm-dd`.
+SQL `DATE` type is sent and received as a string with the `yyyy-mm-dd` format.
 
 #### Time String Format
 
-Time SQL type is sent and received as strings. The string format is `HH:mm:ss.SSS` where `SSS` represents nano seconds and can
+SQL `TIME` type is sent and received as a string with the `HH:mm:ss.SSS` format where `SSS` represents nanoseconds and can
 be at most 9 digits long.
 
 #### Timestamp String Format
 
-Timestamp SQL type is sent and received as strings. The string format is `yyyy-mm-dd(T|t)HH:mm:ss.SSS` which is the combination of
-Date and Time strings. There must be a `T` letter in between which can be in any case.
+SQL `TIMESTAMP` type is sent and received as a string with the `yyyy-mm-dd(T|t)HH:mm:ss.SSS` format which is the combination of
+`DATE` and `TIME` strings. There must be a `T` letter in between which can be in any case.
 
 #### Timestamp with Timezone String Format
 
-Timestamp SQL type is sent and received as strings. The string format is `yyyy-mm-dd(T|t)HH:mm:ss.SSS{timezoneString}` which is the combination of
-Timestamp string, timezone string. The offset string is can be one of `Z`, `+hh:mm` or `-hh:mm` where `hh` represents hour-in-day, and `mm` represents minutes-in-hour.
+SQL `TIMESTAMP WITH TIMEZONE` type is sent and received as a string with the `yyyy-mm-dd(T|t)HH:mm:ss.SSS{timezoneString}` format which is the combination of
+`TIMESTAMP` and timezone strings. The timezone string is can be one of `Z`, `+hh:mm` or `-hh:mm` where `hh` represents hour-in-day, and `mm` represents minutes-in-hour.
+The timezone must be in the range `[-18:00, +18:00]`.
 
 ### 8.7.3. Casting
 
@@ -2372,8 +2376,7 @@ The similar thing applies to other data types. You can cast string to every SQL 
 
 ##### Using Long
 
-In the example below, age column is of type `INTEGER`. Since long objects are sent as `BIGINT`, there is no problem in the
-comparison.
+In the example below, age column is of type `INTEGER`. Since long objects are sent as `BIGINT` and `BIGINT` is comparable with `INTEGER`, the query is valid without an explicit `CAST`.
 
 ```javascript
 const result = client.getSqlService().execute(
@@ -2384,8 +2387,8 @@ const result = client.getSqlService().execute(
 
 #### An Example of Casting
 
-In the example below, age column is of type `INTEGER`. The default number type is `double` in Node.js client. Since we cast
-doubles as `BIGINT`, there is no problem in the comparison. Note that we can also cast to other types that are
+In the example below, age column is of type `INTEGER`. The default number type is `double` in Node.js client. We cast
+doubles as `BIGINT`, and `BIGINT` is comparable with `INTEGER` the query is valid. Note that we can also cast to other types that are
 comparable with `INTEGER`.
 
 ```javascript
@@ -2405,9 +2408,9 @@ integer based columns. (`TINYINT`, `SMALLINT`, `INTEGER`, `BIGINT`)
 
 * String parameters can be cast to any type. The cast operation may fail though.
 
-* `DECIMAL` must be sent as string with casting and `DECIMAL` results are also strings.
+* To send a `DECIMAL` type, use a string with an explicit `CAST`.
 
-* To send date and time related types, use strings. This might change in the future.
+* To send date and time related types, use a string with an explicit `CAST`.
 
 * See [SQL data types code samples](code_samples/sql-data-types.js) for example usage of all data types.
 
