@@ -22,16 +22,14 @@
     <network>
         <ssl enabled="true">
             <factory-class-name>
-                com.hazelcast.nio.ssl.ClasspathSSLContextFactory
+                com.hazelcast.nio.ssl.BasicSSLContextFactory
             </factory-class-name>
             <properties>
                 <property name="keyStore">[serverCertificate]</property>
                 <property name="keyStorePassword">[password]</property>
-                <!--
-                <property name="trustStore">com/hazelcast/nio/ssl-mutual-auth/server1.truststore</property>
-                <property name="trustStorePassword">password</property>
+                <property name="trustStore">[serverCertificate]</property>
+                <property name="trustStorePassword">123456</property>
                 <property name="trustManagerAlgorithm">SunX509</property>
-                -->
                 <property name="keyManagerAlgorithm">SunX509</property>
                 <property name="protocol">TLS</property>
             </properties>

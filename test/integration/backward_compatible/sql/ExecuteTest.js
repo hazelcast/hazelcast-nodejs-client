@@ -93,6 +93,7 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            TestUtil.markServerVersionAtLeast(this, client, '4.2');
         });
 
         beforeEach(async function () {
@@ -178,6 +179,7 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            TestUtil.markServerVersionAtLeast(this, client, '4.2');
         });
 
         beforeEach(async function () {
@@ -259,6 +261,7 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            TestUtil.markServerVersionAtLeast(this, client, '4.2');
         });
 
         beforeEach(async function () {
@@ -467,6 +470,7 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            TestUtil.markServerVersionAtLeast(this, client, '4.2');
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
 
@@ -498,6 +502,7 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            TestUtil.markServerVersionAtLeast(this, client, '4.2');
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
 
@@ -522,6 +527,7 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            TestUtil.markServerVersionAtLeast(this, client, '4.2');
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
 
@@ -550,6 +556,7 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            TestUtil.markServerVersionAtLeast(this, client, '4.2');
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
 

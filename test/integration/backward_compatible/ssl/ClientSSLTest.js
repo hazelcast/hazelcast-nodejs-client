@@ -53,7 +53,7 @@ describe('ClientSSLTest', function () {
 
     it('should not be able to connect to the server with invalid certificate', async function () {
         const sConfig = serverConfig
-            .replace('[serverCertificate]', 'com/hazelcast/nio/ssl-mutual-auth/server1.keystore')
+            .replace(/\[serverCertificate]/g, 'com/hazelcast/nio/ssl-mutual-auth/server1.keystore')
             .replace('[password]', 'password');
         await createCluster(sConfig);
 
@@ -75,7 +75,7 @@ describe('ClientSSLTest', function () {
 
     it('should be able to connect to the server with valid certificate', async function () {
         const sConfig = serverConfig
-            .replace('[serverCertificate]', 'com/hazelcast/nio/ssl/letsencrypt.jks')
+            .replace(/\[serverCertificate]/g, __dirname + '/keystore.jks')
             .replace('[password]', '123456');
         await createCluster(sConfig);
         client = await Client.newHazelcastClient({

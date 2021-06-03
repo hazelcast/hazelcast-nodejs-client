@@ -86,6 +86,7 @@ describe('Decode/Serialize test', function () {
         client = await Client.newHazelcastClient({
             clusterName: cluster.id
         });
+        TestUtil.markServerVersionAtLeast(this, client, '4.2');
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
         await someMap.addIndex({
@@ -607,6 +608,7 @@ describe('Decode/Serialize test', function () {
                 }
             }
         });
+        TestUtil.markServerVersionAtLeast(this, client, '4.2');
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
         await someMap.addIndex({
