@@ -459,7 +459,7 @@ describe('SqlExecuteTest', function () {
             </hazelcast>
         `;
 
-        after(async function () {
+        afterEach(async function () {
             await RC.terminateCluster(cluster.id);
             await client.shutdown();
         });
@@ -491,9 +491,6 @@ describe('SqlExecuteTest', function () {
             error2.should.be.instanceof(getHazelcastSqlException());
             error2.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
             error2.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
-
-            await RC.terminateCluster(cluster.id);
-            await client.shutdown();
         });
 
         it('should return an error if connection lost', async function () {
@@ -516,9 +513,6 @@ describe('SqlExecuteTest', function () {
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
             error1.originatingMemberId.toString().should.be.eq(member.uuid);
-
-            await RC.terminateCluster(cluster.id);
-            await client.shutdown();
         });
 
         it('should return an error if connection lost - statement', async function () {
@@ -545,9 +539,6 @@ describe('SqlExecuteTest', function () {
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
             error1.originatingMemberId.toString().should.be.eq(member.uuid);
-
-            await RC.terminateCluster(cluster.id);
-            await client.shutdown();
         });
 
         it('should return an error if sql is invalid', async function () {
@@ -581,9 +572,6 @@ describe('SqlExecuteTest', function () {
             error2.should.be.instanceof(getHazelcastSqlException());
             error2.code.should.be.eq(getSqlErrorCode().PARSING);
             error2.originatingMemberId.toString().should.be.eq(member.uuid);
-
-            await RC.terminateCluster(cluster.id);
-            await client.shutdown();
         });
     });
 });
