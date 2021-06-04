@@ -71,7 +71,7 @@ describe('ClientSSLTest', function () {
     });
 
     it('should be able to connect to the server with valid certificate', async function () {
-        serverConfig = fs.readFileSync(__dirname + '/hazelcast-ssl-2.xml', 'utf8');
+        serverConfig = fs.readFileSync(__dirname + '/hazelcast-default-ca.xml', 'utf8');
         const sConfig = serverConfig
             .replace(/\[serverCertificate]/g, __dirname + '/keystore.jks')
             .replace('[password]', '123456');
