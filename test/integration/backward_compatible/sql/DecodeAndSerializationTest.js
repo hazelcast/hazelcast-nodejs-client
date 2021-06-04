@@ -82,10 +82,11 @@ describe('Decode/Serialize test', function () {
         await RC.startMember(cluster.id);
     });
 
-    const basicSetup = async () => {
+    const basicSetup = async (testFn) => {
         client = await Client.newHazelcastClient({
             clusterName: cluster.id
         });
+        TestUtil.markServerVersionAtLeast(testFn, client, '4.2');
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
         await someMap.addIndex({
@@ -95,8 +96,12 @@ describe('Decode/Serialize test', function () {
     };
 
     afterEach(async function () {
-        await someMap.clear();
-        await client.shutdown();
+        if (someMap) {
+            await someMap.clear();
+        }
+        if (client) {
+            await client.shutdown();
+        }
     });
 
     after(async function () {
@@ -105,7 +110,7 @@ describe('Decode/Serialize test', function () {
 
     it('should be able to decode/serialize VARCHAR', async function () {
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -134,7 +139,7 @@ describe('Decode/Serialize test', function () {
     });
     it('should be able to decode/serialize BOOLEAN', async function () {
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -160,7 +165,7 @@ describe('Decode/Serialize test', function () {
     });
     it('should be able to decode/serialize TINYINT', async function () {
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -189,7 +194,7 @@ describe('Decode/Serialize test', function () {
     });
     it('should be able to decode/serialize SMALLINT', async function () {
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -218,7 +223,7 @@ describe('Decode/Serialize test', function () {
     });
     it('should be able to decode/serialize INTEGER', async function () {
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -247,7 +252,7 @@ describe('Decode/Serialize test', function () {
     });
     it('should be able to decode/serialize BIGINT', async function () {
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -281,7 +286,7 @@ describe('Decode/Serialize test', function () {
     });
     it('should be able to decode/serialize DECIMAL', async function () {
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -325,7 +330,7 @@ describe('Decode/Serialize test', function () {
     });
     it('should be able to decode/serialize REAL', async function () {
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -359,7 +364,7 @@ describe('Decode/Serialize test', function () {
     });
     it('should be able to decode/serialize DOUBLE', async function () {
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -395,7 +400,7 @@ describe('Decode/Serialize test', function () {
     it('should be able to decode/serialize DATE', async function () {
         const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -436,7 +441,7 @@ describe('Decode/Serialize test', function () {
     it('should be able to decode/serialize TIME', async function () {
         const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script = `
                     var map = instance_0.getMap("${mapName}");
                     for (var key = 1; key < 12; key++) {
@@ -479,7 +484,7 @@ describe('Decode/Serialize test', function () {
     it('should be able to decode/serialize TIMESTAMP', async function () {
         const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script = `
                     var map = instance_0.getMap("${mapName}");
                     for (var key = 1; key < 12; key++) {
@@ -537,7 +542,7 @@ describe('Decode/Serialize test', function () {
         const getTimezoneOffsetFromSeconds = datetimeUtil.getTimezoneOffsetFromSeconds;
 
         const SqlColumnType = getSqlColumnType();
-        await basicSetup();
+        await basicSetup(this);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -607,6 +612,7 @@ describe('Decode/Serialize test', function () {
                 }
             }
         });
+        TestUtil.markServerVersionAtLeast(this, client, '4.2');
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
         await someMap.addIndex({

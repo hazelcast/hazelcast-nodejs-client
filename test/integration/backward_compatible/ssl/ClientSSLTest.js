@@ -34,10 +34,6 @@ describe('ClientSSLTest', function () {
         TestUtil.markEnterprise(this);
     });
 
-    beforeEach(function () {
-        serverConfig = fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8');
-    });
-
     afterEach(async function () {
         if (client) {
             await client.shutdown();
@@ -52,6 +48,7 @@ describe('ClientSSLTest', function () {
     }
 
     it('should not be able to connect to the server with invalid certificate', async function () {
+        serverConfig = fs.readFileSync(__dirname + '/hazelcast-ssl.xml', 'utf8');
         const sConfig = serverConfig
             .replace('[serverCertificate]', 'com/hazelcast/nio/ssl-mutual-auth/server1.keystore')
             .replace('[password]', 'password');
@@ -74,8 +71,9 @@ describe('ClientSSLTest', function () {
     });
 
     it('should be able to connect to the server with valid certificate', async function () {
+        serverConfig = fs.readFileSync(__dirname + '/hazelcast-default-ca.xml', 'utf8');
         const sConfig = serverConfig
-            .replace('[serverCertificate]', 'com/hazelcast/nio/ssl/letsencrypt.jks')
+            .replace(/\[serverCertificate]/g, __dirname + '/keystore.jks')
             .replace('[password]', '123456');
         await createCluster(sConfig);
         client = await Client.newHazelcastClient({
