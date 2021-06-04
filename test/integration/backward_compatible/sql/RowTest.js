@@ -36,6 +36,7 @@ describe('SqlRowTest', function () {
         client = await Client.newHazelcastClient({
             clusterName: cluster.id
         });
+        TestUtil.markServerVersionAtLeast(this, client, '4.2');
     });
 
     beforeEach(async function () {
