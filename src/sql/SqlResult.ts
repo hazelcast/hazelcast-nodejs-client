@@ -189,6 +189,7 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Useful for mocking. (Constructor mocking is hard/impossible)
      * @returns new result object.
+     * @internal
      */
     static newResult(
         sqlService: SqlServiceImpl,
@@ -255,7 +256,11 @@ export class SqlResultImpl implements SqlResult {
         return this.closeDeferred.promise;
     }
 
-    /** Called when next page of the result is received. */
+    /**
+     * Called when next page of the result is received.
+     * @param page
+     * @internal
+     */
     private onNextPage(page: SqlPage) {
         this.currentPage = page;
         this.currentRowCount = page.getRowCount();
@@ -267,7 +272,11 @@ export class SqlResultImpl implements SqlResult {
         }
     }
 
-    /** Called when an error is occurred during SQL execute */
+    /**
+     * Called when an error is occurred during SQL execution.
+     * @param error The wrapped error that can be propagated to the user through executeDeferred.
+     * @internal
+     */
     onExecuteError(error: HazelcastSqlException): void {
         // Ignore the error if SQL result is closed.
         if (this.closed) {
@@ -282,6 +291,7 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Used by {@link next}.
      * @returns the current row.
+     * @internal
      */
     private getCurrentRow(): SqlRowType {
         if (this.returnRawResult) { // Return SqlRow
@@ -303,18 +313,24 @@ export class SqlResultImpl implements SqlResult {
         }
     }
 
-    /** Called when a execute response is received. */
-    onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage, updateCount: Long) {
-        // Ignore the response if SQL result is closed.
+    /**
+     * Called when a execute response is received.
+     * @param rowMetadata  The row metadata. It is null if the response only contains the update count.
+     * @param rowPage The first page of the result. It is null if the response only contains the update count.
+     * @param updateCount The update count.
+     * @internal
+     */
+    onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage | null, updateCount: Long) {
+        // Ignore the response if the SQL result is closed.
         if (this.closed) {
             return;
         }
 
-        if (rowMetadata !== null) { // Result that including rows
+        if (rowMetadata !== null) { // Result that includes rows
             this.rowMetadata = rowMetadata;
             this.onNextPage(rowPage);
             this.updateCount = Long.fromInt(-1);
-        } else { // Result that including update count
+        } else { // Result that includes update count
             this.updateCount = updateCount;
             this.closed = true;
         }
@@ -372,6 +388,7 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Used by {@link next}.
      * @returns if there are rows to be iterated.
+     * @internal
      */
     private hasNext(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {

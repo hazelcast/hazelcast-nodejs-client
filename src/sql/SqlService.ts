@@ -379,11 +379,24 @@ export class SqlServiceImpl implements SqlService {
         return this.executeStatement(sqlStatement);
     }
 
+    /**
+     * Sends a close request on a connection for an SQL result using its query id.
+     * @param connection The connection the request will be sent to
+     * @param queryId The query id that defines the SQL result
+     * @internal
+     */
     close(connection: Connection, queryId: SqlQueryId): Promise<ClientMessage> {
         const requestMessage = SqlCloseCodec.encodeRequest(queryId);
         return this.invocationService.invokeOnConnection(connection, requestMessage);
     }
 
+    /**
+     * Sends a fetch request on a connection for an SQL result using its query id.
+     * @param connection The connection the request will be sent to
+     * @param queryId The query id that defines the SQL result
+     * @param cursorBufferSize The cursor buffer size associated with SQL fetch request, i.e its page size
+     * @internal
+     */
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
         const requestMessage = SqlFetchCodec.encodeRequest(queryId, cursorBufferSize);
         return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
