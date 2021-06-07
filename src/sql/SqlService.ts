@@ -292,6 +292,7 @@ export class SqlServiceImpl implements SqlService {
 
         const connection = this.connectionRegistry.getRandomConnection(true);
         if (connection === null) {
+            // Either the client is not connected to the cluster, or there are no data members in the cluster.
             throw new HazelcastSqlException(
                 this.connectionManager.getClientUuid(),
                 SqlErrorCode.CONNECTION_PROBLEM,
