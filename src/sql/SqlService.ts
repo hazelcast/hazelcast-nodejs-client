@@ -261,7 +261,8 @@ export class SqlServiceImpl implements SqlService {
     toHazelcastSqlException(err: any, connection: Connection) : HazelcastSqlException {
         if (!connection.isAlive()) {
             return new HazelcastSqlException(
-                connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM,
+                this.connectionManager.getClientUuid(),
+                SqlErrorCode.CONNECTION_PROBLEM,
                 'Cluster topology changed while a query was executed:' +
                 `Member cannot be reached: ${connection.getRemoteAddress()}`,
                 err
