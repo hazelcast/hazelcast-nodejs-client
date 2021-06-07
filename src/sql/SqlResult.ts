@@ -211,7 +211,7 @@ export class SqlResultImpl implements SqlResult {
 
     isRowSet(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {
-            return this.updateCount === Long.fromInt(-1);
+            return this.rowMetadata !== null;
         });
     }
 
