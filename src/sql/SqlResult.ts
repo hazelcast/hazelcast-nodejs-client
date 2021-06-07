@@ -354,8 +354,8 @@ export class SqlResultImpl implements SqlResult {
 
         this.fetchDeferred = deferredPromise<SqlPage>();
 
-        this.sqlService.fetch(this.connection, this.queryId, this.cursorBufferSize).then(value => {
-            this.fetchDeferred.resolve(value);
+        this.sqlService.fetch(this.connection, this.queryId, this.cursorBufferSize).then(sqlPage => {
+            this.fetchDeferred.resolve(sqlPage);
             this.fetchDeferred = undefined; // Set fetchDeferred to undefined to be able to fetch again
         }).catch(err => {
             this.fetchDeferred.reject(this.sqlService.toHazelcastSqlException(err, this.connection));
