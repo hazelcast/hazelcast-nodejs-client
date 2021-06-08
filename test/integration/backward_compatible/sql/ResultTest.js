@@ -61,8 +61,8 @@ describe('SqlResultTest', function () {
         await someMap.put(0, 1);
         await someMap.put(1, 2);
         await someMap.put(2, 3);
-
-        result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this > ?`, [1]);
+        await someMap.put(3, 4);
+        await someMap.put(4, 5);
     });
 
     after(async function () {
@@ -75,11 +75,15 @@ describe('SqlResultTest', function () {
     });
 
     it('should reject iteration after close()', async function () {
-        await result.close();
-
+        result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this > ?`, [1], {cursorBufferSize: 1});
         const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            let counter = 0;
             // eslint-disable-next-line no-empty,no-unused-vars
             for await (const row of result) {
+                counter++;
+                if (counter === 2) {
+                    await result.close();
+                }
             }
         });
         error.should.be.instanceof(getHazelcastSqlException());
@@ -89,6 +93,7 @@ describe('SqlResultTest', function () {
     });
 
     it('getters should work', async function () {
+        result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE this > ?`, [1]);
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.should.be.instanceof(getSqlRowMetadataImpl());
         rowMetadata.getColumnCount().should.be.eq(2);

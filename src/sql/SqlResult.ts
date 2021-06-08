@@ -243,6 +243,7 @@ export class SqlResultImpl implements SqlResult {
         // Prevent ongoing/future fetch requests
         if (!this.fetchDeferred) {
             this.fetchDeferred = deferredPromise<SqlPage>();
+            this.fetchDeferred.promise.catch(()=>{});
         }
         this.fetchDeferred.reject(error);
         // Send the close request.
@@ -349,7 +350,7 @@ export class SqlResultImpl implements SqlResult {
         }
         // Do not start a fetch if the result is already closed
         if (this.closed) {
-            return Promise.reject('Cannot fetch, the result is already closed');
+            return Promise.reject(new IllegalStateError('Cannot fetch, the result is already closed'));
         }
 
         this.fetchDeferred = deferredPromise<SqlPage>();
