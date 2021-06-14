@@ -1,0 +1,13 @@
+on: [pull_request]
+name: Generate docs
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+          npm install
+    - name: Generate docs
+      run: |
+          npm run generate-docs
