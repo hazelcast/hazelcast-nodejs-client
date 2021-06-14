@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/** @ignore *//** */
 
 /**
- Constructs and returns timezone for ISO string from offsetSeconds
- @internal
-
- @param offsetSeconds Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]. If out of
- this range, the limit values are assumed.
- @throws RangeError if offset seconds is not number
- @return Timezone string, can be 'Z', +hh:mm or -hh:mm
+ * Constructs and returns timezone for ISO string from offsetSeconds
+ * @internal
+ *
+ * @param offsetSeconds Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]. If out of
+ * this range, the limit values are assumed.
+ * @throws RangeError if offset seconds is not number
+ * @return Timezone string, can be 'Z', +hh:mm or -hh:mm
  */
 export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
     if (!Number.isInteger(offsetSeconds)) {
@@ -57,12 +57,12 @@ export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
 }
 
 /**
- Parses timezone string and returns offset in seconds
- @internal
-
- @param timezoneString string, can be 'Z', +hh:mm or -hh:mm
- @throws RangeError If timezoneString is invalid
- @return Timezone Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]
+ * Parses timezone string and returns offset in seconds
+ * @internal
+ *
+ * @param timezoneString string, can be 'Z', +hh:mm or -hh:mm
+ * @throws RangeError If timezoneString is invalid
+ * @return Timezone Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]
  */
 export function getOffsetSecondsFromTimezoneString(timezoneString: string): number {
     if (typeof timezoneString !== 'string') {
@@ -100,8 +100,9 @@ export function getOffsetSecondsFromTimezoneString(timezoneString: string): numb
 }
 
 /**
- * Give this function integer and it will zero pad to the given length.
  * @internal
+ * Give this function integer and it will zero pad to the given length.
+ *
  * @param value
  * @param length total length after padding
  * @returns Zero padded string
@@ -130,7 +131,9 @@ enum Months {
 }
 
 /**
+ * @internal
  * Returns the string representation of a local date.
+ *
  * @param year Must be between -999999999-999999999
  * @param month Must be between 1-12
  * @param date Must be between 1-31 depending on year and month
@@ -187,6 +190,7 @@ export function getLocalDateString(year: number, month: number, date: number): s
 }
 
 /**
+ * @internal
  * Returns the string representation of a local time.
  *
  * @param hour The hour-of-day to represent, from 0 to 23

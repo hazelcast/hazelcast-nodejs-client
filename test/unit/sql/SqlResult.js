@@ -302,7 +302,7 @@ describe('SqlResultTest', function () {
             }, 100);
         });
 
-        it('should not call onExecuteError and change properties after an error is received', function (done) {
+        it('should call onExecuteError and change properties after an error is received', function (done) {
             const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, {}, 4096);
             const onExecuteErrorFake = sandbox.replace(sqlResult, 'onExecuteError', sandbox.fake(sqlResult.onExecuteError));
             // simulate a response then call close()
