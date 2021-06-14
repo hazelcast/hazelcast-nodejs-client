@@ -53,6 +53,7 @@ describe('ClientHotRestartEventTest', function () {
     });
 
     beforeEach(async function () {
+        client = undefined;
         cluster = await RC.createClusterKeepClusterName(null, createClusterConfig(5701));
     });
 
