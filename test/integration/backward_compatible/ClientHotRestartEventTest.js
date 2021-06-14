@@ -53,11 +53,14 @@ describe('ClientHotRestartEventTest', function () {
     });
 
     beforeEach(async function () {
+        client = undefined;
         cluster = await RC.createClusterKeepClusterName(null, createClusterConfig(5701));
     });
 
     afterEach(async function () {
-        await client.shutdown();
+        if (client) {
+            await client.shutdown();
+        }
         await RC.terminateCluster(cluster.id);
     });
 
@@ -82,6 +85,7 @@ describe('ClientHotRestartEventTest', function () {
     });
 
     it('should receive membership events when the member is restarted on same address', async function () {
+        TestUtil.markClientVersionAtLeast(this, '4.2');
         const oldMember = await RC.startMember(cluster.id);
 
         let memberAdded = false;
