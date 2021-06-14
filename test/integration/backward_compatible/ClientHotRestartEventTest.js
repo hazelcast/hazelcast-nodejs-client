@@ -57,7 +57,9 @@ describe('ClientHotRestartEventTest', function () {
     });
 
     afterEach(async function () {
-        await client.shutdown();
+        if (client) {
+            await client.shutdown();
+        }
         await RC.terminateCluster(cluster.id);
     });
 
