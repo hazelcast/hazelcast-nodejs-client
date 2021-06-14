@@ -189,7 +189,6 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Useful for mocking. (Constructor mocking is hard/impossible)
      * @returns new result object.
-     * @internal
      */
     static newResult(
         sqlService: SqlServiceImpl,
@@ -243,7 +242,7 @@ export class SqlResultImpl implements SqlResult {
         // Prevent ongoing/future fetch requests
         if (!this.fetchDeferred) {
             this.fetchDeferred = deferredPromise<SqlPage>();
-            this.fetchDeferred.promise.catch(()=>{});
+            this.fetchDeferred.promise.catch(() => {});
         }
         this.fetchDeferred.reject(error);
         // Send the close request.
@@ -260,7 +259,6 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Called when next page of the result is received.
      * @param page
-     * @internal
      */
     private onNextPage(page: SqlPage) {
         this.currentPage = page;
@@ -276,7 +274,6 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Called when an error is occurred during SQL execution.
      * @param error The wrapped error that can be propagated to the user through executeDeferred.
-     * @internal
      */
     onExecuteError(error: HazelcastSqlException): void {
         // Ignore the error if SQL result is closed.
@@ -292,7 +289,6 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Used by {@link next}.
      * @returns the current row.
-     * @internal
      */
     private getCurrentRow(): SqlRowType {
         if (this.returnRawResult) { // Return SqlRow
@@ -319,7 +315,6 @@ export class SqlResultImpl implements SqlResult {
      * @param rowMetadata  The row metadata. It is null if the response only contains the update count.
      * @param rowPage The first page of the result. It is null if the response only contains the update count.
      * @param updateCount The update count.
-     * @internal
      */
     onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage | null, updateCount: Long) {
         // Ignore the response if the SQL result is closed.
@@ -367,7 +362,6 @@ export class SqlResultImpl implements SqlResult {
 
     /**
      * Checks if there are rows to iterate in a recursive manner, similar to a non-blocking while block
-     * @internal
      */
     private checkHasNext(): Promise<boolean> {
         if (this.currentPosition === this.currentRowCount) {
@@ -389,7 +383,6 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Used by {@link next}.
      * @returns if there are rows to be iterated.
-     * @internal
      */
     private hasNext(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {

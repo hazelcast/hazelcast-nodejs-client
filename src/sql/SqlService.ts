@@ -200,7 +200,6 @@ export class SqlServiceImpl implements SqlService {
      *
      * @param sqlStatement
      * @throws RangeError if validation is not successful
-     * @internal
      */
     private static validateSqlStatement(sqlStatement: SqlStatement | null): void {
         if (sqlStatement === null) {
@@ -223,7 +222,6 @@ export class SqlServiceImpl implements SqlService {
      *
      * @param sqlStatementOptions
      * @throws RangeError if validation is not successful
-     * @internal
      */
     private static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
         if (sqlStatementOptions.hasOwnProperty('schema')) {
@@ -253,7 +251,6 @@ export class SqlServiceImpl implements SqlService {
 
     /**
      * Converts an error to HazelcastSqlException and returns it. Used by execute, close and fetch
-     * @internal
      * @param err
      * @param connection
      * @returns {@link HazelcastSqlException}
@@ -384,7 +381,6 @@ export class SqlServiceImpl implements SqlService {
      * Sends a close request on a connection for an SQL result using its query id.
      * @param connection The connection the request will be sent to
      * @param queryId The query id that defines the SQL result
-     * @internal
      */
     close(connection: Connection, queryId: SqlQueryId): Promise<ClientMessage> {
         const requestMessage = SqlCloseCodec.encodeRequest(queryId);
@@ -396,7 +392,6 @@ export class SqlServiceImpl implements SqlService {
      * @param connection The connection the request will be sent to
      * @param queryId The query id that defines the SQL result
      * @param cursorBufferSize The cursor buffer size associated with SQL fetch request, i.e its page size
-     * @internal
      */
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
         const requestMessage = SqlFetchCodec.encodeRequest(queryId, cursorBufferSize);

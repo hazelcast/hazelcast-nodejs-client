@@ -54,7 +54,6 @@ export class SqlPage {
 
     /**
      * This is needed for better mocking. Constructor mocking is not trivial with sinon.
-     * @internal
      */
     static fromColumns(columnTypes: SqlColumnType[], columns: any[][], last: boolean): SqlPage {
         return new SqlPage(columnTypes, columns, last);
