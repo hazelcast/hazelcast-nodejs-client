@@ -200,7 +200,6 @@ export class SqlServiceImpl implements SqlService {
      *
      * @param sqlStatement
      * @throws RangeError if validation is not successful
-     * @internal
      */
     private static validateSqlStatement(sqlStatement: SqlStatement | null): void {
         if (sqlStatement === null) {
@@ -223,7 +222,6 @@ export class SqlServiceImpl implements SqlService {
      *
      * @param sqlStatementOptions
      * @throws RangeError if validation is not successful
-     * @internal
      */
     private static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
         if (sqlStatementOptions.hasOwnProperty('schema')) {
@@ -253,7 +251,6 @@ export class SqlServiceImpl implements SqlService {
 
     /**
      * Converts an error to HazelcastSqlException and returns it. Used by execute, close and fetch
-     * @internal
      * @param err
      * @param connection
      * @returns {@link HazelcastSqlException}
@@ -261,7 +258,8 @@ export class SqlServiceImpl implements SqlService {
     toHazelcastSqlException(err: any, connection: Connection) : HazelcastSqlException {
         if (!connection.isAlive()) {
             return new HazelcastSqlException(
-                connection.getRemoteUuid(), SqlErrorCode.CONNECTION_PROBLEM,
+                this.connectionManager.getClientUuid(),
+                SqlErrorCode.CONNECTION_PROBLEM,
                 'Cluster topology changed while a query was executed:' +
                 `Member cannot be reached: ${connection.getRemoteAddress()}`,
                 err
@@ -291,6 +289,7 @@ export class SqlServiceImpl implements SqlService {
 
         const connection = this.connectionRegistry.getRandomConnection(true);
         if (connection === null) {
+            // Either the client is not connected to the cluster, or there are no data members in the cluster.
             throw new HazelcastSqlException(
                 this.connectionManager.getClientUuid(),
                 SqlErrorCode.CONNECTION_PROBLEM,
@@ -378,11 +377,22 @@ export class SqlServiceImpl implements SqlService {
         return this.executeStatement(sqlStatement);
     }
 
+    /**
+     * Sends a close request on a connection for an SQL result using its query id.
+     * @param connection The connection the request will be sent to
+     * @param queryId The query id that defines the SQL result
+     */
     close(connection: Connection, queryId: SqlQueryId): Promise<ClientMessage> {
         const requestMessage = SqlCloseCodec.encodeRequest(queryId);
         return this.invocationService.invokeOnConnection(connection, requestMessage);
     }
 
+    /**
+     * Sends a fetch request on a connection for an SQL result using its query id.
+     * @param connection The connection the request will be sent to
+     * @param queryId The query id that defines the SQL result
+     * @param cursorBufferSize The cursor buffer size associated with SQL fetch request, i.e its page size
+     */
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
         const requestMessage = SqlFetchCodec.encodeRequest(queryId, cursorBufferSize);
         return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {

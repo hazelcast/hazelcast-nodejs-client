@@ -512,7 +512,7 @@ describe('SqlExecuteTest', function () {
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
-            error1.originatingMemberId.toString().should.be.eq(member.uuid);
+            error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
         });
 
         it('should return an error if connection lost - statement', async function () {
@@ -538,7 +538,7 @@ describe('SqlExecuteTest', function () {
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
-            error1.originatingMemberId.toString().should.be.eq(member.uuid);
+            error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
         });
 
         it('should return an error if sql is invalid', async function () {
