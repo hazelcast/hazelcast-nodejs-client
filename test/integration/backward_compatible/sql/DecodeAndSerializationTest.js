@@ -105,7 +105,9 @@ describe('Decode/Serialize test', function () {
     });
 
     after(async function () {
-        await RC.terminateCluster(cluster.id);
+        if (cluster) {
+            await RC.terminateCluster(cluster.id);
+        }
     });
 
     it('should be able to decode/serialize VARCHAR', async function () {
