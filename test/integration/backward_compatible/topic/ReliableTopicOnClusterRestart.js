@@ -46,8 +46,8 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         await RC.shutdownCluster(cluster.id);
     });
 
-    const createInvocationTimeoutSetClient = async (invocationTimeoutMillis) => {
-        return await Client.newHazelcastClient({
+    const createInvocationTimeoutSetClient = (invocationTimeoutMillis) => {
+        return Client.newHazelcastClient({
             clusterName: cluster.id,
             connectionStrategy: {
                 connectionRetry: {
@@ -60,8 +60,8 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         });
     };
 
-    const createClient = async () => {
-        return await Client.newHazelcastClient({
+    const createClient = () => {
+        return Client.newHazelcastClient({
             clusterName: cluster.id,
             connectionStrategy: {
                 connectionRetry: {
