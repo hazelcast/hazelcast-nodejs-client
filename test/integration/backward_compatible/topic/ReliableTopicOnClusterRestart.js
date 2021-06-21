@@ -29,13 +29,10 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     let client1;
     let client2;
 
-    before(async function () {
-        cluster = await RC.createCluster(null, null);
-    });
-
     beforeEach(async function () {
         client1 = undefined;
         client2 = undefined;
+        cluster = await RC.createCluster(null, null);
         member = await RC.startMember(cluster.id);
     });
 
@@ -46,9 +43,6 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         if (client2) {
             await client2.shutdown();
         }
-    });
-
-    after(async function() {
         await RC.shutdownCluster(cluster.id);
     });
 
