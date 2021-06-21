@@ -31,12 +31,12 @@ describe('ReliableTopicOnClusterRestartTest', function () {
 
     before(async function () {
         cluster = await RC.createCluster(null, null);
-        member = await RC.startMember(cluster.id);
     });
 
     beforeEach(async function () {
         client1 = undefined;
         client2 = undefined;
+        member = await RC.startMember(cluster.id);
     });
 
     afterEach(async function () {
