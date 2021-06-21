@@ -66,8 +66,12 @@ describe('SqlResultTest', function () {
     });
 
     after(async function () {
-        await RC.terminateCluster(cluster.id);
-        await client.shutdown();
+        if (cluster) {
+            await RC.terminateCluster(cluster.id);
+        }
+        if (client) {
+            await client.shutdown();
+        }
     });
 
     afterEach(async function () {
