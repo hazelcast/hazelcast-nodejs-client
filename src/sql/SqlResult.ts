@@ -211,7 +211,7 @@ export class SqlResultImpl implements SqlResult {
 
     isRowSet(): Promise<boolean> {
         return this.executeDeferred.promise.then(() => {
-            return this.updateCount === Long.fromInt(-1);
+            return this.rowMetadata !== null;
         });
     }
 
@@ -242,6 +242,7 @@ export class SqlResultImpl implements SqlResult {
         // Prevent ongoing/future fetch requests
         if (!this.fetchDeferred) {
             this.fetchDeferred = deferredPromise<SqlPage>();
+            this.fetchDeferred.promise.catch(() => {});
         }
         this.fetchDeferred.reject(error);
         // Send the close request.
@@ -255,7 +256,10 @@ export class SqlResultImpl implements SqlResult {
         return this.closeDeferred.promise;
     }
 
-    /** Called when next page of the result is received. */
+    /**
+     * Called when next page of the result is received.
+     * @param page
+     */
     private onNextPage(page: SqlPage) {
         this.currentPage = page;
         this.currentRowCount = page.getRowCount();
@@ -267,7 +271,10 @@ export class SqlResultImpl implements SqlResult {
         }
     }
 
-    /** Called when an error is occurred during SQL execute */
+    /**
+     * Called when an error is occurred during SQL execution.
+     * @param error The wrapped error that can be propagated to the user through executeDeferred.
+     */
     onExecuteError(error: HazelcastSqlException): void {
         // Ignore the error if SQL result is closed.
         if (this.closed) {
@@ -303,18 +310,23 @@ export class SqlResultImpl implements SqlResult {
         }
     }
 
-    /** Called when a execute response is received. */
-    onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage, updateCount: Long) {
-        // Ignore the response if SQL result is closed.
+    /**
+     * Called when a execute response is received.
+     * @param rowMetadata  The row metadata. It is null if the response only contains the update count.
+     * @param rowPage The first page of the result. It is null if the response only contains the update count.
+     * @param updateCount The update count.
+     */
+    onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage | null, updateCount: Long) {
+        // Ignore the response if the SQL result is closed.
         if (this.closed) {
             return;
         }
 
-        if (rowMetadata !== null) { // Result that including rows
+        if (rowMetadata !== null) { // Result that includes rows
             this.rowMetadata = rowMetadata;
             this.onNextPage(rowPage);
             this.updateCount = Long.fromInt(-1);
-        } else { // Result that including update count
+        } else { // Result that includes update count
             this.updateCount = updateCount;
             this.closed = true;
         }
@@ -333,13 +345,13 @@ export class SqlResultImpl implements SqlResult {
         }
         // Do not start a fetch if the result is already closed
         if (this.closed) {
-            return Promise.reject('Cannot fetch, the result is already closed');
+            return Promise.reject(new IllegalStateError('Cannot fetch, the result is already closed'));
         }
 
         this.fetchDeferred = deferredPromise<SqlPage>();
 
-        this.sqlService.fetch(this.connection, this.queryId, this.cursorBufferSize).then(value => {
-            this.fetchDeferred.resolve(value);
+        this.sqlService.fetch(this.connection, this.queryId, this.cursorBufferSize).then(sqlPage => {
+            this.fetchDeferred.resolve(sqlPage);
             this.fetchDeferred = undefined; // Set fetchDeferred to undefined to be able to fetch again
         }).catch(err => {
             this.fetchDeferred.reject(this.sqlService.toHazelcastSqlException(err, this.connection));
@@ -350,7 +362,6 @@ export class SqlResultImpl implements SqlResult {
 
     /**
      * Checks if there are rows to iterate in a recursive manner, similar to a non-blocking while block
-     * @internal
      */
     private checkHasNext(): Promise<boolean> {
         if (this.currentPosition === this.currentRowCount) {
