@@ -29,7 +29,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     let client1;
     let client2;
 
-    before(function (){
+    before(function () {
         markClientVersionAtLeast(this, '4.0.2');
     });
 
