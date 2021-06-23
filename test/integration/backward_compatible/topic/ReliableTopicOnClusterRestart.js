@@ -20,7 +20,7 @@ chai.should();
 
 const RC = require('../../RC');
 const { Client } = require('../../../../');
-const { promiseWaitMilliseconds, assertTrueEventually, randomString } = require('../../../TestUtil');
+const { promiseWaitMilliseconds, assertTrueEventually, randomString, markClientVersionAtLeast } = require('../../../TestUtil');
 
 describe('ReliableTopicOnClusterRestartTest', function () {
 
@@ -28,6 +28,10 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     let member;
     let client1;
     let client2;
+
+    before(function (){
+        markClientVersionAtLeast(this, '4.0.2');
+    });
 
     beforeEach(async function () {
         client1 = undefined;
