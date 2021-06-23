@@ -92,7 +92,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
             messageArrived = true;
         });
 
-        // wait some time for adding message listener
+        // wait some time for message listener to initialized
         await promiseWaitMilliseconds(2000);
 
         await RC.shutdownMember(cluster.id, member.uuid);
@@ -123,7 +123,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
             messageArrived = true;
         });
 
-        // wait some time for adding message listener
+        // wait some time for message listener to initialized
         await promiseWaitMilliseconds(2000);
 
         await RC.shutdownMember(cluster.id, member.uuid);
@@ -154,7 +154,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
             messageArrived = true;
         });
 
-        // wait some time for adding message listener
+        // wait some time for message listener to initialized
         await promiseWaitMilliseconds(2000);
 
         await RC.shutdownMember(cluster.id, member.uuid);
