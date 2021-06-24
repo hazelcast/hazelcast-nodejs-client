@@ -499,10 +499,6 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
-            // There was a fix regarding originatingMemberId in 5.0 and 4.2.x after 4.2.
-            // TODO: Update here to be 4.2.1 if we release 4.2.1
-            // https://github.com/hazelcast/hazelcast-nodejs-client/pull/940
-            TestUtil.markClientVersionAtLeast(this, '5.0.0');
             TestUtil.markServerVersionAtLeast(this, client, '4.2');
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
@@ -516,7 +512,14 @@ describe('SqlExecuteTest', function () {
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
-            error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
+            // There was a fix regarding originatingMemberId in 5.0 and 4.2.x after 4.2.0.
+            // TODO: Update here to be 4.2.1 if we release 4.2.1
+            // https://github.com/hazelcast/hazelcast-nodejs-client/pull/940
+            if (TestUtil.isClientVersionAtLeast('5.0.0')) {
+                error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
+            } else {
+                error1.originatingMemberId.should.be.eq(member.uuid);
+            }
         });
 
         it('should return an error if connection lost - statement', async function () {
@@ -525,10 +528,6 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
-            // There was a fix regarding originatingMemberId in 5.0 and 4.2.x after 4.2.
-            // TODO: Update here to be 4.2.1 if we release 4.2.1
-            // https://github.com/hazelcast/hazelcast-nodejs-client/pull/940
-            TestUtil.markClientVersionAtLeast(this, '5.0.0');
             TestUtil.markServerVersionAtLeast(this, client, '4.2');
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
@@ -546,7 +545,14 @@ describe('SqlExecuteTest', function () {
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
-            error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
+            // There was a fix regarding originatingMemberId in 5.0 and 4.2.x after 4.2.0.
+            // TODO: Update here to be 4.2.1 if we release 4.2.1
+            // https://github.com/hazelcast/hazelcast-nodejs-client/pull/940
+            if (TestUtil.isClientVersionAtLeast('5.0.0')) {
+                error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
+            } else {
+                error1.originatingMemberId.should.be.eq(member.uuid);
+            }
         });
 
         it('should return an error if sql is invalid', async function () {
