@@ -518,7 +518,7 @@ describe('SqlExecuteTest', function () {
             if (TestUtil.isClientVersionAtLeast('5.0.0')) {
                 error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
             } else {
-                error1.originatingMemberId.should.be.eq(member.uuid);
+                error1.originatingMemberId.toString().should.be.eq(member.uuid);
             }
         });
 
@@ -551,7 +551,7 @@ describe('SqlExecuteTest', function () {
             if (TestUtil.isClientVersionAtLeast('5.0.0')) {
                 error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
             } else {
-                error1.originatingMemberId.should.be.eq(member.uuid);
+                error1.originatingMemberId.toString().should.be.eq(member.uuid);
             }
         });
 
