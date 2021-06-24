@@ -499,6 +499,7 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            TestUtil.markClientVersionAtLeast(this, '4.2.1');
             TestUtil.markServerVersionAtLeast(this, client, '4.2');
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
@@ -521,6 +522,9 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            // There was a fix regarding originatingMemberId in 4.2.1
+            // https://github.com/hazelcast/hazelcast-nodejs-client/pull/940
+            TestUtil.markClientVersionAtLeast(this, '4.2.1');
             TestUtil.markServerVersionAtLeast(this, client, '4.2');
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
@@ -547,6 +551,9 @@ describe('SqlExecuteTest', function () {
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            // There was a fix regarding originatingMemberId in 4.2.1
+            // https://github.com/hazelcast/hazelcast-nodejs-client/pull/940
+            TestUtil.markClientVersionAtLeast(this, '4.2.1');
             TestUtil.markServerVersionAtLeast(this, client, '4.2');
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
