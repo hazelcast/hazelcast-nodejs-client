@@ -71,8 +71,10 @@ import {AddressProvider} from '../connection/AddressProvider';
 import {ClusterService} from '../invocation/ClusterService';
 import {SerializationService} from '../serialization/SerializationService';
 
-const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
-const CONNECTION_ADDED_EVENT_NAME = 'connectionAdded';
+/** @internal */
+export const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
+/** @internal */
+export const CONNECTION_ADDED_EVENT_NAME = 'connectionAdded';
 
 /** @internal */
 export const CLIENT_TYPE = 'NJS';

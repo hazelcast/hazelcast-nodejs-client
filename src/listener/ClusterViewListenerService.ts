@@ -15,7 +15,12 @@
  */
 /** @ignore *//** */
 
-import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
+import {
+    ConnectionManager,
+    ConnectionRegistry,
+    CONNECTION_ADDED_EVENT_NAME,
+    CONNECTION_REMOVED_EVENT_NAME
+} from '../network/ConnectionManager';
 import {PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
 import {ILogger} from '../logging/ILogger';
@@ -44,8 +49,8 @@ export class ClusterViewListenerService {
     ) {}
 
     public start(): void {
-        this.connectionManager.on('connectionAdded', this.connectionAdded.bind(this));
-        this.connectionManager.on('connectionRemoved', this.connectionRemoved.bind(this));
+        this.connectionManager.on(CONNECTION_ADDED_EVENT_NAME, this.connectionAdded.bind(this));
+        this.connectionManager.on(CONNECTION_REMOVED_EVENT_NAME, this.connectionRemoved.bind(this));
     }
 
     private connectionAdded(connection: Connection): void {

@@ -52,74 +52,58 @@ describe('ClientReconnectTest', function () {
         expect(val).to.equal('testvalue');
     });
 
-    it('member restarts, while map.put in progress 2', function (done) {
-        let member, map;
-        RC.createCluster(null, null).then((cl) => {
-            cluster = cl;
-            return RC.startMember(cluster.id);
-        }).then((m) => {
-            member = m;
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                network: {
-                    connectionTimeout: 10000
-                },
-                properties: {
-                    'hazelcast.client.heartbeat.interval': 1000,
-                    'hazelcast.client.heartbeat.timeout': 3000
-                }
-            });
-        }).then((cl) => {
-            client = cl;
-            return client.getMap('test');
-        }).then((mp) => {
-            map = mp;
-            return RC.terminateMember(cluster.id, member.uuid);
-        }).then(() => {
-            map.put('testkey', 'testvalue').then(() => {
-                return map.get('testkey');
-            }).then((val) => {
-                try {
-                    expect(val).to.equal('testvalue');
-                    done();
-                } catch (e) {
-                    done(e);
-                }
-            });
-        }).then(() => {
-            return RC.startMember(cluster.id);
+    it('member restarts, while map.put in progress 2', async function () {
+        cluster = await RC.createCluster(null, null);
+        const member = await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            network: {
+                connectionTimeout: 10000
+            },
+            properties: {
+                'hazelcast.client.heartbeat.interval': 1000,
+                'hazelcast.client.heartbeat.timeout': 3000
+            }
         });
+        const map = await client.getMap('test');
+        await RC.terminateMember(cluster.id, member.uuid);
+
+        const promise = map.put('testkey', 'testvalue').then(() => {
+            return map.get('testkey');
+        }).then((val) => {
+            expect(val).to.equal('testvalue');
+        });
+
+        await RC.startMember(cluster.id);
+
+        await promise;
     });
 
-    it('create proxy while member is down, member comes back', function (done) {
-        let member, map;
-        RC.createCluster(null, null).then((cl) => {
-            cluster = cl;
-            return RC.startMember(cluster.id);
-        }).then((m) => {
-            member = m;
-            return Client.newHazelcastClient({
-                clusterName: cluster.id,
-                properties: {
-                    'hazelcast.client.heartbeat.interval': 1000,
-                    'hazelcast.client.heartbeat.timeout': 3000
-                }
-            });
-        }).then((cl) => {
-            client = cl;
-            return RC.terminateMember(cluster.id, member.uuid);
-        }).then(() => {
-            client.getMap('test').then((mp) => {
-                map = mp;
-            }).then(() => {
-                return map.put('testkey', 'testvalue');
-            }).then(() => {
-                return map.get('testkey');
-            }).then((val) => {
-                expect(val).to.equal('testvalue');
-                done();
-            });
-            RC.startMember(cluster.id);
+    it('create proxy while member is down, member comes back', async function () {
+        cluster = await RC.createCluster(null, null);
+        const member = await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.client.heartbeat.interval': 1000,
+                'hazelcast.client.heartbeat.timeout': 3000
+            }
         });
+        await RC.terminateMember(cluster.id, member.uuid);
+
+        let map;
+
+        const promise = client.getMap('test').then(mp => {
+            map = mp;
+            return map.put('testkey', 'testvalue');
+        }).then(() => {
+            return map.get('testkey');
+        }).then((val) => {
+            expect(val).to.equal('testvalue');
+        });
+
+        await RC.startMember(cluster.id);
+
+        await promise;
     });
 });
