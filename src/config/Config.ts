@@ -155,7 +155,7 @@ export interface ClientConfig {
 }
 
 /** @internal */
-const defaultProperties: Properties = {
+const DEFAULT_PROPERTIES: Properties = {
     'hazelcast.client.heartbeat.interval': 5000,
     'hazelcast.client.heartbeat.timeout': 60000,
     'hazelcast.client.invocation.retry.pause.millis': 1000,
@@ -180,12 +180,12 @@ const defaultProperties: Properties = {
 };
 
 /** @internal */
-export const PROPERTY_LIST : string[] = Object.keys(defaultProperties);
+export const PROPERTY_LIST : string[] = Object.keys(DEFAULT_PROPERTIES);
 
 /** @internal */
 export class ClientConfigImpl implements ClientConfig {
 
-    properties: Properties = defaultProperties;
+    properties: Properties = DEFAULT_PROPERTIES;
     instanceName: string;
     network = new ClientNetworkConfigImpl();
     customLogger: ILogger = null;
