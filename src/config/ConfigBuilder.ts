@@ -25,7 +25,7 @@ import {
     tryGetNumber,
     tryGetString
 } from '../util/Util';
-import {ClientConfig, ClientConfigImpl} from './Config';
+import {ClientConfig, ClientConfigImpl, PROPERTY_LIST} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfigImpl} from './FlakeIdGeneratorConfig';
 import {InMemoryFormat} from './InMemoryFormat';
@@ -93,6 +93,8 @@ export class ConfigBuilder {
                 this.handleCredentials(value);
             } else if (key === 'backupAckToClientEnabled') {
                 this.effectiveConfig.backupAckToClientEnabled = tryGetBoolean(value);
+            } else {
+                console.log(`Warning: Unexpected config key '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -106,6 +108,8 @@ export class ConfigBuilder {
                 this.effectiveConfig.connectionStrategy.reconnectMode = tryGetEnum(ReconnectMode, value);
             } else if (key === 'connectionRetry') {
                 this.handleConnectionRetry(value);
+            } else {
+                console.log(`Warning: Unexpected connection strategy config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -134,6 +138,8 @@ export class ConfigBuilder {
                     throw new RangeError('Jitter must be a number in range [0.0, 1.0]!');
                 }
                 this.effectiveConfig.connectionStrategy.connectionRetry.jitter = value;
+            } else {
+                console.log(`Warning: Unexpected connection retry config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -160,6 +166,8 @@ export class ConfigBuilder {
                 this.handleSSL(jsonObject[key]);
             } else if (key === 'hazelcastCloud') {
                 this.handleHazelcastCloud(jsonObject[key]);
+            } else {
+                console.log(`Warning: Unexpected network option '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -168,6 +176,8 @@ export class ConfigBuilder {
         for (const key in jsonObject) {
             if (key === 'discoveryToken') {
                 this.effectiveConfig.network.hazelcastCloud.discoveryToken = tryGetString(jsonObject[key]);
+            } else {
+                console.log(`Warning: Unexpected hazelcast cloud option '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -181,6 +191,11 @@ export class ConfigBuilder {
     }
 
     private handleSSL(jsonObject: any): void {
+        for (const key in jsonObject) {
+            if (!['enabled', 'sslOptions', 'sslOptionsFactory', 'sslOptionsFactoryProperties'].includes(key)) {
+                console.log(`Warning: Unexpected ssl option '${key}' is passed to the Hazelcast Client`);
+            }
+        }
         const sslEnabled = tryGetBoolean(jsonObject.enabled);
         this.effectiveConfig.network.ssl.enabled = sslEnabled;
 
@@ -207,22 +222,24 @@ export class ConfigBuilder {
 
     private handleProperties(jsonObject: any): void {
         for (const key in jsonObject) {
-            this.effectiveConfig.properties[key] = jsonObject[key];
+            if (PROPERTY_LIST.includes(key)) {
+                this.effectiveConfig.properties[key] = jsonObject[key];
+            } else {
+                console.log(`Warning: Unexpected property '${key}' is passed to the Hazelcast Client`);
+            }
         }
     }
 
     private handleLifecycleListeners(jsonObject: any): void {
         const listenersArray = tryGetArray(jsonObject);
-        for (const index in listenersArray) {
-            const listener = listenersArray[index];
+        for (const listener of listenersArray) {
             this.effectiveConfig.lifecycleListeners.push(listener);
         }
     }
 
     private handleMembershipListeners(jsonObject: any): void {
         const listenersArray = tryGetArray(jsonObject);
-        for (const index in listenersArray) {
-            const listener = listenersArray[index];
+        for (const listener of listenersArray) {
             this.effectiveConfig.membershipListeners.push(listener);
         }
     }
@@ -255,40 +272,44 @@ export class ConfigBuilder {
             } else if (key === 'jsonStringDeserializationPolicy') {
                 this.effectiveConfig.serialization
                     .jsonStringDeserializationPolicy = tryGetEnum(JsonStringDeserializationPolicy, jsonObject[key]);
+            } else {
+                console.log(`Warning: Unexpected serialization config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
 
     private handleCustomSerializers(jsonObject: any): void {
         const serializersArray = tryGetArray(jsonObject);
-        for (const index in serializersArray) {
-            const serializer = serializersArray[index];
+        for (const serializer of serializersArray) {
             this.effectiveConfig.serialization.customSerializers.push(serializer);
         }
     }
 
     private handleNearCaches(jsonObject: any): void {
-        for (const key in jsonObject) {
-            const ncConfig = jsonObject[key];
+        for (const name in jsonObject) {
+            const ncConfig = jsonObject[name];
             const nearCacheConfig = new NearCacheConfigImpl();
-            nearCacheConfig.name = key;
-            for (const name in ncConfig) {
-                if (name === 'invalidateOnChange') {
-                    nearCacheConfig.invalidateOnChange = tryGetBoolean(ncConfig[name]);
-                } else if (name === 'maxIdleSeconds') {
-                    nearCacheConfig.maxIdleSeconds = tryGetNumber(ncConfig[name]);
-                } else if (name === 'inMemoryFormat') {
-                    nearCacheConfig.inMemoryFormat = tryGetEnum(InMemoryFormat, ncConfig[name]);
-                } else if (name === 'timeToLiveSeconds') {
-                    nearCacheConfig.timeToLiveSeconds = tryGetNumber(ncConfig[name]);
-                } else if (name === 'evictionPolicy') {
-                    nearCacheConfig.evictionPolicy = tryGetEnum(EvictionPolicy, ncConfig[name]);
-                } else if (name === 'evictionMaxSize') {
-                    nearCacheConfig.evictionMaxSize = tryGetNumber(ncConfig[name]);
-                } else if (name === 'evictionSamplingCount') {
-                    nearCacheConfig.evictionSamplingCount = tryGetNumber(ncConfig[name]);
-                } else if (name === 'evictionSamplingPoolSize') {
-                    nearCacheConfig.evictionSamplingPoolSize = tryGetNumber(ncConfig[name]);
+            nearCacheConfig.name = name;
+            for (const key in ncConfig) {
+                if (key === 'invalidateOnChange') {
+                    nearCacheConfig.invalidateOnChange = tryGetBoolean(ncConfig[key]);
+                } else if (key === 'maxIdleSeconds') {
+                    nearCacheConfig.maxIdleSeconds = tryGetNumber(ncConfig[key]);
+                } else if (key === 'inMemoryFormat') {
+                    nearCacheConfig.inMemoryFormat = tryGetEnum(InMemoryFormat, ncConfig[key]);
+                } else if (key === 'timeToLiveSeconds') {
+                    nearCacheConfig.timeToLiveSeconds = tryGetNumber(ncConfig[key]);
+                } else if (key === 'evictionPolicy') {
+                    nearCacheConfig.evictionPolicy = tryGetEnum(EvictionPolicy, ncConfig[key]);
+                } else if (key === 'evictionMaxSize') {
+                    nearCacheConfig.evictionMaxSize = tryGetNumber(ncConfig[key]);
+                } else if (key === 'evictionSamplingCount') {
+                    nearCacheConfig.evictionSamplingCount = tryGetNumber(ncConfig[key]);
+                } else if (key === 'evictionSamplingPoolSize') {
+                    nearCacheConfig.evictionSamplingPoolSize = tryGetNumber(ncConfig[key]);
+                } else {
+                    console.log(`Warning: Unexpected near cache config '${key}' for near cache ${name}`
+                              + 'is passed to the Hazelcast Client');
                 }
             }
             this.effectiveConfig.nearCaches[nearCacheConfig.name] = nearCacheConfig;
@@ -296,15 +317,18 @@ export class ConfigBuilder {
     }
 
     private handleReliableTopics(jsonObject: any): void {
-        for (const key in jsonObject) {
-            const jsonRtCfg = jsonObject[key];
+        for (const name in jsonObject) {
+            const jsonRtCfg = jsonObject[name];
             const reliableTopicConfig = new ReliableTopicConfigImpl();
-            reliableTopicConfig.name = key;
-            for (const name in jsonRtCfg) {
-                if (name === 'readBatchSize') {
-                    reliableTopicConfig.readBatchSize = jsonRtCfg[name];
-                } else if (name === 'overloadPolicy') {
-                    reliableTopicConfig.overloadPolicy = tryGetEnum(TopicOverloadPolicy, jsonRtCfg[name]);
+            reliableTopicConfig.name = name;
+            for (const key in jsonRtCfg) {
+                if (key === 'readBatchSize') {
+                    reliableTopicConfig.readBatchSize = jsonRtCfg[key];
+                } else if (key === 'overloadPolicy') {
+                    reliableTopicConfig.overloadPolicy = tryGetEnum(TopicOverloadPolicy, jsonRtCfg[key]);
+                } else {
+                    console.log(`Warning: Unexpected reliable topic config '${key}' for reliable topic ${name}`
+                        + 'is passed to the Hazelcast Client');
                 }
             }
             this.effectiveConfig.reliableTopics[reliableTopicConfig.name] = reliableTopicConfig;
@@ -312,15 +336,18 @@ export class ConfigBuilder {
     }
 
     private handleFlakeIdGenerators(jsonObject: any): void {
-        for (const key in jsonObject) {
-            const fidConfig = jsonObject[key];
+        for (const name in jsonObject) {
+            const fidConfig = jsonObject[name];
             const flakeIdConfig = new FlakeIdGeneratorConfigImpl();
-            flakeIdConfig.name = key;
-            for (const name in fidConfig) {
-                if (name === 'prefetchCount') {
-                    flakeIdConfig.prefetchCount = tryGetNumber(fidConfig[name]);
-                } else if (name === 'prefetchValidityMillis') {
-                    flakeIdConfig.prefetchValidityMillis = tryGetNumber(fidConfig[name]);
+            flakeIdConfig.name = name;
+            for (const key in fidConfig) {
+                if (key === 'prefetchCount') {
+                    flakeIdConfig.prefetchCount = tryGetNumber(fidConfig[key]);
+                } else if (key === 'prefetchValidityMillis') {
+                    flakeIdConfig.prefetchValidityMillis = tryGetNumber(fidConfig[key]);
+                } else {
+                    console.log(`Warning: Unexpected flake id generator config '${key}' for flake id generator ${name}`
+                        + 'is passed to the Hazelcast Client');
                 }
             }
             this.effectiveConfig.flakeIdGenerators[flakeIdConfig.name] = flakeIdConfig;
@@ -333,6 +360,8 @@ export class ConfigBuilder {
                 this.effectiveConfig.loadBalancer.type = tryGetEnum(LoadBalancerType, jsonObject[key]);
             } else if (key === 'customLoadBalancer') {
                 this.effectiveConfig.loadBalancer.customLoadBalancer = jsonObject[key];
+            } else {
+                console.log(`Warning: Unexpected load balancer config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
