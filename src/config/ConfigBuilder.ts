@@ -222,11 +222,10 @@ export class ConfigBuilder {
 
     private handleProperties(jsonObject: any): void {
         for (const key in jsonObject) {
-            if (PROPERTY_LIST.includes(key)) {
-                this.effectiveConfig.properties[key] = jsonObject[key];
-            } else {
+            if (!PROPERTY_LIST.includes(key)) {
                 console.log(`Warning: Unexpected property '${key}' is passed to the Hazelcast Client`);
             }
+            this.effectiveConfig.properties[key] = jsonObject[key];
         }
     }
 
