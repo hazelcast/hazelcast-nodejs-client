@@ -20,8 +20,8 @@ import {DistributedObject} from '../core';
 /**
  * Concurrent and distributed set.
  *
- * Methods that require serialization/deserialization may throw RangeError, e.g when there are no serializer
- * for a certain type.
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
+ * serializer for a certain type.
  */
 export interface ISet<E> extends DistributedObject {
     /**

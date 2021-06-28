@@ -30,8 +30,8 @@ import {IndexConfig} from '../config/IndexConfig';
 /**
  * Concurrent, distributed, observable and queryable map.
  *
- * Methods that require serialization/deserialization may throw RangeError, e.g when there are no serializer
- * for a certain type.
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
+ * serializer for a certain type.
  */
 export interface IMap<K, V> extends DistributedObject {
 

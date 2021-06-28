@@ -62,8 +62,8 @@ import {DistributedObject} from '../core';
  * execution semantics. Please see `fail-on-indeterminate-operation-state`
  * server-side setting.
  *
- * Methods that require serialization/deserialization may throw RangeError, e.g when there are no serializer
- * for a certain type.
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
+ * serializer for a certain type.
  */
 export interface IAtomicReference<E> extends DistributedObject {
 

@@ -27,8 +27,8 @@ import {OverflowPolicy} from './OverflowPolicy';
  * that capacity and endanger the stability of the system. If that capacity
  * is exceeded, the oldest item in the ringbuffer is overwritten.
  *
- * Methods that require serialization/deserialization may throw RangeError, e.g when there are no serializer
- * for a certain type.
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
+ * serializer for a certain type.
  */
 export interface Ringbuffer<E> extends DistributedObject {
 

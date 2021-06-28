@@ -26,8 +26,8 @@ import {
 /**
  * A specialized map whose values locally stored on every node of the cluster.
  *
- * Methods that require serialization/deserialization may throw RangeError, e.g when there are no serializer
- * for a certain type.
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
+ * serializer for a certain type.
  */
 export interface ReplicatedMap<K, V> extends DistributedObject {
 
