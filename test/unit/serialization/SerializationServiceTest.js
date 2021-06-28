@@ -17,6 +17,7 @@
 
 const { expect } = require('chai');
 const { SerializationServiceV1: SerializationService } = require('../../../lib/serialization/SerializationService');
+const { HeapData, TYPE_OFFSET } = require('../../../lib/serialization/HeapData');
 const { SerializationConfigImpl } = require('../../../lib/config/SerializationConfig');
 
 function IDataSerializable(val) {
@@ -152,5 +153,20 @@ describe('SerializationServiceTest', function () {
 
         expect(object.val).to.equal(3);
         expect(object.self).to.equal(object);
+    });
+
+    it('should throw an error in the absence of a deserializer', function () {
+        const serializationConfig = new SerializationConfigImpl();
+        serializationConfig.globalSerializer = new GlobalSerializer();
+
+        const serializationService = new SerializationService(serializationConfig);
+
+        const data = serializationService.toData(123);
+        const buffer = data.toBuffer();
+        buffer.writeInt32BE(1 << 32 - 1, TYPE_OFFSET); // mock non-existent type
+
+        expect(() => {
+            serializationService.toObject(new HeapData(buffer));
+        }).to.throw(RangeError);
     });
 });
