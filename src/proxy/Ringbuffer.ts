@@ -26,6 +26,9 @@ import {OverflowPolicy} from './OverflowPolicy';
  * structure. A ringbuffer has a fixed capacity, so it won't grow beyond
  * that capacity and endanger the stability of the system. If that capacity
  * is exceeded, the oldest item in the ringbuffer is overwritten.
+ *
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there are no serializer
+ * for a certain type.
  */
 export interface Ringbuffer<E> extends DistributedObject {
 

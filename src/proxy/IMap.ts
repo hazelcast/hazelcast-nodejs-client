@@ -29,6 +29,9 @@ import {IndexConfig} from '../config/IndexConfig';
 
 /**
  * Concurrent, distributed, observable and queryable map.
+ *
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there are no serializer
+ * for a certain type.
  */
 export interface IMap<K, V> extends DistributedObject {
 
@@ -123,7 +126,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param key the key of the map entry
      * @throws RangeError if `key` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns `true` if the map contains the key, `false` otherwise
      */
     containsKey(key: K): Promise<boolean>;
@@ -133,7 +135,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param value the value of the map entry
      * @throws RangeError if `value` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns `true` if the map has key or keys associated with given value
      */
     containsValue(value: V): Promise<boolean>;
@@ -167,7 +168,6 @@ export interface IMap<K, V> extends DistributedObject {
      *                map config default.
      * @throws RangeError if `key` or `value` is `undefined` or `null`
      *                    or `ttl` is negative
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns old value if there was any, `null` otherwise
      */
     put(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V>;
@@ -201,8 +201,6 @@ export interface IMap<K, V> extends DistributedObject {
      * if the write-behind queue has reached its per-node maximum capacity.
      *
      * @param pairs entries to be put
-     * @throws RangeError if one of pairs contain a `key` or a `value` that is `undefined` or `null`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     putAll(pairs: Array<[K, V]>): Promise<void>;
 
@@ -233,8 +231,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param pairs entries to be put
      * @requires Hazelcast IMDG 4.1
-     * @throws RangeError if one of pairs contain a `key` or a `value` that is `undefined` or `null`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     setAll(pairs: Array<[K, V]>): Promise<void>;
 
@@ -243,7 +239,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param key the key of the map entry
      * @throws RangeError if `key` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns value associated with key, `null` if the key does not exist
      */
     get(key: K): Promise<V>;
@@ -252,8 +247,6 @@ export interface IMap<K, V> extends DistributedObject {
      * Retrieves key value pairs of given keys.
      *
      * @param keys the array of keys
-     * @throws RangeError if one of keys is `undefined` or `null`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     getAll(keys: K[]): Promise<Array<[K, V]>>;
 
@@ -265,7 +258,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key the key of the map entry
      * @param value expected value
      * @throws RangeError if `key` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns value associated with key, `null` if the key did not exist
      *          before. If optional value is specified, a `boolean` representing
      *          whether or not entry is removed is returned
@@ -279,7 +271,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param key the key of the map entry
      * @throws RangeError if `key` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     delete(key: K): Promise<void>;
 
@@ -301,7 +292,6 @@ export interface IMap<K, V> extends DistributedObject {
 
     /**
      * Returns entries as an array of key-value pairs.
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     entrySet(): Promise<Array<[K, V]>>;
 
@@ -310,7 +300,6 @@ export interface IMap<K, V> extends DistributedObject {
      * Specified predicate runs on all members in parallel.
      *
      * @param predicate specified query criteria.
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns result entry set of the query.
      */
     entrySetWithPredicate(predicate: Predicate): Promise<Array<[K, V]>>;
@@ -320,7 +309,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param key the key of the map entry
      * @throws RangeError if `key` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     evict(key: K): Promise<boolean>;
 
@@ -340,7 +328,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param key the key of the map entry
      * @throws RangeError if `key` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     forceUnlock(key: K): Promise<void>;
 
@@ -349,7 +336,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param key the key of the map entry
      * @throws RangeError if `key` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns `true` if key is locked, `false` otherwise
      */
     isLocked(key: K): Promise<boolean>;
@@ -374,7 +360,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param leaseTime lock is automatically unlocked after `leaseTime`
      *                  milliseconds; defaults to infinity
      * @throws RangeError if `key` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     lock(key: K, leaseTime?: number): Promise<void>;
 
@@ -388,7 +373,6 @@ export interface IMap<K, V> extends DistributedObject {
      * of matching entries.
      *
      * @param predicate predicate to filter map entries
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     keySetWithPredicate(predicate: Predicate): Promise<K[]>;
 
@@ -398,8 +382,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param keys loads only given keys if set
      * @param replaceExistingValues if set to `true` existing keys will be
      *                              replaced by newly loaded keys.
-     * @throws RangeError if one of keys is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     loadAll(keys?: K[], replaceExistingValues?: boolean): Promise<void>;
 
@@ -430,7 +412,6 @@ export interface IMap<K, V> extends DistributedObject {
      *                stay idle in the map. `0` means infinite, negative means
      *                map config default.
      * @throws RangeError if `key` or `value` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns old value of the entry
      */
     putIfAbsent(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V>;
@@ -448,7 +429,6 @@ export interface IMap<K, V> extends DistributedObject {
      *                stay idle in the map. `0` means infinite, negative means
      *                map config default.
      * @throws RangeError if key or value is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     putTransient(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void>;
 
@@ -459,7 +439,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param value new value
      * @param oldValue expected old value
      * @throws RangeError if key, oldValue or newValue is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns `true` if the value was replaced
      */
     replaceIfSame(key: K, oldValue: V, newValue: V): Promise<boolean>;
@@ -470,7 +449,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key the key of the map entry
      * @param newValue
      * @throws RangeError if `key` or `newValue` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns previous value
      */
     replace(key: K, newValue: V): Promise<V>;
@@ -502,7 +480,6 @@ export interface IMap<K, V> extends DistributedObject {
      *                stay idle in the map. `0` means infinite, negative means
      *                map config default.
      * @throws RangeError if `key` or `value` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     set(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void>;
 
@@ -512,14 +489,11 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param key the key of the map entry
      * @throws RangeError if this client is not the owner of the key
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     unlock(key: K): Promise<void>;
 
     /**
      * Returns a list of values contained in this map.
-     *
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     values(): Promise<ReadOnlyLazyList<V>>;
 
@@ -529,7 +503,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param predicate
      * @returns a list of values that satisfies the given predicate
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     valuesWithPredicate(predicate: Predicate): Promise<ReadOnlyLazyList<V>>;
 
@@ -538,7 +511,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param key the key of the map entry
      * @throws RangeError if key is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     getEntryView(key: K): Promise<SimpleEntryView<K, V>>;
 
@@ -557,7 +529,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param leaseTime lock is automatically release after `leaseTime`
      *                  milliseconds; defaults to infinity
      * @throws RangeError if `key` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     tryLock(key: K, timeout?: number, leaseTime?: number): Promise<boolean>;
 
@@ -570,7 +541,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param value new value
      * @param timeout maximum time to wait in milliseconds
      * @throws RangeError if `key` or `value` or `timeout` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     tryPut(key: K, value: V, timeout: number): Promise<boolean>;
 
@@ -582,7 +552,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key the key of the map entry
      * @param timeout maximum time to wait in milliseconds
      * @throws RangeError if `key` or `timeout` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     tryRemove(key: K, timeout: number): Promise<boolean>;
 
@@ -594,7 +563,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param includeValue if set to `true`, event message will contain
      *                     new value of the key
      * @returns registration id of the listener
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     addEntryListener(listener: MapListener<K, V>, key?: K, includeValue?: boolean): Promise<string>;
 
@@ -607,7 +575,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key optional key to restrict events to associated entry
      * @param includeValue if set to `true`, event message will contain
      *                     new value of the key
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns registration id of the listener
      */
     addEntryListenerWithPredicate(listener: MapListener<K, V>, predicate: Predicate,
@@ -630,7 +597,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param entryProcessor EntryProcessor object
      * @param predicate if specified, entry processor is applied to the entries
      *                  that satisfy this predicate
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns entries after EntryProcessor is applied
      */
     executeOnEntries(entryProcessor: IdentifiedDataSerializable | Portable, predicate?: Predicate): Promise<Array<[K, V]>>;
@@ -641,7 +607,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key entry processor is applied only to the value that is mapped
      *            with this key
      * @param entryProcessor entry processor to be applied
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns result of entry process
      */
     executeOnKey(key: K, entryProcessor: IdentifiedDataSerializable | Portable): Promise<V>;
@@ -652,7 +617,6 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * @param keys keys to be processed
      * @param entryProcessor
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      * @returns result of entry process
      */
     executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable | Portable): Promise<Array<[K, V]>>;
@@ -678,7 +642,6 @@ export interface IMap<K, V> extends DistributedObject {
      * @return `true` if the entry exists and its TTL value is changed,
      *          `false` otherwise
      * @throws RangeError if `key` or `ttl` is `null` or `undefined`
-     * @throws RangeError in case of a serialization error(e.g missing serializer)
      */
     setTtl(key: K, ttl: number | Long): Promise<boolean>;
 }
