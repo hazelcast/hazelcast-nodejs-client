@@ -184,8 +184,7 @@ export const PROPERTY_LIST : string[] = Object.keys(DEFAULT_PROPERTIES);
 
 /** @internal */
 export class ClientConfigImpl implements ClientConfig {
-
-    properties: Properties = DEFAULT_PROPERTIES;
+    properties: Properties = {...DEFAULT_PROPERTIES}; // Create a new object
     instanceName: string;
     network = new ClientNetworkConfigImpl();
     customLogger: ILogger = null;
