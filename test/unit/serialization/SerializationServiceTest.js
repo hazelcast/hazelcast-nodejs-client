@@ -157,8 +157,6 @@ describe('SerializationServiceTest', function () {
 
     it('should throw an error in the absence of a deserializer', function () {
         const serializationConfig = new SerializationConfigImpl();
-        serializationConfig.globalSerializer = new GlobalSerializer();
-
         const serializationService = new SerializationService(serializationConfig);
 
         const data = serializationService.toData(123);
