@@ -1315,7 +1315,7 @@ await multiMap.put('my-key', 'value2');
 await multiMap.put('my-key', 'value3');
 // Read and print out all the values for associated with key called 'my-key'
 const values = await multiMap.get('my-key')
-for (value of values) {
+for (const value of values) {
     console.log(value);
 }
 // Remove specific key/value pair
