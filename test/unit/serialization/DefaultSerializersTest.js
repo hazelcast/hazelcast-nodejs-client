@@ -19,7 +19,7 @@ const { expect } = require('chai');
 const Long = require('long');
 const { SerializationServiceV1 } = require('../../../lib/serialization/SerializationService');
 const { SerializationConfigImpl } = require('../../../lib/config/SerializationConfig');
-const { Predicates, RestValue, UUID } = require('../../../');
+const { Predicates, RestValue, UUID, HzLocalDateTime, HzOffsetDateTime, HzLocalTime, HzLocalDate } = require('../../../');
 
 describe('DefaultSerializersTest', function () {
 
@@ -69,7 +69,11 @@ describe('DefaultSerializersTest', function () {
         Predicates.alwaysFalse(),
         Predicates.paging(Predicates.greaterEqual('this', 10), 10),
         restValue,
-        uuid
+        uuid,
+        new HzLocalDate(2021, 6, 28),
+        new HzLocalTime(11, 22, 41, 123456789),
+        new HzLocalDateTime(new HzLocalDate(2022, 7, 29), new HzLocalTime(12, 23, 42, 123456789)),
+        new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(2022, 7, 29), new HzLocalTime(12, 23, 42, 123456789)), -64800),
     ];
 
     parameters.forEach((obj) => {
