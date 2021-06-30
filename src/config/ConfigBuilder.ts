@@ -191,8 +191,9 @@ export class ConfigBuilder {
     }
 
     private handleSSL(jsonObject: any): void {
+        const sslConfigKeys = new Set(Object.keys(this.effectiveConfig.network.ssl));
         for (const key in jsonObject) {
-            if (!['enabled', 'sslOptions', 'sslOptionsFactory', 'sslOptionsFactoryProperties'].includes(key)) {
+            if (!sslConfigKeys.has(key)) {
                 console.log(`Warning: Unexpected ssl option '${key}' is passed to the Hazelcast Client`);
             }
         }
@@ -222,7 +223,7 @@ export class ConfigBuilder {
 
     private handleProperties(jsonObject: any): void {
         for (const key in jsonObject) {
-            if (!PROPERTY_LIST.includes(key)) {
+            if (!PROPERTY_LIST.has(key)) {
                 console.log(`Warning: Unexpected property '${key}' is passed to the Hazelcast Client`);
             }
             this.effectiveConfig.properties[key] = jsonObject[key];
