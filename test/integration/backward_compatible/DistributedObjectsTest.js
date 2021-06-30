@@ -49,7 +49,7 @@ describe('DistributedObjectsTest', function () {
 
     it('get distributed objects with no object on cluster', async function () {
         const objects = await client.getDistributedObjects();
-        expect(objects).to.have.lengthOf(0);
+        expect(objects).to.have.lengthOf(1); // sql catalog
     });
 
     it('get distributed objects', async function () {

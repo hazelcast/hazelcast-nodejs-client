@@ -16,6 +16,8 @@
 'use strict';
 
 const Long = require('long');
+const { UUID } = require('../../../lib/core/UUID');
+const { HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime } = require('../../../lib/core/DatetimeClasses');
 const { HeapData } = require('../../../lib/serialization/HeapData');
 const AnInnerPortable = require('./AnInnerPortable');
 const AnIdentifiedDataSerializable = require('./AnIdentifiedDataSerializable');
@@ -34,6 +36,7 @@ to.aFloat = 900.5678;
 to.anInteger = 56789;
 to.aLong = Long.fromNumber(-50992225);
 to.aString = '';
+to.aUUID = new UUID(to.aLong, Long.fromNumber(to.anInteger));
 
 for (let ci = 0; ci < 65535; ci++) {
     if (!(ci >= 55296 && ci < 57344)) {
@@ -76,6 +79,11 @@ to.APortable = new APortable(
 );
 to.aDate = new Date(Date.UTC(1990, 2, 1, 0, 0, 0, 0));
 to.aClass = 'java.math.BigDecimal';
+
+to.aLocalDate = new HzLocalDate(2021, 6, 28);
+to.aLocalTime = new HzLocalTime(11, 22, 41, 123456789);
+to.aLocalDateTime = new HzLocalDateTime(to.aLocalDate, to.aLocalTime);
+to.aOffsetDateTime = new HzOffsetDateTime(to.aLocalDateTime, 64800);
 
 exports.portables = [to.AnInnerPortable, to.AnInnerPortable, to.AnInnerPortable];
 exports.testObjects = to;
