@@ -19,7 +19,7 @@
 const { Lang } = require('../../remote_controller/remote-controller_types');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
-const { Client } = require('../../../../');
+const { Client, HzLocalDateTime, HzLocalTime, HzLocalDate, HzOffsetDateTime } = require('../../../../');
 
 const chai = require('chai');
 const long = require('long');
@@ -50,10 +50,6 @@ const getSqlColumnType = () => {
     return SqlColumnType;
 };
 
-const getDatetimeUtil = () => {
-    return require('../../../../lib/util/DatetimeUtil');
-};
-
 const portableFactory = (classId) => {
     if (classId === 1) {
         return new Student();
@@ -61,7 +57,7 @@ const portableFactory = (classId) => {
     return null;
 };
 
-describe('Decode/Serialize test', function () {
+describe('Data type test', function () {
     let client;
     let cluster;
     let someMap;
@@ -400,7 +396,6 @@ describe('Decode/Serialize test', function () {
         }
     });
     it('should be able to decode/serialize DATE', async function () {
-        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
         const script =
@@ -412,8 +407,8 @@ describe('Decode/Serialize test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST (? AS DATE) ORDER BY __key ASC`,
-            ['0001-01-01', '0005-05-05']
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
+            [new HzLocalDate(1, 1, 1), new HzLocalDate(5, 5, 5)]
         );
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DATE);
@@ -434,14 +429,14 @@ describe('Decode/Serialize test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const date = rows[i]['this'];
-            date.should.be.eq(`${leftZeroPadInteger(expectedBaseValues.year + i, 4)}-`
-                + `${leftZeroPadInteger(expectedBaseValues.month + i, 2)}-`
-                + `${leftZeroPadInteger(expectedBaseValues.date + i, 2)}`);
+            date.year.should.be.eq(expectedBaseValues.year + i);
+            date.month.should.be.eq(expectedBaseValues.month + i);
+            date.date.should.be.eq(expectedBaseValues.date + i);
+
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
     it('should be able to decode/serialize TIME', async function () {
-        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
         const script = `
@@ -452,8 +447,8 @@ describe('Decode/Serialize test', function () {
                 `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME) ORDER BY __key ASC`,
-            ['01:00:00', '10:00:00']
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
+            [new HzLocalTime(1, 0, 0, 0), new HzLocalTime(10, 0, 0, 0)]
         );
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIME);
@@ -465,7 +460,7 @@ describe('Decode/Serialize test', function () {
         }
 
         const expectedKeys = [1, 2, 3, 4, 5, 6];
-        const expectedBaseValue = {
+        const expectedBaseValues = {
             hour: 4,
             minute: 3,
             second: 2,
@@ -475,16 +470,15 @@ describe('Decode/Serialize test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const time = rows[i]['this'];
-            time.should.be.eq(`${leftZeroPadInteger(expectedBaseValue.hour + i, 2)}:`
-                + `${leftZeroPadInteger(expectedBaseValue.minute + i, 2)}:`
-                + `${leftZeroPadInteger(expectedBaseValue.second + i, 2)}.`
-                + `${leftZeroPadInteger(expectedBaseValue.nano + i, 9)}`);
+            time.hour.should.be.eq(expectedBaseValues.hour + i);
+            time.minute.should.be.eq(expectedBaseValues.minute + i);
+            time.second.should.be.eq(expectedBaseValues.second + i);
+            time.nano.should.be.eq(expectedBaseValues.nano + i);
 
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
     it('should be able to decode/serialize TIMESTAMP', async function () {
-        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
         const script = `
@@ -498,10 +492,10 @@ describe('Decode/Serialize test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP) ORDER BY __key ASC`,
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [
-                '0001-06-05T04:03:02.000000001',
-                '0009-06-05T04:03:02.000000001'
+                new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
+                new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1))
             ]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -514,7 +508,7 @@ describe('Decode/Serialize test', function () {
         }
 
         const expectedKeys = [1, 2, 3];
-        const expectedBaseValue = {
+        const expectedBaseValues = {
             year: 7,
             month: 1,
             date: 5,
@@ -528,21 +522,18 @@ describe('Decode/Serialize test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const datetime = rows[i]['this'];
-            datetime.should.be.eq(`${leftZeroPadInteger(expectedBaseValue.year + i, 4)}-`
-                + `${leftZeroPadInteger(expectedBaseValue.month + i, 2)}-`
-                + `${leftZeroPadInteger(expectedBaseValue.date + i, 2)}T`
-                + `${leftZeroPadInteger(expectedBaseValue.hour + i, 2)}:`
-                + `${leftZeroPadInteger(expectedBaseValue.minute + i, 2)}:`
-                + `${leftZeroPadInteger(expectedBaseValue.second + i, 2)}.`
-                + `${leftZeroPadInteger(expectedBaseValue.nano + i, 9)}`);
+            datetime.hzLocalDate.year.should.be.eq(expectedBaseValues.year + i);
+            datetime.hzLocalDate.month.should.be.eq(expectedBaseValues.month + i);
+            datetime.hzLocalDate.date.should.be.eq(expectedBaseValues.date + i);
+            datetime.hzLocalTime.hour.should.be.eq(expectedBaseValues.hour + i);
+            datetime.hzLocalTime.minute.should.be.eq(expectedBaseValues.minute + i);
+            datetime.hzLocalTime.second.should.be.eq(expectedBaseValues.second + i);
+            datetime.hzLocalTime.nano.should.be.eq(expectedBaseValues.nano + i);
+
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
     it('should be able to decode/serialize TIMESTAMP WITH TIMEZONE', async function () {
-        const datetimeUtil = getDatetimeUtil();
-        const leftZeroPadInteger = datetimeUtil.leftZeroPadInteger;
-        const getTimezoneOffsetFromSeconds = datetimeUtil.getTimezoneOffsetFromSeconds;
-
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
         const script =
@@ -560,11 +551,10 @@ describe('Decode/Serialize test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP_WITH_TIME_ZONE)` +
-            'AND this < CAST (? AS TIMESTAMP_WITH_TIME_ZONE) ORDER BY __key ASC',
+            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [
-                '0001-06-05T04:03:02.000000001Z',
-                '0009-06-05T04:03:02.000000001Z'
+                new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)), 0),
+                new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1)), 0),
             ]
         );
         const rowMetadata = await result.getRowMetadata();
@@ -577,7 +567,7 @@ describe('Decode/Serialize test', function () {
         }
 
         const expectedKeys = [1, 2, 3];
-        const expectedBaseValue = {
+        const expectedBaseValues = {
             year: 7,
             month: 1,
             date: 5,
@@ -591,16 +581,14 @@ describe('Decode/Serialize test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const datetimeWithOffset = rows[i]['this'];
-            datetimeWithOffset.should.be.a('string');
+            datetimeWithOffset.hzLocalDateTime.hzLocalDate.year.should.be.eq(expectedBaseValues.year + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalDate.month.should.be.eq(expectedBaseValues.month + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalDate.date.should.be.eq(expectedBaseValues.date + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalTime.hour.should.be.eq(expectedBaseValues.hour + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalTime.minute.should.be.eq(expectedBaseValues.minute + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalTime.second.should.be.eq(expectedBaseValues.second + i);
+            datetimeWithOffset.hzLocalDateTime.hzLocalTime.nano.should.be.eq(expectedBaseValues.nano + i);
 
-            datetimeWithOffset.should.be.eq(`${leftZeroPadInteger(expectedBaseValue.year + i, 4)}-`
-                + `${leftZeroPadInteger(expectedBaseValue.month + i, 2)}-`
-                + `${leftZeroPadInteger(expectedBaseValue.date + i, 2)}T`
-                + `${leftZeroPadInteger(expectedBaseValue.hour + i, 2)}:`
-                + `${leftZeroPadInteger(expectedBaseValue.minute + i, 2)}:`
-                + `${leftZeroPadInteger(expectedBaseValue.second + i, 2)}.`
-                + `${leftZeroPadInteger(expectedBaseValue.nano + i, 9)}`
-                + `${getTimezoneOffsetFromSeconds((expectedBaseValue.offsetSeconds + i) ** 3)}`);
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });

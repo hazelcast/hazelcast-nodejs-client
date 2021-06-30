@@ -44,10 +44,10 @@ import {
     IntegerSerializer,
     JavaClassSerializer,
     JsonSerializer,
-    LinkedListSerializer,
+    LinkedListSerializer, LocalDateSerializer, LocalDateTimeSerializer, LocalTimeSerializer,
     LongArraySerializer,
     LongSerializer,
-    NullSerializer,
+    NullSerializer, OffsetDateTimeSerializer,
     ShortArraySerializer,
     ShortSerializer,
     StringArraySerializer,
@@ -268,6 +268,10 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('float', new FloatSerializer());
         this.registerSerializer('char', new CharSerializer());
         this.registerSerializer('date', new DateSerializer());
+        this.registerSerializer('localDate', new LocalDateSerializer());
+        this.registerSerializer('localTime', new LocalTimeSerializer());
+        this.registerSerializer('localDatetime', new LocalDateTimeSerializer());
+        this.registerSerializer('offsetDatetime', new OffsetDateTimeSerializer());
         this.registerSerializer('byteArray', new ByteArraySerializer());
         this.registerSerializer('charArray', new CharArraySerializer());
         this.registerSerializer('booleanArray', new BooleanArraySerializer());
