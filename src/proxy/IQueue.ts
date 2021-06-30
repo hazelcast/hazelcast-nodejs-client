@@ -19,6 +19,9 @@ import {DistributedObject} from '../core';
 
 /**
  * Concurrent, distributed, observable queue.
+ *
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
+ * serializer for a certain type.
  */
 export interface IQueue<E> extends DistributedObject {
     /**

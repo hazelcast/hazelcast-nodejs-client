@@ -25,6 +25,9 @@ import {MessageListener} from './MessageListener';
  * This interface stand for reliable topic, i.e. it uses a Ringbuffer to store
  * events. The events in the Ringbuffer are replicated, so they won't get
  * lost when a node goes down.
+ *
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
+ * serializer for a certain type.
  */
 export interface ITopic<E> extends DistributedObject {
 

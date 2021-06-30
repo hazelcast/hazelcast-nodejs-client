@@ -61,6 +61,9 @@ import {DistributedObject} from '../core';
  * in case of CP member failures. It can be tuned to offer at-most-once
  * execution semantics. Please see `fail-on-indeterminate-operation-state`
  * server-side setting.
+ *
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
+ * serializer for a certain type.
  */
 export interface IAtomicReference<E> extends DistributedObject {
 
