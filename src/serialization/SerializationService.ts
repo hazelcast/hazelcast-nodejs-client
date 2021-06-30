@@ -142,6 +142,9 @@ export class SerializationServiceV1 implements SerializationService {
             return data;
         }
         const serializer = this.findSerializerById(data.getType());
+        if (serializer === undefined) {
+            throw new RangeError(`There is no suitable deserializer for data with type ${data.getType()}`);
+        }
         const dataInput = new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serializationConfig.isBigEndian);
         return serializer.read(dataInput);
     }
