@@ -25,7 +25,7 @@ import {
     tryGetNumber,
     tryGetString
 } from '../util/Util';
-import {ClientConfig, ClientConfigImpl, PROPERTY_LIST} from './Config';
+import {ClientConfig, ClientConfigImpl, PROPERTY_SET} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfigImpl} from './FlakeIdGeneratorConfig';
 import {InMemoryFormat} from './InMemoryFormat';
@@ -94,7 +94,7 @@ export class ConfigBuilder {
             } else if (key === 'backupAckToClientEnabled') {
                 this.effectiveConfig.backupAckToClientEnabled = tryGetBoolean(value);
             } else {
-                console.log(`Warning: Unexpected config key '${key}' is passed to the Hazelcast Client`);
+                throw new RangeError(`Unexpected config key '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -109,7 +109,7 @@ export class ConfigBuilder {
             } else if (key === 'connectionRetry') {
                 this.handleConnectionRetry(value);
             } else {
-                console.log(`Warning: Unexpected connection strategy config '${key}' is passed to the Hazelcast Client`);
+                throw new RangeError(`Unexpected connection strategy config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -139,7 +139,7 @@ export class ConfigBuilder {
                 }
                 this.effectiveConfig.connectionStrategy.connectionRetry.jitter = value;
             } else {
-                console.log(`Warning: Unexpected connection retry config '${key}' is passed to the Hazelcast Client`);
+                throw new RangeError(`Unexpected connection retry config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -167,7 +167,7 @@ export class ConfigBuilder {
             } else if (key === 'hazelcastCloud') {
                 this.handleHazelcastCloud(jsonObject[key]);
             } else {
-                console.log(`Warning: Unexpected network option '${key}' is passed to the Hazelcast Client`);
+                throw new RangeError(`Unexpected network option '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -177,7 +177,7 @@ export class ConfigBuilder {
             if (key === 'discoveryToken') {
                 this.effectiveConfig.network.hazelcastCloud.discoveryToken = tryGetString(jsonObject[key]);
             } else {
-                console.log(`Warning: Unexpected hazelcast cloud option '${key}' is passed to the Hazelcast Client`);
+                throw new RangeError(`Unexpected hazelcast cloud option '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -194,7 +194,7 @@ export class ConfigBuilder {
         const sslConfigKeys = new Set(Object.keys(this.effectiveConfig.network.ssl));
         for (const key in jsonObject) {
             if (!sslConfigKeys.has(key)) {
-                console.log(`Warning: Unexpected ssl option '${key}' is passed to the Hazelcast Client`);
+                throw new RangeError(`Unexpected ssl option '${key}' is passed to the Hazelcast Client`);
             }
         }
         const sslEnabled = tryGetBoolean(jsonObject.enabled);
@@ -223,8 +223,8 @@ export class ConfigBuilder {
 
     private handleProperties(jsonObject: any): void {
         for (const key in jsonObject) {
-            if (!PROPERTY_LIST.has(key)) {
-                console.log(`Warning: Unexpected property '${key}' is passed to the Hazelcast Client`);
+            if (!PROPERTY_SET.has(key)) {
+                throw new RangeError(`Unexpected property '${key}' is passed to the Hazelcast Client`);
             }
             this.effectiveConfig.properties[key] = jsonObject[key];
         }
@@ -273,7 +273,7 @@ export class ConfigBuilder {
                 this.effectiveConfig.serialization
                     .jsonStringDeserializationPolicy = tryGetEnum(JsonStringDeserializationPolicy, jsonObject[key]);
             } else {
-                console.log(`Warning: Unexpected serialization config '${key}' is passed to the Hazelcast Client`);
+                throw new RangeError(`Unexpected serialization config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -308,7 +308,7 @@ export class ConfigBuilder {
                 } else if (key === 'evictionSamplingPoolSize') {
                     nearCacheConfig.evictionSamplingPoolSize = tryGetNumber(ncConfig[key]);
                 } else {
-                    console.log(`Warning: Unexpected near cache config '${key}' for near cache ${name}`
+                    throw new RangeError(`Unexpected near cache config '${key}' for near cache ${name}`
                               + 'is passed to the Hazelcast Client');
                 }
             }
@@ -327,7 +327,7 @@ export class ConfigBuilder {
                 } else if (key === 'overloadPolicy') {
                     reliableTopicConfig.overloadPolicy = tryGetEnum(TopicOverloadPolicy, jsonRtCfg[key]);
                 } else {
-                    console.log(`Warning: Unexpected reliable topic config '${key}' for reliable topic ${name}`
+                    throw new RangeError(`Unexpected reliable topic config '${key}' for reliable topic ${name}`
                         + 'is passed to the Hazelcast Client');
                 }
             }
@@ -346,7 +346,7 @@ export class ConfigBuilder {
                 } else if (key === 'prefetchValidityMillis') {
                     flakeIdConfig.prefetchValidityMillis = tryGetNumber(fidConfig[key]);
                 } else {
-                    console.log(`Warning: Unexpected flake id generator config '${key}' for flake id generator ${name}`
+                    throw new RangeError(`Unexpected flake id generator config '${key}' for flake id generator ${name}`
                         + 'is passed to the Hazelcast Client');
                 }
             }
@@ -361,7 +361,7 @@ export class ConfigBuilder {
             } else if (key === 'customLoadBalancer') {
                 this.effectiveConfig.loadBalancer.customLoadBalancer = jsonObject[key];
             } else {
-                console.log(`Warning: Unexpected load balancer config '${key}' is passed to the Hazelcast Client`);
+                throw new RangeError(`Unexpected load balancer config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }

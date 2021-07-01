@@ -180,7 +180,7 @@ const DEFAULT_PROPERTIES: Properties = {
 };
 
 /** @internal */
-export const PROPERTY_LIST = new Set(Object.keys(DEFAULT_PROPERTIES));
+export const PROPERTY_SET = new Set(Object.keys(DEFAULT_PROPERTIES));
 
 /** @internal */
 export class ClientConfigImpl implements ClientConfig {
