@@ -11,6 +11,10 @@ on:
         description: Name of the branch to get tests
         required: false
         default: master
+      run_test_on_test_branch:
+        description: Whether tests should be run on tests branch (set to run if you want to run it)
+        required: false
+        default: norun
 jobs:
   upload_jars:
     name: Create and upload JARs
@@ -165,3 +169,90 @@ jobs:
         working-directory: master
         env:
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+  test_test_branch_nodejs_client:
+    needs: [upload_jars, setup_nodejs_client_matrix]
+    if:  ${{ github.event.inputs.run_test_on_test_branch == 'run' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        server_kind: [os, enterprise]
+    name: Test test branch Node.js client with ${{ matrix.server_kind }} server
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - name: Checkout to ${{ github.event.inputs.test_branch }}
+        uses: actions/checkout@v2
+        with:
+          repository: srknzl/hazelcast-nodejs-client
+          path: master
+          ref: ${{ github.event.inputs.test_branch }}
+      - name: Checkout to tag
+        uses: actions/checkout@v2
+        with:
+          repository: srknzl/hazelcast-nodejs-client
+          path: tag
+          ref: ${{ github.event.inputs.test_branch }}
+      - name: Install dependencies and compile client
+        run: |
+          npm install
+          npm run compile
+        working-directory: tag
+      - name: Install test dependencies
+        run: |
+          npm install
+        working-directory: master
+      - name: Copy client code into master
+        run: |
+          rm -rf $GITHUB_WORKSPACE/master/lib
+          rm $GITHUB_WORKSPACE/master/package.json
+          cp -a $GITHUB_WORKSPACE/tag/lib $GITHUB_WORKSPACE/master/lib
+          cp -a $GITHUB_WORKSPACE/tag/package.json $GITHUB_WORKSPACE/master/package.json
+      - name: Download Hazelcast tests JAR
+        uses: actions/download-artifact@v2
+        with:
+          name: hazelcast-tests
+          path: jars
+      - name: Download Hazelcast JAR
+        if: ${{ matrix.server_kind == 'os' }}
+        uses: actions/download-artifact@v2
+        with:
+          name: hazelcast
+          path: jars
+      - name: Download Hazelcast Enterprise JAR
+        if: ${{ matrix.server_kind == 'enterprise' }}
+        uses: actions/download-artifact@v2
+        with:
+          name: hazelcast-enterprise
+          path: jars
+      - name: Download Hazelcast Enterprise tests JAR
+        if: ${{ matrix.server_kind == 'enterprise' }}
+        uses: actions/download-artifact@v2
+        with:
+          name: hazelcast-enterprise-tests
+          path: jars
+      - name: Start RC
+        env:
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+        run: python start_rc.py --rc-version '0.8-SNAPSHOT' --jars jars --server-kind ${{ matrix.server_kind }} --use-simple-server
+      - name: Run non-enterprise tests
+        if: ${{ matrix.server_kind == 'os' }}
+        run: node node_modules/mocha/bin/mocha --recursive test/integration/backward_compatible
+        working-directory: master
+      - name: Run all tests
+        if: ${{ matrix.server_kind == 'enterprise' }}
+        run: node node_modules/mocha/bin/mocha --recursive test/integration/backward_compatible
+        working-directory: master
+        env:
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}  
