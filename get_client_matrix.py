@@ -55,5 +55,4 @@ if __name__ == "__main__":
     options = [
         get_option_from_release(release, matrix_option_kind) for release in releases
     ]
-    options.append("origin/master")
     print(json.dumps(options))
