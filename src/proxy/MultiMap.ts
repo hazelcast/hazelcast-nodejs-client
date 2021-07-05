@@ -22,6 +22,9 @@ import {
 
 /**
  * A specialized map whose keys can be associated with multiple values.
+ *
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
+ * serializer for a certain type.
  */
 export interface MultiMap<K, V> extends DistributedObject {
 

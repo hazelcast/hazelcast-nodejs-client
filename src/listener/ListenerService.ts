@@ -30,7 +30,12 @@ import {ListenerMessageCodec} from './ListenerMessageCodec';
 import {deferredPromise} from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging';
-import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
+import {
+    ConnectionManager,
+    ConnectionRegistry,
+    CONNECTION_ADDED_EVENT_NAME,
+    CONNECTION_REMOVED_EVENT_NAME
+} from '../network/ConnectionManager';
 
 /** @internal */
 export class ListenerService {
@@ -50,8 +55,8 @@ export class ListenerService {
     }
 
     start(): void {
-        this.connectionManager.on('connectionAdded', this.onConnectionAdded.bind(this));
-        this.connectionManager.on('connectionRemoved', this.onConnectionRemoved.bind(this));
+        this.connectionManager.on(CONNECTION_ADDED_EVENT_NAME, this.onConnectionAdded.bind(this));
+        this.connectionManager.on(CONNECTION_REMOVED_EVENT_NAME, this.onConnectionRemoved.bind(this));
     }
 
     onConnectionAdded(connection: Connection): void {

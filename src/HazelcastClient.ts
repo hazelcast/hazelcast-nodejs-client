@@ -65,6 +65,7 @@ import {ClusterViewListenerService} from './listener/ClusterViewListenerService'
 import {ClientMessage} from './protocol/ClientMessage';
 import {Connection} from './network/Connection';
 import {ConnectionRegistryImpl} from './network/ConnectionManager';
+import {SqlService, SqlServiceImpl} from './sql/SqlService';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -124,6 +125,8 @@ export class HazelcastClient {
     private mapRepairingTask: RepairingTask;
     /** @internal */
     private readonly connectionRegistry: ConnectionRegistryImpl;
+    /** @internal */
+    private readonly sqlService: SqlService;
 
     /** @internal */
     constructor(config?: ClientConfigImpl, failoverConfig?: ClientFailoverConfigImpl) {
@@ -133,11 +136,6 @@ export class HazelcastClient {
             this.config = failoverConfig.clientConfigs[0];
         }
         this.loadBalancer = this.initLoadBalancer();
-        this.connectionRegistry = new ConnectionRegistryImpl(
-            this.config.connectionStrategy,
-            this.config.network.smartRouting,
-            this.loadBalancer
-        );
         this.failoverConfig = failoverConfig;
         this.errorFactory = new ClientErrorFactory();
         this.serializationService = new SerializationServiceV1(this.config.serialization);
@@ -161,6 +159,12 @@ export class HazelcastClient {
             this.config,
             this.loggingService.getLogger(),
             this.clusterFailoverService
+        );
+        this.connectionRegistry = new ConnectionRegistryImpl(
+            this.config.connectionStrategy,
+            this.config.network.smartRouting,
+            this.loadBalancer,
+            this.clusterService
         );
         this.invocationService = new InvocationService(
             this.config,
@@ -226,6 +230,12 @@ export class HazelcastClient {
             this.instanceName,
             this.invocationService,
             this.serializationService
+        );
+        this.sqlService = new SqlServiceImpl(
+            this.connectionRegistry,
+            this.serializationService,
+            this.invocationService,
+            this.connectionManager
         );
     }
 
@@ -469,6 +479,18 @@ export class HazelcastClient {
     /** @internal */
     getLoggingService(): LoggingService {
         return this.loggingService;
+    }
+
+    /**
+     * Returns a service to execute distributed SQL queries.
+     * The service is in beta state. Behavior and API might be changed in future releases.
+     *
+     * @returns SQL service
+     *
+     * see {@link SqlService}
+     */
+    getSqlService(): SqlService {
+        return this.sqlService;
     }
 
     /**

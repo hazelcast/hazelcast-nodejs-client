@@ -20,6 +20,9 @@ import {DistributedObject} from '../core/DistributedObject';
 
 /**
  * Concurrent and distributed list.
+ *
+ * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
+ * serializer for a certain type.
  */
 export interface IList<E> extends DistributedObject {
 

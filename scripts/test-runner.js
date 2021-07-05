@@ -51,70 +51,48 @@ const isAddressReachable = (host, port, timeoutMs) => {
     });
 };
 
-const startRC = async (background) => {
+const startRC = async () => {
     console.log('Starting Hazelcast Remote Controller ... oss ...');
     if (ON_WINDOWS) {
-        if (background) {
-            rcProcess = spawnSync(
-                'start /min "hazelcast-remote-controller" cmd /c '
-              + `java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} `
-              + 'com.hazelcast.remotecontroller.Main --use-simple-server> rc_stdout.txt 2>rc_stderr.txt', [], {
-                    stdio: 'inherit',
-                    shell: true
-                }
-            );
-        } else {
-            const outFD = fs.openSync('rc_stdout.txt', 'w');
-            const errFD = fs.openSync('rc_stderr.txt', 'w');
-            rcProcess = spawn('java', [
-                `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
-                '-cp',
-                CLASSPATH,
-                'com.hazelcast.remotecontroller.Main',
-                '--use-simple-server'
-            ], {
-                stdio: [
-                    'ignore',
-                    outFD,
-                    errFD
-                ]
-            });
-            rcProcess.on('close', () => {
-                fs.closeSync(outFD);
-                fs.closeSync(errFD);
-            });
-        }
+        const outFD = fs.openSync('rc_stdout.txt', 'w');
+        const errFD = fs.openSync('rc_stderr.txt', 'w');
+        rcProcess = spawn('java', [
+            `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
+            '-cp',
+            CLASSPATH,
+            'com.hazelcast.remotecontroller.Main',
+            '--use-simple-server'
+        ], {
+            stdio: [
+                'ignore',
+                outFD,
+                errFD
+            ]
+        });
+        rcProcess.on('close', () => {
+            fs.closeSync(outFD);
+            fs.closeSync(errFD);
+        });
     } else {
-        if (background) {
-            rcProcess = spawn(
-                `nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} `
-              + `-cp ${CLASSPATH} com.hazelcast.remotecontroller.Main --use-simple-server > rc_stdout.log `
-              + '2> rc_stderr.log &', [], {
-                    stdio: 'ignore',
-                    shell: true
-                }
-            );
-        } else {
-            const outFD = fs.openSync('rc_stdout.log', 'w');
-            const errFD = fs.openSync('rc_stderr.log', 'w');
-            rcProcess = spawn('java', [
-                `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
-                '-cp',
-                CLASSPATH,
-                'com.hazelcast.remotecontroller.Main',
-                '--use-simple-server'
-            ], {
-                stdio: [
-                    'ignore',
-                    outFD,
-                    errFD
-                ]
-            });
-            rcProcess.on('close', () => {
-                fs.closeSync(outFD);
-                fs.closeSync(errFD);
-            });
-        }
+        const outFD = fs.openSync('rc_stdout.log', 'w');
+        const errFD = fs.openSync('rc_stderr.log', 'w');
+        rcProcess = spawn('java', [
+            `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
+            '-cp',
+            CLASSPATH,
+            'com.hazelcast.remotecontroller.Main',
+            '--use-simple-server'
+        ], {
+            stdio: [
+                'ignore',
+                outFD,
+                errFD
+            ]
+        });
+        rcProcess.on('close', () => {
+            fs.closeSync(outFD);
+            fs.closeSync(errFD);
+        });
     }
 
     console.log('Please wait for Hazelcast Remote Controller to start ...');
@@ -138,7 +116,9 @@ const shutdownProcesses = () => {
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', testProcess.pid, '/f', '/t']); // simple sigkill not enough on windows
     } else {
-        if (testProcess && testProcess.exitCode === null) testProcess.kill('SIGKILL');
+        if (testProcess && testProcess.exitCode === null) {
+            testProcess.kill('SIGKILL');
+        }
     }
 };
 
@@ -146,7 +126,9 @@ const shutdownRC = () => {
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', rcProcess.pid, '/f', '/t']);
     } else {
-        if (rcProcess && rcProcess.exitCode === null) rcProcess.kill('SIGKILL');
+        if (rcProcess && rcProcess.exitCode === null) {
+            rcProcess.kill('SIGKILL');
+        }
     }
 };
 
@@ -218,7 +200,7 @@ process.on('SIGINT', shutdownProcesses);
 process.on('SIGTERM', shutdownProcesses);
 process.on('SIGHUP', shutdownProcesses);
 
-startRC(!runTests).then(() => {
+startRC().then(() => {
     console.log('Hazelcast Remote Controller is started!');
     if (runTests) {
         console.log(`Running tests... Test type: ${testType}, Test command: ${testCommand}`);

@@ -96,6 +96,10 @@
                 "FunctionExpression > BlockStatement.body"
             ]
         }],
-        "space-in-parens": "error"
+        "space-in-parens": "error",
+        "curly": "error"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018
     }
 }

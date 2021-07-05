@@ -108,6 +108,13 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
+    /**
+     * Serializes object to data
+     *
+     * @param object Object to serialize
+     * @param partitioningStrategy
+     * @throws RangeError if object is not serializable
+     */
     toData(object: any, partitioningStrategy: PartitionStrategy = defaultPartitionStrategy): Data {
         if (this.isData(object)) {
             return object as Data;
@@ -135,6 +142,9 @@ export class SerializationServiceV1 implements SerializationService {
             return data;
         }
         const serializer = this.findSerializerById(data.getType());
+        if (serializer === undefined) {
+            throw new RangeError(`There is no suitable deserializer for data with type ${data.getType()}`);
+        }
         const dataInput = new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serializationConfig.isBigEndian);
         return serializer.read(dataInput);
     }

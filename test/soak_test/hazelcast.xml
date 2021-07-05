@@ -12,12 +12,13 @@
             <ports>0</ports>
         </outbound-ports>
         <join>
-            <multicast enabled="true">
+            <multicast enabled="false">
                 <multicast-group>224.206.1.1</multicast-group>
                 <multicast-port>54327</multicast-port>
             </multicast>
-            <tcp-ip enabled="false">
-                <interface>127.0.0.1</interface>
+            <tcp-ip enabled="true">
+                <member>10.212.1.117</member>
+                <member>10.212.1.118</member>
             </tcp-ip>
         </join>
         <ssl enabled="false"/>

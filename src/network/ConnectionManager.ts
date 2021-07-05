@@ -71,8 +71,10 @@ import {AddressProvider} from '../connection/AddressProvider';
 import {ClusterService} from '../invocation/ClusterService';
 import {SerializationService} from '../serialization/SerializationService';
 
-const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
-const CONNECTION_ADDED_EVENT_NAME = 'connectionAdded';
+/** @internal */
+export const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
+/** @internal */
+export const CONNECTION_ADDED_EVENT_NAME = 'connectionAdded';
 
 /** @internal */
 export const CLIENT_TYPE = 'NJS';
@@ -129,9 +131,10 @@ export interface ConnectionRegistry {
 
     /**
      * Returns a random connection from active connections
+     * @param dataMember true if only data members should be considered
      * @return Connection if there is at least one connection, otherwise null
      */
-    getRandomConnection(): Connection | null;
+    getRandomConnection(dataMember?: boolean): Connection | null;
 
     /**
      * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
@@ -150,16 +153,19 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     private readonly smartRoutingEnabled: boolean;
     private readonly asyncStart: boolean;
     private readonly reconnectMode: ReconnectMode;
+    private readonly clusterService: ClusterService;
 
     constructor(
         connectionStrategy: ConnectionStrategyConfig,
         smartRoutingEnabled: boolean,
-        loadBalancer: LoadBalancer
+        loadBalancer: LoadBalancer,
+        clusterService: ClusterService
     ) {
         this.smartRoutingEnabled = smartRoutingEnabled;
         this.asyncStart = connectionStrategy.asyncStart;
         this.reconnectMode = connectionStrategy.reconnectMode;
         this.loadBalancer = loadBalancer;
+        this.clusterService = clusterService;
     }
 
     isActive(): boolean {
@@ -174,32 +180,28 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         return this.activeConnections.size === 0;
     }
 
-    /**
-     * Returns all active connections in the registry
-     * @return Array of Connection objects
-     */
     getConnections(): Connection[] {
         return Array.from(this.activeConnections.values());
     }
 
-    /**
-     * Returns connection by UUID
-     * @param uuid UUID that identifies the connection
-     * @return Connection if there is a connection with the UUID, undefined otherwise
-     */
     getConnection(uuid: UUID): Connection | undefined {
         return this.activeConnections.get(uuid.toString());
     }
 
-    /**
-     * Returns a random connection from active connections. If smart routing enabled, connection is returned using
-     * load balancer. Otherwise, it is the first connection in connection registry.
-     * @return Connection if there is at least one connection, otherwise null
-     */
-    getRandomConnection(): Connection | null {
+    getRandomConnection(dataMember = false): Connection | null {
         if (this.smartRoutingEnabled) {
-            const member = this.loadBalancer.next();
-            if (member != null) {
+            let member;
+            if (dataMember) {
+                if (this.loadBalancer.canGetNextDataMember()) {
+                    member = this.loadBalancer.nextDataMember();
+                } else {
+                    member = null;
+                }
+            } else {
+                member = this.loadBalancer.next();
+            }
+
+            if (member !== null) {
                 const connection = this.getConnection(member.uuid);
                 if (connection != null) {
                     return connection;
@@ -207,24 +209,26 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
             }
         }
 
-        const iterator = this.activeConnections.values();
-        const next = iterator.next();
-        if (!next.done) {
-            return next.value;
-        } else {
-            return null;
+
+        for (const entry of this.activeConnections.entries()) {
+            const uuid = entry[0];
+            const connection = entry[1];
+            if (dataMember) {
+                const member = this.clusterService.getMember(uuid);
+                if (!member || member.liteMember) {
+                    continue;
+                }
+            }
+            return connection;
         }
+
+        return null;
     }
 
     forEachConnection(fn: (conn: Connection) => void): void {
         this.activeConnections.forEach(fn);
     }
 
-    /**
-     * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
-     * and there is at least one active connection.
-     * @return An error if invocation is not allowed, null if it is allowed
-     */
     checkIfInvocationAllowed(): Error | null {
         const state = this.connectionState;
         if (state === ConnectionState.INITIALIZED_ON_CLUSTER && this.activeConnections.size > 0) {

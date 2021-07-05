@@ -351,7 +351,7 @@ export class InvocationService {
      * @param connection
      * @param request
      * @param handler called with values returned from server for this invocation.
-     * @returns
+     * @returns a promise that resolves to {@link ClientMessage}
      */
     invokeOnConnection(
         connection: Connection,
