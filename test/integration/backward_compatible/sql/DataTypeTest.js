@@ -23,6 +23,7 @@ const { Client, HzLocalDateTime, HzLocalTime, HzLocalDate, HzOffsetDateTime } = 
 
 const chai = require('chai');
 const long = require('long');
+const { BuildInfo } = require('../../../../lib/BuildInfo');
 
 chai.should();
 
@@ -50,6 +51,10 @@ const getSqlColumnType = () => {
     return SqlColumnType;
 };
 
+const getDatetimeUtil = () => {
+    return require('../../../../lib/util/DatetimeUtil');
+};
+
 const portableFactory = (classId) => {
     if (classId === 1) {
         return new Student();
@@ -62,6 +67,7 @@ describe('Data type test', function () {
     let cluster;
     let someMap;
     let mapName;
+    let versionFive;
 
     const validateResults = (rows, expectedKeys, expectedValues) => {
         rows.length.should.be.eq(expectedValues.length);
@@ -74,6 +80,8 @@ describe('Data type test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
+        const clientVersion = BuildInfo.calculateServerVersionFromString(BuildInfo.getClientVersion());
+        versionFive = clientVersion >= BuildInfo.calculateServerVersionFromString('5.0');
         cluster = await RC.createCluster(null, null);
         await RC.startMember(cluster.id);
     });
@@ -395,7 +403,9 @@ describe('Data type test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
+
     it('should be able to decode/serialize DATE', async function () {
+        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
         const script =
@@ -406,10 +416,18 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-            [new HzLocalDate(1, 1, 1), new HzLocalDate(5, 5, 5)]
-        );
+        let result;
+        if (versionFive) {
+            result = client.getSqlService().execute(
+                `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
+                [new HzLocalDate(1, 1, 1), new HzLocalDate(5, 5, 5)]
+            );
+        } else {
+            result = client.getSqlService().execute(
+                `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST (? AS DATE) ORDER BY __key ASC`,
+                ['0001-01-01', '0005-05-05']
+            );
+        }
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DATE);
 
@@ -429,14 +447,20 @@ describe('Data type test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const date = rows[i]['this'];
-            date.year.should.be.eq(expectedBaseValues.year + i);
-            date.month.should.be.eq(expectedBaseValues.month + i);
-            date.date.should.be.eq(expectedBaseValues.date + i);
-
+            if (versionFive) {
+                date.year.should.be.eq(expectedBaseValues.year + i);
+                date.month.should.be.eq(expectedBaseValues.month + i);
+                date.date.should.be.eq(expectedBaseValues.date + i);
+            } else {
+                date.should.be.eq(`${leftZeroPadInteger(expectedBaseValues.year + i, 4)}-`
+                    + `${leftZeroPadInteger(expectedBaseValues.month + i, 2)}-`
+                    + `${leftZeroPadInteger(expectedBaseValues.date + i, 2)}`);
+            }
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
     it('should be able to decode/serialize TIME', async function () {
+        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
         const script = `
@@ -446,10 +470,18 @@ describe('Data type test', function () {
                     }
                 `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-            [new HzLocalTime(1, 0, 0, 0), new HzLocalTime(10, 0, 0, 0)]
-        );
+        let result;
+        if (versionFive) {
+            result = client.getSqlService().execute(
+                `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
+                [new HzLocalTime(1, 0, 0, 0), new HzLocalTime(10, 0, 0, 0)]
+            );
+        } else {
+            result = client.getSqlService().execute(
+                `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME) ORDER BY __key ASC`,
+                ['01:00:00', '10:00:00']
+            );
+        }
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIME);
 
@@ -470,15 +502,22 @@ describe('Data type test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const time = rows[i]['this'];
-            time.hour.should.be.eq(expectedBaseValues.hour + i);
-            time.minute.should.be.eq(expectedBaseValues.minute + i);
-            time.second.should.be.eq(expectedBaseValues.second + i);
-            time.nano.should.be.eq(expectedBaseValues.nano + i);
-
+            if (versionFive) {
+                time.hour.should.be.eq(expectedBaseValues.hour + i);
+                time.minute.should.be.eq(expectedBaseValues.minute + i);
+                time.second.should.be.eq(expectedBaseValues.second + i);
+                time.nano.should.be.eq(expectedBaseValues.nano + i);
+            } else {
+                time.should.be.eq(`${leftZeroPadInteger(expectedBaseValues.hour + i, 2)}:`
+                    + `${leftZeroPadInteger(expectedBaseValues.minute + i, 2)}:`
+                    + `${leftZeroPadInteger(expectedBaseValues.second + i, 2)}.`
+                    + `${leftZeroPadInteger(expectedBaseValues.nano + i, 9)}`);
+            }
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
     it('should be able to decode/serialize TIMESTAMP', async function () {
+        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
         const script = `
@@ -491,13 +530,24 @@ describe('Data type test', function () {
                     }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-            [
-                new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
-                new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1))
-            ]
-        );
+        let result;
+        if (versionFive) {
+            result = client.getSqlService().execute(
+                `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
+                [
+                    new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
+                    new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1))
+                ]
+            );
+        } else {
+            result = client.getSqlService().execute(
+                `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP) ORDER BY __key ASC`,
+                [
+                    '0001-06-05T04:03:02.000000001',
+                    '0009-06-05T04:03:02.000000001'
+                ]
+            );
+        }
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIMESTAMP);
 
@@ -522,18 +572,31 @@ describe('Data type test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const datetime = rows[i]['this'];
-            datetime.hzLocalDate.year.should.be.eq(expectedBaseValues.year + i);
-            datetime.hzLocalDate.month.should.be.eq(expectedBaseValues.month + i);
-            datetime.hzLocalDate.date.should.be.eq(expectedBaseValues.date + i);
-            datetime.hzLocalTime.hour.should.be.eq(expectedBaseValues.hour + i);
-            datetime.hzLocalTime.minute.should.be.eq(expectedBaseValues.minute + i);
-            datetime.hzLocalTime.second.should.be.eq(expectedBaseValues.second + i);
-            datetime.hzLocalTime.nano.should.be.eq(expectedBaseValues.nano + i);
-
+            if (versionFive) {
+                datetime.hzLocalDate.year.should.be.eq(expectedBaseValues.year + i);
+                datetime.hzLocalDate.month.should.be.eq(expectedBaseValues.month + i);
+                datetime.hzLocalDate.date.should.be.eq(expectedBaseValues.date + i);
+                datetime.hzLocalTime.hour.should.be.eq(expectedBaseValues.hour + i);
+                datetime.hzLocalTime.minute.should.be.eq(expectedBaseValues.minute + i);
+                datetime.hzLocalTime.second.should.be.eq(expectedBaseValues.second + i);
+                datetime.hzLocalTime.nano.should.be.eq(expectedBaseValues.nano + i);
+            } else {
+                datetime.should.be.eq(`${leftZeroPadInteger(expectedBaseValues.year + i, 4)}-`
+                    + `${leftZeroPadInteger(expectedBaseValues.month + i, 2)}-`
+                    + `${leftZeroPadInteger(expectedBaseValues.date + i, 2)}T`
+                    + `${leftZeroPadInteger(expectedBaseValues.hour + i, 2)}:`
+                    + `${leftZeroPadInteger(expectedBaseValues.minute + i, 2)}:`
+                    + `${leftZeroPadInteger(expectedBaseValues.second + i, 2)}.`
+                    + `${leftZeroPadInteger(expectedBaseValues.nano + i, 9)}`);
+            }
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
     it('should be able to decode/serialize TIMESTAMP WITH TIMEZONE', async function () {
+        const datetimeUtil = getDatetimeUtil();
+        const leftZeroPadInteger = datetimeUtil.leftZeroPadInteger;
+        const getTimezoneOffsetFromSeconds = datetimeUtil.getTimezoneOffsetFromSeconds;
+
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
         const script =
@@ -550,13 +613,25 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client.getSqlService().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-            [
-                new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)), 0),
-                new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1)), 0),
-            ]
-        );
+        let result;
+        if (versionFive) {
+            result = client.getSqlService().execute(
+                `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
+                [
+                    new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)), 0),
+                    new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1)), 0),
+                ]
+            );
+        } else {
+            result = client.getSqlService().execute(
+                `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP_WITH_TIME_ZONE)` +
+                'AND this < CAST (? AS TIMESTAMP_WITH_TIME_ZONE) ORDER BY __key ASC',
+                [
+                    '0001-06-05T04:03:02.000000001Z',
+                    '0009-06-05T04:03:02.000000001Z'
+                ]
+            );
+        }
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIMESTAMP_WITH_TIME_ZONE);
 
@@ -581,14 +656,26 @@ describe('Data type test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const datetimeWithOffset = rows[i]['this'];
-            datetimeWithOffset.hzLocalDateTime.hzLocalDate.year.should.be.eq(expectedBaseValues.year + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalDate.month.should.be.eq(expectedBaseValues.month + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalDate.date.should.be.eq(expectedBaseValues.date + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalTime.hour.should.be.eq(expectedBaseValues.hour + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalTime.minute.should.be.eq(expectedBaseValues.minute + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalTime.second.should.be.eq(expectedBaseValues.second + i);
-            datetimeWithOffset.hzLocalDateTime.hzLocalTime.nano.should.be.eq(expectedBaseValues.nano + i);
+            if (versionFive) {
+                datetimeWithOffset.hzLocalDateTime.hzLocalDate.year.should.be.eq(expectedBaseValues.year + i);
+                datetimeWithOffset.hzLocalDateTime.hzLocalDate.month.should.be.eq(expectedBaseValues.month + i);
+                datetimeWithOffset.hzLocalDateTime.hzLocalDate.date.should.be.eq(expectedBaseValues.date + i);
+                datetimeWithOffset.hzLocalDateTime.hzLocalTime.hour.should.be.eq(expectedBaseValues.hour + i);
+                datetimeWithOffset.hzLocalDateTime.hzLocalTime.minute.should.be.eq(expectedBaseValues.minute + i);
+                datetimeWithOffset.hzLocalDateTime.hzLocalTime.second.should.be.eq(expectedBaseValues.second + i);
+                datetimeWithOffset.hzLocalDateTime.hzLocalTime.nano.should.be.eq(expectedBaseValues.nano + i);
+            } else {
 
+                datetimeWithOffset.should.be.a('string');
+                datetimeWithOffset.should.be.eq(`${leftZeroPadInteger(expectedBaseValues.year + i, 4)}-`
+                    + `${leftZeroPadInteger(expectedBaseValues.month + i, 2)}-`
+                    + `${leftZeroPadInteger(expectedBaseValues.date + i, 2)}T`
+                    + `${leftZeroPadInteger(expectedBaseValues.hour + i, 2)}:`
+                    + `${leftZeroPadInteger(expectedBaseValues.minute + i, 2)}:`
+                    + `${leftZeroPadInteger(expectedBaseValues.second + i, 2)}.`
+                    + `${leftZeroPadInteger(expectedBaseValues.nano + i, 9)}`
+                    + `${getTimezoneOffsetFromSeconds((expectedBaseValues.offsetSeconds + i) ** 3)}`);
+            }
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
