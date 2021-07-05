@@ -20,7 +20,7 @@
         "chai-as-promised": "~7.1.1",
         "eslint": "~7.29.0",
         "eslint-plugin-mocha": "~8.1.0",
-        "husky": "^6.0.0",
+        "husky": "^7.0.0",
         "jsonschema": "~1.4.0",
         "mocha": "~8.4.0",
         "mocha-jenkins-reporter": "^0.4.5",
