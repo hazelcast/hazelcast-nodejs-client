@@ -13,7 +13,7 @@
 
 ---
 
-[Hazelcast](https://hazelcast.org/) is an open-source distributed in-memory data store and computation platform that
+[Hazelcast](https://hazelcast.com/) is an open-source distributed in-memory data store and computation platform that
 provides a wide variety of distributed data structures and concurrency primitives.
 
 Hazelcast Node.js client is a way to communicate to Hazelcast IMDG clusters and access the cluster data.
@@ -40,7 +40,7 @@ The quickest way to start a single member cluster for development purposes is to
 docker run -p 5701:5701 hazelcast/hazelcast:4.1.1
 ```
 
-You can also use our ZIP or TAR [distributions](https://hazelcast.org/imdg/download/archives/#hazelcast-imdg)
+You can also use our ZIP or TAR [distributions](https://hazelcast.com/open-source-projects/downloads/)
 as described [here](DOCUMENTATION.md#121-setting-up-a-hazelcast-imdg-cluster).
 
 ### Client
@@ -117,7 +117,7 @@ Refer to [the documentation](DOCUMENTATION.md) to learn more about supported con
 * Integration with [Hazelcast Cloud](https://cloud.hazelcast.com/)
 * Support for serverless and traditional web service architectures with **Unisocket** and **Smart** operation modes
 * Ability to listen client lifecycle, cluster state and distributed data structure events
-* and [many more](https://hazelcast.org/imdg/clients-languages/node-js/#client-features).
+* and [many more](https://hazelcast.com/clients/node-js/#client-features).
 
 ## Getting Help
 
