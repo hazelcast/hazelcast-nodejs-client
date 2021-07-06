@@ -20,7 +20,7 @@ const { Lang } = require('../../remote_controller/remote-controller_types');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { BuildInfo } = require('../../../../lib/BuildInfo');
-const { Client, HzLocalDateTime, HzLocalTime, HzLocalDate, HzOffsetDateTime } = require('../../../../');
+const { Client, HzLocalDateTime, HzLocalTime, HzLocalDate, HzOffsetDateTime, Big } = require('../../../../');
 
 const chai = require('chai');
 const long = require('long');
@@ -311,10 +311,20 @@ describe('Data type test', function () {
             map.set(new java.lang.Integer(5), new java.math.BigDecimal('-11.000000000000000000000000000000000000023121'));
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
-            `SELECT * FROM ${mapName} WHERE this > CAST(? AS DECIMAL) AND this < CAST(? AS DECIMAL) ORDER BY __key ASC`,
-            ['-22.00000000000000000000000000000001', '1.0000000000000231213123123125465462513214653123']
-        );
+
+        let result;
+        if (clientVersionFive) {
+            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+                `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
+                [Big('-22.00000000000000000000000000000001'), new Big('1.0000000000000231213123123125465462513214653123')]
+            );
+        } else {
+            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+                `SELECT * FROM ${mapName} WHERE this > CAST(? AS DECIMAL) AND this < CAST(? AS DECIMAL) ORDER BY __key ASC`,
+                ['-22.00000000000000000000000000000001', '1.0000000000000231213123123125465462513214653123']
+            );
+        }
+
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DECIMAL);
 
@@ -333,7 +343,17 @@ describe('Data type test', function () {
 
         const expectedKeys = [0, 1, 4, 5];
 
-        validateResults(rows, expectedKeys, expectedValues);
+        rows.length.should.be.eq(expectedValues.length);
+
+        for (let i = 0; i < rows.length; i++) {
+            const decimal = rows[i]['this'];
+            if (clientVersionFive) {
+                decimal.toString().should.be.eq(expectedValues[i]);
+            } else {
+                decimal.should.be.eq(expectedValues[i]);
+            }
+            rows[i]['__key'].should.be.eq(expectedKeys[i]);
+        }
     });
     it('should be able to decode/serialize REAL', async function () {
         const SqlColumnType = getSqlColumnType();

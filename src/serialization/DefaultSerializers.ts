@@ -23,7 +23,18 @@ import {
     IdentifiedDataSerializable,
     IdentifiedDataSerializableFactory
 } from './Serializable';
-import {HazelcastJsonValue, HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime, UUID} from '../core';
+import {
+    Big,
+    BigDecimal,
+    HazelcastJsonValue,
+    HzLocalDate,
+    HzLocalDateTime,
+    HzLocalTime,
+    HzOffsetDateTime,
+    UUID
+} from '../core';
+import {fromBufferAndScale} from '../util/BigDecimalUtil';
+import {Buffer} from 'buffer';
 
 /** @internal */
 export class StringSerializer implements Serializer<string> {
@@ -532,5 +543,39 @@ export class OffsetDateTimeSerializer implements Serializer<HzOffsetDateTime> {
         output.writeInt(hzOffsetDateTime.hzLocalDateTime.hzLocalTime.nano);
 
         output.writeInt(hzOffsetDateTime.offsetSeconds);
+    }
+}
+
+/** @internal */
+export class BigDecimalSerializer implements Serializer<BigDecimal> {
+
+    id = -27;
+
+    read(input: DataInput): BigDecimal {
+        const body = input.readByteArray();
+        const scale = input.readInt();
+
+        return Big(fromBufferAndScale(body, scale));
+    }
+
+    write(output: DataOutput, bigDecimal: BigDecimal): void {
+        let bigintValue = bigDecimal.bigintValue;
+
+        const isNegative = bigintValue < BigInt(0);
+
+        const lastValue = (isNegative ? BigInt(-1) : BigInt(0));
+
+        const byteArray = [];
+
+        while (bigintValue !== lastValue) {
+            const byte = bigintValue.valueOf() & BigInt(255);
+            byteArray.push(Number(byte));
+            bigintValue = bigintValue.valueOf() >> BigInt(8);
+        }
+
+        byteArray.reverse();
+
+        output.writeByteArray(Buffer.from(byteArray));
+        output.writeInt(bigDecimal.scale);
     }
 }

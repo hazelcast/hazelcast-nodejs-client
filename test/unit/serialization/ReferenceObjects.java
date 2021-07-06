@@ -141,6 +141,7 @@ class ReferenceObjects {
         aOffsetDateTime = OffsetDateTime.of(aLocalDateTime, ZoneOffset.ofHours(18));
     }
 
+    static BigDecimal aBigDecimal = new BigDecimal(31231);
     static Class aClass = BigDecimal.class;
 
 
@@ -149,6 +150,6 @@ class ReferenceObjects {
             booleans, bytes, chars, doubles, shorts, floats, ints, longs, strings,
             aCustomStreamSerializable, aCustomByteArraySerializable,
             anIdentifiedDataSerializable, aPortable,
-            aDate, aLocalDate, aLocalTime, aLocalDateTime, aOffsetDateTime, aClass
+            aDate, aLocalDate, aLocalTime, aLocalDateTime, aOffsetDateTime, aBigDecimal, aClass
     };
 }

@@ -40,3 +40,4 @@ export * from './ReadResultSet';
 export * from './RestValue';
 export * from './SimpleEntryView';
 export * from './UUID';
+export * from './BigDecimal';

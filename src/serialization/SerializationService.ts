@@ -26,7 +26,7 @@ import * as Util from '../util/Util';
 import {Data, DataInput, DataOutput} from './Data';
 import {Serializer, IdentifiedDataSerializableFactory} from './Serializable';
 import {
-    ArrayListSerializer,
+    ArrayListSerializer, BigDecimalSerializer,
     BooleanArraySerializer,
     BooleanSerializer,
     ByteArraySerializer,
@@ -285,6 +285,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('arrayList', new ArrayListSerializer());
         this.registerSerializer('linkedList', new LinkedListSerializer());
         this.registerSerializer('uuid', new UuidSerializer());
+        this.registerSerializer('bigdecimal', new BigDecimalSerializer());
         this.registerIdentifiedFactories();
         this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
