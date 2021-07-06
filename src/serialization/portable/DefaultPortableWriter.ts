@@ -21,6 +21,7 @@ import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {BitsUtil} from '../../util/BitsUtil';
 import {Portable, FieldType, PortableWriter} from '../Portable';
 import * as Long from 'long';
+import {BigDecimal, HzLocalTime, HzLocalDate, HzLocalDateTime, HzOffsetDateTime} from '../../core';
 
 /** @internal */
 export class DefaultPortableWriter implements PortableWriter {
@@ -115,6 +116,26 @@ export class DefaultPortableWriter implements PortableWriter {
         this.output.writeInt(classId);
     }
 
+    writeDecimal(fieldName: string, value: BigDecimal): void {
+        throw new Error('Method not implemented.');
+    }
+
+    writeTime(fieldName: string, value: HzLocalTime): void {
+        throw new Error('Method not implemented.');
+    }
+
+    writeDate(fieldName: string, value: HzLocalDate): void {
+        throw new Error('Method not implemented.');
+    }
+
+    writeTimestamp(fieldName: string, value: HzLocalDateTime): void {
+        throw new Error('Method not implemented.');
+    }
+
+    writeTimestampWithTimezone(fieldName: string, value: HzOffsetDateTime): void {
+        throw new Error('Method not implemented.');
+    }
+
     writeByteArray(fieldName: string, bytes: Buffer): void {
         this.setPosition(fieldName, FieldType.BYTE_ARRAY);
         this.output.writeByteArray(bytes);
@@ -183,6 +204,26 @@ export class DefaultPortableWriter implements PortableWriter {
                 this.serializer.writeObject(this.output, sample);
             }
         }
+    }
+
+    writeDecimalArray(fieldName: string, values: BigDecimal[]): void {
+        throw new Error('Method not implemented.');
+    }
+
+    writeTimeArray(fieldName: string, values: HzLocalTime[]): void {
+        throw new Error('Method not implemented.');
+    }
+
+    writeDateArray(fieldName: string, values: HzLocalDate[]): void {
+        throw new Error('Method not implemented.');
+    }
+
+    writeTimestampArray(fieldName: string, values: HzLocalDateTime[]): void {
+        throw new Error('Method not implemented.');
+    }
+
+    writeTimestampWithTimezoneArray(fieldName: string, values: HzOffsetDateTime[]): void {
+        throw new Error('Method not implemented.');
     }
 
     end(): void {

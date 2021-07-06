@@ -17,7 +17,7 @@
 
 import * as Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
-import {IllegalStateError} from '../../core';
+import {BigDecimal, HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime, IllegalStateError} from '../../core';
 import {DataInput} from '../Data';
 import {Portable, PortableReader, FieldType} from '../Portable';
 import {ClassDefinition, FieldDefinition} from './ClassDefinition';
@@ -52,7 +52,7 @@ export class DefaultPortableReader implements PortableReader {
     }
 
     getFieldNames(): string[] {
-        throw new ReferenceError('Not implemented!');
+        return this.classDefinition.getFieldNames();
     }
 
     getFieldType(fieldName: string): FieldType {
@@ -124,6 +124,26 @@ export class DefaultPortableReader implements PortableReader {
         } finally {
             this.input.position(backupPos);
         }
+    }
+
+    readDecimal(fieldName: string): BigDecimal {
+        return undefined;
+    }
+
+    readTime(fieldName: string): HzLocalTime {
+        return undefined;
+    }
+
+    readDate(fieldName: string): HzLocalDate {
+        return undefined;
+    }
+
+    readTimestamp(fieldName: string): HzLocalDateTime {
+        return undefined;
+    }
+
+    readTimestampWithTimezone(fieldName: string): HzOffsetDateTime {
+        return undefined;
     }
 
     readByteArray(fieldName: string): Buffer {
@@ -200,6 +220,26 @@ export class DefaultPortableReader implements PortableReader {
         } finally {
             this.input.position(backupPos);
         }
+    }
+
+    readDecimalArray(fieldName: string): BigDecimal[] {
+        return [];
+    }
+
+    readTimeArray(fieldName: string): HzLocalTime[] {
+        return [];
+    }
+
+    readDateArray(fieldName: string): HzLocalDate[] {
+        return [];
+    }
+
+    readTimestampArray(fieldName: string): HzLocalDateTime[] {
+        return [];
+    }
+
+    readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTime[] {
+        return [];
     }
 
     getRawDataInput(): DataInput {
