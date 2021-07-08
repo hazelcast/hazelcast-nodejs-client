@@ -19,7 +19,17 @@ const { expect } = require('chai');
 const Long = require('long');
 const { SerializationServiceV1 } = require('../../../lib/serialization/SerializationService');
 const { SerializationConfigImpl } = require('../../../lib/config/SerializationConfig');
-const { Predicates, RestValue, UUID, HzLocalDateTime, HzOffsetDateTime, HzLocalTime, HzLocalDate } = require('../../../');
+const {
+    Predicates,
+    RestValue,
+    UUID,
+    HzLocalDateTime,
+    HzOffsetDateTime,
+    HzLocalTime,
+    HzLocalDate,
+    Big,
+    BigDecimal
+} = require('../../../');
 
 describe('DefaultSerializersTest', function () {
 
@@ -74,10 +84,12 @@ describe('DefaultSerializersTest', function () {
         new HzLocalTime(11, 22, 41, 123456789),
         new HzLocalDateTime(new HzLocalDate(2022, 7, 29), new HzLocalTime(12, 23, 42, 123456789)),
         new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(2022, 7, 29), new HzLocalTime(12, 23, 42, 123456789)), -64800),
+        Big('1.11111111111111111111111111')
     ];
 
     parameters.forEach((obj) => {
-        it('type: ' + typeof obj + ', isArray: ' + Array.isArray(obj) + ', value: ' + JSON.stringify(obj), function () {
+        it('type: ' + typeof obj + ', isArray: ' + Array.isArray(obj) + ', value: '
+            + (obj instanceof BigDecimal ? `BigDecimal ${obj.toString()}` : JSON.stringify(obj)), function () {
                 const config = new SerializationConfigImpl();
                 const serializationService = new SerializationServiceV1(config);
                 const serialized = serializationService.toData(obj);
