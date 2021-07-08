@@ -20,8 +20,9 @@ import {ClassDefinition} from './ClassDefinition';
 import {PortableContext} from './PortableContext';
 import * as Long from 'long';
 import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
-import {BigDecimal,
+import {
     HazelcastSerializationError,
+    BigDecimal,
     HzLocalDate,
     HzLocalDateTime,
     HzLocalTime,
@@ -100,23 +101,23 @@ export class ClassDefinitionWriter implements PortableWriter {
     }
 
     writeDecimal(fieldName: string, value: BigDecimal): void {
-        throw new Error('Method not implemented.');
+        this.builder.addDecimalField(fieldName);
     }
 
     writeTime(fieldName: string, value: HzLocalTime): void {
-        throw new Error('Method not implemented.');
+        this.builder.addTimeField(fieldName);
     }
 
     writeDate(fieldName: string, value: HzLocalDate): void {
-        throw new Error('Method not implemented.');
+        this.builder.addDateField(fieldName);
     }
 
     writeTimestamp(fieldName: string, value: HzLocalDateTime): void {
-        throw new Error('Method not implemented.');
+        this.builder.addTimestampField(fieldName);
     }
 
     writeTimestampWithTimezone(fieldName: string, value: HzOffsetDateTime): void {
-        throw new Error('Method not implemented.');
+        this.builder.addTimestampWithTimezoneField(fieldName);
     }
 
     writeByteArray(fieldName: string, bytes: Buffer): void {
@@ -179,23 +180,23 @@ export class ClassDefinitionWriter implements PortableWriter {
     }
 
     writeDecimalArray(fieldName: string, values: BigDecimal[]): void {
-        throw new Error('Method not implemented.');
+        this.builder.addDecimalArrayField(fieldName);
     }
 
     writeTimeArray(fieldName: string, values: HzLocalTime[]): void {
-        throw new Error('Method not implemented.');
+        this.builder.addTimeArrayField(fieldName);
     }
 
     writeDateArray(fieldName: string, values: HzLocalDate[]): void {
-        throw new Error('Method not implemented.');
+        this.builder.addDateArrayField(fieldName);
     }
 
     writeTimestampArray(fieldName: string, values: HzLocalDateTime[]): void {
-        throw new Error('Method not implemented.');
+        this.builder.addTimestampArrayField(fieldName);
     }
 
     writeTimestampWithTimezoneArray(fieldName: string, values: HzOffsetDateTime[]): void {
-        throw new Error('Method not implemented.');
+        this.builder.addTimestampWithTimezoneArrayField(fieldName);
     }
 
     registerAndGet(): ClassDefinition {

@@ -17,11 +17,20 @@
 
 import * as Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
-import {BigDecimal, HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime, IllegalStateError} from '../../core';
+import {
+    Big,
+    BigDecimal,
+    HzLocalDate,
+    HzLocalDateTime,
+    HzLocalTime,
+    HzOffsetDateTime,
+    IllegalStateError
+} from '../../core';
 import {DataInput} from '../Data';
-import {Portable, PortableReader, FieldType} from '../Portable';
+import {FieldType, Portable, PortableReader} from '../Portable';
 import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {PortableSerializer} from './PortableSerializer';
+import {fromBufferAndScale} from '../../util/BigDecimalUtil';
 
 /** @internal */
 export class DefaultPortableReader implements PortableReader {
@@ -127,23 +136,68 @@ export class DefaultPortableReader implements PortableReader {
     }
 
     readDecimal(fieldName: string): BigDecimal {
-        return undefined;
+        return this.readNullableField(fieldName, FieldType.DECIMAL, (inp) => {
+            const buffer = inp.readByteArray();
+            const scale = inp.readInt();
+            return Big(fromBufferAndScale(buffer, scale));
+        });
     }
 
     readTime(fieldName: string): HzLocalTime {
-        return undefined;
+        return this.readNullableField(fieldName, FieldType.TIME, (inp) => {
+            const hour = inp.readByte();
+            const minute = inp.readByte();
+            const second = inp.readByte();
+            const nano = inp.readInt();
+            return new HzLocalTime(hour, minute, second, nano);
+        });
     }
 
     readDate(fieldName: string): HzLocalDate {
-        return undefined;
+        return this.readNullableField(fieldName, FieldType.DATE, (inp) => {
+            const year = inp.readShort();
+            const month = inp.readByte();
+            const date = inp.readByte();
+            return new HzLocalDate(year, month, date);
+        });
     }
 
     readTimestamp(fieldName: string): HzLocalDateTime {
-        return undefined;
+        return this.readNullableField(fieldName, FieldType.TIMESTAMP, (inp) => {
+            const year = inp.readShort();
+            const month = inp.readByte();
+            const date = inp.readByte();
+
+            const hour = inp.readByte();
+            const minute = inp.readByte();
+            const second = inp.readByte();
+            const nano = inp.readInt();
+
+            return new HzLocalDateTime(new HzLocalDate(year, month, date), new HzLocalTime(hour, minute, second, nano));
+        });
     }
 
     readTimestampWithTimezone(fieldName: string): HzOffsetDateTime {
-        return undefined;
+        return this.readNullableField(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, (inp) => {
+            const year = inp.readShort();
+            const month = inp.readByte();
+            const date = inp.readByte();
+
+            const hour = inp.readByte();
+            const minute = inp.readByte();
+            const second = inp.readByte();
+            const nano = inp.readInt();
+
+            const offsetSeconds = inp.readInt();
+
+            return new HzOffsetDateTime(
+                new HzLocalDateTime(
+                    new HzLocalDate(year, month, date),
+                    new HzLocalTime(hour, minute, second, nano)
+                ),
+                offsetSeconds
+            );
+        });
     }
 
     readByteArray(fieldName: string): Buffer {
@@ -240,6 +294,32 @@ export class DefaultPortableReader implements PortableReader {
 
     readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTime[] {
         return [];
+    }
+
+    private readNullableField<T>(fieldName: string, fieldType: FieldType, readFn: (inp: DataInput) => T): T {
+        const currentPos = this.input.position();
+
+        try {
+            const pos = this.positionByField(fieldName, fieldType);
+            this.input.position(pos);
+            const isNull = this.input.readBoolean();
+            if (isNull) {
+                return null;
+            }
+            return readFn(this.input);
+        } finally {
+            this.input.position(currentPos);
+        }
+    }
+
+    private readObjectArrayField<T>(fieldName: string, fieldType: FieldType, readFn: (inp: DataInput) => T): T[] {
+        const currentPos = this.input.position();
+
+        try {
+
+        } finally {
+            this.input.position(currentPos);
+        }
     }
 
     getRawDataInput(): DataInput {

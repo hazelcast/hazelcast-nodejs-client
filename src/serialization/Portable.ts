@@ -42,7 +42,17 @@ export enum FieldType {
     FLOAT_ARRAY = 17,
     DOUBLE_ARRAY = 18,
     UTF_ARRAY = 19, // Defined for backwards compatibility.
-    STRING_ARRAY = 19
+    STRING_ARRAY = 19,
+    DECIMAL = 20,
+    DECIMAL_ARRAY = 21,
+    TIME = 22,
+    TIME_ARRAY = 23,
+    DATE = 24,
+    DATE_ARRAY = 25,
+    TIMESTAMP = 26,
+    TIMESTAMP_ARRAY = 27,
+    TIMESTAMP_WITH_TIMEZONE,
+    TIMESTAMP_WITH_TIMEZONE_ARRAY = 29
 }
 
 /**
