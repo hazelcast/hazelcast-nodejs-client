@@ -15,16 +15,14 @@
  */
 
 /**
- * A wrapper for BigDecimal values. This class does not provide arithmetic operations.
- * A `BigDecimal` consists of an arbitrary precision number {@link unscaledValue} and a {@link scale}.
+ * A wrapper for BigDecimal values. You can use this class to store and query BigDecimal values in distributed objects.
  *
- * If zero or positive, the scale is the number of digits to the right of the decimal
+ * A `BigDecimal` consists of an arbitrary precision number {@link unscaledValue} and a {@link scale}. If zero or positive,
+ * the scale is the number of digits to the right of the decimal
  * point. If negative, the unscaled value of the number is multiplied
  * by ten to the power of the negation of the scale.  The value of the
  * number represented by the `BigDecimal` is therefore
  * <code>(unscaledValue &times; 10<sup>-scale</sup>)</code>.
- *
- * You can use this class to store and query BigDecimal values in distributed objects.
  */
 export class BigDecimal {
 
