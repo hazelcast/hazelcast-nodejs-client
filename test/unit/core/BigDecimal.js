@@ -25,6 +25,7 @@ describe('BigDecimalTest', function () {
         [`1e${Number.MIN_SAFE_INTEGER}`, BigInt(1), -1 * Number.MIN_SAFE_INTEGER],
         [`1e${Number.MAX_SAFE_INTEGER}`, BigInt(1), -1 * Number.MAX_SAFE_INTEGER],
         ['1.123123', BigInt(1123123), 6],
+        ['.123123', BigInt(123123), 6],
         ['123000', BigInt(123000), 0],
         ['0', BigInt(0), 0],
         ['-0', BigInt(0), 0],
@@ -43,6 +44,7 @@ describe('BigDecimalTest', function () {
 
     const toStringTestParams = [
         ['1.123123', '1.123123'],
+        ['.123123', '0.123123'],
         ['12312312.12222223123', '12312312.12222223123'],
         [
             '1.1222222222222222222222222222222222222222312312312312312333333333333331',
