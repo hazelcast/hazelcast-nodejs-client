@@ -559,7 +559,7 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
     }
 
     write(output: DataOutput, bigDecimal: BigDecimal): void {
-        let bigintValue = bigDecimal.bigintValue;
+        let bigintValue = bigDecimal.unscaledValue;
 
         const isNegative = bigintValue < BigInt(0);
 

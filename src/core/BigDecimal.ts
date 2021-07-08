@@ -14,16 +14,45 @@
  * limitations under the License.
  */
 
-import {assertString} from '../util/Util';
-
 /**
- * Big is a wrapper for BigDecimal values. You can use this class to store
- * and retrieve BigDecimal values or to query a data structure.
+ * A wrapper for BigDecimal values. This class does not provide arithmetic operations.
+ * A `BigDecimal` consists of an arbitrary precision number {@link unscaledValue} and a {@link scale}.
+ *
+ * If zero or positive, the scale is the number of digits to the right of the decimal
+ * point. If negative, the unscaled value of the number is multiplied
+ * by ten to the power of the negation of the scale.  The value of the
+ * number represented by the `BigDecimal` is therefore
+ * <code>(unscaledValue &times; 10<sup>-scale</sup>)</code>.
+ *
+ * This class supports creation of a new instance only from strings.
+ * During construction, the string will be checked for validity. You can give exponents
+ *
+ * After you get this class from the server-side you can use {@link toString} method to get the string representation of
+ * the BigDecimal.
+ *
+ * You can use this class to store and query BigDecimal values in distributed objects.
  */
 export class BigDecimal {
 
     /** @internal */
-    private constructor(readonly bigintValue: BigInt, readonly scale: number) {
+    private static readonly MAX_EXPONENT_DIGITS = Number.MAX_SAFE_INTEGER.toString().length;
+
+    /** @internal */
+    private constructor(
+        /**
+         * Unscaled value of this `BigDecimal`. This value is a native JavaScript BigInt object, which is used to store
+         * digits of this BigDecimal.
+         */
+        readonly unscaledValue: BigInt,
+        /**
+         * Scale of this `BigDecimal`.  If zero or positive, the scale
+         * is the number of digits to the right of the decimal point.
+         * If negative, the unscaled value of the number is multiplied
+         * by ten to the power of the negation of the scale. For example,
+         * a scale of `-3` means the unscaled value is multiplied by 1000.
+         */
+        readonly scale: number
+    ) {
     }
 
     /** @internal */
@@ -41,12 +70,12 @@ export class BigDecimal {
         if (len <= 0) {
             throw new RangeError('No exponent digits');
         }
-        while (len > 10 && c === '0') {
+        while (len > BigDecimal.MAX_EXPONENT_DIGITS && c === '0') {
             offset++;
             c = input[offset];
             len--;
         }
-        if (len > 10) {
+        if (len > BigDecimal.MAX_EXPONENT_DIGITS) {
             throw new RangeError('Too many nonzero exponent digits');
         }
         for (; ; len--) {
@@ -72,7 +101,7 @@ export class BigDecimal {
     /** @internal */
     private static adjustScale(scl: number, exp: number): number {
         const adjustedScale = scl - exp;
-        if (adjustedScale > Number.MAX_SAFE_INTEGER || adjustedScale < Number.MIN_SAFE_INTEGER) {
+        if (!Number.isSafeInteger(adjustedScale)) {
             throw new RangeError('Scale out of range.');
         }
         scl = adjustedScale;
@@ -81,7 +110,9 @@ export class BigDecimal {
 
     /** @internal */
     static _new(bigDecimalString: string): BigDecimal {
-        assertString(bigDecimalString);
+        if (typeof bigDecimalString !== 'string') {
+            throw new RangeError('String value expected');
+        }
         let offset = 0;
         let len = bigDecimalString.length;
         let precision = 0;
@@ -136,6 +167,9 @@ export class BigDecimal {
                 throw new RangeError('String is missing "e" notation exponential mark.');
             }
             exp = BigDecimal.parseExp(bigDecimalString, offset, len);
+            if (!Number.isSafeInteger(exp)) {
+                throw new RangeError('Exponent overflow');
+            }
             break;
         }
         if (precision === 0) {
@@ -165,16 +199,30 @@ export class BigDecimal {
 
     /** @internal */
     private signum(): number {
-        return this.bigintValue > BigInt(0) ? 1 : (this.bigintValue < BigInt(0) ? -1 : 0);
+        return this.unscaledValue > BigInt(0) ? 1 : (this.unscaledValue < BigInt(0) ? -1 : 0);
     }
 
     /**
-     * Returns unaltered string that was used to create this object.
-     * @return original string
+     * Returns a string representation of this `BigDecimal`
+     * without an exponent field.  For values with a positive scale,
+     * the number of digits to the right of the decimal point is used
+     * to indicate scale. For values with a zero or negative scale,
+     * the resulting string is generated as if the value were
+     * converted to a numerically equal value with zero scale and as
+     * if all the trailing zeros of the zero scale value were present
+     * in the result.
+     *
+     * The entire string is prefixed by a minus sign character '-'
+     * (<code>'&#92;u002D'</code>) if the unscaled value is less than
+     * zero. No sign character is prefixed if the unscaled value is
+     * zero or positive.
+     *
+     * @return a string representation of this `BigDecimal`
+     * without an exponent field.
      */
     toString(): string {
         if (this.scale === 0) {
-            return this.bigintValue.toString();
+            return this.unscaledValue.toString();
         }
         if (this.scale < 0) {
             if (this.signum() === 0) {
@@ -182,13 +230,13 @@ export class BigDecimal {
             }
             const trailingZeros = -this.scale;
             let buf = '';
-            buf += this.bigintValue.toString();
+            buf += this.unscaledValue.toString();
             for (let i = 0; i < trailingZeros; i++) {
                 buf += '0';
             }
             return buf;
         }
-        const str = BigDecimal.bigIntAbs(this.bigintValue).toString();
+        const str = BigDecimal.bigIntAbs(this.unscaledValue).toString();
         return BigDecimal.getValueString(this.signum(), str, this.scale);
     }
 
@@ -229,6 +277,55 @@ function _Big(decimalString: string): BigDecimal {
 /**
  * Constructor function for {@link BigDecimal}. Can be invoked with new or without new.
  *
+ * Translates the string representation of a `BigDecimal`
+ * into a `BigDecimal`.  The string representation consists
+ * of an optional sign, '+' (<code> '&#92;u002B'</code>) or
+ * '-' (<code>'&#92;u002D'</code>), followed by a sequence of
+ * zero or more decimal digits ("the integer"), optionally
+ * followed by a fraction, optionally followed by an exponent.
+ *
+ * The fraction consists of a decimal point followed by zero
+ * or more decimal digits. The string must contain at least one
+ * digit in either the integer or the fraction. The number formed
+ * by the sign, the integer and the fraction is referred to as the
+ * significand.
+ *
+ * The exponent consists of the character 'e'
+ * (<code>'&#92;u0065'</code>) or 'E' (<code>'&#92;u0045'</code>)
+ * followed by one or more decimal digits. The value of the
+ * exponent must be a safe integer.
+ *
+ * The scale of the returned `BigDecimal` will be the
+ * number of digits in the fraction, or zero if the string
+ * contains no decimal point, subject to adjustment for any
+ * exponent; if the string contains an exponent, the exponent is
+ * subtracted from the scale. The value of the resulting scale
+ * must be a safe integer.
+ *
+ * ## Examples:
+ *
+ * The value of the returned `BigDecimal` is equal to
+ * <i>significand</i> &times; 10<sup>&nbsp;<i>exponent</i></sup>.
+ * For each string on the left, the resulting representation
+ * [{`BigInt`, `scale`] is shown on the right.
+ * <pre>
+ * "0"            [0,0]
+ * "0.00"         [0,2]
+ * "123"          [123,0]
+ * "-123"         [-123,0]
+ * "1.23E3"       [123,-1]
+ * "1.23E+3"      [123,-1]
+ * "12.3E+7"      [123,-6]
+ * "12.0"         [120,1]
+ * "12.3"         [123,1]
+ * "0.00123"      [123,5]
+ * "-1.23E-12"    [-123,14]
+ * "1234.5E-4"    [12345,5]
+ * "0E+7"         [0,-7]
+ * "-0"           [0,0]
+ * </pre>
+ *
  * @param decimalString a non-null BigDecimal string
+ * @throws RangeError if decimalString is not a valid representation of a `BigDecimal`.
  */
 export const Big: BigInterface = <BigInterface>_Big;
