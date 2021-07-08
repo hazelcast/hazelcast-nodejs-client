@@ -24,12 +24,6 @@
  * number represented by the `BigDecimal` is therefore
  * <code>(unscaledValue &times; 10<sup>-scale</sup>)</code>.
  *
- * This class supports creation of a new instance only from strings.
- * During construction, the string will be checked for validity. You can give exponents
- *
- * After you get this class from the server-side you can use {@link toString} method to get the string representation of
- * the BigDecimal.
- *
  * You can use this class to store and query BigDecimal values in distributed objects.
  */
 export class BigDecimal {
