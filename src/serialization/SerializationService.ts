@@ -26,7 +26,8 @@ import * as Util from '../util/Util';
 import {Data, DataInput, DataOutput} from './Data';
 import {Serializer, IdentifiedDataSerializableFactory} from './Serializable';
 import {
-    ArrayListSerializer, BigDecimalSerializer,
+    ArrayListSerializer,
+    BigDecimalSerializer,
     BooleanArraySerializer,
     BooleanSerializer,
     ByteArraySerializer,
@@ -44,10 +45,14 @@ import {
     IntegerSerializer,
     JavaClassSerializer,
     JsonSerializer,
-    LinkedListSerializer, LocalDateSerializer, LocalDateTimeSerializer, LocalTimeSerializer,
+    LinkedListSerializer,
+    LocalDateSerializer,
+    LocalDateTimeSerializer,
+    LocalTimeSerializer,
     LongArraySerializer,
     LongSerializer,
-    NullSerializer, OffsetDateTimeSerializer,
+    NullSerializer,
+    OffsetDateTimeSerializer,
     ShortArraySerializer,
     ShortSerializer,
     StringArraySerializer,

@@ -17,6 +17,11 @@
 
 import {Buffer} from 'buffer';
 
+/**
+ * Constructs a big decimal string from a buffer and a scale
+ * @param buffer
+ * @param scale
+ */
 export function fromBufferAndScale(buffer: Buffer, scale: number): string {
     const isNegative = (buffer[0] & 0x80) > 0;
     if (isNegative) { // negative, convert two's complement to positive
@@ -34,10 +39,6 @@ export function fromBufferAndScale(buffer: Buffer, scale: number): string {
     }
     const bigIntString = bigint.toString();
 
-    return getDecimalString(bigIntString, scale, isNegative);
-}
-
-function getDecimalString(bigIntString: string, scale: number, isNegative: boolean): string {
     if (scale === 0) {
         return (isNegative ? '-' : '') + bigIntString;
     } else if (scale > 0) {
@@ -52,4 +53,3 @@ function getDecimalString(bigIntString: string, scale: number, isNegative: boole
         return (isNegative ? '-' : '') + bigIntString + '0'.repeat(-1 * scale);
     }
 }
-
