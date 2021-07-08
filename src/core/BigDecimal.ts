@@ -31,22 +31,25 @@ export class BigDecimal {
     /** @internal */
     private static readonly MAX_EXPONENT_DIGITS = Number.MAX_SAFE_INTEGER.toString().length;
 
+    /**
+     * Unscaled value of this `BigDecimal`. This value is a native JavaScript BigInt object, which is used to store
+     * digits of this BigDecimal.
+     */
+    readonly unscaledValue: BigInt;
+
+    /**
+     * Scale of this `BigDecimal`.  If zero or positive, the scale
+     * is the number of digits to the right of the decimal point.
+     * If negative, the unscaled value of the number is multiplied
+     * by ten to the power of the negation of the scale. For example,
+     * a scale of `-3` means the unscaled value is multiplied by 1000.
+     */
+    readonly scale: number;
+
     /** @internal */
-    private constructor(
-        /**
-         * Unscaled value of this `BigDecimal`. This value is a native JavaScript BigInt object, which is used to store
-         * digits of this BigDecimal.
-         */
-        readonly unscaledValue: BigInt,
-        /**
-         * Scale of this `BigDecimal`.  If zero or positive, the scale
-         * is the number of digits to the right of the decimal point.
-         * If negative, the unscaled value of the number is multiplied
-         * by ten to the power of the negation of the scale. For example,
-         * a scale of `-3` means the unscaled value is multiplied by 1000.
-         */
-        readonly scale: number
-    ) {
+    private constructor(unscaledValue: BigInt, scale: number) {
+        this.unscaledValue = unscaledValue;
+        this.scale = scale;
     }
 
     /** @internal */
