@@ -304,7 +304,7 @@ function _Big(decimalString: string): BigDecimal {
  * The value of the returned `BigDecimal` is equal to
  * <i>significand</i> &times; 10<sup>&nbsp;<i>exponent</i></sup>.
  * For each string on the left, the resulting representation
- * [{`BigInt`, `scale`] is shown on the right.
+ * [`BigInt`, `scale`] is shown on the right.
  * <pre>
  * "0"            [0,0]
  * "0.00"         [0,2]
