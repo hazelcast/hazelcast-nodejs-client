@@ -53,3 +53,39 @@ export function fromBufferAndScale(buffer: Buffer, scale: number): string {
         return (isNegative ? '-' : '') + bigIntString + '0'.repeat(-1 * scale);
     }
 }
+
+/**
+ * Returns byte array form of unscaled value
+ * @param unscaledValue
+ */
+export function unscaledValueToBuffer(unscaledValue: BigInt): Buffer {
+    const isNegative = unscaledValue < BigInt(0);
+    let hex;
+
+    // for getting two's complement of it
+    if (isNegative) {
+        unscaledValue = unscaledValue.valueOf() + BigInt(1);
+        hex = unscaledValue.toString(16).slice(1); // exclude minus sign
+    } else {
+        hex = unscaledValue.toString(16);
+    }
+
+    // prepend 0 to get a even length string
+    if (hex.length % 2) {
+        hex = '0' + hex;
+    }
+
+    const numberOfBytes = hex.length / 2;
+    const byteArray = new Array(numberOfBytes);
+
+    let i = 0;
+    let j = 0;
+    while (i < numberOfBytes) {
+        const byte = parseInt(hex.slice(j, j + 2), 16);
+        byteArray[i] = isNegative ? ~byte : byte; // for two's complement
+        i += 1;
+        j += 2;
+    }
+
+    return Buffer.from(byteArray);
+}

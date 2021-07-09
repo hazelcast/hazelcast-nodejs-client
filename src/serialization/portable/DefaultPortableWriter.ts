@@ -30,6 +30,7 @@ import {
     HzOffsetDateTime
 } from '../../core';
 import {IOUtil} from '../../util/IOUtil';
+import {PortableUtil} from '../../util/PortableUtil';
 
 /** @internal */
 export class DefaultPortableWriter implements PortableWriter {
@@ -133,15 +134,15 @@ export class DefaultPortableWriter implements PortableWriter {
     }
 
     writeDate(fieldName: string, value: HzLocalDate): void {
-        this.writeNullable(fieldName, FieldType.DATE, value, IOUtil.writeHzLocalDate);
+        this.writeNullable(fieldName, FieldType.DATE, value, PortableUtil.writeHzLocalDateForPortable);
     }
 
     writeTimestamp(fieldName: string, value: HzLocalDateTime): void {
-        this.writeNullable(fieldName, FieldType.TIMESTAMP, value, IOUtil.writeHzLocalDatetime);
+        this.writeNullable(fieldName, FieldType.TIMESTAMP, value, PortableUtil.writeHzLocalDatetimeForPortable);
     }
 
     writeTimestampWithTimezone(fieldName: string, value: HzOffsetDateTime): void {
-        this.writeNullable(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, value, IOUtil.writeHzOffsetDatetime);
+        this.writeNullable(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, value, PortableUtil.writeHzOffsetDatetimeForPortable);
     }
 
     writeNullable<T>(fieldName: string, fieldType: FieldType, value: T | null, writeFn: (out: DataOutput, value: T) => void) {
@@ -232,15 +233,17 @@ export class DefaultPortableWriter implements PortableWriter {
     }
 
     writeDateArray(fieldName: string, values: HzLocalDate[] | null): void {
-        this.writeObjectArrayField(fieldName, FieldType.DATE_ARRAY, values, IOUtil.writeHzLocalDate)
+        this.writeObjectArrayField(fieldName, FieldType.DATE_ARRAY, values, PortableUtil.writeHzLocalDateForPortable)
     }
 
     writeTimestampArray(fieldName: string, values: HzLocalDateTime[] | null): void {
-        this.writeObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, values, IOUtil.writeHzLocalDatetime)
+        this.writeObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, values, PortableUtil.writeHzLocalDatetimeForPortable)
     }
 
     writeTimestampWithTimezoneArray(fieldName: string, values: HzOffsetDateTime[] | null): void {
-        this.writeObjectArrayField(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, values, IOUtil.writeHzOffsetDatetime);
+        this.writeObjectArrayField(
+            fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, values, PortableUtil.writeHzOffsetDatetimeForPortable
+        );
     }
 
     writeObjectArrayField<T>(

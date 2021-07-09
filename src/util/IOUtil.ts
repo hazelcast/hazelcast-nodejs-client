@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 import {Big, BigDecimal, HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime} from '../core';
-import {fromBufferAndScale} from './BigDecimalUtil';
+import {fromBufferAndScale, unscaledValueToBuffer} from './BigDecimalUtil';
 import {DataInput, DataOutput} from '../serialization';
 
 /** @internal */
@@ -36,64 +36,60 @@ export class IOUtil {
     }
 
     static readHzLocalDate(inp: DataInput): HzLocalDate {
-        const year = inp.readShort();
+        const year = inp.readInt();
         const month = inp.readByte();
         const date = inp.readByte();
         return new HzLocalDate(year, month, date);
     }
 
     static readHzLocalDatetime(inp: DataInput): HzLocalDateTime {
-        const year = inp.readShort();
-        const month = inp.readByte();
-        const date = inp.readByte();
+        const hzLocalDate = IOUtil.readHzLocalDate(inp);
+        const hzLocalTime = IOUtil.readHzLocalTime(inp);
 
-        const hour = inp.readByte();
-        const minute = inp.readByte();
-        const second = inp.readByte();
-        const nano = inp.readInt();
-
-        return new HzLocalDateTime(new HzLocalDate(year, month, date), new HzLocalTime(hour, minute, second, nano));
+        return new HzLocalDateTime(hzLocalDate, hzLocalTime);
     }
 
     static readHzOffsetDatetime(inp: DataInput): HzOffsetDateTime {
-        const year = inp.readShort();
-        const month = inp.readByte();
-        const date = inp.readByte();
-
-        const hour = inp.readByte();
-        const minute = inp.readByte();
-        const second = inp.readByte();
-        const nano = inp.readInt();
+        const hzLocalDate = IOUtil.readHzLocalDate(inp);
+        const hzLocalTime = IOUtil.readHzLocalTime(inp);
 
         const offsetSeconds = inp.readInt();
 
         return new HzOffsetDateTime(
             new HzLocalDateTime(
-                new HzLocalDate(year, month, date),
-                new HzLocalTime(hour, minute, second, nano)
+                hzLocalDate,
+                hzLocalTime
             ),
             offsetSeconds
         );
     }
 
-    static writeDecimal(inp: DataOutput, value: BigDecimal): void {
-
+    static writeDecimal(out: DataOutput, value: BigDecimal): void {
+        out.writeByteArray(unscaledValueToBuffer(value.unscaledValue));
+        out.writeInt(value.scale);
     }
 
-    static writeHzLocalTime(inp: DataOutput, value: HzLocalTime): void {
-
+    static writeHzLocalTime(out: DataOutput, value: HzLocalTime): void {
+        out.writeByte(value.hour);
+        out.writeByte(value.minute);
+        out.writeByte(value.second);
+        out.writeInt(value.nano);
     }
 
-    static writeHzLocalDate(inp: DataOutput, value: HzLocalDate): void {
-
+    static writeHzLocalDate(out: DataOutput, value: HzLocalDate): void {
+        out.writeInt(value.year);
+        out.writeByte(value.month);
+        out.writeByte(value.date);
     }
 
-    static writeHzLocalDatetime(inp: DataOutput, value: HzLocalDateTime): void {
-
+    static writeHzLocalDatetime(out: DataOutput, value: HzLocalDateTime): void {
+        IOUtil.writeHzLocalDate(out, value.hzLocalDate);
+        IOUtil.writeHzLocalTime(out, value.hzLocalTime);
     }
 
-    static writeHzOffsetDatetime(inp: DataOutput, value: HzOffsetDateTime): void {
-
+    static writeHzOffsetDatetime(out: DataOutput, value: HzOffsetDateTime): void {
+        IOUtil.writeHzLocalDatetime(out, value.hzLocalDateTime);
+        out.writeInt(value.offsetSeconds);
     }
 
 }
