@@ -182,8 +182,8 @@ describe('Data type test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-            [long.fromNumber(10), long.fromNumber(16)]
+            `SELECT * FROM ${mapName} WHERE this > CAST(? AS TINYINT) AND this < CAST(? AS TINYINT) ORDER BY __key ASC`,
+            [10, 16]
         );
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TINYINT);
@@ -211,8 +211,8 @@ describe('Data type test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-            [long.fromNumber(8), long.fromNumber(16)]
+            `SELECT * FROM ${mapName} WHERE this > CAST(? AS SMALLINT) AND this < CAST(? AS SMALLINT) ORDER BY __key ASC`,
+            [8, 16]
         );
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.SMALLINT);
@@ -240,8 +240,8 @@ describe('Data type test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
-            `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-            [long.fromNumber(10), long.fromNumber(20)]
+            `SELECT * FROM ${mapName} WHERE this > CAST(? AS INTEGER) AND this < CAST(? AS INTEGER) ORDER BY __key ASC`,
+            [10, 20]
         );
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.INTEGER);
