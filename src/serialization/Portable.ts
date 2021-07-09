@@ -84,7 +84,7 @@ export interface PortableWriter {
      * @deprecated since version 4.2 for the sake of better naming. Please use {@link writeString} instead.
      * This method will be removed in the next major version.
      */
-    writeUTF(fieldName: string, value: string): void;
+    writeUTF(fieldName: string, value: string | null): void;
 
     /**
      * Writes an UTF string.
@@ -92,7 +92,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     utf string value to be written
      */
-    writeString(fieldName: string, value: string): void;
+    writeString(fieldName: string, value: string | null): void;
 
     /**
      * Writes a primitive boolean.
@@ -149,7 +149,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param portable  Portable to be written
      */
-    writePortable(fieldName: string, portable: Portable): void;
+    writePortable(fieldName: string, portable: Portable | null): void;
 
     /**
      * To write a null portable value, user needs to provide class and factoryIds of related class.
@@ -166,7 +166,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     BigDecimal value to be written
      */
-    writeDecimal(fieldName: string, value: BigDecimal): void;
+    writeDecimal(fieldName: string, value: BigDecimal | null): void;
 
     /**
      * Write a time field consisting of hour, minute, seconds and nanos parts
@@ -174,7 +174,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     HzLocalTime value to be written
      */
-    writeTime(fieldName: string, value: HzLocalTime): void
+    writeTime(fieldName: string, value: HzLocalTime | null): void
 
     /**
      * Writes a date field consisting of year, month of the year and day of the month
@@ -182,7 +182,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     HzLocalDate value to be written
      */
-    writeDate(fieldName: string, value: HzLocalDate): void;
+    writeDate(fieldName: string, value: HzLocalDate | null): void;
 
     /**
      * Writes a timestamp field consisting of
@@ -191,7 +191,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     HzLocalDateTime value to be written
      */
-    writeTimestamp(fieldName: string, value: HzLocalDateTime): void;
+    writeTimestamp(fieldName: string, value: HzLocalDateTime | null): void;
 
     /**
      * Writes a timestamp with timezone field consisting of
@@ -200,7 +200,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     HzOffsetDateTime value to be written
      */
-    writeTimestampWithTimezone(fieldName: string, value: HzOffsetDateTime): void;
+    writeTimestampWithTimezone(fieldName: string, value: HzOffsetDateTime | null): void;
 
     /**
      * Writes a primitive byte-array.
@@ -208,7 +208,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param bytes     byte array to be written
      */
-    writeByteArray(fieldName: string, bytes: Buffer): void;
+    writeByteArray(fieldName: string, bytes: Buffer | null): void;
 
     /**
      * Writes a primitive boolean-array.
@@ -216,7 +216,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param booleans  boolean array to be written
      */
-    writeBooleanArray(fieldName: string, booleans: boolean[]): void;
+    writeBooleanArray(fieldName: string, booleans: boolean[] | null): void;
 
     /**
      * Writes a primitive char-array.
@@ -224,7 +224,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param chars     char array to be written
      */
-    writeCharArray(fieldName: string, chars: string[]): void;
+    writeCharArray(fieldName: string, chars: string[] | null): void;
 
     /**
      * Writes a primitive int-array.
@@ -232,7 +232,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param ints      int array to be written
      */
-    writeIntArray(fieldName: string, ints: number[]): void;
+    writeIntArray(fieldName: string, ints: number[] | null): void;
 
     /**
      * Writes a primitive long-array.
@@ -240,7 +240,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param longs     long array to be written
      */
-    writeLongArray(fieldName: string, longs: Long[]): void;
+    writeLongArray(fieldName: string, longs: Long[] | null): void;
 
     /**
      * Writes a primitive double array.
@@ -248,7 +248,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param values    double array to be written
      */
-    writeDoubleArray(fieldName: string, values: number[]): void;
+    writeDoubleArray(fieldName: string, values: number[] | null): void;
 
     /**
      * Writes a primitive float array.
@@ -256,7 +256,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param values    float array to be written
      */
-    writeFloatArray(fieldName: string, values: number[]): void;
+    writeFloatArray(fieldName: string, values: number[] | null): void;
 
     /**
      * Writes a primitive short-array.
@@ -264,7 +264,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param values    short array to be written
      */
-    writeShortArray(fieldName: string, values: number[]): void;
+    writeShortArray(fieldName: string, values: number[] | null): void;
 
     /**
      * Writes a String-array.
@@ -274,7 +274,7 @@ export interface PortableWriter {
      * @deprecated  since version 4.2. for the sake of better naming. Please use {@link writeStringArray} instead.
      * This method will be removed in next major version.
      */
-    writeUTFArray(fieldName: string, values: string[]): void;
+    writeUTFArray(fieldName: string, values: string[] | null): void;
 
     /**
      * Writes a String-array.
@@ -282,7 +282,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param values    String array to be written
      */
-    writeStringArray(fieldName: string, values: string[]): void;
+    writeStringArray(fieldName: string, values: string[] | null): void;
 
     /**
      * Writes a an array of Portables.
@@ -290,7 +290,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param values    portable array to be written
      */
-    writePortableArray(fieldName: string, values: Portable[]): void;
+    writePortableArray(fieldName: string, values: Portable[] | null): void;
 
     /**
      * Writes an array of Decimals
@@ -299,7 +299,7 @@ export interface PortableWriter {
      * @param values    BigDecimal array to be written
      * @see {@link writeDecimal}
      */
-    writeDecimalArray(fieldName: string, values: BigDecimal[]): void;
+    writeDecimalArray(fieldName: string, values: BigDecimal[] | null): void;
 
     /**
      * Writes an array of Time's
@@ -308,7 +308,7 @@ export interface PortableWriter {
      * @param values    HzLocalTime array to be written
      * @see {@link writeTime}
      */
-    writeTimeArray(fieldName: string, values: HzLocalTime[]): void;
+    writeTimeArray(fieldName: string, values: HzLocalTime[] | null): void;
 
     /**
      * Writes an array of Date's
@@ -317,7 +317,7 @@ export interface PortableWriter {
      * @param values    HzLocalDate array to be written
      * @see {@link writeDate}
      */
-    writeDateArray(fieldName: string, values: HzLocalDate[]): void;
+    writeDateArray(fieldName: string, values: HzLocalDate[] | null): void;
 
     /**
      * Writes an array of Timestamp's
@@ -326,7 +326,7 @@ export interface PortableWriter {
      * @param values    HzLocalDateTime array to be written
      * @see {@link writeTimestamp}
      */
-    writeTimestampArray(fieldName: string, values: HzLocalDateTime[]): void;
+    writeTimestampArray(fieldName: string, values: HzLocalDateTime[] | null): void;
 
     /**
      * Writes an array of TimestampWithTimezone's
@@ -335,7 +335,7 @@ export interface PortableWriter {
      * @param values    HzOffsetDateTime array to be written
      * @see {@link writeTimestampWithTimezone}
      */
-    writeTimestampWithTimezoneArray(fieldName: string, values: HzOffsetDateTime[]): void;
+    writeTimestampWithTimezoneArray(fieldName: string, values: HzOffsetDateTime[] | null): void;
 }
 
 /**
@@ -383,13 +383,13 @@ export interface PortableReader {
      * @deprecated since version 4.2 for the sake of better naming. Please use {@link readString} instead.
      * This method will be removed in next major version.
      */
-    readUTF(fieldName: string): string;
+    readUTF(fieldName: string): string | null;
 
     /**
      * @param fieldName name of the field
      * @return the string value read
      */
-    readString(fieldName: string): string;
+    readString(fieldName: string): string | null;
 
     /**
      * @param fieldName name of the field
@@ -431,7 +431,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the portable value read
      */
-    readPortable(fieldName: string): Portable;
+    readPortable(fieldName: string): Portable | null;
 
     /**
      * Reads a decimal which is arbitrary precision and scale floating-point number to BigDecimal
@@ -439,7 +439,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the BigDecimal value read
      */
-    readDecimal(fieldName: string): BigDecimal;
+    readDecimal(fieldName: string): BigDecimal | null;
 
     /**
      * Reads a time field consisting of hour, minute, seconds and nanos parts to HzLocalTime
@@ -447,7 +447,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the HzLocalTime value read
      */
-    readTime(fieldName: string): HzLocalTime;
+    readTime(fieldName: string): HzLocalTime | null;
 
     /**
      * Reads a date field consisting of year, month of the year and day of the month to HzLocalDate
@@ -455,7 +455,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the HzLocalDate value read
      */
-    readDate(fieldName: string): HzLocalDate;
+    readDate(fieldName: string): HzLocalDate | null;
 
     /**
      * Reads a timestamp field consisting of
@@ -464,7 +464,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the LocalDateTime value read
      */
-    readTimestamp(fieldName: string): HzLocalDateTime;
+    readTimestamp(fieldName: string): HzLocalDateTime | null;
 
     /**
      * Reads a timestamp with timezone field consisting of
@@ -474,55 +474,55 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the OffsetDateTime value read
      */
-    readTimestampWithTimezone(fieldName: string): HzOffsetDateTime;
+    readTimestampWithTimezone(fieldName: string): HzOffsetDateTime | null;
 
     /**
      * @param fieldName name of the field
      * @return the byte array value read
      */
-    readByteArray(fieldName: string): Buffer;
+    readByteArray(fieldName: string): Buffer | null;
 
     /**
      * @param fieldName name of the field
      * @return the boolean array value read
      */
-    readBooleanArray(fieldName: string): boolean[];
+    readBooleanArray(fieldName: string): boolean[] | null;
 
     /**
      * @param fieldName name of the field
      * @return the char array value read
      */
-    readCharArray(fieldName: string): string[];
+    readCharArray(fieldName: string): string[] | null;
 
     /**
      * @param fieldName name of the field
      * @return the int array value read
      */
-    readIntArray(fieldName: string): number[];
+    readIntArray(fieldName: string): number[] | null;
 
     /**
      * @param fieldName name of the field
      * @return the long array value read
      */
-    readLongArray(fieldName: string): Long[];
+    readLongArray(fieldName: string): Long[] | null;
 
     /**
      * @param fieldName name of the field
      * @return the double array value read
      */
-    readDoubleArray(fieldName: string): number[];
+    readDoubleArray(fieldName: string): number[] | null;
 
     /**
      * @param fieldName name of the field
      * @return the float array value read
      */
-    readFloatArray(fieldName: string): number[];
+    readFloatArray(fieldName: string): number[] | null;
 
     /**
      * @param fieldName name of the field
      * @return the short array value read
      */
-    readShortArray(fieldName: string): number[];
+    readShortArray(fieldName: string): number[] | null;
 
     /**
      * @param fieldName name of the field
@@ -530,19 +530,19 @@ export interface PortableReader {
      * @deprecated since version 4.2 for the sake of better naming. This method will be removed in next major version.
      * Please use {@link readStringArray} instead
      */
-    readUTFArray(fieldName: string): string[];
+    readUTFArray(fieldName: string): string[] | null;
 
     /**
      * @param fieldName name of the field
      * @return the String array value read
      */
-    readStringArray(fieldName: string): string[];
+    readStringArray(fieldName: string): string[] | null;
 
     /**
      * @param fieldName name of the field
      * @return the portable array read
      */
-    readPortableArray(fieldName: string): Portable[];
+    readPortableArray(fieldName: string): Portable[] | null;
 
     /**
      * Reads an array of Decimal's to BigDecimal[]
@@ -551,7 +551,7 @@ export interface PortableReader {
      * @return the BigDecimal array read
      * @see {@link readDecimal}
      */
-    readDecimalArray(fieldName: string): BigDecimal[];
+    readDecimalArray(fieldName: string): BigDecimal[] | null;
 
     /**
      * Reads an array of Time's to HzLocalTime[]
@@ -560,7 +560,7 @@ export interface PortableReader {
      * @return the HzLocalTime array read
      * @see {@link readTime}
      */
-    readTimeArray(fieldName: string): HzLocalTime[];
+    readTimeArray(fieldName: string): HzLocalTime[] | null;
 
     /**
      * Reads an array of Date's to HzLocalDate[]
@@ -569,7 +569,7 @@ export interface PortableReader {
      * @return the HzLocalDate array read
      * @see {@link readDate}
      */
-    readDateArray(fieldName: string): HzLocalDate[];
+    readDateArray(fieldName: string): HzLocalDate[] | null;
 
     /**
      * Reads an array of Timestamp's to HzLocalDateTime[]
@@ -578,7 +578,7 @@ export interface PortableReader {
      * @return the HzLocalDateTime array read
      * @see {@link readTimestamp}
      */
-    readTimestampArray(fieldName: string): HzLocalDateTime[];
+    readTimestampArray(fieldName: string): HzLocalDateTime[] | null;
 
     /**
      * Reads an array of Time's to HzOffsetDateTime[]
@@ -587,7 +587,7 @@ export interface PortableReader {
      * @return the HzOffsetDateTime array read
      * @see {@link readTimestampWithTimezone}
      */
-    readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTime[];
+    readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTime[] | null;
 }
 
 /**
