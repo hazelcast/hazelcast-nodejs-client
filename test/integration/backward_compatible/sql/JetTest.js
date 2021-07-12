@@ -32,6 +32,13 @@ describe('Jet Test', function () {
 
     const mapName = 'a';
     const mapName2 = 'b';
+    const jetEnabledConfig = `<?xml version="1.0" encoding="UTF-8"?>
+        <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.hazelcast.com/schema/config
+            http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+            <jet enabled="true"></jet>
+        </hazelcast>`;
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
@@ -41,7 +48,7 @@ describe('Jet Test', function () {
     beforeEach(async function () {
         map = undefined;
         map2 = undefined;
-        cluster = await RC.createCluster(null, null);
+        cluster = await RC.createCluster(null, jetEnabledConfig);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id
