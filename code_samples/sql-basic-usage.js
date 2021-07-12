@@ -26,7 +26,7 @@ const { Client, SqlColumnType } = require('hazelcast-client');
         await map.put('key2', 2);
         await map.put('key3', 3);
 
-        let result = client.getSqlService().execute('SELECT __key, this FROM myMap WHERE this > ?', [1]);
+        let result = client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1]);
         const rowMetadata = await result.getRowMetadata();
         const columns = await rowMetadata.getColumns();
 
@@ -37,16 +37,19 @@ const { Client, SqlColumnType } = require('hazelcast-client');
 
         console.log('Rows from query 1:');
         for await (const row of result) {
+            // By default a row is a plain javascript object where keys are column names and values are column values
             console.log(`${row['__key']}: ${row['this']}`);
         }
 
-        result = client.getSqlService().execute('SELECT __key, this FROM myMap WHERE this > ?', [1], {
-            returnRawResult: true // Return raw SqlRows instead of plain objects
+        // You can set returnRawResult to true to get rows as `SqlRow` objects
+        result = client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1], {
+            returnRawResult: true
         });
 
         console.log('Rows from query 2:');
         for await (const row of result) {
             console.log(`${row.getObject('__key')}: ${row.getObject('this')}`);
+            console.log(JSON.stringify(row.getMetadata())); // SqlRow has a getter for row metadata
         }
 
         await client.shutdown();
