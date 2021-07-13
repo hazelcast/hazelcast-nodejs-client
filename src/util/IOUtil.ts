@@ -17,14 +17,14 @@
 import {
     Big,
     BigDecimal,
+    LocalDate,
     HzLocalDate,
-    HzLocalDateClass,
+    LocalDateTime,
     HzLocalDateTime,
-    HzLocalDateTimeClass,
+    LocalTime,
     HzLocalTime,
-    HzLocalTimeClass,
-    HzOffsetDateTime,
-    HzOffsetDateTimeClass
+    OffsetDateTime,
+    HzOffsetDateTime
 } from '../core';
 import {fromBufferAndScale, bigintToByteArray} from './BigDecimalUtil';
 import {DataInput, DataOutput} from '../serialization';
@@ -39,36 +39,36 @@ export class IOUtil {
         return Big(fromBufferAndScale(buffer, scale));
     }
 
-    static readHzLocalTime(inp: DataInput): HzLocalTimeClass {
+    static readHzLocalTime(inp: DataInput): HzLocalTime {
         const hour = inp.readByte();
         const minute = inp.readByte();
         const second = inp.readByte();
         const nano = inp.readInt();
-        return HzLocalTime(hour, minute, second, nano);
+        return LocalTime(hour, minute, second, nano);
     }
 
-    static readHzLocalDate(inp: DataInput): HzLocalDateClass {
+    static readHzLocalDate(inp: DataInput): HzLocalDate {
         const year = inp.readInt();
         const month = inp.readByte();
         const date = inp.readByte();
-        return HzLocalDate(year, month, date);
+        return LocalDate(year, month, date);
     }
 
-    static readHzLocalDatetime(inp: DataInput): HzLocalDateTimeClass {
+    static readHzLocalDatetime(inp: DataInput): HzLocalDateTime {
         const hzLocalDate = IOUtil.readHzLocalDate(inp);
         const hzLocalTime = IOUtil.readHzLocalTime(inp);
 
-        return HzLocalDateTime(hzLocalDate, hzLocalTime);
+        return LocalDateTime(hzLocalDate, hzLocalTime);
     }
 
-    static readHzOffsetDatetime(inp: DataInput): HzOffsetDateTimeClass {
+    static readHzOffsetDatetime(inp: DataInput): HzOffsetDateTime {
         const hzLocalDate = IOUtil.readHzLocalDate(inp);
         const hzLocalTime = IOUtil.readHzLocalTime(inp);
 
         const offsetSeconds = inp.readInt();
 
-        return HzOffsetDateTime(
-            HzLocalDateTime(
+        return OffsetDateTime(
+            LocalDateTime(
                 hzLocalDate,
                 hzLocalTime
             ),
@@ -81,25 +81,25 @@ export class IOUtil {
         out.writeInt(value.scale);
     }
 
-    static writeHzLocalTime(out: DataOutput, value: HzLocalTimeClass): void {
+    static writeHzLocalTime(out: DataOutput, value: HzLocalTime): void {
         out.writeByte(value.hour);
         out.writeByte(value.minute);
         out.writeByte(value.second);
         out.writeInt(value.nano);
     }
 
-    static writeHzLocalDate(out: DataOutput, value: HzLocalDateClass): void {
+    static writeHzLocalDate(out: DataOutput, value: HzLocalDate): void {
         out.writeInt(value.year);
         out.writeByte(value.month);
         out.writeByte(value.date);
     }
 
-    static writeHzLocalDatetime(out: DataOutput, value: HzLocalDateTimeClass): void {
+    static writeHzLocalDatetime(out: DataOutput, value: HzLocalDateTime): void {
         IOUtil.writeHzLocalDate(out, value.hzLocalDate);
         IOUtil.writeHzLocalTime(out, value.hzLocalTime);
     }
 
-    static writeHzOffsetDatetime(out: DataOutput, value: HzOffsetDateTimeClass): void {
+    static writeHzOffsetDatetime(out: DataOutput, value: HzOffsetDateTime): void {
         IOUtil.writeHzLocalDatetime(out, value.hzLocalDateTime);
         out.writeInt(value.offsetSeconds);
     }

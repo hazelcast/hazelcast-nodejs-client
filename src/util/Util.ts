@@ -18,14 +18,8 @@
 import * as assert from 'assert';
 import * as Long from 'long';
 import * as Path from 'path';
-import {
-    BigDecimal,
-    HzLocalDateClass,
-    HzLocalDateTimeClass,
-    HzLocalTimeClass,
-    HzOffsetDateTimeClass,
-    UUID
-} from '../core';
+
+import {BigDecimal, HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime, UUID} from '../core';
 
 /** @internal */
 export function assertNotNull(v: any): void {
@@ -80,13 +74,13 @@ export function getType(obj: any): string {
         return 'buffer';
     } else if (UUID.isUUID(obj)) {
         return 'uuid';
-    } else if (obj instanceof HzLocalDateClass) {
+    } else if (obj instanceof HzLocalDate) {
         return 'localDate';
-    } else if (obj instanceof HzLocalTimeClass) {
+    } else if (obj instanceof HzLocalTime) {
         return 'localTime';
-    } else if (obj instanceof HzLocalDateTimeClass) {
+    } else if (obj instanceof HzLocalDateTime) {
         return 'localDatetime';
-    } else if (obj instanceof HzOffsetDateTimeClass) {
+    } else if (obj instanceof HzOffsetDateTime) {
         return 'offsetDatetime';
     } else if (obj instanceof BigDecimal) {
         return 'bigdecimal';

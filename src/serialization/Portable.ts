@@ -17,10 +17,10 @@
 import * as Long from 'long';
 import {
     BigDecimal,
-    HzLocalDateClass,
-    HzLocalDateTimeClass,
-    HzLocalTimeClass,
-    HzOffsetDateTimeClass
+    HzLocalDate,
+    HzLocalDateTime,
+    HzLocalTime,
+    HzOffsetDateTime
 } from '../core';
 
 /**
@@ -180,7 +180,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     HzLocalTime value to be written
      */
-    writeTime(fieldName: string, value: HzLocalTimeClass | null): void
+    writeTime(fieldName: string, value: HzLocalTime | null): void
 
     /**
      * Writes a date field consisting of year, month of the year and day of the month
@@ -188,7 +188,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     HzLocalDate value to be written
      */
-    writeDate(fieldName: string, value: HzLocalDateClass | null): void;
+    writeDate(fieldName: string, value: HzLocalDate | null): void;
 
     /**
      * Writes a timestamp field consisting of
@@ -197,7 +197,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     HzLocalDateTime value to be written
      */
-    writeTimestamp(fieldName: string, value: HzLocalDateTimeClass | null): void;
+    writeTimestamp(fieldName: string, value: HzLocalDateTime | null): void;
 
     /**
      * Writes a timestamp with timezone field consisting of
@@ -206,7 +206,7 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     HzOffsetDateTime value to be written
      */
-    writeTimestampWithTimezone(fieldName: string, value: HzOffsetDateTimeClass | null): void;
+    writeTimestampWithTimezone(fieldName: string, value: HzOffsetDateTime | null): void;
 
     /**
      * Writes a primitive byte-array.
@@ -314,7 +314,7 @@ export interface PortableWriter {
      * @param values    HzLocalTime array to be written
      * @see {@link writeTime}
      */
-    writeTimeArray(fieldName: string, values: HzLocalTimeClass[] | null): void;
+    writeTimeArray(fieldName: string, values: HzLocalTime[] | null): void;
 
     /**
      * Writes an array of Date's
@@ -323,7 +323,7 @@ export interface PortableWriter {
      * @param values    HzLocalDate array to be written
      * @see {@link writeDate}
      */
-    writeDateArray(fieldName: string, values: HzLocalDateClass[] | null): void;
+    writeDateArray(fieldName: string, values: HzLocalDate[] | null): void;
 
     /**
      * Writes an array of Timestamp's
@@ -332,7 +332,7 @@ export interface PortableWriter {
      * @param values    HzLocalDateTime array to be written
      * @see {@link writeTimestamp}
      */
-    writeTimestampArray(fieldName: string, values: HzLocalDateTimeClass[] | null): void;
+    writeTimestampArray(fieldName: string, values: HzLocalDateTime[] | null): void;
 
     /**
      * Writes an array of TimestampWithTimezone's
@@ -341,7 +341,7 @@ export interface PortableWriter {
      * @param values    HzOffsetDateTime array to be written
      * @see {@link writeTimestampWithTimezone}
      */
-    writeTimestampWithTimezoneArray(fieldName: string, values: HzOffsetDateTimeClass[] | null): void;
+    writeTimestampWithTimezoneArray(fieldName: string, values: HzOffsetDateTime[] | null): void;
 }
 
 /**
@@ -453,7 +453,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the HzLocalTime value read
      */
-    readTime(fieldName: string): HzLocalTimeClass | null;
+    readTime(fieldName: string): HzLocalTime | null;
 
     /**
      * Reads a date field consisting of year, month of the year and day of the month to HzLocalDate
@@ -461,7 +461,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the HzLocalDate value read
      */
-    readDate(fieldName: string): HzLocalDateClass | null;
+    readDate(fieldName: string): HzLocalDate | null;
 
     /**
      * Reads a timestamp field consisting of
@@ -470,7 +470,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the LocalDateTime value read
      */
-    readTimestamp(fieldName: string): HzLocalDateTimeClass | null;
+    readTimestamp(fieldName: string): HzLocalDateTime | null;
 
     /**
      * Reads a timestamp with timezone field consisting of
@@ -480,7 +480,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the OffsetDateTime value read
      */
-    readTimestampWithTimezone(fieldName: string): HzOffsetDateTimeClass | null;
+    readTimestampWithTimezone(fieldName: string): HzOffsetDateTime | null;
 
     /**
      * @param fieldName name of the field
@@ -566,7 +566,7 @@ export interface PortableReader {
      * @return the HzLocalTime array read
      * @see {@link readTime}
      */
-    readTimeArray(fieldName: string): HzLocalTimeClass[] | null;
+    readTimeArray(fieldName: string): HzLocalTime[] | null;
 
     /**
      * Reads an array of Date's to HzLocalDate[]
@@ -575,7 +575,7 @@ export interface PortableReader {
      * @return the HzLocalDate array read
      * @see {@link readDate}
      */
-    readDateArray(fieldName: string): HzLocalDateClass[] | null;
+    readDateArray(fieldName: string): HzLocalDate[] | null;
 
     /**
      * Reads an array of Timestamp's to HzLocalDateTime[]
@@ -584,7 +584,7 @@ export interface PortableReader {
      * @return the HzLocalDateTime array read
      * @see {@link readTimestamp}
      */
-    readTimestampArray(fieldName: string): HzLocalDateTimeClass[] | null;
+    readTimestampArray(fieldName: string): HzLocalDateTime[] | null;
 
     /**
      * Reads an array of Time's to HzOffsetDateTime[]
@@ -593,7 +593,7 @@ export interface PortableReader {
      * @return the HzOffsetDateTime array read
      * @see {@link readTimestampWithTimezone}
      */
-    readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTimeClass[] | null;
+    readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTime[] | null;
 }
 
 /**

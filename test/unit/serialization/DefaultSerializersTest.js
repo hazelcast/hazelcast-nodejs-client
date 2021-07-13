@@ -23,10 +23,10 @@ const {
     Predicates,
     RestValue,
     UUID,
-    HzLocalDateTime,
-    HzOffsetDateTime,
-    HzLocalTime,
-    HzLocalDate,
+    LocalDateTime,
+    OffsetDateTime,
+    LocalTime,
+    LocalDate,
     Big,
     BigDecimal
 } = require('../../../');
@@ -80,12 +80,12 @@ describe('DefaultSerializersTest', function () {
         Predicates.paging(Predicates.greaterEqual('this', 10), 10),
         restValue,
         uuid,
-        new HzLocalDate(2021, 6, 28),
-        new HzLocalTime(11, 22, 41, 123456789),
-        new HzLocalDateTime(new HzLocalDate(2022, 7, 29), new HzLocalTime(12, 23, 42, 123456789)),
-        new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(2022, 7, 29), new HzLocalTime(12, 23, 42, 123456789)), -64800),
+        new LocalDate(2021, 6, 28),
+        new LocalTime(11, 22, 41, 123456789),
+        new LocalDateTime(new LocalDate(2022, 7, 29), new LocalTime(12, 23, 42, 123456789)),
+        new OffsetDateTime(new LocalDateTime(new LocalDate(2022, 7, 29), new LocalTime(12, 23, 42, 123456789)), -64800),
         Big('1.11111111111111111111111111'),
-        BigInt('111111111111111111111111111'),
+        BigInt('111111111111111111111111111')
     ];
 
     parameters.forEach((obj) => {
