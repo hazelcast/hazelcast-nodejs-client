@@ -49,7 +49,7 @@ describe('DistributedObjectsTest', function () {
 
     it('get distributed objects with no object on cluster', async function () {
         const objects = await client.getDistributedObjects();
-        expect(objects).to.have.lengthOf(1); // sql catalog
+        expect(objects).to.have.lengthOf(0);
     });
 
     it('get distributed objects', async function () {
@@ -95,9 +95,9 @@ describe('DistributedObjectsTest', function () {
         expect(toNamespace(objects)).to.deep.include.members(toNamespace([queue]));
         await queue.destroy();
         objects = await client.getDistributedObjects();
-        expect(objects).to.have.lengthOf(1); // sql catalog
+        expect(objects).to.have.lengthOf(0);
         objects = await otherClient.getDistributedObjects();
-        expect(objects).to.have.lengthOf(1); // sql catalog
+        expect(objects).to.have.lengthOf(0);
         await otherClient.shutdown();
     });
 });

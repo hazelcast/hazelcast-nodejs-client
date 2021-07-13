@@ -14,7 +14,18 @@
  * limitations under the License.
  */
 /** @ignore *//** */
-import {Big, BigDecimal, HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime} from '../core';
+import {
+    Big,
+    BigDecimal,
+    HzLocalDate,
+    HzLocalDateClass,
+    HzLocalDateTime,
+    HzLocalDateTimeClass,
+    HzLocalTime,
+    HzLocalTimeClass,
+    HzOffsetDateTime,
+    HzOffsetDateTimeClass
+} from '../core';
 import {fromBufferAndScale, unscaledValueToBuffer} from './BigDecimalUtil';
 import {DataInput, DataOutput} from '../serialization';
 
@@ -27,36 +38,36 @@ export class IOUtil {
         return Big(fromBufferAndScale(buffer, scale));
     }
 
-    static readHzLocalTime(inp: DataInput): HzLocalTime {
+    static readHzLocalTime(inp: DataInput): HzLocalTimeClass {
         const hour = inp.readByte();
         const minute = inp.readByte();
         const second = inp.readByte();
         const nano = inp.readInt();
-        return new HzLocalTime(hour, minute, second, nano);
+        return HzLocalTime(hour, minute, second, nano);
     }
 
-    static readHzLocalDate(inp: DataInput): HzLocalDate {
+    static readHzLocalDate(inp: DataInput): HzLocalDateClass {
         const year = inp.readInt();
         const month = inp.readByte();
         const date = inp.readByte();
-        return new HzLocalDate(year, month, date);
+        return HzLocalDate(year, month, date);
     }
 
-    static readHzLocalDatetime(inp: DataInput): HzLocalDateTime {
+    static readHzLocalDatetime(inp: DataInput): HzLocalDateTimeClass {
         const hzLocalDate = IOUtil.readHzLocalDate(inp);
         const hzLocalTime = IOUtil.readHzLocalTime(inp);
 
-        return new HzLocalDateTime(hzLocalDate, hzLocalTime);
+        return HzLocalDateTime(hzLocalDate, hzLocalTime);
     }
 
-    static readHzOffsetDatetime(inp: DataInput): HzOffsetDateTime {
+    static readHzOffsetDatetime(inp: DataInput): HzOffsetDateTimeClass {
         const hzLocalDate = IOUtil.readHzLocalDate(inp);
         const hzLocalTime = IOUtil.readHzLocalTime(inp);
 
         const offsetSeconds = inp.readInt();
 
-        return new HzOffsetDateTime(
-            new HzLocalDateTime(
+        return HzOffsetDateTime(
+            HzLocalDateTime(
                 hzLocalDate,
                 hzLocalTime
             ),
@@ -69,25 +80,25 @@ export class IOUtil {
         out.writeInt(value.scale);
     }
 
-    static writeHzLocalTime(out: DataOutput, value: HzLocalTime): void {
+    static writeHzLocalTime(out: DataOutput, value: HzLocalTimeClass): void {
         out.writeByte(value.hour);
         out.writeByte(value.minute);
         out.writeByte(value.second);
         out.writeInt(value.nano);
     }
 
-    static writeHzLocalDate(out: DataOutput, value: HzLocalDate): void {
+    static writeHzLocalDate(out: DataOutput, value: HzLocalDateClass): void {
         out.writeInt(value.year);
         out.writeByte(value.month);
         out.writeByte(value.date);
     }
 
-    static writeHzLocalDatetime(out: DataOutput, value: HzLocalDateTime): void {
+    static writeHzLocalDatetime(out: DataOutput, value: HzLocalDateTimeClass): void {
         IOUtil.writeHzLocalDate(out, value.hzLocalDate);
         IOUtil.writeHzLocalTime(out, value.hzLocalTime);
     }
 
-    static writeHzOffsetDatetime(out: DataOutput, value: HzOffsetDateTime): void {
+    static writeHzOffsetDatetime(out: DataOutput, value: HzOffsetDateTimeClass): void {
         IOUtil.writeHzLocalDatetime(out, value.hzLocalDateTime);
         out.writeInt(value.offsetSeconds);
     }

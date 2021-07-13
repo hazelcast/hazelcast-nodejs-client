@@ -20,10 +20,10 @@ import {BitsUtil} from '../../util/BitsUtil';
 import {IOUtil} from '../../util/IOUtil';
 import {
     BigDecimal,
-    HzLocalDate,
-    HzLocalDateTime,
-    HzLocalTime,
-    HzOffsetDateTime,
+    HzLocalDateClass,
+    HzLocalDateTimeClass,
+    HzLocalTimeClass,
+    HzOffsetDateTimeClass,
     HazelcastSerializationError
 } from '../../core';
 import {DataInput} from '../Data';
@@ -137,19 +137,19 @@ export class DefaultPortableReader implements PortableReader {
         return this.readNullableField(fieldName, FieldType.DECIMAL, IOUtil.readDecimal);
     }
 
-    readTime(fieldName: string): HzLocalTime | null {
+    readTime(fieldName: string): HzLocalTimeClass | null {
         return this.readNullableField(fieldName, FieldType.TIME, IOUtil.readHzLocalTime);
     }
 
-    readDate(fieldName: string): HzLocalDate | null {
+    readDate(fieldName: string): HzLocalDateClass | null {
         return this.readNullableField(fieldName, FieldType.DATE, PortableUtil.readHzLocalDateForPortable);
     }
 
-    readTimestamp(fieldName: string): HzLocalDateTime | null {
+    readTimestamp(fieldName: string): HzLocalDateTimeClass | null {
         return this.readNullableField(fieldName, FieldType.TIMESTAMP, PortableUtil.readHzLocalDatetimeForPortable);
     }
 
-    readTimestampWithTimezone(fieldName: string): HzOffsetDateTime | null {
+    readTimestampWithTimezone(fieldName: string): HzOffsetDateTimeClass | null {
         return this.readNullableField(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, PortableUtil.readHzOffsetDatetimeForPortable);
     }
 
@@ -263,19 +263,19 @@ export class DefaultPortableReader implements PortableReader {
         return this.readObjectArrayField(fieldName, FieldType.DECIMAL_ARRAY, IOUtil.readDecimal);
     }
 
-    readTimeArray(fieldName: string): HzLocalTime[] | null {
+    readTimeArray(fieldName: string): HzLocalTimeClass[] | null {
         return this.readObjectArrayField(fieldName, FieldType.TIME_ARRAY, IOUtil.readHzLocalTime);
     }
 
-    readDateArray(fieldName: string): HzLocalDate[] | null {
+    readDateArray(fieldName: string): HzLocalDateClass[] | null {
         return this.readObjectArrayField(fieldName, FieldType.DATE_ARRAY, PortableUtil.readHzLocalDateForPortable);
     }
 
-    readTimestampArray(fieldName: string): HzLocalDateTime[] | null {
+    readTimestampArray(fieldName: string): HzLocalDateTimeClass[] | null {
         return this.readObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, PortableUtil.readHzLocalDatetimeForPortable);
     }
 
-    readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTime[] | null {
+    readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTimeClass[] | null {
         return this.readObjectArrayField(
             fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, PortableUtil.readHzOffsetDatetimeForPortable
         );
