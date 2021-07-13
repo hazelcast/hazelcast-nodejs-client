@@ -2,7 +2,7 @@
 
 This folder contains an extensive collection of Hazelcast Node.js Client code samples, which helps you to learn how to use Hazelcast features. The following lists the samples with their brief descriptions.
 
-**org-website/** —  Folder including the samples to display on https://hazelcast.org.
+**com-website/** —  Folder including the samples to display on https://hazelcast.com.
 
 **aggregation.js** — Built-in aggregation samples.
 
