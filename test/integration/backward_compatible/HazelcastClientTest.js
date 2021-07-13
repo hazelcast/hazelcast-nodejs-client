@@ -103,7 +103,7 @@ configParams.forEach((cfg) => {
         it('getDistributedObject returns array with one element when there is no distributed object', async function () {
             const distributedObjects = await client.getDistributedObjects();
             expect(distributedObjects).to.be.an('array');
-            expect(distributedObjects).to.have.lengthOf(1);
+            expect(distributedObjects).to.have.lengthOf(0);
         });
 
         it('getLocalEndpoint returns correct info', function () {
