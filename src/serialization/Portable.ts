@@ -185,6 +185,8 @@ export interface PortableWriter {
     /**
      * Writes a date field consisting of year, month of the year and day of the month
      *
+     * **Note**: Year in HzLocalDate must be between [-32,768, 32,767] range due to a backward compatibility restriction.
+     *
      * @param fieldName name of the field
      * @param value     HzLocalDate value to be written
      */
@@ -318,6 +320,8 @@ export interface PortableWriter {
 
     /**
      * Writes an array of Date's
+     *
+     * **Note**: Year in HzLocalDates must be between [-32,768, 32,767] range due to a backward compatibility restriction.
      *
      * @param fieldName name of the field
      * @param values    HzLocalDate array to be written
