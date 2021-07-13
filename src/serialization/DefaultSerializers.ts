@@ -28,9 +28,13 @@ import {
     BigDecimal,
     HazelcastJsonValue,
     HzLocalDate,
+    HzLocalDateClass,
     HzLocalDateTime,
+    HzLocalDateTimeClass,
     HzLocalTime,
+    HzLocalTimeClass,
     HzOffsetDateTime,
+    HzOffsetDateTimeClass,
     UUID
 } from '../core';
 import {fromBufferAndScale} from '../util/BigDecimalUtil';
@@ -438,19 +442,19 @@ export class UuidSerializer implements Serializer<UUID> {
 }
 
 /** @internal */
-export class LocalDateSerializer implements Serializer<HzLocalDate> {
+export class LocalDateSerializer implements Serializer<HzLocalDateClass> {
 
     id = -51;
 
-    read(input: DataInput): HzLocalDate {
+    read(input: DataInput): HzLocalDateClass {
         const year = input.readInt();
         const month = input.readByte();
         const date = input.readByte();
 
-        return new HzLocalDate(year, month, date);
+        return HzLocalDate(year, month, date);
     }
 
-    write(output: DataOutput, hzLocalDate: HzLocalDate): void {
+    write(output: DataOutput, hzLocalDate: HzLocalDateClass): void {
         output.writeInt(hzLocalDate.year);
         output.writeByte(hzLocalDate.month);
         output.writeByte(hzLocalDate.date);
@@ -458,20 +462,20 @@ export class LocalDateSerializer implements Serializer<HzLocalDate> {
 }
 
 /** @internal */
-export class LocalTimeSerializer implements Serializer<HzLocalTime> {
+export class LocalTimeSerializer implements Serializer<HzLocalTimeClass> {
 
     id = -52;
 
-    read(input: DataInput): HzLocalTime {
+    read(input: DataInput): HzLocalTimeClass {
         const hour = input.readByte();
         const minute = input.readByte();
         const second = input.readByte();
         const nano = input.readInt();
 
-        return new HzLocalTime(hour, minute, second, nano);
+        return HzLocalTime(hour, minute, second, nano);
     }
 
-    write(output: DataOutput, hzLocalTime: HzLocalTime): void {
+    write(output: DataOutput, hzLocalTime: HzLocalTimeClass): void {
         output.writeByte(hzLocalTime.hour);
         output.writeByte(hzLocalTime.minute);
         output.writeByte(hzLocalTime.second);
@@ -480,11 +484,11 @@ export class LocalTimeSerializer implements Serializer<HzLocalTime> {
 }
 
 /** @internal */
-export class LocalDateTimeSerializer implements Serializer<HzLocalDateTime> {
+export class LocalDateTimeSerializer implements Serializer<HzLocalDateTimeClass> {
 
     id = -53;
 
-    read(input: DataInput): HzLocalDateTime {
+    read(input: DataInput): HzLocalDateTimeClass {
         const year = input.readInt();
         const month = input.readByte();
         const date = input.readByte();
@@ -494,10 +498,10 @@ export class LocalDateTimeSerializer implements Serializer<HzLocalDateTime> {
         const second = input.readByte();
         const nano = input.readInt();
 
-        return new HzLocalDateTime(new HzLocalDate(year, month, date), new HzLocalTime(hour, minute, second, nano));
+        return HzLocalDateTime(HzLocalDate(year, month, date), HzLocalTime(hour, minute, second, nano));
     }
 
-    write(output: DataOutput, hzLocalDateTime: HzLocalDateTime): void {
+    write(output: DataOutput, hzLocalDateTime: HzLocalDateTimeClass): void {
         output.writeInt(hzLocalDateTime.hzLocalDate.year);
         output.writeByte(hzLocalDateTime.hzLocalDate.month);
         output.writeByte(hzLocalDateTime.hzLocalDate.date);
@@ -510,11 +514,11 @@ export class LocalDateTimeSerializer implements Serializer<HzLocalDateTime> {
 }
 
 /** @internal */
-export class OffsetDateTimeSerializer implements Serializer<HzOffsetDateTime> {
+export class OffsetDateTimeSerializer implements Serializer<HzOffsetDateTimeClass> {
 
     id = -54;
 
-    read(input: DataInput): HzOffsetDateTime {
+    read(input: DataInput): HzOffsetDateTimeClass {
         const year = input.readInt();
         const month = input.readByte();
         const date = input.readByte();
@@ -527,12 +531,12 @@ export class OffsetDateTimeSerializer implements Serializer<HzOffsetDateTime> {
         const offsetSeconds = input.readInt();
 
         return new HzOffsetDateTime(
-            new HzLocalDateTime(new HzLocalDate(year, month, date), new HzLocalTime(hour, minute, second, nano)),
+            HzLocalDateTime(HzLocalDate(year, month, date), HzLocalTime(hour, minute, second, nano)),
             offsetSeconds
         );
     }
 
-    write(output: DataOutput, hzOffsetDateTime: HzOffsetDateTime): void {
+    write(output: DataOutput, hzOffsetDateTime: HzOffsetDateTimeClass): void {
         output.writeInt(hzOffsetDateTime.hzLocalDateTime.hzLocalDate.year);
         output.writeByte(hzOffsetDateTime.hzLocalDateTime.hzLocalDate.month);
         output.writeByte(hzOffsetDateTime.hzLocalDateTime.hzLocalDate.date);
