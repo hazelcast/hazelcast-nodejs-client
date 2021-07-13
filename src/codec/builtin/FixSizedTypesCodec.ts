@@ -18,14 +18,14 @@ import * as Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
 import {UUID} from '../../core/UUID';
 import {
+    LocalDate,
     HzLocalDate,
-    HzLocalDateClass,
+    LocalDateTime,
     HzLocalDateTime,
-    HzLocalDateTimeClass,
+    LocalTime,
     HzLocalTime,
-    HzLocalTimeClass,
-    HzOffsetDateTime,
-    HzOffsetDateTimeClass
+    OffsetDateTime,
+    HzOffsetDateTime
 } from '../../core';
 
 // Taken from long.js, https://github.com/dcodeIO/long.js/blob/master/src/long.js
@@ -44,35 +44,35 @@ export class FixSizedTypesCodec {
         return buffer.readInt32LE(offset);
     }
 
-    static decodeLocalDate(buffer: Buffer, offset: number): HzLocalDateClass {
+    static decodeLocalDate(buffer: Buffer, offset: number): HzLocalDate {
         const year = FixSizedTypesCodec.decodeShort(buffer, offset);
         const month = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.INT_SIZE_IN_BYTES);
         const date = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.BYTE_SIZE_IN_BYTES);
 
-        return HzLocalDate(year, month, date);
+        return LocalDate(year, month, date);
     }
 
-    static decodeLocalDatetime(buffer: Buffer, offset: number): HzLocalDateTimeClass {
+    static decodeLocalDatetime(buffer: Buffer, offset: number): HzLocalDateTime {
         const localDate = FixSizedTypesCodec.decodeLocalDate(buffer, offset);
         const localTime = FixSizedTypesCodec.decodeLocalTime(buffer, offset + BitsUtil.LOCAL_DATE_SIZE_IN_BYTES);
 
-        return HzLocalDateTime(localDate, localTime);
+        return LocalDateTime(localDate, localTime);
     }
 
-    static decodeOffsetDateTime(buffer: Buffer, offset: number): HzOffsetDateTimeClass {
+    static decodeOffsetDateTime(buffer: Buffer, offset: number): HzOffsetDateTime {
         const localDateTime = FixSizedTypesCodec.decodeLocalDatetime(buffer, offset);
         const offsetSeconds = FixSizedTypesCodec.decodeInt(buffer, offset + BitsUtil.LOCAL_DATETIME_SIZE_IN_BYTES);
 
-        return HzOffsetDateTime(localDateTime, offsetSeconds);
+        return OffsetDateTime(localDateTime, offsetSeconds);
     }
 
-    static decodeLocalTime(buffer: Buffer, offset: number): HzLocalTimeClass {
+    static decodeLocalTime(buffer: Buffer, offset: number): HzLocalTime {
         const hour = FixSizedTypesCodec.decodeByte(buffer, offset);
         const minute = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES);
         const second = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES * 2);
         const nano = FixSizedTypesCodec.decodeInt(buffer, offset + BitsUtil.BYTE_SIZE_IN_BYTES * 3);
 
-        return HzLocalTime(hour, minute, second, nano);
+        return LocalTime(hour, minute, second, nano);
     }
 
     static decodeShort(buffer: Buffer, offset: number): number {
