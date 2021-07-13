@@ -2342,13 +2342,13 @@ The SQL service supports a set of SQL data types. The  table below shows SQL dat
 | **SMALLINT**                 | `number`                                                                                                                                           |
 | **INTEGER**                  | `number`                                                                                                                                           |
 | **BIGINT**                   | `long`                                                                                                                                             |
-| **DECIMAL**                  | [BigDecimal](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/modules/core_bigdecimal.html)                                                                   |
+| **DECIMAL**                  | [BigDecimal](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/modules/core_bigdecimal.html)                                      |
 | **REAL**                     | `number`                                                                                                                                           |
 | **DOUBLE**                   | `number`                                                                                                                                           |
-| **DATE**                     | [HzLocalDateClass](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzlocaldateclass.html)          |
-| **TIME**                     | [HzLocalTimeClass](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzlocaltimeclass.html)          |
-| **TIMESTAMP**                | [HzLocalDateTime](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzlocaldatetimeclass.html)       |
-| **TIMESTAMP_WITH_TIME_ZONE** | [HzOffsetDateTime](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzoffsetdatetimeclass.html)     |
+| **DATE**                     | [HzLocalDate](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzlocaldate.html)                    |
+| **TIME**                     | [HzLocalTime](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzlocaltime.html)                    |
+| **TIMESTAMP**                | [HzLocalDateTime](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzlocaldatetime.html)            |
+| **TIMESTAMP_WITH_TIME_ZONE** | [HzOffsetDateTime](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzoffsetdatetime.html)          |
 | **OBJECT**                   | Any class                                                                                                                                          |
 | **NULL**                     | `null`                                                                                                                                             |
 
