@@ -20,7 +20,7 @@ const { Lang } = require('../../remote_controller/remote-controller_types');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { BuildInfo } = require('../../../../lib/BuildInfo');
-const { Client, HzLocalDateTime, HzLocalTime, HzLocalDate, HzOffsetDateTime, Big } = require('../../../../');
+const { Client, LocalDateTime, LocalTime, LocalDate, OffsetDateTime, Big } = require('../../../../');
 
 const chai = require('chai');
 const long = require('long');
@@ -451,7 +451,7 @@ describe('Data type test', function () {
         if (clientVersionFive) {
             result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-                [new HzLocalDate(1, 1, 1), new HzLocalDate(5, 5, 5)]
+                [new LocalDate(1, 1, 1), new LocalDate(5, 5, 5)]
             );
         } else {
             result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
@@ -507,7 +507,7 @@ describe('Data type test', function () {
         if (clientVersionFive) {
             result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-                [new HzLocalTime(1, 0, 0, 0), new HzLocalTime(10, 0, 0, 0)]
+                [new LocalTime(1, 0, 0, 0), new LocalTime(10, 0, 0, 0)]
             );
         } else {
             result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
@@ -579,8 +579,8 @@ describe('Data type test', function () {
             result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
-                    new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)),
-                    new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1))
+                    new LocalDateTime(new LocalDate(1, 6, 5), new LocalTime(4, 3, 2, 1)),
+                    new LocalDateTime(new LocalDate(9, 6, 5), new LocalTime(4, 3, 2, 1))
                 ]
             );
         } else {
@@ -672,8 +672,8 @@ describe('Data type test', function () {
             result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
-                    new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(1, 6, 5), new HzLocalTime(4, 3, 2, 1)), 0),
-                    new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(9, 6, 5), new HzLocalTime(4, 3, 2, 1)), 0),
+                    new OffsetDateTime(new LocalDateTime(new LocalDate(1, 6, 5), new LocalTime(4, 3, 2, 1)), 0),
+                    new OffsetDateTime(new LocalDateTime(new LocalDate(9, 6, 5), new LocalTime(4, 3, 2, 1)), 0),
                 ]
             );
         } else {
