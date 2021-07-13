@@ -17,7 +17,7 @@
 
 const Long = require('long');
 const { UUID } = require('../../../lib/core/UUID');
-const { HzLocalDate, HzLocalDateTime, HzLocalTime, HzOffsetDateTime } = require('../../../lib/core/DatetimeClasses');
+const { LocalDate, LocalDateTime, LocalTime, OffsetDateTime } = require('../../../lib/core/DatetimeClasses');
 const { Big } = require('../../../lib/core/BigDecimal');
 const { HeapData } = require('../../../lib/serialization/HeapData');
 const AnInnerPortable = require('./AnInnerPortable');
@@ -82,10 +82,10 @@ to.aDate = new Date(Date.UTC(1990, 2, 1, 0, 0, 0, 0));
 to.aBigDecimal = Big('31231');
 to.aClass = 'java.math.BigDecimal';
 
-to.aLocalDate = new HzLocalDate(2021, 6, 28);
-to.aLocalTime = new HzLocalTime(11, 22, 41, 123456789);
-to.aLocalDateTime = new HzLocalDateTime(to.aLocalDate, to.aLocalTime);
-to.aOffsetDateTime = new HzOffsetDateTime(to.aLocalDateTime, 64800);
+to.aLocalDate = new LocalDate(2021, 6, 28);
+to.aLocalTime = new LocalTime(11, 22, 41, 123456789);
+to.aLocalDateTime = new LocalDateTime(to.aLocalDate, to.aLocalTime);
+to.aOffsetDateTime = new OffsetDateTime(to.aLocalDateTime, 64800);
 
 exports.portables = [to.AnInnerPortable, to.AnInnerPortable, to.AnInnerPortable];
 exports.testObjects = to;

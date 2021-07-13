@@ -27,10 +27,10 @@ import {
     Big,
     BigDecimal,
     HazelcastJsonValue,
-    HzLocalDateClass,
-    HzLocalDateTimeClass,
-    HzLocalTimeClass,
-    HzOffsetDateTimeClass,
+    HzLocalDate,
+    HzLocalDateTime,
+    HzLocalTime,
+    HzOffsetDateTime,
     UUID
 } from '../core';
 import {fromBufferAndScale, unscaledValueToBuffer} from '../util/BigDecimalUtil';
@@ -439,57 +439,57 @@ export class UuidSerializer implements Serializer<UUID> {
 }
 
 /** @internal */
-export class LocalDateSerializer implements Serializer<HzLocalDateClass> {
+export class LocalDateSerializer implements Serializer<HzLocalDate> {
 
     id = -51;
 
-    read(input: DataInput): HzLocalDateClass {
+    read(input: DataInput): HzLocalDate {
         return IOUtil.readHzLocalDate(input);
     }
 
-    write(output: DataOutput, hzLocalDate: HzLocalDateClass): void {
+    write(output: DataOutput, hzLocalDate: HzLocalDate): void {
         IOUtil.writeHzLocalDate(output, hzLocalDate);
     }
 }
 
 /** @internal */
-export class LocalTimeSerializer implements Serializer<HzLocalTimeClass> {
+export class LocalTimeSerializer implements Serializer<HzLocalTime> {
 
     id = -52;
 
-    read(input: DataInput): HzLocalTimeClass {
+    read(input: DataInput): HzLocalTime {
         return IOUtil.readHzLocalTime(input);
     }
 
-    write(output: DataOutput, hzLocalTime: HzLocalTimeClass): void {
+    write(output: DataOutput, hzLocalTime: HzLocalTime): void {
         IOUtil.writeHzLocalTime(output, hzLocalTime);
     }
 }
 
 /** @internal */
-export class LocalDateTimeSerializer implements Serializer<HzLocalDateTimeClass> {
+export class LocalDateTimeSerializer implements Serializer<HzLocalDateTime> {
 
     id = -53;
 
-    read(input: DataInput): HzLocalDateTimeClass {
+    read(input: DataInput): HzLocalDateTime {
         return IOUtil.readHzLocalDatetime(input);
     }
 
-    write(output: DataOutput, hzLocalDateTime: HzLocalDateTimeClass): void {
+    write(output: DataOutput, hzLocalDateTime: HzLocalDateTime): void {
         IOUtil.writeHzLocalDatetime(output, hzLocalDateTime);
     }
 }
 
 /** @internal */
-export class OffsetDateTimeSerializer implements Serializer<HzOffsetDateTimeClass> {
+export class OffsetDateTimeSerializer implements Serializer<HzOffsetDateTime> {
 
     id = -54;
 
-    read(input: DataInput): HzOffsetDateTimeClass {
+    read(input: DataInput): HzOffsetDateTime {
         return IOUtil.readHzOffsetDatetime(input);
     }
 
-    write(output: DataOutput, hzOffsetDateTime: HzOffsetDateTimeClass): void {
+    write(output: DataOutput, hzOffsetDateTime: HzOffsetDateTime): void {
        IOUtil.writeHzOffsetDatetime(output, hzOffsetDateTime);
     }
 }

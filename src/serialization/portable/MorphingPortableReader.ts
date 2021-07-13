@@ -23,10 +23,10 @@ import {Portable, FieldType} from '../Portable';
 import * as Long from 'long';
 import {
     BigDecimal,
-    HzLocalDateClass,
-    HzLocalDateTimeClass,
-    HzLocalTimeClass,
-    HzOffsetDateTimeClass
+    HzLocalDate,
+    HzLocalDateTime,
+    HzLocalTime,
+    HzOffsetDateTime
 } from '../../core';
 
 /** @internal */
@@ -207,19 +207,19 @@ export class MorphingPortableReader extends DefaultPortableReader {
         return this.validateCompatibleAndRead(fieldName, FieldType.DECIMAL, super.readDecimal);
     }
 
-    readTime(fieldName: string): HzLocalTimeClass {
+    readTime(fieldName: string): HzLocalTime {
         return this.validateCompatibleAndRead(fieldName, FieldType.TIME, super.readTime);
     }
 
-    readDate(fieldName: string): HzLocalDateClass {
+    readDate(fieldName: string): HzLocalDate {
         return this.validateCompatibleAndRead(fieldName, FieldType.DATE, super.readDate);
     }
 
-    readTimestamp(fieldName: string): HzLocalDateTimeClass {
+    readTimestamp(fieldName: string): HzLocalDateTime {
         return this.validateCompatibleAndRead(fieldName, FieldType.TIMESTAMP, super.readTimestamp);
     }
 
-    readTimestampWithTimezone(fieldName: string): HzOffsetDateTimeClass {
+    readTimestampWithTimezone(fieldName: string): HzOffsetDateTime {
         return this.validateCompatibleAndRead(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, super.readTimestampWithTimezone);
     }
 
@@ -227,19 +227,19 @@ export class MorphingPortableReader extends DefaultPortableReader {
         return this.validateCompatibleAndRead(fieldName, FieldType.DECIMAL_ARRAY, super.readDecimalArray);
     }
 
-    readTimeArray(fieldName: string): HzLocalTimeClass[] {
+    readTimeArray(fieldName: string): HzLocalTime[] {
         return this.validateCompatibleAndRead(fieldName, FieldType.TIME_ARRAY, super.readTimeArray);
     }
 
-    readDateArray(fieldName: string): HzLocalDateClass[] {
+    readDateArray(fieldName: string): HzLocalDate[] {
         return this.validateCompatibleAndRead(fieldName, FieldType.DATE_ARRAY, super.readDateArray);
     }
 
-    readTimestampArray(fieldName: string): HzLocalDateTimeClass[] {
+    readTimestampArray(fieldName: string): HzLocalDateTime[] {
         return this.validateCompatibleAndRead(fieldName, FieldType.TIMESTAMP_ARRAY, super.readTimestampArray);
     }
 
-    readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTimeClass[] {
+    readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTime[] {
         return this.validateCompatibleAndRead(
             fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, super.readTimestampWithTimezoneArray
         );
