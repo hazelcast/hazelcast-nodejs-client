@@ -69,29 +69,39 @@ function portableFactory(classId) {
         // Let's add some timestamp with timezones using wrapper class `HzOffsetDatetime`:
 
         // Constructors can be used with or without new
-        await map.set('1', HzOffsetDateTime(HzLocalDateTime(HzLocalDate(1, 2, 3), HzLocalTime(3, 4, 5)), 123456789));
-        await map.set('2', HzOffsetDateTime(HzLocalDateTime(HzLocalDate(2, 2, 3), HzLocalTime(3, 4, 5)), 123456789));
-        await map.set('3', HzOffsetDateTime(HzLocalDateTime(HzLocalDate(3, 2, 3), HzLocalTime(3, 4, 5)), 123456789));
-        await map.set('4', HzOffsetDateTime(HzLocalDateTime(HzLocalDate(4, 2, 3), HzLocalTime(3, 4, 5)), 123456789));
+        await map.set('1',
+            HzOffsetDateTime(HzLocalDateTime(HzLocalDate(2020, 2, 29), HzLocalTime(3, 4, 5, 123456789)), 64800)
+        );
+        await map.set('2',
+            new HzOffsetDateTime(HzLocalDateTime(HzLocalDate(2021, 2, 28), HzLocalTime(3, 4, 5, 12345)), 3600)
+        );
+        await map.set('3',
+            HzOffsetDateTime(HzLocalDateTime(HzLocalDate(2022, 2, 28), HzLocalTime(3, 4, 5, 12345)), -3600)
+        );
+        await map.set('4',
+            HzOffsetDateTime(HzLocalDateTime(HzLocalDate(2023, 2, 28), HzLocalTime(3, 4, 5, 16789)), 12000)
+        );
 
         // You can also use other data structures
 
         const queue = await client.getQueue('dateQueue');
 
-        await queue.add(HzLocalDate('1998', '12', '2'));
+        await queue.add(HzLocalDate(1998, 12, 2));
 
         console.log((await queue.take()).toString()); // 1998-12-02
 
-        console.log(await map.get('1')); // HzOffsetDateTime object
+        console.log(await map.get('1')); // HzOffsetDateTimeClass object
 
         // You can run an SQL query:
 
         const result = client.getSql().execute('SELECT * FROM timestampWithTimezoneMap WHERE this > ?', [
-            HzOffsetDateTime(HzLocalDateTime(HzLocalDate(2, 3, 4), HzLocalTime(5, 6, 7)), 123456789)
+            HzOffsetDateTime(HzLocalDateTime(HzLocalDate(2020, 3, 1), HzLocalTime(5, 6, 7, 123456789)), 3600)
         ]);
 
         // The following for loop prints:
-
+        // key: 4, value: 2023-02-28T03:04:05.000016789+03:20
+        // key: 3, value: 2022-02-28T03:04:05.000012345-01:00
+        // key: 2, value: 2021-02-28T03:04:05.000012345+01:00
         for await (const row of result) {
             console.log(`key: ${row['__key']}, value: ${row['this']}`);
         }
