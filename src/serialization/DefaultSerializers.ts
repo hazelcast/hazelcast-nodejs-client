@@ -33,7 +33,7 @@ import {
     HzOffsetDateTimeClass,
     UUID
 } from '../core';
-import {fromBufferAndScale, unscaledValueToBuffer} from '../util/BigDecimalUtil';
+import {fromBufferAndScale, bigintToByteArray} from '../util/BigDecimalUtil';
 import {Buffer} from 'buffer';
 import {IOUtil} from '../util/IOUtil';
 
@@ -507,7 +507,23 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
     }
 
     write(output: DataOutput, bigDecimal: BigDecimal): void {
-        output.writeByteArray(unscaledValueToBuffer(bigDecimal.unscaledValue));
+        output.writeByteArray(bigintToByteArray(bigDecimal.unscaledValue));
         output.writeInt(bigDecimal.scale);
     }
 }
+
+/** @internal */
+export class BigIntSerializer implements Serializer<BigInt> {
+
+    id = -26;
+
+    read(input: DataInput): BigInt {
+        const body = input.readByteArray();
+        return IOUtil.readBigInt(body);
+    }
+
+    write(output: DataOutput, bigint: BigInt): void {
+        output.writeByteArray(bigintToByteArray(bigint));
+    }
+}
+

@@ -18,7 +18,14 @@
 import * as assert from 'assert';
 import * as Long from 'long';
 import * as Path from 'path';
-import {BigDecimal, HzLocalDateClass, HzLocalDateTimeClass, HzLocalTimeClass, HzOffsetDateTimeClass, UUID} from '../core';
+import {
+    BigDecimal,
+    HzLocalDateClass,
+    HzLocalDateTimeClass,
+    HzLocalTimeClass,
+    HzOffsetDateTimeClass,
+    UUID
+} from '../core';
 
 /** @internal */
 export function assertNotNull(v: any): void {
@@ -83,6 +90,8 @@ export function getType(obj: any): string {
         return 'offsetDatetime';
     } else if (obj instanceof BigDecimal) {
         return 'bigdecimal';
+    } else if (typeof obj === 'bigint') {
+        return 'bigint';
     } else {
         const t = typeof obj;
         if (t !== 'object') {

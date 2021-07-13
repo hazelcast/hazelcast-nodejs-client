@@ -79,6 +79,7 @@ to.APortable = new APortable(
     to.aCustomByteArraySerializable, exports.aData
 );
 to.aDate = new Date(Date.UTC(1990, 2, 1, 0, 0, 0, 0));
+to.aBigInteger = BigInt('1314432323232411');
 to.aBigDecimal = Big('31231');
 to.aClass = 'java.math.BigDecimal';
 

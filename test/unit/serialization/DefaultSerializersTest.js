@@ -84,12 +84,14 @@ describe('DefaultSerializersTest', function () {
         new HzLocalTime(11, 22, 41, 123456789),
         new HzLocalDateTime(new HzLocalDate(2022, 7, 29), new HzLocalTime(12, 23, 42, 123456789)),
         new HzOffsetDateTime(new HzLocalDateTime(new HzLocalDate(2022, 7, 29), new HzLocalTime(12, 23, 42, 123456789)), -64800),
-        Big('1.11111111111111111111111111')
+        Big('1.11111111111111111111111111'),
+        BigInt('111111111111111111111111111'),
     ];
 
     parameters.forEach((obj) => {
         it('type: ' + typeof obj + ', isArray: ' + Array.isArray(obj) + ', value: '
-            + (obj instanceof BigDecimal ? `BigDecimal ${obj.toString()}` : JSON.stringify(obj)), function () {
+            + (obj instanceof BigDecimal ? `BigDecimal ${obj.toString()}` :
+                (typeof obj === 'bigint' ? `BigInt ${obj}` : JSON.stringify(obj))), function () {
                 const config = new SerializationConfigImpl();
                 const serializationService = new SerializationServiceV1(config);
                 const serialized = serializationService.toData(obj);

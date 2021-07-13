@@ -16,6 +16,7 @@
 /** @ignore *//** */
 
 import {Buffer} from 'buffer';
+import {IOUtil} from './IOUtil';
 
 /**
  * Constructs a big decimal string from a buffer and a scale
@@ -24,20 +25,7 @@ import {Buffer} from 'buffer';
  */
 export function fromBufferAndScale(buffer: Buffer, scale: number): string {
     const isNegative = (buffer[0] & 0x80) > 0;
-    if (isNegative) { // negative, convert two's complement to positive
-        for (let i = 0; i < buffer.length; i++) {
-            buffer[i] = ~buffer[i];
-        }
-    }
-    const hexString = '0x' + buffer.toString('hex');
-
-    let bigint = BigInt(hexString);
-    if (isNegative) {
-        // When converting from 2 s complement, need to add 1 to the inverted bits.
-        // Since adding 1 to a buffer is hard, it is done here.
-        bigint += BigInt(1);
-    }
-    const bigIntString = bigint.toString();
+    const bigIntString = IOUtil.readBigInt(buffer).toString();
 
     if (scale === 0) {
         return (isNegative ? '-' : '') + bigIntString;
@@ -55,19 +43,19 @@ export function fromBufferAndScale(buffer: Buffer, scale: number): string {
 }
 
 /**
- * Returns byte array form of unscaled value
- * @param unscaledValue
+ * Returns byte array form of a Bigint
+ * @param bigint
  */
-export function unscaledValueToBuffer(unscaledValue: BigInt): Buffer {
-    const isNegative = unscaledValue < BigInt(0);
+export function bigintToByteArray(bigint: BigInt): Buffer {
+    const isNegative = bigint < BigInt(0);
     let hex;
 
     // for getting two's complement of it
     if (isNegative) {
-        unscaledValue = unscaledValue.valueOf() + BigInt(1);
-        hex = unscaledValue.toString(16).slice(1); // exclude minus sign
+        bigint = bigint.valueOf() + BigInt(1);
+        hex = bigint.toString(16).slice(1); // exclude minus sign
     } else {
-        hex = unscaledValue.toString(16);
+        hex = bigint.toString(16);
     }
 
     // prepend 0 to get a even length string

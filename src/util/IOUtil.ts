@@ -26,8 +26,9 @@ import {
     HzOffsetDateTime,
     HzOffsetDateTimeClass
 } from '../core';
-import {fromBufferAndScale, unscaledValueToBuffer} from './BigDecimalUtil';
+import {fromBufferAndScale, bigintToByteArray} from './BigDecimalUtil';
 import {DataInput, DataOutput} from '../serialization';
+import {Buffer} from 'buffer';
 
 /** @internal */
 export class IOUtil {
@@ -76,7 +77,7 @@ export class IOUtil {
     }
 
     static writeDecimal(out: DataOutput, value: BigDecimal): void {
-        out.writeByteArray(unscaledValueToBuffer(value.unscaledValue));
+        out.writeByteArray(bigintToByteArray(value.unscaledValue));
         out.writeInt(value.scale);
     }
 
@@ -103,6 +104,25 @@ export class IOUtil {
         out.writeInt(value.offsetSeconds);
     }
 
+    /**
+     * Reads a BigInt from a buffer
+     * @param buffer
+     */
+    static readBigInt(buffer: Buffer): BigInt {
+        const isNegative = (buffer[0] & 0x80) > 0;
+        if (isNegative) { // negative, convert two's complement to positive
+            for (let i = 0; i < buffer.length; i++) {
+                buffer[i] = ~buffer[i];
+            }
+        }
+        const hexString = '0x' + buffer.toString('hex');
+
+        let bigint = BigInt(hexString);
+        if (isNegative) {
+            // When converting from 2 s complement, need to add 1 to the inverted bits.
+            // Since adding 1 to a buffer is hard, it is done here.
+            bigint += BigInt(1);
+        }
+        return bigint;
+    }
 }
-
-
