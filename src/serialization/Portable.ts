@@ -196,6 +196,8 @@ export interface PortableWriter {
      * Writes a timestamp field consisting of
      * year, month of the year, day of the month, hour, minute, seconds, nanos parts
      *
+     * **Note**: Year in HzLocalDateTime must be between [-32,768, 32,767] range due to a backward compatibility restriction.
+     *
      * @param fieldName name of the field
      * @param value     HzLocalDateTime value to be written
      */
@@ -204,6 +206,8 @@ export interface PortableWriter {
     /**
      * Writes a timestamp with timezone field consisting of
      * year, month of the year, day of the month, offset seconds, hour, minute, seconds, nanos parts
+     *
+     * **Note**: Year in HzOffsetDateTime must be between [-32,768, 32,767] range due to a backward compatibility restriction.
      *
      * @param fieldName name of the field
      * @param value     HzOffsetDateTime value to be written
@@ -332,6 +336,8 @@ export interface PortableWriter {
     /**
      * Writes an array of Timestamp's
      *
+     * **Note**: Year in HzLocalDateTime must be between [-32,768, 32,767] range due to a backward compatibility restriction.
+     *
      * @param fieldName name of the field
      * @param values    HzLocalDateTime array to be written
      * @see {@link writeTimestamp}
@@ -340,6 +346,8 @@ export interface PortableWriter {
 
     /**
      * Writes an array of TimestampWithTimezone's
+     *
+     * **Note**: Year in HzOffsetDateTime must be between [-32,768, 32,767] range due to a backward compatibility restriction.
      *
      * @param fieldName name of the field
      * @param values    HzOffsetDateTime array to be written
