@@ -2334,23 +2334,26 @@ SELECT * FROM employee
 
 The SQL service supports a set of SQL data types. The  table below shows SQL data types and corresponding Javascript types:
 
-| Column Type                  | Javascript                                                                                                                                         |
-|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| **VARCHAR**                  | `string`                                                                                                                                           |
-| **BOOLEAN**                  | `boolean`                                                                                                                                          |
-| **TINYINT**                  | `number`                                                                                                                                           |
-| **SMALLINT**                 | `number`                                                                                                                                           |
-| **INTEGER**                  | `number`                                                                                                                                           |
-| **BIGINT**                   | `long`                                                                                                                                             |
-| **DECIMAL**                  | [BigDecimal](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/modules/core_bigdecimal.html)                                      |
-| **REAL**                     | `number`                                                                                                                                           |
-| **DOUBLE**                   | `number`                                                                                                                                           |
-| **DATE**                     | [HzLocalDate](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzlocaldate.html)                    |
-| **TIME**                     | [HzLocalTime](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzlocaltime.html)                    |
-| **TIMESTAMP**                | [HzLocalDateTime](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzlocaldatetime.html)            |
-| **TIMESTAMP_WITH_TIME_ZONE** | [HzOffsetDateTime](http://hazelcast.github.io/hazelcast-nodejs-client/api/latest/docs/classes/core_datetimeclasses.hzoffsetdatetime.html)          |
-| **OBJECT**                   | Any class                                                                                                                                          |
-| **NULL**                     | `null`                                                                                                                                             |
+| Column Type                  | Javascript           |
+|------------------------------|----------------------|
+| **VARCHAR**                  | `string`             |
+| **BOOLEAN**                  | `boolean`            |
+| **TINYINT**                  | `number`             |
+| **SMALLINT**                 | `number`             |
+| **INTEGER**                  | `number`             |
+| **BIGINT**                   | `long`               |
+| **DECIMAL**                  | `BigDecimal`         |
+| **REAL**                     | `number`             |
+| **DOUBLE**                   | `number`             |
+| **DATE**                     | `HzLocalDate`        |
+| **TIME**                     | `HzLocalTime`        |
+| **TIMESTAMP**                | `HzLocalDateTime`    |
+| **TIMESTAMP_WITH_TIME_ZONE** | `HzOffsetDateTime`   |
+| **OBJECT**                   | Any class            |
+| **NULL**                     | `null`               |
+
+See [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for how you can use
+`BigDecimal`, `HzLocalDate`, `HzLocalTime`, `HzLocalDateTime` and `HzOffsetDateTime` classes.
 
 ### 8.7.4. Casting
 
