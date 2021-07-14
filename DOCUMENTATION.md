@@ -2401,7 +2401,7 @@ Available connectors:
 - File: Read from a local or remote file.
 - IMap: Read from and write to an IMap.
 
-To learn how you can use them, refer to [SQL Connectors section](https://hardcore-allen-f5257d.netlify.app/hazelcast/latest/sql/connectors.html) in Hazelcast docs.
+To learn how you can use them, refer to [SQL Connectors section](https://docs.hazelcast.com/hazelcast/latest/sql/connectors.html) in Hazelcast docs.
 
 ### 8.7.7. More Information
 
