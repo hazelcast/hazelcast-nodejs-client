@@ -2202,25 +2202,25 @@ The SQL service provided by Hazelcast Node.js client allows you to run SQL queri
 
 #### Data Manipulation Language(DML) Statements
 
-- [SELECT:](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/select.html) Read data from a table.
-- [SINK INTO/INSERT INTO:](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/sink-into.html) Ingest data into a map and/or forward data to other systems.
-- [UPDATE:](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/update.html) Overwrite values in map entries.
-- [DELETE:](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/delete.html) Delete map entries.
+- [SELECT:](https://docs.hazelcast.com/hazelcast/latest/sql/select.html) Read data from a table.
+- [SINK INTO/INSERT INTO:](https://docs.hazelcast.com/hazelcast/latest/sql/sink-into.html) Ingest data into a map and/or forward data to other systems.
+- [UPDATE:](https://docs.hazelcast.com/hazelcast/latest/sql/update.html) Overwrite values in map entries.
+- [DELETE:](https://docs.hazelcast.com/hazelcast/latest/sql/delete.html) Delete map entries.
 
 ####  Data Definition Language(DDL) Statements
 
-- [CREATE MAPPING:](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/create-mapping.html) Map a local or remote data object to a table that Hazelcast can access.
-- [SHOW MAPPINGS:](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/show-mappings.html) Get the names of existing mappings.
-- [DROP MAPPING](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/drop-mapping.html) Remove a mapping.
+- [CREATE MAPPING:](https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping.html) Map a local or remote data object to a table that Hazelcast can access.
+- [SHOW MAPPINGS:](https://docs.hazelcast.com/hazelcast/latest/sql/show-mappings.html) Get the names of existing mappings.
+- [DROP MAPPING](https://docs.hazelcast.com/hazelcast/latest/sql/drop-mapping.html) Remove a mapping.
 
 #### Job Management Statements
 
-- [CREATE JOB:](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/create-job.html) Create a job that is not tied to the client session.
-- [ALTER JOB:](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/alter-job.html) Restart, suspend, or resume a job.
-- [SHOW JOBS:](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/show-jobs.html) Get the names of all running jobs.
-- [DROP JOB:](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/drop-job.html) Cancel a job.
-- [CREATE OR REPLACE SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/create-snapshot.html) Create a snapshot of a running job, so you can stop and restart it at a later date.
-- [DROP SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/drop-snapshot.html) Cancel a running job.
+- [CREATE JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/create-job.html) Create a job that is not tied to the client session.
+- [ALTER JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/alter-job.html) Restart, suspend, or resume a job.
+- [SHOW JOBS:](https://docs.hazelcast.com/hazelcast/latest/sql/show-jobs.html) Get the names of all running jobs.
+- [DROP JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/drop-job.html) Cancel a job.
+- [CREATE OR REPLACE SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/latest/sql/create-snapshot.html) Create a snapshot of a running job, so you can stop and restart it at a later date.
+- [DROP SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/latest/sql/drop-snapshot.html) Cancel a running job.
 
 ### 8.7.2. Querying IMap
 
@@ -2388,7 +2388,7 @@ const result = client.getSql().execute('SELECT * FROM myMap WHERE age > CAST(? A
 ### 8.7.5. Expressions
 
 Hazelcast SQL supports logical predicates, `IS` predicates, comparison operators, mathematical functions and operators, string functions, and special functions.
-Refer to [Hazelcast](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/expressions.html) for all possible operations.
+Refer to [Hazelcast](https://docs.hazelcast.com/hazelcast/latest/sql/expressions.html) for all possible operations.
 
 ### 8.7.6 Source and Sink Connectors
 
@@ -2401,11 +2401,11 @@ Available connectors:
 - File: Read from a local or remote file.
 - IMap: Read from and write to an IMap.
 
-To learn how you can use them, refer to [SQL Connectors section](https://hardcore-allen-f5257d.netlify.app/hazelcast/5.0-snapshot/sql/connectors.html) in Hazelcast docs.
+To learn how you can use them, refer to [SQL Connectors section](https://hardcore-allen-f5257d.netlify.app/hazelcast/latest/sql/connectors.html) in Hazelcast docs.
 
 ### 8.7.7. More Information
 
-Please refer to [Hazelcast SQL docs](https://docs.hazelcast.com/hazelcast/5.0-snapshot/sql/sql-statements.html) for more information.
+Please refer to [Hazelcast SQL docs](https://docs.hazelcast.com/hazelcast/latest/sql/sql-statements.html) for more information.
 
 For basic usage of SQL, see [this](code_samples/sql-basic-usage.js) code sample.
 
