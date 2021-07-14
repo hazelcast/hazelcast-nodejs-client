@@ -1,9 +1,9 @@
-name: Test PR
+name: PR Builder
 on: pull_request
 
 jobs:
     test-pr:
-        name: Build PR (${{matrix.os}})
+        name: Test PR (${{matrix.os}})
         runs-on: ${{matrix.os}}
 
         strategy:
