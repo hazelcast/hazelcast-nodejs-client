@@ -356,6 +356,7 @@ describe('ConfigBuilderValidationTest', function () {
             }
         });
     });
+
     it('should throw InvalidConfigurationError when invalid top level config key is passed', function () {
         expect(() => new ConfigBuilder({
             a: 1
