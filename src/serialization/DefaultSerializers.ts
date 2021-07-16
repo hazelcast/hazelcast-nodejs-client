@@ -27,13 +27,9 @@ import {
     BigDecimal,
     HazelcastJsonValue,
     LocalDate,
-    HzLocalDate,
     LocalDateTime,
-    HzLocalDateTime,
     LocalTime,
-    HzLocalTime,
     OffsetDateTime,
-    HzOffsetDateTime,
     UUID
 } from '../core';
 import {fromBufferAndScale} from '../util/BigDecimalUtil';
@@ -441,19 +437,19 @@ export class UuidSerializer implements Serializer<UUID> {
 }
 
 /** @internal */
-export class LocalDateSerializer implements Serializer<HzLocalDate> {
+export class LocalDateSerializer implements Serializer<LocalDate> {
 
     id = -51;
 
-    read(input: DataInput): HzLocalDate {
+    read(input: DataInput): LocalDate {
         const year = input.readInt();
         const month = input.readByte();
         const date = input.readByte();
 
-        return LocalDate(year, month, date);
+        return new LocalDate(year, month, date);
     }
 
-    write(output: DataOutput, hzLocalDate: HzLocalDate): void {
+    write(output: DataOutput, hzLocalDate: LocalDate): void {
         output.writeInt(hzLocalDate.year);
         output.writeByte(hzLocalDate.month);
         output.writeByte(hzLocalDate.date);
@@ -461,20 +457,20 @@ export class LocalDateSerializer implements Serializer<HzLocalDate> {
 }
 
 /** @internal */
-export class LocalTimeSerializer implements Serializer<HzLocalTime> {
+export class LocalTimeSerializer implements Serializer<LocalTime> {
 
     id = -52;
 
-    read(input: DataInput): HzLocalTime {
+    read(input: DataInput): LocalTime {
         const hour = input.readByte();
         const minute = input.readByte();
         const second = input.readByte();
         const nano = input.readInt();
 
-        return LocalTime(hour, minute, second, nano);
+        return new LocalTime(hour, minute, second, nano);
     }
 
-    write(output: DataOutput, hzLocalTime: HzLocalTime): void {
+    write(output: DataOutput, hzLocalTime: LocalTime): void {
         output.writeByte(hzLocalTime.hour);
         output.writeByte(hzLocalTime.minute);
         output.writeByte(hzLocalTime.second);
@@ -483,11 +479,11 @@ export class LocalTimeSerializer implements Serializer<HzLocalTime> {
 }
 
 /** @internal */
-export class LocalDateTimeSerializer implements Serializer<HzLocalDateTime> {
+export class LocalDateTimeSerializer implements Serializer<LocalDateTime> {
 
     id = -53;
 
-    read(input: DataInput): HzLocalDateTime {
+    read(input: DataInput): LocalDateTime {
         const year = input.readInt();
         const month = input.readByte();
         const date = input.readByte();
@@ -497,27 +493,27 @@ export class LocalDateTimeSerializer implements Serializer<HzLocalDateTime> {
         const second = input.readByte();
         const nano = input.readInt();
 
-        return LocalDateTime(LocalDate(year, month, date), LocalTime(hour, minute, second, nano));
+        return LocalDateTime.new(year, month, date, hour, minute, second, nano);
     }
 
-    write(output: DataOutput, hzLocalDateTime: HzLocalDateTime): void {
-        output.writeInt(hzLocalDateTime.hzLocalDate.year);
-        output.writeByte(hzLocalDateTime.hzLocalDate.month);
-        output.writeByte(hzLocalDateTime.hzLocalDate.date);
+    write(output: DataOutput, hzLocalDateTime: LocalDateTime): void {
+        output.writeInt(hzLocalDateTime.localDate.year);
+        output.writeByte(hzLocalDateTime.localDate.month);
+        output.writeByte(hzLocalDateTime.localDate.date);
 
-        output.writeByte(hzLocalDateTime.hzLocalTime.hour);
-        output.writeByte(hzLocalDateTime.hzLocalTime.minute);
-        output.writeByte(hzLocalDateTime.hzLocalTime.second);
-        output.writeInt(hzLocalDateTime.hzLocalTime.nano);
+        output.writeByte(hzLocalDateTime.localTime.hour);
+        output.writeByte(hzLocalDateTime.localTime.minute);
+        output.writeByte(hzLocalDateTime.localTime.second);
+        output.writeInt(hzLocalDateTime.localTime.nano);
     }
 }
 
 /** @internal */
-export class OffsetDateTimeSerializer implements Serializer<HzOffsetDateTime> {
+export class OffsetDateTimeSerializer implements Serializer<OffsetDateTime> {
 
     id = -54;
 
-    read(input: DataInput): HzOffsetDateTime {
+    read(input: DataInput): OffsetDateTime {
         const year = input.readInt();
         const month = input.readByte();
         const date = input.readByte();
@@ -529,21 +525,18 @@ export class OffsetDateTimeSerializer implements Serializer<HzOffsetDateTime> {
 
         const offsetSeconds = input.readInt();
 
-        return new OffsetDateTime(
-            LocalDateTime(LocalDate(year, month, date), LocalTime(hour, minute, second, nano)),
-            offsetSeconds
-        );
+        return OffsetDateTime.new(year, month, date, hour, minute, second, nano, offsetSeconds);
     }
 
-    write(output: DataOutput, hzOffsetDateTime: HzOffsetDateTime): void {
-        output.writeInt(hzOffsetDateTime.hzLocalDateTime.hzLocalDate.year);
-        output.writeByte(hzOffsetDateTime.hzLocalDateTime.hzLocalDate.month);
-        output.writeByte(hzOffsetDateTime.hzLocalDateTime.hzLocalDate.date);
+    write(output: DataOutput, hzOffsetDateTime: OffsetDateTime): void {
+        output.writeInt(hzOffsetDateTime.localDateTime.localDate.year);
+        output.writeByte(hzOffsetDateTime.localDateTime.localDate.month);
+        output.writeByte(hzOffsetDateTime.localDateTime.localDate.date);
 
-        output.writeByte(hzOffsetDateTime.hzLocalDateTime.hzLocalTime.hour);
-        output.writeByte(hzOffsetDateTime.hzLocalDateTime.hzLocalTime.minute);
-        output.writeByte(hzOffsetDateTime.hzLocalDateTime.hzLocalTime.second);
-        output.writeInt(hzOffsetDateTime.hzLocalDateTime.hzLocalTime.nano);
+        output.writeByte(hzOffsetDateTime.localDateTime.localTime.hour);
+        output.writeByte(hzOffsetDateTime.localDateTime.localTime.minute);
+        output.writeByte(hzOffsetDateTime.localDateTime.localTime.second);
+        output.writeInt(hzOffsetDateTime.localDateTime.localTime.nano);
 
         output.writeInt(hzOffsetDateTime.offsetSeconds);
     }
@@ -587,7 +580,7 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
         let i = 0;
         let j = 0;
         while (i < numberOfBytes) {
-            const byte = parseInt(hex.slice(j, j+2), 16);
+            const byte = parseInt(hex.slice(j, j + 2), 16);
             byteArray[i] = isNegative ? ~byte : byte; // for two's complement
             i += 1;
             j += 2;

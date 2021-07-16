@@ -21,16 +21,21 @@
  *
  * @param offsetSeconds Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]. If out of
  * this range, the limit values are assumed.
- * @throws RangeError if offset seconds is not number
+ * @throws TypeError if offset seconds is not number
+ * @throws RangeError if offset seconds is not a valid number
  * @return Timezone string, can be 'Z', +hh:mm or -hh:mm
  */
 export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
+    if (typeof offsetSeconds !== 'number') {
+        throw new TypeError('Expected offsetSeconds to be a number');
+    }
+
     if (!Number.isInteger(offsetSeconds)) {
-        throw new RangeError('Expected integer');
+        throw new TypeError('Expected offsetSeconds to be an integer');
     }
 
     if (offsetSeconds > 64800 || offsetSeconds < -64800) {
-        throw new RangeError('Offset seconds should be in the range [-64800,64800]');
+        throw new RangeError('offsetSeconds should be in the range [-64800,64800]');
     }
 
     const offsetMinutes = Math.floor(Math.abs(offsetSeconds) / 60);
@@ -61,12 +66,13 @@ export function getTimezoneOffsetFromSeconds(offsetSeconds: number): string {
  * @internal
  *
  * @param timezoneString string, can be 'Z', +hh:mm or -hh:mm
+ * @throws TypeError If timezoneString is not a string
  * @throws RangeError If timezoneString is invalid
  * @return Timezone Offset in seconds, can be negative or positive. must be in valid timezone range [-64800, 64800]
  */
 export function getOffsetSecondsFromTimezoneString(timezoneString: string): number {
     if (typeof timezoneString !== 'string') {
-        throw new RangeError('String expected');
+        throw new TypeError('Expected timezoneString to be a string');
     }
     let positive;
     if (timezoneString.toUpperCase() === 'Z') {
