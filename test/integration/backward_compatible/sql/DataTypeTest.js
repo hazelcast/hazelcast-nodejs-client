@@ -20,7 +20,7 @@ const { Lang } = require('../../remote_controller/remote-controller_types');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { BuildInfo } = require('../../../../lib/BuildInfo');
-const { Client, LocalDateTime, LocalTime, LocalDate, OffsetDateTime, Big } = require('../../../../');
+const { Client, LocalDateTime, LocalTime, LocalDate, OffsetDateTime, BigDecimal } = require('../../../../');
 
 const chai = require('chai');
 const long = require('long');
@@ -316,7 +316,10 @@ describe('Data type test', function () {
         if (clientVersionFive) {
             result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-                [Big('-22.00000000000000000000000000000001'), new Big('1.0000000000000231213123123125465462513214653123')]
+                [
+                    new BigDecimal('-22.00000000000000000000000000000001'),
+                    new BigDecimal('1.0000000000000231213123123125465462513214653123')
+                ]
             );
         } else {
             result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(

@@ -24,7 +24,6 @@ import {
     IdentifiedDataSerializableFactory
 } from './Serializable';
 import {
-    Big,
     BigDecimal,
     HazelcastJsonValue,
     LocalDate,
@@ -559,7 +558,7 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
         const body = input.readByteArray();
         const scale = input.readInt();
 
-        return Big(fromBufferAndScale(body, scale));
+        return new BigDecimal(fromBufferAndScale(body, scale));
     }
 
     write(output: DataOutput, bigDecimal: BigDecimal): void {
