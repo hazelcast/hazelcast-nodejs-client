@@ -17,10 +17,10 @@
 /**
  * A wrapper for `BigDecimal` values. You can use this class to store and query `BigDecimal` values in distributed objects.
  *
- * A `BigDecimal` consists of an arbitrary precision number {@link unscaledValue} and a {@link scale}. If zero or positive,
- * the scale is the number of digits to the right of the decimal
+ * A `BigDecimal` consists of an arbitrary precision number {@link unscaledValue} and a {@link scale}.
+ * If zero or positive, the scale is the number of digits to the right of the decimal
  * point. If negative, the unscaled value of the number is multiplied
- * by ten to the power of the negation of the scale.  The value of the
+ * by ten to the power of the negation of the scale. The value of the
  * number represented by the `BigDecimal` is therefore
  * <code>(unscaledValue &times; 10<sup>-scale</sup>)</code>.
  */
@@ -40,7 +40,7 @@ export class BigDecimal {
      * is the number of digits to the right of the decimal point.
      * If negative, the unscaled value of the number is multiplied
      * by ten to the power of the negation of the scale. For example,
-     * a scale of `-3` means the unscaled value is multiplied by 1000.
+     * a scale of `-3` means the unscaled value is multiplied by `1000`.
      */
     readonly scale: number;
 
@@ -99,11 +99,11 @@ export class BigDecimal {
     constructor(value: string) {
         // inspired from openjdk BigDecimal's `BigDecimal(char[] in, int offset, int len, MathContext mc)` constructor
         if (typeof value !== 'string') {
-            throw new RangeError('String value expected');
+            throw new TypeError('String value expected');
         }
         let offset = 0; // offset that points to an index of string, used for moving on the string
         let len = value.length;
-        let precision = 0; // record precision value
+        let precision = 0; // The number of decimal digits in this BigDecimal
         let scale = 0; // record scale value
         let unscaledValue: BigInt; // the unscaled value in BigInteger
 
@@ -193,7 +193,6 @@ export class BigDecimal {
      * @param offset Offset of where to start reading
      * @param len How many chars to read
      * @internal
-     * @private
      */
     private static parseExp(expString: string, offset: number, len: number): number {
         let exp = 0;
@@ -246,7 +245,6 @@ export class BigDecimal {
      * @param scale scale
      * @param exp exponent number
      * @throws RangeError if scale is out of range
-     * @private
      */
     private static adjustScale(scale: number, exp: number): number {
         const adjustedScale = scale - exp;
@@ -260,7 +258,6 @@ export class BigDecimal {
     /**
      * Returns absolute value of a BigInt
      * @param val
-     * @private
      * @internal
      */
     private static bigIntAbs(val: BigInt) {
@@ -277,7 +274,6 @@ export class BigDecimal {
      * 0 if the BigDecimal is zero,
      * 1 if the BigDecimal is positive.
      * @internal
-     * @private
      */
     private signum(): number {
         return this.unscaledValue > BigInt(0) ? 1 : (this.unscaledValue < BigInt(0) ? -1 : 0);

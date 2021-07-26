@@ -19,7 +19,6 @@
 const { Lang } = require('../../remote_controller/remote-controller_types');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
-const { BuildInfo } = require('../../../../lib/BuildInfo');
 const { Client, LocalDateTime, LocalTime, LocalDate, OffsetDateTime, BigDecimal } = require('../../../../');
 
 const chai = require('chai');
@@ -67,7 +66,8 @@ describe('Data type test', function () {
     let cluster;
     let someMap;
     let mapName;
-    let clientVersionFive;
+    const clientVersionNewerThanFive = TestUtil.isClientVersionAtLeast('5.0');
+    const serverVersionNewerThanFive = TestUtil.isServerVersionAtLeast(client, '5.0');
 
     const validateResults = (rows, expectedKeys, expectedValues) => {
         rows.length.should.be.eq(expectedValues.length);
@@ -80,8 +80,6 @@ describe('Data type test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        const clientVersion = BuildInfo.calculateServerVersionFromString(BuildInfo.getClientVersion());
-        clientVersionFive = clientVersion >= BuildInfo.calculateServerVersionFromString('5.0');
         cluster = await RC.createCluster(null, null);
         await RC.startMember(cluster.id);
     });
@@ -126,7 +124,7 @@ describe('Data type test', function () {
         `;
 
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        const result = TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this = ? OR this = ? ORDER BY __key ASC`, ['7', '2']
         );
         const rowMetadata = await result.getRowMetadata();
@@ -154,8 +152,7 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client[clientVersionFive ? 'getSql' : 'getSqlService']()
-            .execute(`SELECT * FROM ${mapName} WHERE this = ? ORDER BY __key ASC`, [true]);
+        const result = TestUtil.getSql(client).execute(`SELECT * FROM ${mapName} WHERE this = ? ORDER BY __key ASC`, [true]);
         const rowMetadata = await result.getRowMetadata();
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BOOLEAN);
 
@@ -181,7 +178,7 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        const result = TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS TINYINT) AND this < CAST(? AS TINYINT) ORDER BY __key ASC`,
             [10, 16]
         );
@@ -210,7 +207,7 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        const result = TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS SMALLINT) AND this < CAST(? AS SMALLINT) ORDER BY __key ASC`,
             [8, 16]
         );
@@ -239,7 +236,7 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        const result = TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS INTEGER) AND this < CAST(? AS INTEGER) ORDER BY __key ASC`,
             [10, 20]
         );
@@ -268,7 +265,7 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        const result = TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(10), long.fromNumber(18)]
         );
@@ -313,8 +310,8 @@ describe('Data type test', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
 
         let result;
-        if (clientVersionFive) {
-            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        if (clientVersionNewerThanFive) {
+            result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
                     new BigDecimal('-22.00000000000000000000000000000001'),
@@ -322,7 +319,7 @@ describe('Data type test', function () {
                 ]
             );
         } else {
-            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+            result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST(? AS DECIMAL) AND this < CAST(? AS DECIMAL) ORDER BY __key ASC`,
                 ['-22.00000000000000000000000000000001', '1.0000000000000231213123123125465462513214653123']
             );
@@ -350,7 +347,7 @@ describe('Data type test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const decimal = rows[i]['this'];
-            if (clientVersionFive) {
+            if (clientVersionNewerThanFive) {
                 decimal.toString().should.be.eq(expectedValues[i]);
             } else {
                 decimal.should.be.eq(expectedValues[i]);
@@ -369,7 +366,7 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        const result = TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS REAL) AND this < CAST(? AS REAL) ORDER BY __key ASC`,
             [-0.5, 0.5]
         );
@@ -403,7 +400,7 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        const result = TestUtil.getSql(client).execute(
             // cast it if default number type is different
             `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [-0.7, 0.7]
@@ -433,11 +430,9 @@ describe('Data type test', function () {
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
 
-        const serverFive = TestUtil.isServerVersionAtLeast(client, '5.0');
-
         // major versions different skip
         // year in client protocol changed https://github.com/hazelcast/hazelcast/pull/18984
-        if (clientVersionFive !== serverFive) {
+        if (clientVersionNewerThanFive !== serverVersionNewerThanFive) {
             this.skip();
         }
 
@@ -451,13 +446,13 @@ describe('Data type test', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
 
         let result;
-        if (clientVersionFive) {
-            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        if (clientVersionNewerThanFive) {
+            result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [new LocalDate(1, 1, 1), new LocalDate(5, 5, 5)]
             );
         } else {
-            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+            result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST(? AS DATE) ORDER BY __key ASC`,
                 ['0001-01-01', '0005-05-05']
             );
@@ -481,7 +476,7 @@ describe('Data type test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const date = rows[i]['this'];
-            if (clientVersionFive) {
+            if (clientVersionNewerThanFive) {
                 date.year.should.be.eq(expectedBaseValues.year + i);
                 date.month.should.be.eq(expectedBaseValues.month + i);
                 date.date.should.be.eq(expectedBaseValues.date + i);
@@ -507,13 +502,13 @@ describe('Data type test', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
 
         let result;
-        if (clientVersionFive) {
-            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        if (clientVersionNewerThanFive) {
+            result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [new LocalTime(1, 0, 0, 0), new LocalTime(10, 0, 0, 0)]
             );
         } else {
-            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+            result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME) ORDER BY __key ASC`,
                 ['01:00:00', '10:00:00']
             );
@@ -539,7 +534,7 @@ describe('Data type test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const time = rows[i]['this'];
-            if (clientVersionFive) {
+            if (clientVersionNewerThanFive) {
                 time.hour.should.be.eq(expectedBaseValues.hour + i);
                 time.minute.should.be.eq(expectedBaseValues.minute + i);
                 time.second.should.be.eq(expectedBaseValues.second + i);
@@ -558,11 +553,9 @@ describe('Data type test', function () {
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
 
-        const serverFive = TestUtil.isServerVersionAtLeast(client, '5.0');
-
         // major versions different skip
         // year in client protocol changed https://github.com/hazelcast/hazelcast/pull/18984
-        if (clientVersionFive !== serverFive) {
+        if (clientVersionNewerThanFive !== serverVersionNewerThanFive) {
             this.skip();
         }
 
@@ -578,8 +571,8 @@ describe('Data type test', function () {
 
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         let result;
-        if (clientVersionFive) {
-            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        if (clientVersionNewerThanFive) {
+            result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
                     new LocalDateTime(new LocalDate(1, 6, 5), new LocalTime(4, 3, 2, 1)),
@@ -587,7 +580,7 @@ describe('Data type test', function () {
                 ]
             );
         } else {
-            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+            result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP) ORDER BY __key ASC`,
                 [
                     '0001-06-05T04:03:02.000000001',
@@ -619,14 +612,14 @@ describe('Data type test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const datetime = rows[i]['this'];
-            if (clientVersionFive) {
-                datetime.hzLocalDate.year.should.be.eq(expectedBaseValues.year + i);
-                datetime.hzLocalDate.month.should.be.eq(expectedBaseValues.month + i);
-                datetime.hzLocalDate.date.should.be.eq(expectedBaseValues.date + i);
-                datetime.hzLocalTime.hour.should.be.eq(expectedBaseValues.hour + i);
-                datetime.hzLocalTime.minute.should.be.eq(expectedBaseValues.minute + i);
-                datetime.hzLocalTime.second.should.be.eq(expectedBaseValues.second + i);
-                datetime.hzLocalTime.nano.should.be.eq(expectedBaseValues.nano + i);
+            if (clientVersionNewerThanFive) {
+                datetime.localDate.year.should.be.eq(expectedBaseValues.year + i);
+                datetime.localDate.month.should.be.eq(expectedBaseValues.month + i);
+                datetime.localDate.date.should.be.eq(expectedBaseValues.date + i);
+                datetime.localTime.hour.should.be.eq(expectedBaseValues.hour + i);
+                datetime.localTime.minute.should.be.eq(expectedBaseValues.minute + i);
+                datetime.localTime.second.should.be.eq(expectedBaseValues.second + i);
+                datetime.localTime.nano.should.be.eq(expectedBaseValues.nano + i);
             } else {
                 datetime.should.be.eq(`${leftZeroPadInteger(expectedBaseValues.year + i, 4)}-`
                     + `${leftZeroPadInteger(expectedBaseValues.month + i, 2)}-`
@@ -647,15 +640,13 @@ describe('Data type test', function () {
         const SqlColumnType = getSqlColumnType();
         await basicSetup(this);
 
-        const serverFive = TestUtil.isServerVersionAtLeast(client, '5.0');
-
         // major versions different skip
         // year in client protocol changed https://github.com/hazelcast/hazelcast/pull/18984
-        if (clientVersionFive !== serverFive) {
+        if (clientVersionNewerThanFive !== serverVersionNewerThanFive) {
             this.skip();
         }
 
-        const timestampWithTimezoneString = serverFive ? 'TIMESTAMP WITH TIME ZONE' : 'TIMESTAMP_WITH_TIME_ZONE';
+        const timestampWithTimezoneString = serverVersionNewerThanFive ? 'TIMESTAMP WITH TIME ZONE' : 'TIMESTAMP_WITH_TIME_ZONE';
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -671,8 +662,8 @@ describe('Data type test', function () {
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         let result;
-        if (clientVersionFive) {
-            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        if (clientVersionNewerThanFive) {
+            result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
                     new OffsetDateTime(new LocalDateTime(new LocalDate(1, 6, 5), new LocalTime(4, 3, 2, 1)), 0),
@@ -680,7 +671,7 @@ describe('Data type test', function () {
                 ]
             );
         } else {
-            result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+            result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS ${timestampWithTimezoneString})` +
                 ` AND this < CAST (? AS ${timestampWithTimezoneString}) ORDER BY __key ASC`,
                 [
@@ -713,14 +704,14 @@ describe('Data type test', function () {
 
         for (let i = 0; i < rows.length; i++) {
             const datetimeWithOffset = rows[i]['this'];
-            if (clientVersionFive) {
-                datetimeWithOffset.hzLocalDateTime.hzLocalDate.year.should.be.eq(expectedBaseValues.year + i);
-                datetimeWithOffset.hzLocalDateTime.hzLocalDate.month.should.be.eq(expectedBaseValues.month + i);
-                datetimeWithOffset.hzLocalDateTime.hzLocalDate.date.should.be.eq(expectedBaseValues.date + i);
-                datetimeWithOffset.hzLocalDateTime.hzLocalTime.hour.should.be.eq(expectedBaseValues.hour + i);
-                datetimeWithOffset.hzLocalDateTime.hzLocalTime.minute.should.be.eq(expectedBaseValues.minute + i);
-                datetimeWithOffset.hzLocalDateTime.hzLocalTime.second.should.be.eq(expectedBaseValues.second + i);
-                datetimeWithOffset.hzLocalDateTime.hzLocalTime.nano.should.be.eq(expectedBaseValues.nano + i);
+            if (clientVersionNewerThanFive) {
+                datetimeWithOffset.localDateTime.localDate.year.should.be.eq(expectedBaseValues.year + i);
+                datetimeWithOffset.localDateTime.localDate.month.should.be.eq(expectedBaseValues.month + i);
+                datetimeWithOffset.localDateTime.localDate.date.should.be.eq(expectedBaseValues.date + i);
+                datetimeWithOffset.localDateTime.localTime.hour.should.be.eq(expectedBaseValues.hour + i);
+                datetimeWithOffset.localDateTime.localTime.minute.should.be.eq(expectedBaseValues.minute + i);
+                datetimeWithOffset.localDateTime.localTime.second.should.be.eq(expectedBaseValues.second + i);
+                datetimeWithOffset.localDateTime.localTime.nano.should.be.eq(expectedBaseValues.nano + i);
             } else {
 
                 datetimeWithOffset.should.be.a('string');
@@ -761,7 +752,7 @@ describe('Data type test', function () {
         await someMap.put(1, student2);
         await someMap.put(2, student3);
 
-        const result = client[clientVersionFive ? 'getSql' : 'getSqlService']().execute(
+        const result = TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE age > ? AND age < ? ORDER BY age DESC`,
             [long.fromNumber(13), long.fromNumber(18)]
         );

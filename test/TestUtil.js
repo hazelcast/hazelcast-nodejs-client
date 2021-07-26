@@ -20,7 +20,8 @@ const { BuildInfo } = require('../lib/BuildInfo');
 
 exports.promiseLater = function (time, func) {
     if (func === undefined) {
-        func = () => {};
+        func = () => {
+        };
     }
     return new Promise(((resolve) => {
         setTimeout(() => {
@@ -64,6 +65,7 @@ exports.promiseWaitMilliseconds = function (milliseconds) {
 exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
     return new Promise(((resolve, reject) => {
         let intervalTimer;
+
         function scheduleNext() {
             intervalTimer = setTimeout(() => {
                 taskAsyncFn()
@@ -76,6 +78,7 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
                     });
             }, intervalMs);
         }
+
         scheduleNext();
 
         const timeoutTimer = setTimeout(() => {
@@ -148,7 +151,7 @@ exports.markEnterprise = function (_this) {
     }
 };
 
-exports.getRandomConnection = function(client) {
+exports.getRandomConnection = function (client) {
     if (Object.prototype.hasOwnProperty.call(client, 'connectionRegistry')) {
         return client.connectionRegistry.getRandomConnection();
     } else {
@@ -156,7 +159,7 @@ exports.getRandomConnection = function(client) {
     }
 };
 
-exports.isServerVersionAtLeast = function(client, version) {
+exports.isServerVersionAtLeast = function (client, version) {
     let actual = BuildInfo.UNKNOWN_VERSION_ID;
     if (process.env['SERVER_VERSION']) {
         actual = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
@@ -167,7 +170,7 @@ exports.isServerVersionAtLeast = function(client, version) {
     return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
 };
 
-exports.isClientVersionAtLeast = function(version) {
+exports.isClientVersionAtLeast = function (version) {
     const actual = BuildInfo.calculateServerVersionFromString(BuildInfo.getClientVersion());
     const expected = BuildInfo.calculateServerVersionFromString(version);
     return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
@@ -179,7 +182,7 @@ exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     }
 };
 
-exports.markClientVersionAtLeast = function(_this, expectedVersion) {
+exports.markClientVersionAtLeast = function (_this, expectedVersion) {
     if (!exports.isClientVersionAtLeast(expectedVersion)) {
         _this.skip();
     }
@@ -264,5 +267,13 @@ exports.writeStringToOutput = function (output, value) {
         output.writeString(value);
     } else {
         output.writeUTF(value);
+    }
+};
+
+exports.getSql = function (client) {
+    if (exports.isClientVersionAtLeast('5.0')) {
+        return client.getSql();
+    } else {
+        return client.getSqlService();
     }
 };

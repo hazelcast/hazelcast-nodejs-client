@@ -36,7 +36,7 @@ describe('Jet Test', function () {
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/config
-            http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+            http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
             <jet enabled="true"></jet>
         </hazelcast>`;
 
@@ -99,7 +99,7 @@ describe('Jet Test', function () {
               'valueFormat'='json')
         `);
 
-        await result.executeDeferred.promise; // wait for execution to end
+        await result.getUpdateCount(); // wait for execution to end
 
         const result2 = client.getSql().execute(`
             CREATE MAPPING ${mapName2} (__key DOUBLE, name VARCHAR, height DOUBLE) TYPE IMap OPTIONS (
@@ -107,7 +107,7 @@ describe('Jet Test', function () {
               'valueFormat'='json')
         `);
 
-        await result2.executeDeferred.promise; // wait for execution to end
+        await result2.getUpdateCount(); // wait for execution to end
 
         await map.set(1, {
             age: 11,
@@ -153,11 +153,11 @@ describe('Jet Test', function () {
               'valueFormat'='double')
         `);
 
-        await result.executeDeferred.promise; // wait for execution to end
+        await result.getUpdateCount(); // wait for execution to end
 
         const result2 = client.getSql().execute(`INSERT INTO ${mapName} VALUES (1, 2)`);
 
-        await result2.executeDeferred.promise; // wait for execution to end
+        await result2.getUpdateCount(); // wait for execution to end
 
         (await map.get(1)).should.be.eq(2);
     });
