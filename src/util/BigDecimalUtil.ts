@@ -43,3 +43,40 @@ export function bufferToBigInt(buffer: Buffer): BigInt {
 
     return bigint;
 }
+
+export function bigintToBuffer(bigintValue: BigInt): Buffer {
+    // Using toString(16) is problematic since it does not return two's complement
+
+    const isNegative = bigintValue < BigInt(0);
+    let hex;
+
+    // for getting two's complement of it
+    if (isNegative) {
+        bigintValue = bigintValue.valueOf() + BigInt(1); // for two's complement representation, add 1. we'll negate later
+        hex = bigintValue.toString(16).slice(1); // exclude minus sign
+    } else {
+        hex = bigintValue.toString(16);
+    }
+
+    // prepend 0 to get a even length string
+    if (hex.length % 2) {
+        hex = '0' + hex;
+    }
+
+    // we need to add the zero byte if the value is positive
+    // js BigInt toString(16) omits it
+    hex = '00' + hex;
+
+    const numberOfBytes = hex.length / 2;
+    const byteArray = new Array(numberOfBytes);
+
+    let i = 0;
+    let j = 0;
+    while (i < numberOfBytes) {
+        const byte = parseInt(hex.slice(j, j + 2), 16);
+        byteArray[i] = isNegative ? ~byte : byte; // for two's complement
+        i += 1;
+        j += 2;
+    }
+    return Buffer.from(byteArray);
+}

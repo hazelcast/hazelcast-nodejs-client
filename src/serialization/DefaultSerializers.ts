@@ -32,7 +32,7 @@ import {
     OffsetDateTime,
     UUID
 } from '../core';
-import {bufferToBigInt} from '../util/BigDecimalUtil';
+import * as BigDecimalUtil from '../util/BigDecimalUtil';
 import {Buffer} from 'buffer';
 
 /** @internal */
@@ -551,46 +551,11 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
         const body = input.readByteArray();
         const scale = input.readInt();
 
-        return new BigDecimal(bufferToBigInt(body), scale);
+        return new BigDecimal(BigDecimalUtil.bufferToBigInt(body), scale);
     }
 
     write(output: DataOutput, bigDecimal: BigDecimal): void {
-        let bigintValue = bigDecimal.unscaledValue;
-        // Using toString(16) is problematic since it does not return two's complement
-
-        const isNegative = bigintValue < BigInt(0);
-        let hex;
-
-        // for getting two's complement of it
-        if (isNegative) {
-            bigintValue = bigintValue.valueOf() + BigInt(1);
-            hex = bigintValue.toString(16).slice(1); // exclude minus sign
-        } else {
-            hex = bigintValue.toString(16);
-        }
-
-        // prepend 0 to get a even length string
-        if (hex.length % 2) {
-            hex = '0' + hex;
-        }
-
-        // we need to add the zero byte if the value is positive
-        // js BigInt toString(16) omits it
-        hex = '00' + hex;
-
-        const numberOfBytes = hex.length / 2;
-        const byteArray = new Array(numberOfBytes);
-
-        let i = 0;
-        let j = 0;
-        while (i < numberOfBytes) {
-            const byte = parseInt(hex.slice(j, j + 2), 16);
-            byteArray[i] = isNegative ? ~byte : byte; // for two's complement
-            i += 1;
-            j += 2;
-        }
-
-        output.writeByteArray(Buffer.from(byteArray));
+        output.writeByteArray(BigDecimalUtil.bigintToBuffer(bigDecimal.unscaledValue));
         output.writeInt(bigDecimal.scale);
     }
 }
