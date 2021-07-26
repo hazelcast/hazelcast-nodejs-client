@@ -32,7 +32,7 @@ import {
     OffsetDateTime,
     UUID
 } from '../core';
-import {fromBufferAndScale} from '../util/BigDecimalUtil';
+import {bufferToBigInt} from '../util/BigDecimalUtil';
 import {Buffer} from 'buffer';
 
 /** @internal */
@@ -551,7 +551,7 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
         const body = input.readByteArray();
         const scale = input.readInt();
 
-        return new BigDecimal(fromBufferAndScale(body, scale));
+        return new BigDecimal(bufferToBigInt(body), scale);
     }
 
     write(output: DataOutput, bigDecimal: BigDecimal): void {
@@ -573,6 +573,10 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
         if (hex.length % 2) {
             hex = '0' + hex;
         }
+
+        // we need to add the zero byte if the value is positive
+        // js BigInt toString(16) omits it
+        hex = '00' + hex;
 
         const numberOfBytes = hex.length / 2;
         const byteArray = new Array(numberOfBytes);

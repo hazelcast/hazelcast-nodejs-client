@@ -18,7 +18,8 @@
 const Long = require('long');
 const { expect } = require('chai');
 const RC = require('../../RC');
-const { Client, RestValue, UUID } = require('../../../../');
+const { Lang } = require('../../remote_controller/remote-controller_types');
+const { Client, RestValue, UUID, BigDecimal } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('DefaultSerializersLiveTest', function () {
@@ -182,5 +183,64 @@ describe('DefaultSerializersLiveTest', function () {
 
         const actualValue = await map.get('key');
         expect(actualValue).to.deep.equal([1, 2, 3]);
+    });
+
+    const bigDecimalTestParams = [
+        ['1.00000000000000000000001', 100000000000000000000001n, 23],
+        ['1.000000000000000000000000000000000001', 1000000000000000000000000000000000001n, 36],
+        // the one below has odd number of characters in hex form
+        ['1.0000000000000000000000000000000001', 10000000000000000000000000000000001n, 34],
+        ['-0.00000000000000000000000000000000002', -2n, 35],
+        ['11111111111111111111111111111111111111122222222233333.123',
+            11111111111111111111111111111111111111122222222233333123n, 3],
+        ['-11111111111111111111111111111111111111122222222233333.123',
+            -11111111111111111111111111111111111111122222222233333123n, 3],
+        ['1.123e32', 1123n, -29],
+        ['1.123e-32', 1123n, 35],
+        ['-1.123e32', -1123n, -29],
+        ['-1.123e-32', -1123n, 35],
+        ['1.123E32', 1123n, -29],
+        ['1.123E-32', 1123n, 35],
+        ['-1.123E32', -1123n, -29],
+        ['-1.123E-32', -1123n, 35],
+    ];
+
+    it('should deserialize BigDecimal', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+
+        bigDecimalTestParams.forEach((value, index) => {
+            script += `map.set("${index}", new java.math.BigDecimal("${value[0]}"));\n`;
+        });
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        for (let i = 0; i < bigDecimalTestParams.length; i++) {
+            const actualValue = await map.get(i.toString());
+
+            expect(actualValue.unscaledValue).to.equal(bigDecimalTestParams[i][1]);
+            expect(actualValue.scale).to.equal(bigDecimalTestParams[i][2]);
+        }
+    });
+
+    it('should serialize BigDecimal correctly', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        for (let i = 0; i < bigDecimalTestParams.length; i++) {
+            await map.put(i.toString(), new BigDecimal(bigDecimalTestParams[i][1], bigDecimalTestParams[i][2]));
+        }
+
+        for (let i = 0; i < bigDecimalTestParams.length; i++) {
+            const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+                `result = map.get("${i}").toPlainString();\n`;
+            const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+            if (bigDecimalTestParams[i][0].includes('e') || bigDecimalTestParams[i][0].includes('E')) {
+                // convert to plain string and compare, remote controller sends plain string
+                expect(response.result.toString()).to.equal(BigDecimal.fromString(bigDecimalTestParams[i][0]).toString());
+            } else {
+                expect(response.result.toString()).to.equal(bigDecimalTestParams[i][0]);
+            }
+        }
     });
 });

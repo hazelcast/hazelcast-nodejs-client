@@ -79,7 +79,7 @@ to.APortable = new APortable(
     to.aCustomByteArraySerializable, exports.aData
 );
 to.aDate = new Date(Date.UTC(1990, 2, 1, 0, 0, 0, 0));
-to.aBigDecimal = new BigDecimal('31231');
+to.aBigDecimal = BigDecimal.fromString('31231');
 to.aClass = 'java.math.BigDecimal';
 
 to.aLocalDate = new LocalDate(2021, 6, 28);

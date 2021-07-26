@@ -45,6 +45,77 @@ export class BigDecimal {
     readonly scale: number;
 
     /**
+     * Constructs a `BigDecimal` from a unscaled value and a scale.
+     *
+     * @param unscaledValue Unscaled value of this `BigDecimal`.
+     * This value is a native JavaScript BigInt object, which is used to store
+     * digits of this BigDecimal.
+     * @param scale Scale of this `BigDecimal`. If zero or positive, the scale
+     * is the number of digits to the right of the decimal point.
+     * If negative, the unscaled value of the number is multiplied
+     * by ten to the power of the negation of the scale. For example,
+     * a scale of `-3` means the unscaled value is multiplied by `1000`.
+     */
+    constructor(unscaledValue: BigInt, scale: number) {
+        this.unscaledValue = unscaledValue;
+        this.scale = scale;
+    }
+
+    /**
+     * Parses exponent and returns it
+     *
+     * @param expString Exponent string
+     * @param offset Offset of where to start reading
+     * @param len How many chars to read
+     * @internal
+     */
+    private static parseExp(expString: string, offset: number, len: number): number {
+        let exp = 0;
+        offset++;
+        let c = expString[offset];
+        len--;
+        const isNegative = (c === '-');
+        // optional sign
+        if (isNegative || c === '+') {
+            offset++;
+            c = expString[offset];
+            len--;
+        }
+        if (len <= 0) { /// no exponent digits
+            throw new RangeError('No exponent digits');
+        }
+        // skip leading zeros in the exponent
+        while (len > BigDecimal.MAX_EXPONENT_DIGITS && c === '0') {
+            offset++;
+            c = expString[offset];
+            len--;
+        }
+        // too many nonzero exponent digits
+        if (len > BigDecimal.MAX_EXPONENT_DIGITS) {
+            throw new RangeError('Too many nonzero exponent digits');
+        }
+        // c now holds first digit of exponent
+        for (; ; len--) {
+            let v: number;
+            if (c >= '0' && c <= '9') {
+                v = +c;
+            } else { // not a digit
+                throw new RangeError('Not a digit.');
+            }
+            exp = exp * 10 + v;
+            if (len === 1) {
+                break; // that was final character
+            }
+            offset++;
+            c = expString[offset];
+        }
+        if (isNegative) { // apply sign
+            exp = -exp;
+        }
+        return exp;
+    }
+
+    /**
      * Translates the string representation of a `BigDecimal`
      * into a `BigDecimal`.  The string representation consists
      * of an optional sign, '+' (<code> '&#92;u002B'</code>) or
@@ -96,7 +167,7 @@ export class BigDecimal {
      * @param value a non-null `BigDecimal` string
      * @throws RangeError if value is not a valid representation of a `BigDecimal`.
      */
-    constructor(value: string) {
+    static fromString(value: string): BigDecimal {
         // inspired from openjdk BigDecimal's `BigDecimal(char[] in, int offset, int len, MathContext mc)` constructor
         if (typeof value !== 'string') {
             throw new TypeError('String value expected');
@@ -182,62 +253,7 @@ export class BigDecimal {
         } else {
             unscaledValue = BigInt(stringValue);
         }
-        this.unscaledValue = unscaledValue;
-        this.scale = scale;
-    }
-
-    /**
-     * Parses exponent and returns it
-     *
-     * @param expString Exponent string
-     * @param offset Offset of where to start reading
-     * @param len How many chars to read
-     * @internal
-     */
-    private static parseExp(expString: string, offset: number, len: number): number {
-        let exp = 0;
-        offset++;
-        let c = expString[offset];
-        len--;
-        const isNegative = (c === '-');
-        // optional sign
-        if (isNegative || c === '+') {
-            offset++;
-            c = expString[offset];
-            len--;
-        }
-        if (len <= 0) { /// no exponent digits
-            throw new RangeError('No exponent digits');
-        }
-        // skip leading zeros in the exponent
-        while (len > BigDecimal.MAX_EXPONENT_DIGITS && c === '0') {
-            offset++;
-            c = expString[offset];
-            len--;
-        }
-        // too many nonzero exponent digits
-        if (len > BigDecimal.MAX_EXPONENT_DIGITS) {
-            throw new RangeError('Too many nonzero exponent digits');
-        }
-        // c now holds first digit of exponent
-        for (; ; len--) {
-            let v: number;
-            if (c >= '0' && c <= '9') {
-                v = +c;
-            } else { // not a digit
-                throw new RangeError('Not a digit.');
-            }
-            exp = exp * 10 + v;
-            if (len === 1) {
-                break; // that was final character
-            }
-            offset++;
-            c = expString[offset];
-        }
-        if (isNegative) { // apply sign
-            exp = -exp;
-        }
-        return exp;
+        return new BigDecimal(unscaledValue, scale);
     }
 
     /**

@@ -1,7 +1,7 @@
 import {ClientMessage} from '../../protocol/ClientMessage';
 import {CodecUtil} from './CodecUtil';
 import {BitsUtil} from '../../util/BitsUtil';
-import {fromBufferAndScale} from '../../util/BigDecimalUtil';
+import {bufferToBigInt} from '../../util/BigDecimalUtil';
 import {BigDecimal} from '../../core';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
@@ -14,7 +14,7 @@ export class BigDecimalCodec {
         const body = buffer.slice(BitsUtil.INT_SIZE_IN_BYTES, BitsUtil.INT_SIZE_IN_BYTES + contentSize);
         const scale = FixSizedTypesCodec.decodeInt(buffer, BitsUtil.INT_SIZE_IN_BYTES + contentSize);
 
-        return new BigDecimal(fromBufferAndScale(body, scale));
+        return new BigDecimal(bufferToBigInt(body), scale);
     }
 
     static decodeNullable(clientMessage: ClientMessage): BigDecimal {

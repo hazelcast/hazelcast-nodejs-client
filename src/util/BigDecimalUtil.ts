@@ -18,11 +18,10 @@
 import {Buffer} from 'buffer';
 
 /**
- * Constructs a big decimal string from a buffer and a scale
+ * Converts buffer to bigint
  * @param buffer
- * @param scale
  */
-export function fromBufferAndScale(buffer: Buffer, scale: number): string {
+export function bufferToBigInt(buffer: Buffer): BigInt {
     const isNegative = (buffer[0] & 0x80) > 0;
     if (isNegative) { // negative, convert two's complement to positive
         for (let i = 0; i < buffer.length; i++) {
@@ -37,19 +36,10 @@ export function fromBufferAndScale(buffer: Buffer, scale: number): string {
         // Since adding 1 to a buffer is hard, it is done here.
         bigint += BigInt(1);
     }
-    const bigIntString = bigint.toString();
 
-    if (scale === 0) {
-        return (isNegative ? '-' : '') + bigIntString;
-    } else if (scale > 0) {
-        if (scale < bigIntString.length) {
-            return (isNegative ? '-' : '') + bigIntString.substring(0, bigIntString.length - scale) + '.'
-                + bigIntString.substring(bigIntString.length - scale);
-        } else {
-            const numberOfZerosAfterDecimal = scale - bigIntString.length;
-            return (isNegative ? '-0.' : '0.') + '0'.repeat(numberOfZerosAfterDecimal) + bigIntString
-        }
-    } else {
-        return (isNegative ? '-' : '') + bigIntString + '0'.repeat(-1 * scale);
+    if (isNegative) {
+        bigint *= -BigInt(1);
     }
+
+    return bigint;
 }

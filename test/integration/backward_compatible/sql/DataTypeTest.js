@@ -314,8 +314,8 @@ describe('Data type test', function () {
             result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
-                    new BigDecimal('-22.00000000000000000000000000000001'),
-                    new BigDecimal('1.0000000000000231213123123125465462513214653123')
+                    BigDecimal.fromString('-22.00000000000000000000000000000001'),
+                    BigDecimal.fromString('1.0000000000000231213123123125465462513214653123')
                 ]
             );
         } else {

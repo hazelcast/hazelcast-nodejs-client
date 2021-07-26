@@ -57,38 +57,38 @@ describe('BigDecimalTest', function () {
 
     it('should have working toString method', function () {
         for (const bigDecimalString of toStringTestParams) {
-            new BigDecimal(bigDecimalString[0]).toString().should.be.eq(bigDecimalString[1]);
+            BigDecimal.fromString(bigDecimalString[0]).toString().should.be.eq(bigDecimalString[1]);
         }
     });
 
-    it('constructor should construct correctly', function () {
+    it('string constructor should construct correctly', function () {
         for (const validBigArray of constructorTestParams) {
-            const big = new BigDecimal(validBigArray[0]);
+            const big = BigDecimal.fromString(validBigArray[0]);
             big.should.be.instanceof(BigDecimal);
             big.unscaledValue.should.be.eq(validBigArray[1]);
             big.scale.should.be.eq(validBigArray[2]);
         }
     });
 
-    it('constructor should throw on invalid input', function () {
-        (() => new BigDecimal(`1e${Number.MAX_SAFE_INTEGER + 1}`)).should.throw(RangeError);
-        (() => new BigDecimal(`1e${Number.MIN_SAFE_INTEGER - 1}`)).should.throw(RangeError);
-        (() => new BigDecimal('1f123')).should.throw(RangeError);
-        (() => new BigDecimal('1ee123')).should.throw(RangeError);
-        (() => new BigDecimal('1EE123')).should.throw(RangeError);
-        (() => new BigDecimal('1eE123')).should.throw(RangeError);
-        (() => new BigDecimal('1Ee123')).should.throw(RangeError);
-        (() => new BigDecimal('1..1')).should.throw(RangeError);
-        (() => new BigDecimal('1.1.1')).should.throw(RangeError);
-        (() => new BigDecimal('e1.123123')).should.throw(RangeError);
-        (() => new BigDecimal('')).should.throw(RangeError);
-        (() => new BigDecimal('random')).should.throw(RangeError);
-        (() => new BigDecimal('1e12e')).should.throw(RangeError);
+    it('string constructor should throw on invalid input', function () {
+        (() => BigDecimal.fromString(`1e${Number.MAX_SAFE_INTEGER + 1}`)).should.throw(RangeError);
+        (() => BigDecimal.fromString(`1e${Number.MIN_SAFE_INTEGER - 1}`)).should.throw(RangeError);
+        (() => BigDecimal.fromString('1f123')).should.throw(RangeError);
+        (() => BigDecimal.fromString('1ee123')).should.throw(RangeError);
+        (() => BigDecimal.fromString('1EE123')).should.throw(RangeError);
+        (() => BigDecimal.fromString('1eE123')).should.throw(RangeError);
+        (() => BigDecimal.fromString('1Ee123')).should.throw(RangeError);
+        (() => BigDecimal.fromString('1..1')).should.throw(RangeError);
+        (() => BigDecimal.fromString('1.1.1')).should.throw(RangeError);
+        (() => BigDecimal.fromString('e1.123123')).should.throw(RangeError);
+        (() => BigDecimal.fromString('')).should.throw(RangeError);
+        (() => BigDecimal.fromString('random')).should.throw(RangeError);
+        (() => BigDecimal.fromString('1e12e')).should.throw(RangeError);
 
-        (() => new BigDecimal({})).should.throw(RangeError);
-        (() => new BigDecimal(null)).should.throw(RangeError);
-        (() => new BigDecimal(undefined)).should.throw(RangeError);
-        (() => new BigDecimal(BigInt(1))).should.throw(RangeError);
-        (() => new BigDecimal(123)).should.throw(RangeError);
+        (() => BigDecimal.fromString({})).should.throw(TypeError);
+        (() => BigDecimal.fromString(null)).should.throw(TypeError);
+        (() => BigDecimal.fromString(undefined)).should.throw(TypeError);
+        (() => BigDecimal.fromString(BigInt(1))).should.throw(TypeError);
+        (() => BigDecimal.fromString(123)).should.throw(TypeError);
     });
 });
