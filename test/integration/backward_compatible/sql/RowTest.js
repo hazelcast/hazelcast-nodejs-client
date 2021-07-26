@@ -46,7 +46,7 @@ describe('SqlRowTest', function () {
         await someMap.put(1, '2');
         await someMap.put(2, '3');
 
-        let sqlService = TestUtil.getSql(client);
+        const sqlService = TestUtil.getSql(client);
         result = sqlService.execute(`SELECT * FROM ${mapName} WHERE __key > ?`, [0], {
             returnRawResult: true
         });

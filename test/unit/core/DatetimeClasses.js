@@ -326,7 +326,9 @@ describe('DatetimeClassesTest', function () {
             dateTime3.toString().should.be.eq('2000-02-29T02:03:04.006000000+00:30');
         });
 
-        const dateTime1 = new OffsetDateTime(new LocalDateTime(new LocalDate(2000, 2, 29), new LocalTime(2, 19, 4, 6000000)), 1000);
+        const dateTime1 = new OffsetDateTime(
+            new LocalDateTime(new LocalDate(2000, 2, 29), new LocalTime(2, 19, 4, 6000000)), 1000
+        );
 
         it('should convert to date correctly', function () {
             dateTime1.asDate().toISOString().should.be.eq('2000-02-29T02:02:24.006Z');
