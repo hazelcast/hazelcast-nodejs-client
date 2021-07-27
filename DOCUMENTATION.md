@@ -88,7 +88,7 @@
     * [8.7.4. Casting](#874-casting)
     * [8.7.5. Expressions](#875-expressions)
     * [8.7.6. Source and Sink Connectors](#876-source-and-sink-connectors)
-    * [8.7.7. More information](#877-more-information)
+    * [8.7.7. More Information](#877-more-information)
   * [8.8. Distributed Query](#88-distributed-query)
     * [8.8.1. How Distributed Query Works](#881-how-distributed-query-works)
       * [8.8.1.1. Employee Map Query Example](#8811-employee-map-query-example)
@@ -2192,11 +2192,12 @@ console.log(value);
 
 The SQL service provided by Hazelcast Node.js client allows you to run SQL queries.
 
-> **WARNING: The SQL feature became stable in 5.0. In order client and server to be compatible with each other, major
-> versions should be the same.**
+> **WARNING: The SQL feature have become stable in 5.0. In order a client and a server to be fully compatible with each other, their major
+> versions must be the same.**
 
-> **WARNING: A [Unisocket Client](#822-unisocket-client) should connect to a data member,
-> otherwise Data Manipulation Language(DML) Statements won't work for it.**
+> **WARNING: A [Unisocket Client](#822-unisocket-client) must connect to a member that is not
+> [lite](https://docs.hazelcast.com/hazelcast/latest/management/cluster-utilities.html#enabling-lite-members) (non-lite members are called data members),
+> otherwise Data Manipulation Language(DML) statements below won't work for that client.**
 
 ### 8.7.1 SQL Statements
 
@@ -2345,15 +2346,15 @@ The SQL service supports a set of SQL data types. The  table below shows SQL dat
 | **DECIMAL**                  | `BigDecimal`         |
 | **REAL**                     | `number`             |
 | **DOUBLE**                   | `number`             |
-| **DATE**                     | `HzLocalDate`        |
-| **TIME**                     | `HzLocalTime`        |
-| **TIMESTAMP**                | `HzLocalDateTime`    |
-| **TIMESTAMP_WITH_TIME_ZONE** | `HzOffsetDateTime`   |
+| **DATE**                     | `LocalDate`        |
+| **TIME**                     | `LocalTime`        |
+| **TIMESTAMP**                | `LocalDateTime`    |
+| **TIMESTAMP_WITH_TIME_ZONE** | `OffsetDateTime`   |
 | **OBJECT**                   | Any class            |
 | **NULL**                     | `null`               |
 
 See [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for how you can use
-`BigDecimal`, `HzLocalDate`, `HzLocalTime`, `HzLocalDateTime` and `HzOffsetDateTime` classes.
+`BigDecimal`, `LocalDate`, `LocalTime`, `LocalDateTime` and `OffsetDateTime` classes.
 
 ### 8.7.4. Casting
 
