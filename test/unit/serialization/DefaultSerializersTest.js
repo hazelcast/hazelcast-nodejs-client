@@ -27,7 +27,6 @@ const {
     OffsetDateTime,
     LocalTime,
     LocalDate,
-    Big,
     BigDecimal
 } = require('../../../');
 
@@ -84,8 +83,8 @@ describe('DefaultSerializersTest', function () {
         new LocalTime(11, 22, 41, 123456789),
         new LocalDateTime(new LocalDate(2022, 7, 29), new LocalTime(12, 23, 42, 123456789)),
         new OffsetDateTime(new LocalDateTime(new LocalDate(2022, 7, 29), new LocalTime(12, 23, 42, 123456789)), -64800),
-        Big('1.11111111111111111111111111'),
-        BigInt('111111111111111111111111111')
+        BigDecimal.fromString('1.11111111111111111111111111'),
+        BigInt('111111111111111111111111111'),
     ];
 
     parameters.forEach((obj) => {

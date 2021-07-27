@@ -18,60 +18,57 @@
 import {DataInput, DataOutput} from '../serialization';
 import {
     LocalDate,
-    HzLocalDate,
     LocalDateTime,
-    HzLocalDateTime,
     OffsetDateTime,
-    HzOffsetDateTime
 } from '../core';
 import {IOUtil} from './IOUtil';
 
 /** @internal */
 export class PortableUtil {
 
-    static readHzLocalDateForPortable(inp: DataInput): HzLocalDate {
+    static readLocalDateForPortable(inp: DataInput): LocalDate {
         const year = inp.readShort(); // this is different due to backward compatibility
         const month = inp.readByte();
         const date = inp.readByte();
-        return LocalDate(year, month, date);
+        return new LocalDate(year, month, date);
     }
 
-    static readHzLocalDatetimeForPortable(inp: DataInput): HzLocalDateTime {
-        const hzLocalDate = PortableUtil.readHzLocalDateForPortable(inp);
-        const hzLocalTime = IOUtil.readHzLocalTime(inp);
+    static readLocalDatetimeForPortable(inp: DataInput): LocalDateTime {
+        const localDate = PortableUtil.readLocalDateForPortable(inp);
+        const localTime = IOUtil.readLocalTime(inp);
 
-        return LocalDateTime(hzLocalDate, hzLocalTime);
+        return new LocalDateTime(localDate, localTime);
     }
 
-    static readHzOffsetDatetimeForPortable(inp: DataInput): HzOffsetDateTime {
-        const hzLocalDate = PortableUtil.readHzLocalDateForPortable(inp);
-        const hzLocalTime = IOUtil.readHzLocalTime(inp);
+    static readOffsetDatetimeForPortable(inp: DataInput): OffsetDateTime {
+        const localDate = PortableUtil.readLocalDateForPortable(inp);
+        const localTime = IOUtil.readLocalTime(inp);
 
         const offsetSeconds = inp.readInt();
 
-        return OffsetDateTime(
-            LocalDateTime(
-                hzLocalDate,
-                hzLocalTime
+        return new OffsetDateTime(
+            new LocalDateTime(
+                localDate,
+                localTime
             ),
             offsetSeconds
         );
     }
 
 
-    static writeHzLocalDateForPortable(out: DataOutput, value: HzLocalDate): void {
+    static writeLocalDateForPortable(out: DataOutput, value: LocalDate): void {
         out.writeShort(value.year); // this is different due to backward compatibility
         out.writeByte(value.month);
         out.writeByte(value.date);
     }
 
-    static writeHzLocalDatetimeForPortable(out: DataOutput, value: HzLocalDateTime): void {
-        PortableUtil.writeHzLocalDateForPortable(out, value.hzLocalDate);
-        IOUtil.writeHzLocalTime(out, value.hzLocalTime);
+    static writeLocalDatetimeForPortable(out: DataOutput, value: LocalDateTime): void {
+        PortableUtil.writeLocalDateForPortable(out, value.localDate);
+        IOUtil.writeLocalTime(out, value.localTime);
     }
 
-    static writeHzOffsetDatetimeForPortable(out: DataOutput, value: HzOffsetDateTime): void {
-        PortableUtil.writeHzLocalDatetimeForPortable(out, value.hzLocalDateTime);
+    static writeOffsetDatetimeForPortable(out: DataOutput, value: OffsetDateTime): void {
+        PortableUtil.writeLocalDatetimeForPortable(out, value.localDateTime);
         out.writeInt(value.offsetSeconds);
     }
 
