@@ -545,4 +545,47 @@ describe('DefaultSerializersLiveTest', function () {
             }
         }
     });
+
+    const bigIntParams = [
+        ['1111', 1111n],
+        ['-1111', -1111n],
+        ['9999999999999999999999999', 9999999999999999999999999n],
+        ['-9999999999999999999999999', -9999999999999999999999999n],
+        ['0', 0n],
+        ['1', 1n],
+        ['-7', -7n],
+    ];
+
+    it('should deserialize BigInt', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+
+        bigIntParams.forEach((values, index) => {
+            const bigIntString = values[0];
+            script += `map.set("${index}", new java.math.BigInteger("${bigIntString}"));\n`;
+        });
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        for (let i = 0; i < bigIntParams.length; i++) {
+            const actualValue = await map.get(i.toString());
+            const expectedBigIntValue = bigIntParams[i][1];
+
+            expect(actualValue).to.be.equal(expectedBigIntValue);
+        }
+    });
+
+    it('should serialize BigInt correctly', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+        for (let i = 0; i < bigIntParams.length; i++) {
+            const bigintValue = bigIntParams[i][1];
+            await map.put(i.toString(), bigintValue);
+        }
+
+        for (let i = 0; i < bigIntParams.length; i++) {
+            const responseString = await getMapValueAsString(i);
+            expect(responseString).to.be.equal(bigIntParams[i][0]);
+        }
+    });
 });
