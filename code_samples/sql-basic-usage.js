@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const { Client, SqlColumnType } = require('hazelcast-client');
+const { Client, SqlColumnType, HazelcastSqlException } = require('hazelcast-client');
 
 (async () => {
     try {
@@ -26,30 +26,51 @@ const { Client, SqlColumnType } = require('hazelcast-client');
         await map.put('key2', 2);
         await map.put('key3', 3);
 
-        let result = client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1]);
-        const rowMetadata = await result.getRowMetadata();
-        const columns = await rowMetadata.getColumns();
+        let result;
+        try {
+            result = client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1]);
+            const rowMetadata = await result.getRowMetadata();
+            const columns = await rowMetadata.getColumns();
 
-        console.log('Columns:');
-        for (const column of columns) {
-            console.log(`${column.name}: ${SqlColumnType[column.type]}`);
+            console.log('Columns:');
+            for (const column of columns) {
+                console.log(`${column.name}: ${SqlColumnType[column.type]}`);
+            }
+
+            console.log('Rows from query 1:');
+            for await (const row of result) {
+                // By default a row is a plain javascript object. Keys are column names and values are column values
+                console.log(`${row['__key']}: ${row['this']}`);
+            }
+        } catch (e) {
+            if (e instanceof HazelcastSqlException) {
+                // HazelcastSqlException is thrown if an error occurs during SQL execution.
+                console.log(`An SQL error occurred while running SQL: ${e}`);
+            } else {
+                // for all other errors
+                console.log(`An error occurred while running SQL: ${e}`);
+            }
         }
 
-        console.log('Rows from query 1:');
-        for await (const row of result) {
-            // By default a row is a plain javascript object where keys are column names and values are column values
-            console.log(`${row['__key']}: ${row['this']}`);
-        }
+        try {
+            // You can set returnRawResult to true to get rows as `SqlRow` objects
+            result = client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1], {
+                returnRawResult: true
+            });
 
-        // You can set returnRawResult to true to get rows as `SqlRow` objects
-        result = client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1], {
-            returnRawResult: true
-        });
-
-        console.log('Rows from query 2:');
-        for await (const row of result) {
-            console.log(`${row.getObject('__key')}: ${row.getObject('this')}`);
-            console.log(JSON.stringify(row.getMetadata())); // SqlRow has a getter for row metadata
+            console.log('Rows from query 2:');
+            for await (const row of result) {
+                console.log(`${row.getObject('__key')}: ${row.getObject('this')}`);
+                console.log(JSON.stringify(row.getMetadata().columns)); // SqlRow has a getter for row metadata
+            }
+        } catch (e) {
+            if (e instanceof HazelcastSqlException) {
+                // HazelcastSqlException is thrown if an error occurs during SQL execution.
+                console.log(`An SQL error occurred while running SQL: ${e}`);
+            } else {
+                // for all other errors
+                console.log(`An error occurred while running SQL: ${e}`);
+            }
         }
 
         await client.shutdown();
