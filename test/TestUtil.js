@@ -267,6 +267,7 @@ exports.writeStringToOutput = function (output, value) {
     }
 };
 
+// functions for backward compatibility
 exports.getSql = function (client) {
     if (exports.isClientVersionAtLeast('5.0')) {
         return client.getSql();
@@ -275,7 +276,6 @@ exports.getSql = function (client) {
     }
 };
 
-// functions for backward compatibility
 exports.getSqlColumnType = function () {
     const { SqlColumnType } = require('../lib/sql/SqlColumnMetadata');
     return SqlColumnType;

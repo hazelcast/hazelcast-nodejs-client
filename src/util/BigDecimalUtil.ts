@@ -18,7 +18,7 @@
 import {Buffer} from 'buffer';
 
 /**
- * Converts buffer to bigint
+ * Converts Buffer to BigInt
  * @param buffer
  */
 export function bufferToBigInt(buffer: Buffer): BigInt {
@@ -42,7 +42,7 @@ export function bufferToBigInt(buffer: Buffer): BigInt {
 }
 
 /**
- * Converts a bigint to buffer
+ * Converts BigInt to Buffer
  * @param big
  */
 export function bigIntToBuffer(big: BigInt): Buffer {
