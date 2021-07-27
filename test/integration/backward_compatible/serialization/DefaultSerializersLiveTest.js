@@ -19,8 +19,9 @@ const Long = require('long');
 const { expect } = require('chai');
 const RC = require('../../RC');
 const { Lang } = require('../../remote_controller/remote-controller_types');
-const { Client, RestValue, UUID, BigDecimal } = require('../../../../');
+const { Client, RestValue, UUID, BigDecimal, LocalDate, LocalTime, LocalDateTime, OffsetDateTime } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
+const { getTimezoneOffsetFromSeconds } = require('../../../../lib/util/DatetimeUtil');
 
 describe('DefaultSerializersLiveTest', function () {
 
@@ -39,7 +40,14 @@ describe('DefaultSerializersLiveTest', function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    function generateGet(key) {
+    const getMapValueAsString = async (index) => {
+        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+            `result = map.get("${index}").toString();\n`;
+        const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+        return response.result.toString();
+    };
+
+    const generateGet = (key) => {
         return 'var StringArray = Java.type("java.lang.String[]");' +
             'function foo() {' +
             '   var map = instance_0.getMap("' + map.getName() + '");' +
@@ -51,7 +59,7 @@ describe('DefaultSerializersLiveTest', function () {
             '   }' +
             '}' +
             'result = ""+foo();';
-    }
+    };
 
     it('string', async function () {
         await map.put('testStringKey', 'testStringValue');
@@ -232,14 +240,301 @@ describe('DefaultSerializersLiveTest', function () {
         }
 
         for (let i = 0; i < bigDecimalTestParams.length; i++) {
-            const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
-                `result = map.get("${i}").toPlainString();\n`;
-            const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+            const responseString = await getMapValueAsString(i);
             if (bigDecimalTestParams[i][0].includes('e') || bigDecimalTestParams[i][0].includes('E')) {
                 // convert to plain string and compare, remote controller sends plain string
-                expect(response.result.toString()).to.equal(BigDecimal.fromString(bigDecimalTestParams[i][0]).toString());
+                expect(responseString).to.equal(BigDecimal.fromString(bigDecimalTestParams[i][0]).toString());
             } else {
-                expect(response.result.toString()).to.equal(bigDecimalTestParams[i][0]);
+                expect(responseString).to.equal(bigDecimalTestParams[i][0]);
+            }
+        }
+    });
+
+    // the format is [[year, month, date, hour, minute, second, optional nano], offset seconds]
+    const dtParams = [
+        [[2020, 10, 2, 10, 10, 22], 64800],
+        [[-2020, 1, 31, 10, 10, 22, 123], 1],
+        [[1e9 - 1, 10, 2, 23, 10, 22, 123], 2],
+        [[-1 * (1e9 - 1), 10, 2, 0, 10, 22, 123], 1],
+        [[2020, 1, 2, 10, 59, 22, 123], 1],
+        [[2020, 12, 1, 10, 1, 22, 123], -64800],
+        [[2020, 1, 1, 10, 10, 59, 123], 1],
+        [[2020, 1, 1, 10, 10, 1, 123], 1],
+        [[2020, 1, 31, 10, 10, 22, 1e9 - 1], 0],
+        [[2020, 1, 31, 10, 10, 22, 0], 1],
+    ];
+
+    it('should deserialize LocalDate', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+
+        dtParams.forEach((values, index) => {
+            const v = values[0];
+            script += `map.set("${index}", java.time.LocalDate.of(${v[0]}, ${v[1]}, ${v[2]}));\n`;
+        });
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const actualValue = await map.get(i.toString());
+            const param = dtParams[i][0];
+
+            expect(actualValue.year).to.equal(param[0]);
+            expect(actualValue.month).to.equal(param[1]);
+            expect(actualValue.date).to.equal(param[2]);
+        }
+    });
+
+    it('should serialize LocalDate correctly', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const param = dtParams[i][0];
+            await map.put(i.toString(), new LocalDate(param[0], param[1], param[2]));
+        }
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const param = dtParams[i][0];
+
+            let responseString = await getMapValueAsString(i);
+            if (responseString[0] === '+') {
+                responseString = responseString.slice(1); // remove plus sign if exists
+            }
+            const yearString = param[0].toString().padStart(4, '0');
+            const monthString = param[1].toString().padStart(2, '0');
+            const dateString = param[2].toString().padStart(2, '0');
+
+            expect(responseString).to.equal(`${yearString}-${monthString}-${dateString}`);
+        }
+    });
+
+    it('should deserialize LocalTime', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+
+        dtParams.forEach((values, index) => {
+            const v = values[0];
+            if (v.length === 7) {
+                script += `map.set("${index}", java.time.LocalTime.of(${v[3]}, ${v[4]}, ${v[5]}, ${v[6]}));\n`;
+            } else {
+                script += `map.set("${index}", java.time.LocalTime.of(${v[3]}, ${v[4]}, ${v[5]}));\n`;
+            }
+        });
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const actualValue = await map.get(i.toString());
+            const param = dtParams[i][0];
+
+            expect(actualValue.hour).to.equal(param[3]);
+            expect(actualValue.minute).to.equal(param[4]);
+            expect(actualValue.second).to.equal(param[5]);
+            if (param.length === 7) {
+                expect(actualValue.nano).to.equal(param[6]);
+            } else {
+                expect(actualValue.nano).to.equal(0);
+            }
+        }
+    });
+
+    it('should serialize LocalTime correctly', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const param = dtParams[i][0];
+
+            let localTime;
+            if (param.length === 7) {
+                localTime = new LocalTime(param[3], param[4], param[5], param[6]);
+            } else {
+                localTime = new LocalTime(param[3], param[4], param[5], 0);
+            }
+            await map.put(i.toString(), localTime);
+        }
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const param = dtParams[i][0];
+
+            const responseString = await getMapValueAsString(i);
+
+            const hourString = param[3].toString().padStart(2, '0');
+            const minuteString = param[4].toString().padStart(2, '0');
+            const secondString = param[5].toString().padStart(2, '0');
+
+            if (param.length === 6 || (param.length === 7 && param[6] === 0)) {
+                expect(responseString).to.equal(`${hourString}:${minuteString}:${secondString}`);
+            } else {
+                const nanoString = param[6].toString().padStart(9, '0');
+                expect(responseString).to.equal(`${hourString}:${minuteString}:${secondString}.${nanoString}`);
+            }
+        }
+    });
+
+    it('should deserialize LocalDateTime', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+
+        dtParams.forEach((values, index) => {
+            const v = values[0];
+            if (v.length === 7) {
+                script += `map.set("${index}", ` +
+                    `java.time.LocalDateTime.of(${v[0]}, ${v[1]}, ${v[2]}, ${v[3]}, ${v[4]}, ${v[5]}, ${v[6]}));\n`;
+            } else {
+                script += `map.set("${index}", ` +
+                    `java.time.LocalDateTime.of(${v[0]}, ${v[1]}, ${v[2]}, ${v[3]}, ${v[4]}, ${v[5]}));\n`;
+            }
+        });
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const actualValue = await map.get(i.toString());
+            const param = dtParams[i][0];
+
+            expect(actualValue.localDate.year).to.equal(param[0]);
+            expect(actualValue.localDate.month).to.equal(param[1]);
+            expect(actualValue.localDate.date).to.equal(param[2]);
+            expect(actualValue.localTime.hour).to.equal(param[3]);
+            expect(actualValue.localTime.minute).to.equal(param[4]);
+            expect(actualValue.localTime.second).to.equal(param[5]);
+            if (param.length === 7) {
+                expect(actualValue.localTime.nano).to.equal(param[6]);
+            } else {
+                expect(actualValue.localTime.nano).to.equal(0);
+            }
+        }
+    });
+
+    it('should serialize LocalDateTime correctly', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const param = dtParams[i][0];
+
+            let localTime;
+            if (param.length === 7) {
+                localTime = LocalDateTime.new(param[0], param[1], param[2], param[3], param[4], param[5], param[6]);
+            } else {
+                localTime = LocalDateTime.new(param[0], param[1], param[2], param[3], param[4], param[5], 0);
+            }
+            await map.put(i.toString(), localTime);
+        }
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const param = dtParams[i][0];
+
+            let responseString = await getMapValueAsString(i);
+            if (responseString[0] === '+') {
+                responseString = responseString.slice(1); // remove plus sign if exists
+            }
+            const yearString = param[0].toString().padStart(4, '0');
+            const monthString = param[1].toString().padStart(2, '0');
+            const dateString = param[2].toString().padStart(2, '0');
+
+            const hourString = param[3].toString().padStart(2, '0');
+            const minuteString = param[4].toString().padStart(2, '0');
+            const secondString = param[5].toString().padStart(2, '0');
+
+            if (param.length === 6 || (param.length === 7 && param[6] === 0)) {
+                expect(responseString).to.equal(`${yearString}-${monthString}-${dateString}` +
+                    `T${hourString}:${minuteString}:${secondString}`);
+            } else {
+                const nanoString = param[6].toString().padStart(9, '0');
+                expect(responseString).to.equal(`${yearString}-${monthString}-${dateString}` +
+                    `T${hourString}:${minuteString}:${secondString}.${nanoString}`);
+            }
+        }
+    });
+
+    it('should deserialize OffsetDateTime', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+
+        dtParams.forEach((values, index) => {
+            const v = values[0];
+            const offsetSeconds = values[1];
+            if (v.length === 7) {
+                script += `map.set("${index}", ` +
+                    `java.time.OffsetDateTime.of(${v[0]}, ${v[1]}, ${v[2]}, ${v[3]}, ${v[4]}, ${v[5]}, ${v[6]},` +
+                    `java.time.ZoneOffset.ofTotalSeconds(${offsetSeconds})));\n`;
+            } else {
+                script += `map.set("${index}", ` +
+                    `java.time.OffsetDateTime.of(${v[0]}, ${v[1]}, ${v[2]}, ${v[3]}, ${v[4]}, ${v[5]}, 0,` +
+                    `java.time.ZoneOffset.ofTotalSeconds(${offsetSeconds})));\n`;
+            }
+        });
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const actualValue = await map.get(i.toString());
+            const param = dtParams[i][0];
+
+            expect(actualValue.localDateTime.localDate.year).to.equal(param[0]);
+            expect(actualValue.localDateTime.localDate.month).to.equal(param[1]);
+            expect(actualValue.localDateTime.localDate.date).to.equal(param[2]);
+            expect(actualValue.localDateTime.localTime.hour).to.equal(param[3]);
+            expect(actualValue.localDateTime.localTime.minute).to.equal(param[4]);
+            expect(actualValue.localDateTime.localTime.second).to.equal(param[5]);
+            if (param.length === 7) {
+                expect(actualValue.localDateTime.localTime.nano).to.equal(param[6]);
+            } else {
+                expect(actualValue.localDateTime.localTime.nano).to.equal(0);
+            }
+        }
+    });
+
+    it('should serialize OffsetDateTime correctly', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const params = dtParams[i][0];
+            const offsetSeconds = dtParams[i][1];
+
+            let localTime;
+            if (params.length === 7) {
+                localTime = OffsetDateTime.new(
+                    params[0], params[1], params[2], params[3], params[4], params[5], params[6], offsetSeconds
+                );
+            } else {
+                localTime = OffsetDateTime.new(
+                    params[0], params[1], params[2], params[3], params[4], params[5], 0, offsetSeconds
+                );
+            }
+            await map.put(i.toString(), localTime);
+        }
+
+        for (let i = 0; i < dtParams.length; i++) {
+            const params = dtParams[i][0];
+            const offsetSeconds = dtParams[i][1];
+            const timezoneOffsetString = getTimezoneOffsetFromSeconds(offsetSeconds);
+
+            let responseString = await getMapValueAsString(i);
+            if (responseString[0] === '+') {
+                responseString = responseString.slice(1); // remove plus sign if exists
+            }
+
+            const yearString = params[0].toString().padStart(4, '0');
+            const monthString = params[1].toString().padStart(2, '0');
+            const dateString = params[2].toString().padStart(2, '0');
+
+            const hourString = params[3].toString().padStart(2, '0');
+            const minuteString = params[4].toString().padStart(2, '0');
+            const secondString = params[5].toString().padStart(2, '0');
+
+            // java sends offset as hh:mm:ss, but ISO format is hh:mm, so we will do a startsWith check
+            if (params.length === 6 || (params.length === 7 && params[6] === 0)) {
+                expect(responseString).to.satisfy(msg => msg.startsWith(`${yearString}-${monthString}-${dateString}` +
+                    `T${hourString}:${minuteString}:${secondString}${timezoneOffsetString}`));
+            } else {
+                const nanoString = params[6].toString().padStart(9, '0');
+                expect(responseString).to.satisfy(msg => msg.startsWith(`${yearString}-${monthString}-${dateString}` +
+                    `T${hourString}:${minuteString}:${secondString}.${nanoString}${timezoneOffsetString}`));
             }
         }
     });

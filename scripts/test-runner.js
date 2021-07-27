@@ -86,8 +86,8 @@ const startRC = async () => {
         ], {
             stdio: [
                 'ignore',
-                'inherit',
-                'inherit'
+                outFD,
+                errFD
             ]
         });
         rcProcess.on('close', () => {
