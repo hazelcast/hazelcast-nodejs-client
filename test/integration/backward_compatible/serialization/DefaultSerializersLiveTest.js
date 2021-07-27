@@ -240,7 +240,10 @@ describe('DefaultSerializersLiveTest', function () {
         }
 
         for (let i = 0; i < bigDecimalTestParams.length; i++) {
-            const responseString = await getMapValueAsString(i);
+            const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+                `result = map.get("${i}").toPlainString();\n`;
+            const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+            const responseString = response.result.toString();
             if (bigDecimalTestParams[i][0].includes('e') || bigDecimalTestParams[i][0].includes('E')) {
                 // convert to plain string and compare, remote controller sends plain string
                 expect(responseString).to.equal(BigDecimal.fromString(bigDecimalTestParams[i][0]).toString());
