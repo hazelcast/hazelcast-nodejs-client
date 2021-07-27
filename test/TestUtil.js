@@ -266,3 +266,46 @@ exports.writeStringToOutput = function (output, value) {
         output.writeUTF(value);
     }
 };
+
+// functions for backward compatibility
+exports.getSql = function (client) {
+    if (exports.isClientVersionAtLeast('5.0')) {
+        return client.getSql();
+    } else {
+        return client.getSqlService();
+    }
+};
+
+exports.getSqlColumnType = function () {
+    const { SqlColumnType } = require('../lib/sql/SqlColumnMetadata');
+    return SqlColumnType;
+};
+
+exports.getDatetimeUtil = function () {
+    return require('../lib/util/DatetimeUtil');
+};
+
+exports.getOffsetDateTime = function() {
+    const { OffsetDateTime } = require('..');
+    return OffsetDateTime;
+};
+
+exports.getLocalDateTime = function() {
+    const { LocalDateTime } = require('..');
+    return LocalDateTime;
+};
+
+exports.getLocalDate = function() {
+    const { LocalDate } = require('..');
+    return LocalDate;
+};
+
+exports.getLocalTime = function() {
+    const { LocalTime } = require('..');
+    return LocalTime;
+};
+
+exports.getBigDecimal = function() {
+    const { BigDecimal } = require('..');
+    return BigDecimal;
+};
