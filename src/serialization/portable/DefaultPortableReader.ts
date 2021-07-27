@@ -27,7 +27,7 @@ import {
     HazelcastSerializationError
 } from '../../core';
 import {DataInput} from '../Data';
-import {FieldType, Portable, PortableReader} from '../Portable';
+import {Portable, PortableReader, FieldType} from '../Portable';
 import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {PortableSerializer} from './PortableSerializer';
 import {PortableUtil} from '../../util/PortableUtil';

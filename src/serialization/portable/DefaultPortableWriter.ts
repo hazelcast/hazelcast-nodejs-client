@@ -19,7 +19,7 @@ import {PortableSerializer} from './PortableSerializer';
 import {DataOutput, PositionalDataOutput} from '../Data';
 import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {BitsUtil} from '../../util/BitsUtil';
-import {FieldType, Portable, PortableWriter} from '../Portable';
+import {Portable, FieldType, PortableWriter} from '../Portable';
 import * as Long from 'long';
 import {
     BigDecimal,
