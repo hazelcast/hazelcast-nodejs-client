@@ -23,12 +23,23 @@ import {
  * ### Local time object
  * * Represents time in day without timezone.
  */
-export class HzLocalTime {
+export class LocalTime {
     private static readonly timeStringRegex = /(\d\d):(\d\d):(\d\d)(\.\d+)?/;
 
-    private constructor(readonly hour: number, readonly minute: number, readonly second: number, readonly nano: number) {
+    /**
+     * @param hour The hour-of-day to represent, from 0 to 23
+     * @param minute The minute-of-hour to represent, from 0 to 59
+     * @param second The second-of-minute to represent, from 0 to 59
+     * @param nano The nano-of-second to represent, from 0 to 999,999,999
+     * @throws TypeError if any of the arguments are invalid
+     * @throws RangeError if value of any of the arguments are invalid
+     */
+    constructor(readonly hour: number, readonly minute: number, readonly second: number, readonly nano: number) {
+        if (typeof hour !== 'number' || typeof minute !== 'number' || typeof second !== 'number' || typeof nano !== 'number') {
+            throw new TypeError('Illegal arguments given to LocalTime. All arguments must be numbers.');
+        }
         if (!Number.isInteger(hour) || !Number.isInteger(minute) || !Number.isInteger(second) || !Number.isInteger(nano)) {
-            throw new RangeError('Illegal arguments given to HzLocalTime. All arguments must be integers.');
+            throw new RangeError('Illegal arguments given to LocalTime. All arguments must be integers.');
         }
         if (!(hour >= 0 && hour <= 23)) {
             throw new RangeError('Hour-of-day must be between 0-23');
@@ -45,24 +56,17 @@ export class HzLocalTime {
     }
 
     /**
-     * @internal
-     * Static constructor that is used by constructor function
-     */
-    static _new(hour: number, minute: number, second: number, nano: number) {
-        return new HzLocalTime(hour, minute, second, nano);
-    }
-
-    /**
-     * Constructs a new {@link HzLocalTime} object from timeString.
+     * Constructs a new {@link LocalTime} object from timeString.
      * @param timeString A string in the form HH:mm:ss.SSS, where the last part represents nanoseconds and optional.
      * At most 9 digits allowed for nanosecond value. If more than 9 digits are given, the first 9 of them are used.
-     * @throws RangeError if invalid timeString is given
+     * @throws RangeError if given timeString is invalid
+     * @throws TypeError if given argument is not string
      */
-    static fromString(timeString: string): HzLocalTime {
+    static fromString(timeString: string): LocalTime {
         if (typeof timeString !== 'string') {
-            throw new RangeError('String expected.');
+            throw new TypeError('String expected.');
         }
-        const match = timeString.match(HzLocalTime.timeStringRegex);
+        const match = timeString.match(LocalTime.timeStringRegex);
         if (!match) {
             throw new RangeError('Illegal time string. Expected a string in HH:mm:ss.SSS format');
         }
@@ -80,7 +84,7 @@ export class HzLocalTime {
         if (isNaN(hours) || isNaN(minutes) || isNaN(seconds) || isNaN(nano)) {
             throw new RangeError('Illegal time string. Expected a string in HH:mm:ss.SSS format');
         }
-        return new HzLocalTime(hours, minutes, seconds, nano);
+        return new LocalTime(hours, minutes, seconds, nano);
     }
 
     /**
@@ -104,7 +108,7 @@ export class HzLocalTime {
 }
 
 /**
- * Months for HzLocalDate
+ * Months for LocalDate
  * @internal
  */
 enum Months {
@@ -126,12 +130,22 @@ enum Months {
  * ### Local date object
  * * Represents date in year without timezone.
  */
-export class HzLocalDate {
+export class LocalDate {
     private static readonly dateRegex = /(-?\d+)-(\d\d)-(\d\d)/;
 
-    private constructor(readonly year: number, readonly month: number, readonly date: number) {
+    /**
+     * @param year Must be between -999999999-999999999
+     * @param month Must be between 1-12
+     * @param date Must be between 1-31 depending on year and month
+     * @throws RangeError if value of any of the arguments are invalid, or the date formed by them is invalid (e.g 02/29/2021)
+     * @throws TypeError if any of the arguments are of wrong type
+     */
+    constructor(readonly year: number, readonly month: number, readonly date: number) {
+        if (typeof year !== 'number' || typeof month !== 'number' || typeof date !== 'number') {
+            throw new TypeError('Illegal arguments given to LocalTime. All arguments must be numbers.');
+        }
         if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(date)) {
-            throw new RangeError('Illegal arguments given to HzLocalTime. All arguments must be integers.');
+            throw new RangeError('Illegal arguments given to LocalTime. All arguments must be integers.');
         }
         if (!(month >= 1 && month <= 12)) {
             throw new RangeError('Month must be between 1-12');
@@ -141,14 +155,14 @@ export class HzLocalDate {
         }
 
         if (date < 1) {
-            throw new RangeError('Invalid date. Date cannot be less than 1');
+            throw new RangeError('Invalid Date. Date cannot be less than 1');
         }
 
         if (date > 28) {
             let maxDate = 31;
             switch (month) {
                 case 2:
-                    maxDate = HzLocalDate.isLeapYear(this.year) ? 29 : 28;
+                    maxDate = LocalDate.isLeapYear(this.year) ? 29 : 28;
                     break;
                 case 4:
                     maxDate = 30;
@@ -166,19 +180,11 @@ export class HzLocalDate {
 
             if (date > maxDate) {
                 if (date == 29) {
-                    throw new RangeError(`Invalid date. February 29 as ${this.year} is not a leap year`);
+                    throw new RangeError(`Invalid Date. February 29 as ${this.year} is not a leap year`);
                 }
-                throw new RangeError(`Invalid date. ${Months[this.month]} ${this.date}`);
+                throw new RangeError(`Invalid Date. ${Months[this.month]} ${this.date}`);
             }
         }
-    }
-
-    /**
-     * @internal
-     * Static constructor that is used by constructor function
-     */
-    static _new(year: number, month: number, date: number) {
-        return new HzLocalDate(year, month, date);
     }
 
     /**
@@ -191,15 +197,16 @@ export class HzLocalDate {
     }
 
     /**
-     * Constructs a {@link HzLocalDate} object from string.
-     * @throws RangeError if string is not passed, or string format is wrong
+     * Constructs a {@link LocalDate} object from string.
      * @param dateString String in the form of yyyy-mm-dd
+     * @throws TypeError if a string is not passed
+     * @throws RangeError if the string format is wrong
      */
-    static fromString(dateString: string): HzLocalDate {
+    static fromString(dateString: string): LocalDate {
         if (typeof dateString !== 'string') {
-            throw new RangeError('String expected.');
+            throw new TypeError('String expected.');
         }
-        const match = dateString.match(HzLocalDate.dateRegex);
+        const match = dateString.match(LocalDate.dateRegex);
         if (!match) {
             throw new RangeError('Invalid format. Expected a string in yyyy-mm-dd format');
         }
@@ -211,7 +218,7 @@ export class HzLocalDate {
         if (isNaN(yearNumber) || isNaN(monthNumber) || isNaN(dateNumber)) {
             throw new RangeError('Invalid format. Expected a string in yyyy-mm-dd format');
         }
-        return new HzLocalDate(yearNumber, monthNumber, dateNumber);
+        return new LocalDate(yearNumber, monthNumber, dateNumber);
     }
 
     /**
@@ -231,80 +238,101 @@ export class HzLocalDate {
  * ### Local datetime object
  * * Represents date and time without timezone.
  */
-export class HzLocalDateTime {
-    private static tRegex = /[Tt]/;
-
-    private constructor(readonly hzLocalDate: HzLocalDate, readonly hzLocalTime: HzLocalTime) {
-        if (!(hzLocalDate instanceof HzLocalDate)) {
-            throw new RangeError('Invalid local date.');
-        }
-        if (!(hzLocalTime instanceof HzLocalTime)) {
-            throw new RangeError('Invalid local time.');
-        }
-    }
+export class LocalDateTime {
+    private static separatorRegex = /[Tt]/;
 
     /**
-     * @internal
-     * Static constructor that is used by constructor function
+     * @param localDate a {@link LocalDate} object
+     * @param localTime a {@link LocalTime} object
+     * @throws TypeError if passed arguments are of wrong type
      */
-    static _new(hzLocalDate: HzLocalDate, hzLocalTime: HzLocalTime) {
-        return new HzLocalDateTime(hzLocalDate, hzLocalTime);
+    constructor(readonly localDate: LocalDate, readonly localTime: LocalTime) {
+        if (!(localDate instanceof LocalDate)) {
+            throw new TypeError('Invalid local date.');
+        }
+        if (!(localTime instanceof LocalTime)) {
+            throw new TypeError('Invalid local time.');
+        }
     }
 
     /**
-     * Constructs HzLocalDateTime from ISO 8601 string.
+     * Constructs LocalDateTime from ISO 8601 string.
      * @param isoString Must not include timezone information. The string format is yyyy-mm-ss(T|t)HH:mm:ss.SSS. The last SSS
      * part represents nanoseconds and can be omitted.
      * @throws RangeError if ISO string is invalid or any of the values in ISO string is invalid
+     * @throws TypeError if the value is not a string
      */
-    static fromString(isoString: string): HzLocalDateTime {
+    static fromString(isoString: string): LocalDateTime {
         if (typeof isoString !== 'string') {
-            throw new RangeError('String expected.');
+            throw new TypeError('String expected.');
         }
-        const split = isoString.split(HzLocalDateTime.tRegex);
+        const split = isoString.split(LocalDateTime.separatorRegex);
         if (split.length !== 2) {
             throw new RangeError('Invalid format. Expected a string in the form yyyy-mm-ss(T|t)HH:mm:ss.SSS');
         }
-        return new HzLocalDateTime(HzLocalDate.fromString(split[0]), HzLocalTime.fromString(split[1]));
+        return new LocalDateTime(LocalDate.fromString(split[0]), LocalTime.fromString(split[1]));
     }
 
     /**
-     * Returns this local datetime as Date.
+     * Returns this LocalDataTime as Date.
      */
     asDate(): Date {
         return new Date(
             Date.UTC(
-                this.hzLocalDate.year,
-                this.hzLocalDate.month - 1, // month start with 0 in Date
-                this.hzLocalDate.date,
-                this.hzLocalTime.hour,
-                this.hzLocalTime.minute,
-                this.hzLocalTime.second,
-                Math.floor(this.hzLocalTime.nano / 1_000_000)
+                this.localDate.year,
+                this.localDate.month - 1, // month start with 0 in Date
+                this.localDate.date,
+                this.localTime.hour,
+                this.localTime.minute,
+                this.localTime.second,
+                Math.floor(this.localTime.nano / 1_000_000)
             )
         );
     }
 
     /**
      * Constructs a new instance from Date.
-     * @param date Must be a valid date. So `date.getTime()` should be not NaN
+     * @param date Must be a valid Date. So `date.getTime()` should be not NaN
+     * @throws TypeError if the passed param is not a Date
+     * @throws RangeError if an invalid Date is passed
      */
-    static fromDate(date: Date): HzLocalDateTime {
-        if (!(date instanceof Date) || isNaN(date.getTime())) {
-            throw new RangeError('Invalid date.');
+    static fromDate(date: Date): LocalDateTime {
+        if (!(date instanceof Date)) {
+            throw new TypeError('A Date is not passed');
         }
-        return HzLocalDateTime._new(
-            HzLocalDate._new(
-                date.getUTCFullYear(),
-                date.getUTCMonth(),
-                date.getUTCDate()
-            ),
-            HzLocalTime._new(
-                date.getUTCHours(),
-                date.getUTCMinutes(),
-                date.getUTCSeconds(),
-                date.getUTCMilliseconds() * 1_000_000
-            )
+        if (isNaN(date.getTime())) {
+            throw new RangeError('Invalid Date is passed.');
+        }
+        return LocalDateTime.from(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            date.getUTCDate(),
+            date.getUTCHours(),
+            date.getUTCMinutes(),
+            date.getUTCSeconds(),
+            date.getUTCMilliseconds() * 1_000_000
+        );
+    }
+
+    /**
+     * Static constructor for convenient construction.
+     *
+     * @param year Must be between -999999999-999999999
+     * @param month Must be between 1-12
+     * @param date Must be between 1-31 depending on year and month
+     * @param hour The hour-of-day to represent, from 0 to 23
+     * @param minute The minute-of-hour to represent, from 0 to 59
+     * @param second The second-of-minute to represent, from 0 to 59
+     * @param nano The nano-of-second to represent, from 0 to 999,999,999
+     * @throws TypeError if passed arguments are of wrong type
+     * @throws RangeError if value of any of the arguments are invalid
+     */
+    static from(
+        year: number, month: number, date: number, hour: number, minute: number, second: number, nano: number
+    ): LocalDateTime {
+        return new LocalDateTime(
+            new LocalDate(year, month, date),
+            new LocalTime(hour, minute, second, nano)
         );
     }
 
@@ -314,7 +342,7 @@ export class HzLocalDateTime {
      * is zero, second decimal is not include in the returned string
      */
     toString(): string {
-        return `${this.hzLocalDate.toString()}T${this.hzLocalTime.toString()}`;
+        return `${this.localDate.toString()}T${this.localTime.toString()}`;
     }
 }
 
@@ -322,47 +350,63 @@ export class HzLocalDateTime {
  * ### Offset datetime object
  * * Represents date and time with timezone.
  * * Timezone is specified with offset from UTC in seconds. This offset can be negative or positive.
- * * This class internally stores a {@link HzLocalDateTime} and offset number.
+ * * This class internally stores a {@link LocalDateTime} and offset number.
  */
-export class HzOffsetDateTime {
+export class OffsetDateTime {
 
     private static readonly timezoneRegex = /([Zz]|[+-]\d\d:\d\d)/;
 
-    private constructor(readonly hzLocalDateTime: HzLocalDateTime, readonly offsetSeconds: number) {
-    }
-
     /**
-     * @internal
-     * Static constructor that is used by constructor function
+     * @param localDateTime {@link LocalDateTime} object
+     * @param offsetSeconds timezone offset in seconds. Must be in [-64800, 64800] range.
+     * @throws TypeError if type of arguments are invalid
      */
-    static _new(hzLocalDateTime: HzLocalDateTime, offsetSeconds: number) {
-        return new HzOffsetDateTime(hzLocalDateTime, offsetSeconds);
-    }
-
-    /**
-     * Constructs a new instance from Date and offset seconds.
-     * @param date Must be a valid date. So `date.getTime()` should be not NaN
-     * @param offsetSeconds Must be between -64800-64800 (-+18:00)
-     */
-    static fromDate(date: Date, offsetSeconds: number): HzOffsetDateTime {
-        if (!(date instanceof Date) || isNaN(date.getTime())) {
-            throw new RangeError('Invalid date.');
+    constructor(readonly localDateTime: LocalDateTime, readonly offsetSeconds: number) {
+        if (!(localDateTime instanceof LocalDateTime)) {
+            throw new TypeError('Invalid local datetime');
+        }
+        if (typeof offsetSeconds !== 'number') {
+            throw new TypeError('offsetSeconds is not a number.');
         }
         if (!Number.isInteger(offsetSeconds) || !(offsetSeconds >= -64800 && offsetSeconds <= 64800)) {
             throw new RangeError('Offset seconds can be between -64800(-18:00) and 64800(+18:00).');
         }
-        return new HzOffsetDateTime(HzLocalDateTime.fromDate(date), offsetSeconds);
     }
 
     /**
-     * Constructs a new instance from ISO 8601 string.
-     * @param isoString ISO 8601 string with timezone. If timezone is omitted, UTC is assumed
+     * Constructs a new instance from Date and offset seconds.
+     * @param date Must be a valid Date. So `date.getTime()` should be not NaN
+     * @param offsetSeconds Offset in seconds, must be between [-64800, 64800]
+     * @throws TypeError if a wrong type is passed as argument
+     * @throws RangeError if an invalid argument value is passed
      */
-    static fromString(isoString: string): HzOffsetDateTime {
-        if (typeof isoString !== 'string') {
-            throw new RangeError('String expected');
+    static fromDate(date: Date, offsetSeconds: number): OffsetDateTime {
+        if (!(date instanceof Date)) {
+            throw new TypeError('A Date is not passed');
         }
-        const indexOfFirstMatch = isoString.search(HzOffsetDateTime.timezoneRegex);
+        if (typeof offsetSeconds !== 'number') {
+            throw new TypeError('offsetSeconds is not a number');
+        }
+        if (isNaN(date.getTime())) {
+            throw new RangeError('Invalid Date is passed.');
+        }
+        if (!Number.isInteger(offsetSeconds) || !(offsetSeconds >= -64800 && offsetSeconds <= 64800)) {
+            throw new RangeError('Offset seconds can be between -64800(-18:00) and 64800(+18:00).');
+        }
+        return new OffsetDateTime(LocalDateTime.fromDate(date), offsetSeconds);
+    }
+
+    /**
+     * Constructs a new instance from ISO 8601 string. The string format is yyyy-mm-ddTHH-mm-ss.SSS(Z | (+|-)HH:mm).
+     * @param isoString ISO 8601 string with timezone. If timezone is omitted, UTC is assumed
+     * @throws TypeError if passed value is not a string
+     * @throws RangeError if passed string is invalid
+     */
+    static fromString(isoString: string): OffsetDateTime {
+        if (typeof isoString !== 'string') {
+            throw new TypeError('String expected');
+        }
+        const indexOfFirstMatch = isoString.search(OffsetDateTime.timezoneRegex);
         const split = isoString.split(isoString[indexOfFirstMatch]);
         let offsetSeconds;
         if (split.length !== 2) {
@@ -373,7 +417,7 @@ export class HzOffsetDateTime {
         } else {
             offsetSeconds = getOffsetSecondsFromTimezoneString(isoString[indexOfFirstMatch] + split[1]);
         }
-        return new HzOffsetDateTime(HzLocalDateTime.fromString(split[0]), offsetSeconds);
+        return new OffsetDateTime(LocalDateTime.fromString(split[0]), offsetSeconds);
     }
 
     /**
@@ -381,7 +425,37 @@ export class HzOffsetDateTime {
      * effectively get a timestamp.(an instance in time without timezone)
      */
     asDate(): Date {
-        return new Date(this.hzLocalDateTime.asDate().getTime() - this.offsetSeconds * 1000);
+        return new Date(this.localDateTime.asDate().getTime() - this.offsetSeconds * 1000);
+    }
+
+    /**
+     * Static constructor for convenient construction.
+     *
+     * @param year Must be between -999999999-999999999
+     * @param month Must be between 1-12
+     * @param date Must be between 1-31 depending on year and month
+     * @param hour The hour-of-day to represent, from 0 to 23
+     * @param minute The minute-of-hour to represent, from 0 to 59
+     * @param second The second-of-minute to represent, from 0 to 59
+     * @param nano The nano-of-second to represent, from 0 to 999,999,999
+     * @param offsetSeconds timezone offset in seconds. Must be in [-64800, 64800] range.
+     * @throws TypeError if passed arguments are of wrong type
+     * @throws RangeError if value of any of the arguments are invalid
+     */
+    static from(
+        year: number,
+        month: number,
+        date: number,
+        hour: number,
+        minute: number,
+        second: number,
+        nano: number,
+        offsetSeconds: number
+    ): OffsetDateTime {
+        return new OffsetDateTime(
+            LocalDateTime.from(year, month, date, hour, minute, second, nano),
+            offsetSeconds
+        );
     }
 
     /**
@@ -391,85 +465,6 @@ export class HzOffsetDateTime {
      */
     toString(): string {
         const timezoneOffsetString = getTimezoneOffsetFromSeconds(this.offsetSeconds);
-        return this.hzLocalDateTime.toString() + timezoneOffsetString;
+        return this.localDateTime.toString() + timezoneOffsetString;
     }
 }
-
-
-interface HzLocalDateInterface {
-    (year: number, month: number, date: number): HzLocalDate;
-
-    new(year: number, month: number, date: number): HzLocalDate;
-}
-
-function _LocalDate(year: number, month: number, date: number): HzLocalDate {
-    return HzLocalDate._new(year, month, date);
-}
-
-/**
- * Constructor function, can be invoked with or without new keyword.
- *
- * @param year Must be between -999999999-999999999
- * @param month Must be between 1-12
- * @param date Must be between 1-31 depending on year and month
- * @throws RangeError if any of the arguments are invalid
- */
-export const LocalDate: HzLocalDateInterface = <HzLocalDateInterface>_LocalDate;
-
-interface HzLocalTimeInterface {
-    (hour: number, minute: number, second: number, nano: number): HzLocalTime;
-
-    new(hour: number, minute: number, second: number, nano: number): HzLocalTime;
-}
-
-function _LocalTime(hour: number, minute: number, second: number, nano: number): HzLocalTime {
-    return HzLocalTime._new(hour, minute, second, nano);
-}
-
-/**
- * Constructor function, can be invoked with or without new keyword.
- *
- * @param hour The hour-of-day to represent, from 0 to 23
- * @param minute The minute-of-hour to represent, from 0 to 59
- * @param second The second-of-minute to represent, from 0 to 59
- * @param nano The nano-of-second to represent, from 0 to 999,999,999
- * @throws RangeError if any of the arguments are invalid
- */
-export const LocalTime: HzLocalTimeInterface = <HzLocalTimeInterface>_LocalTime;
-
-interface HzLocalDateTimeInterface {
-    (hzLocalDate: HzLocalDate, hzLocalTime: HzLocalTime): HzLocalDateTime;
-
-    new(hzLocalDate: HzLocalDate, hzLocalTime: HzLocalTime): HzLocalDateTime;
-}
-
-function _LocalDateTime(hzLocalDate: HzLocalDate, hzLocalTime: HzLocalTime): HzLocalDateTime {
-    return HzLocalDateTime._new(hzLocalDate, hzLocalTime);
-}
-
-/**
- * Constructor function, can be invoked with or without new keyword.
- *
- * @param hzLocalDate a {@link HzLocalDate} object
- * @param hzLocalTime a {@link HzLocalTime} object
- * @throws RangeError if any of the arguments are invalid
- */
-export const LocalDateTime: HzLocalDateTimeInterface = <HzLocalDateTimeInterface>_LocalDateTime;
-
-interface HzOffsetDateTimeInterface {
-    (hzLocalDateTime: HzLocalDateTime, offsetSeconds: number): HzOffsetDateTime;
-
-    new(hzLocalDateTime: HzLocalDateTime, offsetSeconds: number): HzOffsetDateTime;
-}
-
-function _OffsetDateTime(hzLocalDateTime: HzLocalDateTime, offsetSeconds: number): HzOffsetDateTime {
-    return HzOffsetDateTime._new(hzLocalDateTime, offsetSeconds);
-}
-
-/**
- * Constructor function, can be invoked with or without new keyword.
- * @param hzLocalDateTime {@link HzLocalDateTimeClass} object
- * @param offsetSeconds timezone offset in seconds. Must be in [-64800, 64800] range.
- * @throws RangeError if any of the arguments are invalid
- */
-export const OffsetDateTime: HzOffsetDateTimeInterface = <HzOffsetDateTimeInterface>_OffsetDateTime;

@@ -15,18 +15,13 @@
  */
 /** @ignore *//** */
 import {
-    Big,
     BigDecimal,
     LocalDate,
-    HzLocalDate,
     LocalDateTime,
-    HzLocalDateTime,
     LocalTime,
-    HzLocalTime,
     OffsetDateTime,
-    HzOffsetDateTime
 } from '../core';
-import {fromBufferAndScale, unscaledValueToBuffer} from './BigDecimalUtil';
+import {bufferToBigInt, bigIntToBuffer} from './BigDecimalUtil';
 import {DataInput, DataOutput} from '../serialization';
 
 /** @internal */
@@ -35,71 +30,71 @@ export class IOUtil {
     static readDecimal(inp: DataInput): BigDecimal {
         const buffer = inp.readByteArray();
         const scale = inp.readInt();
-        return Big(fromBufferAndScale(buffer, scale));
+        return new BigDecimal(bufferToBigInt(buffer), scale);
     }
 
-    static readHzLocalTime(inp: DataInput): HzLocalTime {
+    static readLocalTime(inp: DataInput): LocalTime {
         const hour = inp.readByte();
         const minute = inp.readByte();
         const second = inp.readByte();
         const nano = inp.readInt();
-        return LocalTime(hour, minute, second, nano);
+        return new LocalTime(hour, minute, second, nano);
     }
 
-    static readHzLocalDate(inp: DataInput): HzLocalDate {
+    static readLocalDate(inp: DataInput): LocalDate {
         const year = inp.readInt();
         const month = inp.readByte();
         const date = inp.readByte();
-        return LocalDate(year, month, date);
+        return new LocalDate(year, month, date);
     }
 
-    static readHzLocalDatetime(inp: DataInput): HzLocalDateTime {
-        const hzLocalDate = IOUtil.readHzLocalDate(inp);
-        const hzLocalTime = IOUtil.readHzLocalTime(inp);
+    static readLocalDatetime(inp: DataInput): LocalDateTime {
+        const localDate = IOUtil.readLocalDate(inp);
+        const localTime = IOUtil.readLocalTime(inp);
 
-        return LocalDateTime(hzLocalDate, hzLocalTime);
+        return new LocalDateTime(localDate, localTime);
     }
 
-    static readHzOffsetDatetime(inp: DataInput): HzOffsetDateTime {
-        const hzLocalDate = IOUtil.readHzLocalDate(inp);
-        const hzLocalTime = IOUtil.readHzLocalTime(inp);
+    static readOffsetDatetime(inp: DataInput): OffsetDateTime {
+        const localDate = IOUtil.readLocalDate(inp);
+        const localTime = IOUtil.readLocalTime(inp);
 
         const offsetSeconds = inp.readInt();
 
-        return OffsetDateTime(
-            LocalDateTime(
-                hzLocalDate,
-                hzLocalTime
+        return new OffsetDateTime(
+            new LocalDateTime(
+                localDate,
+                localTime
             ),
             offsetSeconds
         );
     }
 
     static writeDecimal(out: DataOutput, value: BigDecimal): void {
-        out.writeByteArray(unscaledValueToBuffer(value.unscaledValue));
+        out.writeByteArray(bigIntToBuffer(value.unscaledValue));
         out.writeInt(value.scale);
     }
 
-    static writeHzLocalTime(out: DataOutput, value: HzLocalTime): void {
+    static writeLocalTime(out: DataOutput, value: LocalTime): void {
         out.writeByte(value.hour);
         out.writeByte(value.minute);
         out.writeByte(value.second);
         out.writeInt(value.nano);
     }
 
-    static writeHzLocalDate(out: DataOutput, value: HzLocalDate): void {
+    static writeLocalDate(out: DataOutput, value: LocalDate): void {
         out.writeInt(value.year);
         out.writeByte(value.month);
         out.writeByte(value.date);
     }
 
-    static writeHzLocalDatetime(out: DataOutput, value: HzLocalDateTime): void {
-        IOUtil.writeHzLocalDate(out, value.hzLocalDate);
-        IOUtil.writeHzLocalTime(out, value.hzLocalTime);
+    static writeLocalDatetime(out: DataOutput, value: LocalDateTime): void {
+        IOUtil.writeLocalDate(out, value.localDate);
+        IOUtil.writeLocalTime(out, value.localTime);
     }
 
-    static writeHzOffsetDatetime(out: DataOutput, value: HzOffsetDateTime): void {
-        IOUtil.writeHzLocalDatetime(out, value.hzLocalDateTime);
+    static writeOffsetDatetime(out: DataOutput, value: OffsetDateTime): void {
+        IOUtil.writeLocalDatetime(out, value.localDateTime);
         out.writeInt(value.offsetSeconds);
     }
 

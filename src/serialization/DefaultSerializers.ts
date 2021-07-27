@@ -24,18 +24,16 @@ import {
     IdentifiedDataSerializableFactory
 } from './Serializable';
 import {
-    Big,
     BigDecimal,
     HazelcastJsonValue,
-    HzLocalDate,
-    HzLocalDateTime,
-    HzLocalTime,
-    HzOffsetDateTime,
+    LocalDate,
+    LocalDateTime,
+    LocalTime,
+    OffsetDateTime,
     UUID
 } from '../core';
-import {fromBufferAndScale, unscaledValueToBuffer} from '../util/BigDecimalUtil';
+import * as BigDecimalUtil from '../util/BigDecimalUtil';
 import {Buffer} from 'buffer';
-import {IOUtil} from '../util/IOUtil';
 
 /** @internal */
 export class StringSerializer implements Serializer<string> {
@@ -439,58 +437,108 @@ export class UuidSerializer implements Serializer<UUID> {
 }
 
 /** @internal */
-export class LocalDateSerializer implements Serializer<HzLocalDate> {
+export class LocalDateSerializer implements Serializer<LocalDate> {
 
     id = -51;
 
-    read(input: DataInput): HzLocalDate {
-        return IOUtil.readHzLocalDate(input);
+    read(input: DataInput): LocalDate {
+        const year = input.readInt();
+        const month = input.readByte();
+        const date = input.readByte();
+
+        return new LocalDate(year, month, date);
     }
 
-    write(output: DataOutput, hzLocalDate: HzLocalDate): void {
-        IOUtil.writeHzLocalDate(output, hzLocalDate);
+    write(output: DataOutput, localDate: LocalDate): void {
+        output.writeInt(localDate.year);
+        output.writeByte(localDate.month);
+        output.writeByte(localDate.date);
     }
 }
 
 /** @internal */
-export class LocalTimeSerializer implements Serializer<HzLocalTime> {
+export class LocalTimeSerializer implements Serializer<LocalTime> {
 
     id = -52;
 
-    read(input: DataInput): HzLocalTime {
-        return IOUtil.readHzLocalTime(input);
+    read(input: DataInput): LocalTime {
+        const hour = input.readByte();
+        const minute = input.readByte();
+        const second = input.readByte();
+        const nano = input.readInt();
+
+        return new LocalTime(hour, minute, second, nano);
     }
 
-    write(output: DataOutput, hzLocalTime: HzLocalTime): void {
-        IOUtil.writeHzLocalTime(output, hzLocalTime);
+    write(output: DataOutput, localTime: LocalTime): void {
+        output.writeByte(localTime.hour);
+        output.writeByte(localTime.minute);
+        output.writeByte(localTime.second);
+        output.writeInt(localTime.nano);
     }
 }
 
 /** @internal */
-export class LocalDateTimeSerializer implements Serializer<HzLocalDateTime> {
+export class LocalDateTimeSerializer implements Serializer<LocalDateTime> {
 
     id = -53;
 
-    read(input: DataInput): HzLocalDateTime {
-        return IOUtil.readHzLocalDatetime(input);
+    read(input: DataInput): LocalDateTime {
+        const year = input.readInt();
+        const month = input.readByte();
+        const date = input.readByte();
+
+        const hour = input.readByte();
+        const minute = input.readByte();
+        const second = input.readByte();
+        const nano = input.readInt();
+
+        return LocalDateTime.from(year, month, date, hour, minute, second, nano);
     }
 
-    write(output: DataOutput, hzLocalDateTime: HzLocalDateTime): void {
-        IOUtil.writeHzLocalDatetime(output, hzLocalDateTime);
+    write(output: DataOutput, localDateTime: LocalDateTime): void {
+        output.writeInt(localDateTime.localDate.year);
+        output.writeByte(localDateTime.localDate.month);
+        output.writeByte(localDateTime.localDate.date);
+
+        output.writeByte(localDateTime.localTime.hour);
+        output.writeByte(localDateTime.localTime.minute);
+        output.writeByte(localDateTime.localTime.second);
+        output.writeInt(localDateTime.localTime.nano);
     }
 }
 
 /** @internal */
-export class OffsetDateTimeSerializer implements Serializer<HzOffsetDateTime> {
+export class OffsetDateTimeSerializer implements Serializer<OffsetDateTime> {
 
     id = -54;
 
-    read(input: DataInput): HzOffsetDateTime {
-        return IOUtil.readHzOffsetDatetime(input);
+    read(input: DataInput): OffsetDateTime {
+        const year = input.readInt();
+        const month = input.readByte();
+        const date = input.readByte();
+
+        const hour = input.readByte();
+        const minute = input.readByte();
+        const second = input.readByte();
+        const nano = input.readInt();
+
+        const offsetSeconds = input.readInt();
+
+        return OffsetDateTime.from(year, month, date, hour, minute, second, nano, offsetSeconds);
     }
 
-    write(output: DataOutput, hzOffsetDateTime: HzOffsetDateTime): void {
-       IOUtil.writeHzOffsetDatetime(output, hzOffsetDateTime);
+    write(output: DataOutput, offsetDateTime: OffsetDateTime): void {
+        output.writeInt(offsetDateTime.localDateTime.localDate.year);
+        output.writeByte(offsetDateTime.localDateTime.localDate.month);
+        output.writeByte(offsetDateTime.localDateTime.localDate.date);
+
+        output.writeByte(offsetDateTime.localDateTime.localTime.hour);
+        output.writeByte(offsetDateTime.localDateTime.localTime.minute);
+        output.writeByte(offsetDateTime.localDateTime.localTime.second);
+        output.writeInt(offsetDateTime.localDateTime.localTime.nano);
+
+        output.writeInt(offsetDateTime.offsetSeconds);
     }
 }
 
@@ -503,11 +551,11 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
         const body = input.readByteArray();
         const scale = input.readInt();
 
-        return Big(fromBufferAndScale(body, scale));
+        return new BigDecimal(BigDecimalUtil.bufferToBigInt(body), scale);
     }
 
     write(output: DataOutput, bigDecimal: BigDecimal): void {
-        output.writeByteArray(unscaledValueToBuffer(bigDecimal.unscaledValue));
+        output.writeByteArray(BigDecimalUtil.bigIntToBuffer(bigDecimal.unscaledValue));
         output.writeInt(bigDecimal.scale);
     }
 }

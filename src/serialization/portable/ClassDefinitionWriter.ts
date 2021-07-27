@@ -23,10 +23,10 @@ import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
 import {
     HazelcastSerializationError,
     BigDecimal,
-    HzLocalDate,
-    HzLocalDateTime,
-    HzLocalTime,
-    HzOffsetDateTime
+    LocalDate,
+    LocalDateTime,
+    LocalTime,
+    OffsetDateTime
 } from '../../core';
 
 /** @internal */
@@ -104,19 +104,19 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addDecimalField(fieldName);
     }
 
-    writeTime(fieldName: string, value: HzLocalTime): void {
+    writeTime(fieldName: string, value: LocalTime): void {
         this.builder.addTimeField(fieldName);
     }
 
-    writeDate(fieldName: string, value: HzLocalDate): void {
+    writeDate(fieldName: string, value: LocalDate): void {
         this.builder.addDateField(fieldName);
     }
 
-    writeTimestamp(fieldName: string, value: HzLocalDateTime): void {
+    writeTimestamp(fieldName: string, value: LocalDateTime): void {
         this.builder.addTimestampField(fieldName);
     }
 
-    writeTimestampWithTimezone(fieldName: string, value: HzOffsetDateTime): void {
+    writeTimestampWithTimezone(fieldName: string, value: OffsetDateTime): void {
         this.builder.addTimestampWithTimezoneField(fieldName);
     }
 
@@ -183,19 +183,19 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addDecimalArrayField(fieldName);
     }
 
-    writeTimeArray(fieldName: string, values: HzLocalTime[]): void {
+    writeTimeArray(fieldName: string, values: LocalTime[]): void {
         this.builder.addTimeArrayField(fieldName);
     }
 
-    writeDateArray(fieldName: string, values: HzLocalDate[]): void {
+    writeDateArray(fieldName: string, values: LocalDate[]): void {
         this.builder.addDateArrayField(fieldName);
     }
 
-    writeTimestampArray(fieldName: string, values: HzLocalDateTime[]): void {
+    writeTimestampArray(fieldName: string, values: LocalDateTime[]): void {
         this.builder.addTimestampArrayField(fieldName);
     }
 
-    writeTimestampWithTimezoneArray(fieldName: string, values: HzOffsetDateTime[]): void {
+    writeTimestampWithTimezoneArray(fieldName: string, values: OffsetDateTime[]): void {
         this.builder.addTimestampWithTimezoneArrayField(fieldName);
     }
 
