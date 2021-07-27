@@ -24,10 +24,10 @@ import * as Long from 'long';
 import {
     BigDecimal,
     HazelcastSerializationError,
-    HzLocalDate,
-    HzLocalDateTime,
-    HzLocalTime,
-    HzOffsetDateTime
+    LocalDate,
+    LocalDateTime,
+    LocalTime,
+    OffsetDateTime
 } from '../../core';
 import {IOUtil} from '../../util/IOUtil';
 import {PortableUtil} from '../../util/PortableUtil';
@@ -129,20 +129,20 @@ export class DefaultPortableWriter implements PortableWriter {
         this.writeNullable(fieldName, FieldType.DECIMAL, value, IOUtil.writeDecimal);
     }
 
-    writeTime(fieldName: string, value: HzLocalTime): void {
-        this.writeNullable(fieldName, FieldType.TIME, value, IOUtil.writeHzLocalTime);
+    writeTime(fieldName: string, value: LocalTime): void {
+        this.writeNullable(fieldName, FieldType.TIME, value, IOUtil.writeLocalTime);
     }
 
-    writeDate(fieldName: string, value: HzLocalDate): void {
-        this.writeNullable(fieldName, FieldType.DATE, value, PortableUtil.writeHzLocalDateForPortable);
+    writeDate(fieldName: string, value: LocalDate): void {
+        this.writeNullable(fieldName, FieldType.DATE, value, PortableUtil.writeLocalDateForPortable);
     }
 
-    writeTimestamp(fieldName: string, value: HzLocalDateTime): void {
-        this.writeNullable(fieldName, FieldType.TIMESTAMP, value, PortableUtil.writeHzLocalDatetimeForPortable);
+    writeTimestamp(fieldName: string, value: LocalDateTime): void {
+        this.writeNullable(fieldName, FieldType.TIMESTAMP, value, PortableUtil.writeLocalDatetimeForPortable);
     }
 
-    writeTimestampWithTimezone(fieldName: string, value: HzOffsetDateTime): void {
-        this.writeNullable(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, value, PortableUtil.writeHzOffsetDatetimeForPortable);
+    writeTimestampWithTimezone(fieldName: string, value: OffsetDateTime): void {
+        this.writeNullable(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, value, PortableUtil.writeOffsetDatetimeForPortable);
     }
 
     writeNullable<T>(fieldName: string, fieldType: FieldType, value: T | null, writeFn: (out: DataOutput, value: T) => void) {
@@ -228,21 +228,21 @@ export class DefaultPortableWriter implements PortableWriter {
         this.writeObjectArrayField(fieldName, FieldType.DECIMAL_ARRAY, values, IOUtil.writeDecimal)
     }
 
-    writeTimeArray(fieldName: string, values: HzLocalTime[] | null): void {
-        this.writeObjectArrayField(fieldName, FieldType.TIME_ARRAY, values, IOUtil.writeHzLocalTime)
+    writeTimeArray(fieldName: string, values: LocalTime[] | null): void {
+        this.writeObjectArrayField(fieldName, FieldType.TIME_ARRAY, values, IOUtil.writeLocalTime)
     }
 
-    writeDateArray(fieldName: string, values: HzLocalDate[] | null): void {
-        this.writeObjectArrayField(fieldName, FieldType.DATE_ARRAY, values, PortableUtil.writeHzLocalDateForPortable)
+    writeDateArray(fieldName: string, values: LocalDate[] | null): void {
+        this.writeObjectArrayField(fieldName, FieldType.DATE_ARRAY, values, PortableUtil.writeLocalDateForPortable)
     }
 
-    writeTimestampArray(fieldName: string, values: HzLocalDateTime[] | null): void {
-        this.writeObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, values, PortableUtil.writeHzLocalDatetimeForPortable)
+    writeTimestampArray(fieldName: string, values: LocalDateTime[] | null): void {
+        this.writeObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, values, PortableUtil.writeLocalDatetimeForPortable)
     }
 
-    writeTimestampWithTimezoneArray(fieldName: string, values: HzOffsetDateTime[] | null): void {
+    writeTimestampWithTimezoneArray(fieldName: string, values: OffsetDateTime[] | null): void {
         this.writeObjectArrayField(
-            fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, values, PortableUtil.writeHzOffsetDatetimeForPortable
+            fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, values, PortableUtil.writeOffsetDatetimeForPortable
         );
     }
 

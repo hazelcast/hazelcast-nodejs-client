@@ -23,7 +23,6 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const { Client } = require('../../../../lib');
-const { BuildInfo } = require('../../../../lib/BuildInfo');
 const TestUtil = require('../../../TestUtil');
 const RC = require('../../RC');
 
@@ -60,7 +59,6 @@ describe('SqlExecuteTest', function () {
     let cluster;
     let someMap;
     let mapName;
-    let versionFive;
 
     // Sorts sql result rows by __key, first the smallest __key
     const sortByKey = (array) => {
@@ -77,8 +75,6 @@ describe('SqlExecuteTest', function () {
 
     before(function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        const clientVersion = BuildInfo.calculateServerVersionFromString(BuildInfo.getClientVersion());
-        versionFive = clientVersion >= BuildInfo.calculateServerVersionFromString('5.0');
     });
 
     const populateMap = async function (numberOfRecords) {
@@ -145,8 +141,8 @@ describe('SqlExecuteTest', function () {
             await populateMap(1);
             for (const testCase of testCases) {
                 for (const validParams of testCase.validParamsArray) {
-                    const result1 = await client[versionFive ? 'getSql' : 'getSqlService']().execute(testCase.sql, validParams);
-                    const result2 = await client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+                    const result1 = await TestUtil.getSql(client).execute(testCase.sql, validParams);
+                    const result2 = await TestUtil.getSql(client).executeStatement({
                         sql: testCase.sql,
                         params: validParams
                     });
@@ -163,8 +159,8 @@ describe('SqlExecuteTest', function () {
             await populateMap(1);
             for (const testCase of testCases) {
                 for (const invalidParams of testCase.invalidParamsArray) {
-                    const result1 = await client[versionFive ? 'getSql' : 'getSqlService']().execute(testCase.sql, invalidParams);
-                    const result2 = await client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+                    const result1 = await TestUtil.getSql(client).execute(testCase.sql, invalidParams);
+                    const result2 = await TestUtil.getSql(client).executeStatement({
                         sql: testCase.sql,
                         params: invalidParams
                     });
@@ -204,8 +200,8 @@ describe('SqlExecuteTest', function () {
                 const entryCount = 10;
                 await populateMap(entryCount);
 
-                const result1 = await client[versionFive ? 'getSql' : 'getSqlService']().execute(`SELECT * FROM ${_mapName}`);
-                const result2 = await client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+                const result1 = await TestUtil.getSql(client).execute(`SELECT * FROM ${_mapName}`);
+                const result2 = await TestUtil.getSql(client).executeStatement({
                     sql: `SELECT * FROM ${_mapName}`
                 });
                 for (const result of [result1, result2]) {
@@ -234,9 +230,8 @@ describe('SqlExecuteTest', function () {
                 // At this point the map includes [0, 1], [1, 2].. [9, 10]
 
                 // There should be "limit" results
-                const result1 = await client[versionFive ? 'getSql' : 'getSqlService']()
-                    .execute(`SELECT * FROM ${_mapName} WHERE this <= ?`, [limit]);
-                const result2 = await client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+                const result1 = await TestUtil.getSql(client).execute(`SELECT * FROM ${_mapName} WHERE this <= ?`, [limit]);
+                const result2 = await TestUtil.getSql(client).executeStatement({
                     sql: `SELECT * FROM ${_mapName} WHERE this <= ?`,
                     params: [limit]
                 });
@@ -289,10 +284,9 @@ describe('SqlExecuteTest', function () {
 
             await populateMap(entryCount);
 
-            const result = await client[versionFive ? 'getSql' : 'getSqlService']().execute(`SELECT * FROM ${mapName}`,
-                undefined, {
+            const result = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`, undefined, {
                 cursorBufferSize: 2
-                });
+            });
 
             const rows = [];
             for await (const row of result) {
@@ -319,7 +313,7 @@ describe('SqlExecuteTest', function () {
 
             await populateMap(entryCount);
 
-            const result = await client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+            const result = await TestUtil.getSql(client).executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     cursorBufferSize: 2
@@ -349,12 +343,11 @@ describe('SqlExecuteTest', function () {
             const entryCount = 1;
             await populateMap(entryCount);
 
-            const result1 = await client[versionFive ? 'getSql' : 'getSqlService']().execute(`SELECT * FROM ${mapName}`,
-                undefined, {
+            const result1 = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`, undefined, {
                 expectedResultType: 'ROWS'
-                });
+            });
 
-            const result2 = await client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+            const result2 = await TestUtil.getSql(client).executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     expectedResultType: 'ROWS'
@@ -370,12 +363,11 @@ describe('SqlExecuteTest', function () {
             const entryCount = 1;
             await populateMap(entryCount);
 
-            const result1 = await client[versionFive ? 'getSql' : 'getSqlService']().execute(`SELECT * FROM ${mapName}`,
-                undefined, {
+            const result1 = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`, undefined, {
                 expectedResultType: 'ANY'
-                });
+            });
 
-            const result2 = await client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+            const result2 = await TestUtil.getSql(client).executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     expectedResultType: 'ANY'
@@ -391,12 +383,11 @@ describe('SqlExecuteTest', function () {
             const entryCount = 1;
             await populateMap(entryCount);
 
-            const result1 = await client[versionFive ? 'getSql' : 'getSqlService']().execute(`SELECT * FROM ${mapName}`,
-                undefined, {
+            const result1 = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`, undefined, {
                 expectedResultType: 'UPDATE_COUNT'
-                });
+            });
 
-            const result2 = await client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+            const result2 = await TestUtil.getSql(client).executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     expectedResultType: 'UPDATE_COUNT'
@@ -415,11 +406,11 @@ describe('SqlExecuteTest', function () {
             const entryCount = 1;
             await populateMap(entryCount);
 
-            const result1 = await client[versionFive ? 'getSql' : 'getSqlService']().execute(`SELECT * FROM ${mapName}`,
-                undefined, {
+            const result1 = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`, undefined, {
                 returnRawResult: false
-                });
-            const result2 = await client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+            });
+
+            const result2 = await TestUtil.getSql(client).executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     returnRawResult: false
@@ -438,12 +429,11 @@ describe('SqlExecuteTest', function () {
             const entryCount = 1;
             await populateMap(entryCount);
 
-            const result1 = await client[versionFive ? 'getSql' : 'getSqlService']().execute(`SELECT * FROM ${mapName}`,
-                undefined, {
+            const result1 = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`, undefined, {
                 returnRawResult: true
-                });
+            });
 
-            const result2 = await client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+            const result2 = await TestUtil.getSql(client).executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 options: {
                     returnRawResult: true
@@ -485,17 +475,17 @@ describe('SqlExecuteTest', function () {
             someMap = await client.getMap(mapName);
 
             const error1 = TestUtil.getThrownErrorOrThrow(() => {
-                client[versionFive ? 'getSql' : 'getSqlService']().execute(`SELECT * FROM ${mapName}`);
+                TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`);
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
             error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
 
             const error2 = TestUtil.getThrownErrorOrThrow(() => {
-                client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
-                        sql: `SELECT * FROM ${mapName}`,
-                        params: [],
-                        options: {}
+                TestUtil.getSql(client).executeStatement({
+                    sql: `SELECT * FROM ${mapName}`,
+                    params: [],
+                    options: {}
                 });
             });
             error2.should.be.instanceof(getHazelcastSqlException());
@@ -515,7 +505,7 @@ describe('SqlExecuteTest', function () {
 
             await RC.terminateMember(cluster.id, member.uuid);
 
-            const result1 = client[versionFive ? 'getSql' : 'getSqlService']().execute(`SELECT * FROM ${mapName}`);
+            const result1 = TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`);
 
             const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
                 await result1.next();
@@ -544,7 +534,7 @@ describe('SqlExecuteTest', function () {
 
             await RC.terminateMember(cluster.id, member.uuid);
 
-            const result1 = client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+            const result1 = TestUtil.getSql(client).executeStatement({
                 sql: `SELECT * FROM ${mapName}`,
                 params: [],
                 options: {}
@@ -575,7 +565,7 @@ describe('SqlExecuteTest', function () {
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
 
-            const result1 = client[versionFive ? 'getSql' : 'getSqlService']().execute('asdasd');
+            const result1 = TestUtil.getSql(client).execute('asdasd');
 
             const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
                 await result1.next();
@@ -584,7 +574,7 @@ describe('SqlExecuteTest', function () {
             error1.code.should.be.eq(getSqlErrorCode().PARSING);
             error1.originatingMemberId.toString().should.be.eq(member.uuid);
 
-            const result2 = client[versionFive ? 'getSql' : 'getSqlService']().executeStatement({
+            const result2 = TestUtil.getSql(client).executeStatement({
                 sql: `--SELECT * FROM ${mapName}`,
                 params: [],
                 options: {}

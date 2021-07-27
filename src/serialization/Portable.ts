@@ -17,10 +17,10 @@
 import * as Long from 'long';
 import {
     BigDecimal,
-    HzLocalDate,
-    HzLocalDateTime,
-    HzLocalTime,
-    HzOffsetDateTime
+    LocalDate,
+    LocalDateTime,
+    LocalTime,
+    OffsetDateTime
 } from '../core';
 
 /**
@@ -178,35 +178,35 @@ export interface PortableWriter {
      * Write a time field consisting of hour, minute, seconds and nanos parts
      *
      * @param fieldName name of the field
-     * @param value     HzLocalTime value to be written
+     * @param value     LocalTime value to be written
      */
-    writeTime(fieldName: string, value: HzLocalTime | null): void
+    writeTime(fieldName: string, value: LocalTime | null): void
 
     /**
      * Writes a date field consisting of year, month of the year and day of the month
      *
      * @param fieldName name of the field
-     * @param value     HzLocalDate value to be written
+     * @param value     LocalDate value to be written
      */
-    writeDate(fieldName: string, value: HzLocalDate | null): void;
+    writeDate(fieldName: string, value: LocalDate | null): void;
 
     /**
      * Writes a timestamp field consisting of
      * year, month of the year, day of the month, hour, minute, seconds, nanos parts
      *
      * @param fieldName name of the field
-     * @param value     HzLocalDateTime value to be written
+     * @param value     LocalDateTime value to be written
      */
-    writeTimestamp(fieldName: string, value: HzLocalDateTime | null): void;
+    writeTimestamp(fieldName: string, value: LocalDateTime | null): void;
 
     /**
      * Writes a timestamp with timezone field consisting of
      * year, month of the year, day of the month, offset seconds, hour, minute, seconds, nanos parts
      *
      * @param fieldName name of the field
-     * @param value     HzOffsetDateTime value to be written
+     * @param value     OffsetDateTime value to be written
      */
-    writeTimestampWithTimezone(fieldName: string, value: HzOffsetDateTime | null): void;
+    writeTimestampWithTimezone(fieldName: string, value: OffsetDateTime | null): void;
 
     /**
      * Writes a primitive byte-array.
@@ -311,37 +311,37 @@ export interface PortableWriter {
      * Writes an array of Time's
      *
      * @param fieldName name of the field
-     * @param values    HzLocalTime array to be written
+     * @param values    LocalTime array to be written
      * @see {@link writeTime}
      */
-    writeTimeArray(fieldName: string, values: HzLocalTime[] | null): void;
+    writeTimeArray(fieldName: string, values: LocalTime[] | null): void;
 
     /**
      * Writes an array of Date's
      *
      * @param fieldName name of the field
-     * @param values    HzLocalDate array to be written
+     * @param values    LocalDate array to be written
      * @see {@link writeDate}
      */
-    writeDateArray(fieldName: string, values: HzLocalDate[] | null): void;
+    writeDateArray(fieldName: string, values: LocalDate[] | null): void;
 
     /**
      * Writes an array of Timestamp's
      *
      * @param fieldName name of the field
-     * @param values    HzLocalDateTime array to be written
+     * @param values    LocalDateTime array to be written
      * @see {@link writeTimestamp}
      */
-    writeTimestampArray(fieldName: string, values: HzLocalDateTime[] | null): void;
+    writeTimestampArray(fieldName: string, values: LocalDateTime[] | null): void;
 
     /**
      * Writes an array of TimestampWithTimezone's
      *
      * @param fieldName name of the field
-     * @param values    HzOffsetDateTime array to be written
+     * @param values    OffsetDateTime array to be written
      * @see {@link writeTimestampWithTimezone}
      */
-    writeTimestampWithTimezoneArray(fieldName: string, values: HzOffsetDateTime[] | null): void;
+    writeTimestampWithTimezoneArray(fieldName: string, values: OffsetDateTime[] | null): void;
 }
 
 /**
@@ -448,39 +448,39 @@ export interface PortableReader {
     readDecimal(fieldName: string): BigDecimal | null;
 
     /**
-     * Reads a time field consisting of hour, minute, seconds and nanos parts to HzLocalTime
+     * Reads a time field consisting of hour, minute, seconds and nanos parts to LocalTime
      *
      * @param fieldName name of the field
-     * @return the HzLocalTime value read
+     * @return the LocalTime value read
      */
-    readTime(fieldName: string): HzLocalTime | null;
+    readTime(fieldName: string): LocalTime | null;
 
     /**
-     * Reads a date field consisting of year, month of the year and day of the month to HzLocalDate
+     * Reads a date field consisting of year, month of the year and day of the month to LocalDate
      *
      * @param fieldName name of the field
-     * @return the HzLocalDate value read
+     * @return the LocalDate value read
      */
-    readDate(fieldName: string): HzLocalDate | null;
+    readDate(fieldName: string): LocalDate | null;
 
     /**
      * Reads a timestamp field consisting of
-     * year, month of the year, day of the month, hour, minute, seconds, nanos parts to HzLocalDateTime
+     * year, month of the year, day of the month, hour, minute, seconds, nanos parts to LocalDateTime
      *
      * @param fieldName name of the field
      * @return the LocalDateTime value read
      */
-    readTimestamp(fieldName: string): HzLocalDateTime | null;
+    readTimestamp(fieldName: string): LocalDateTime | null;
 
     /**
      * Reads a timestamp with timezone field consisting of
      * year, month of the year, day of the month, offset seconds, hour, minute, seconds, nanos parts
-     * to HzOffsetDateTime
+     * to OffsetDateTime
      *
      * @param fieldName name of the field
      * @return the OffsetDateTime value read
      */
-    readTimestampWithTimezone(fieldName: string): HzOffsetDateTime | null;
+    readTimestampWithTimezone(fieldName: string): OffsetDateTime | null;
 
     /**
      * @param fieldName name of the field
@@ -560,40 +560,40 @@ export interface PortableReader {
     readDecimalArray(fieldName: string): BigDecimal[] | null;
 
     /**
-     * Reads an array of Time's to HzLocalTime[]
+     * Reads an array of Time's to LocalTime[]
      *
      * @param fieldName name of the field
-     * @return the HzLocalTime array read
+     * @return the LocalTime array read
      * @see {@link readTime}
      */
-    readTimeArray(fieldName: string): HzLocalTime[] | null;
+    readTimeArray(fieldName: string): LocalTime[] | null;
 
     /**
-     * Reads an array of Date's to HzLocalDate[]
+     * Reads an array of Date's to LocalDate[]
      *
      * @param fieldName name of the field
-     * @return the HzLocalDate array read
+     * @return the LocalDate array read
      * @see {@link readDate}
      */
-    readDateArray(fieldName: string): HzLocalDate[] | null;
+    readDateArray(fieldName: string): LocalDate[] | null;
 
     /**
-     * Reads an array of Timestamp's to HzLocalDateTime[]
+     * Reads an array of Timestamp's to LocalDateTime[]
      *
      * @param fieldName name of the field
-     * @return the HzLocalDateTime array read
+     * @return the LocalDateTime array read
      * @see {@link readTimestamp}
      */
-    readTimestampArray(fieldName: string): HzLocalDateTime[] | null;
+    readTimestampArray(fieldName: string): LocalDateTime[] | null;
 
     /**
-     * Reads an array of Time's to HzOffsetDateTime[]
+     * Reads an array of Time's to OffsetDateTime[]
      *
      * @param fieldName name of the field
-     * @return the HzOffsetDateTime array read
+     * @return the OffsetDateTime array read
      * @see {@link readTimestampWithTimezone}
      */
-    readTimestampWithTimezoneArray(fieldName: string): HzOffsetDateTime[] | null;
+    readTimestampWithTimezoneArray(fieldName: string): OffsetDateTime[] | null;
 }
 
 /**
