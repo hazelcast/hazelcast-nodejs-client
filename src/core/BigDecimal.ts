@@ -165,6 +165,7 @@ export class BigDecimal {
      * </pre>
      *
      * @param value a non-null `BigDecimal` string
+     * @throws TypeError if value is not a string.
      * @throws RangeError if value is not a valid representation of a `BigDecimal`.
      */
     static fromString(value: string): BigDecimal {
@@ -261,6 +262,7 @@ export class BigDecimal {
      * @param scale scale
      * @param exp exponent number
      * @throws RangeError if scale is out of range
+     * @internal
      */
     private static adjustScale(scale: number, exp: number): number {
         const adjustedScale = scale - exp;

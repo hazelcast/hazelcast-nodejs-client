@@ -82,7 +82,7 @@ export function getType(obj: any): string {
     } else if (obj instanceof OffsetDateTime) {
         return 'offsetDatetime';
     } else if (obj instanceof BigDecimal) {
-        return 'bigdecimal';
+        return 'bigDecimal';
     } else {
         const t = typeof obj;
         if (t !== 'object') {

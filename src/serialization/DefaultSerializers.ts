@@ -493,7 +493,7 @@ export class LocalDateTimeSerializer implements Serializer<LocalDateTime> {
         const second = input.readByte();
         const nano = input.readInt();
 
-        return LocalDateTime.new(year, month, date, hour, minute, second, nano);
+        return LocalDateTime.from(year, month, date, hour, minute, second, nano);
     }
 
     write(output: DataOutput, hzLocalDateTime: LocalDateTime): void {
@@ -525,7 +525,7 @@ export class OffsetDateTimeSerializer implements Serializer<OffsetDateTime> {
 
         const offsetSeconds = input.readInt();
 
-        return OffsetDateTime.new(year, month, date, hour, minute, second, nano, offsetSeconds);
+        return OffsetDateTime.from(year, month, date, hour, minute, second, nano, offsetSeconds);
     }
 
     write(output: DataOutput, hzOffsetDateTime: OffsetDateTime): void {
@@ -555,7 +555,7 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
     }
 
     write(output: DataOutput, bigDecimal: BigDecimal): void {
-        output.writeByteArray(BigDecimalUtil.bigintToBuffer(bigDecimal.unscaledValue));
+        output.writeByteArray(BigDecimalUtil.bigIntToBuffer(bigDecimal.unscaledValue));
         output.writeInt(bigDecimal.scale);
     }
 }

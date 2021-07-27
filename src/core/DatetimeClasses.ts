@@ -303,7 +303,7 @@ export class LocalDateTime {
         if (isNaN(date.getTime())) {
             throw new RangeError('Invalid Date is passed.');
         }
-        return LocalDateTime.new(
+        return LocalDateTime.from(
             date.getUTCFullYear(),
             date.getUTCMonth(),
             date.getUTCDate(),
@@ -327,7 +327,7 @@ export class LocalDateTime {
      * @throws TypeError if passed arguments are of wrong type
      * @throws RangeError if value of any of the arguments are invalid
      */
-    static new(
+    static from(
         year: number, month: number, date: number, hour: number, minute: number, second: number, nano: number
     ): LocalDateTime {
         return new LocalDateTime(
@@ -442,7 +442,7 @@ export class OffsetDateTime {
      * @throws TypeError if passed arguments are of wrong type
      * @throws RangeError if value of any of the arguments are invalid
      */
-    static new(
+    static from(
         year: number,
         month: number,
         date: number,
@@ -453,7 +453,7 @@ export class OffsetDateTime {
         offsetSeconds: number
     ): OffsetDateTime {
         return new OffsetDateTime(
-            LocalDateTime.new(year, month, date, hour, minute, second, nano),
+            LocalDateTime.from(year, month, date, hour, minute, second, nano),
             offsetSeconds
         );
     }

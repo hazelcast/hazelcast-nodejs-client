@@ -19,9 +19,8 @@ const Long = require('long');
 const { expect } = require('chai');
 const RC = require('../../RC');
 const { Lang } = require('../../remote_controller/remote-controller_types');
-const { Client, RestValue, UUID, BigDecimal, LocalDate, LocalTime, LocalDateTime, OffsetDateTime } = require('../../../../');
+const { Client, RestValue, UUID } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
-const { getTimezoneOffsetFromSeconds } = require('../../../../lib/util/DatetimeUtil');
 
 describe('DefaultSerializersLiveTest', function () {
 
@@ -234,6 +233,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should serialize BigDecimal correctly', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        const BigDecimal = TestUtil.getBigDecimal();
 
         for (let i = 0; i < bigDecimalTestParams.length; i++) {
             await map.put(i.toString(), new BigDecimal(bigDecimalTestParams[i][1], bigDecimalTestParams[i][2]));
@@ -291,6 +291,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should serialize LocalDate correctly', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        const LocalDate = TestUtil.getLocalDate();
 
         for (let i = 0; i < dtParams.length; i++) {
             const param = dtParams[i][0];
@@ -345,7 +346,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should serialize LocalTime correctly', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
-
+        const LocalTime = TestUtil.getLocalTime();
         for (let i = 0; i < dtParams.length; i++) {
             const param = dtParams[i][0];
 
@@ -414,15 +415,16 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should serialize LocalDateTime correctly', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        const LocalDateTime = TestUtil.getLocalDateTime();
 
         for (let i = 0; i < dtParams.length; i++) {
             const param = dtParams[i][0];
 
             let localTime;
             if (param.length === 7) {
-                localTime = LocalDateTime.new(param[0], param[1], param[2], param[3], param[4], param[5], param[6]);
+                localTime = LocalDateTime.from(param[0], param[1], param[2], param[3], param[4], param[5], param[6]);
             } else {
-                localTime = LocalDateTime.new(param[0], param[1], param[2], param[3], param[4], param[5], 0);
+                localTime = LocalDateTime.from(param[0], param[1], param[2], param[3], param[4], param[5], 0);
             }
             await map.put(i.toString(), localTime);
         }
@@ -494,6 +496,8 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should serialize OffsetDateTime correctly', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        const getTimezoneOffsetFromSeconds = TestUtil.getDatetimeUtil().getTimezoneOffsetFromSeconds;
+        const OffsetDateTime = TestUtil.getOffsetDateTime();
 
         for (let i = 0; i < dtParams.length; i++) {
             const params = dtParams[i][0];
@@ -501,11 +505,11 @@ describe('DefaultSerializersLiveTest', function () {
 
             let localTime;
             if (params.length === 7) {
-                localTime = OffsetDateTime.new(
+                localTime = OffsetDateTime.from(
                     params[0], params[1], params[2], params[3], params[4], params[5], params[6], offsetSeconds
                 );
             } else {
-                localTime = OffsetDateTime.new(
+                localTime = OffsetDateTime.from(
                     params[0], params[1], params[2], params[3], params[4], params[5], 0, offsetSeconds
                 );
             }

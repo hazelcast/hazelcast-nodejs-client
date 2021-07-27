@@ -19,7 +19,7 @@
 const { Lang } = require('../../remote_controller/remote-controller_types');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
-const { Client, LocalDateTime, LocalTime, LocalDate, OffsetDateTime, BigDecimal } = require('../../../../');
+const { Client } = require('../../../../');
 
 const chai = require('chai');
 const long = require('long');
@@ -44,15 +44,6 @@ class Student {
         writer.writeFloat('height', this.height);
     }
 }
-
-const getSqlColumnType = () => {
-    const { SqlColumnType } = require('../../../../lib/sql/SqlColumnMetadata');
-    return SqlColumnType;
-};
-
-const getDatetimeUtil = () => {
-    return require('../../../../lib/util/DatetimeUtil');
-};
 
 const portableFactory = (classId) => {
     if (classId === 1) {
@@ -113,7 +104,7 @@ describe('Data type test', function () {
     });
 
     it('should be able to decode/serialize VARCHAR', async function () {
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
         const script =
             `
@@ -142,7 +133,7 @@ describe('Data type test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BOOLEAN', async function () {
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
         const script =
             `
@@ -168,7 +159,7 @@ describe('Data type test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize TINYINT', async function () {
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
         const script =
             `
@@ -197,7 +188,7 @@ describe('Data type test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize SMALLINT', async function () {
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
         const script =
             `
@@ -226,7 +217,7 @@ describe('Data type test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize INTEGER', async function () {
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
         const script =
             `
@@ -255,7 +246,7 @@ describe('Data type test', function () {
         validateResults(rows, expectedKeys, expectedValues);
     });
     it('should be able to decode/serialize BIGINT', async function () {
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
         const script =
             `
@@ -289,7 +280,7 @@ describe('Data type test', function () {
         }
     });
     it('should be able to decode/serialize DECIMAL', async function () {
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
         const script =
             `
@@ -311,6 +302,7 @@ describe('Data type test', function () {
 
         let result;
         if (clientVersionNewerThanFive) {
+            const BigDecimal = TestUtil.getBigDecimal();
             result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
@@ -356,7 +348,7 @@ describe('Data type test', function () {
         }
     });
     it('should be able to decode/serialize REAL', async function () {
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
         const script =
             `
@@ -390,7 +382,7 @@ describe('Data type test', function () {
         }
     });
     it('should be able to decode/serialize DOUBLE', async function () {
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
         const script =
             `
@@ -426,8 +418,8 @@ describe('Data type test', function () {
     });
 
     it('should be able to decode/serialize DATE', async function () {
-        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
-        const SqlColumnType = getSqlColumnType();
+        const leftZeroPadInteger = TestUtil.getDatetimeUtil().leftZeroPadInteger;
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
 
         // major versions different skip
@@ -440,21 +432,22 @@ describe('Data type test', function () {
             `
             var map = instance_0.getMap("${mapName}");
             for (var key = 1; key < 12; key++) {
-                map.set(new java.lang.Integer(key), java.time.LocalDate.of(key+2,key+1,key));
+                map.set(new java.lang.Integer(key), java.time.LocalDate.of(key+50002,key+1,key));
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
 
         let result;
         if (clientVersionNewerThanFive) {
+            const LocalDate = TestUtil.getLocalDate();
             result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-                [new LocalDate(1, 1, 1), new LocalDate(5, 5, 5)]
+                [new LocalDate(50001, 1, 1), new LocalDate(50005, 5, 5)]
             );
         } else {
             result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST(? AS DATE) ORDER BY __key ASC`,
-                ['0001-01-01', '0005-05-05']
+                ['50001-01-01', '50005-05-05']
             );
         }
         const rowMetadata = await result.getRowMetadata();
@@ -468,7 +461,7 @@ describe('Data type test', function () {
 
         const expectedKeys = [1, 2, 3];
         const expectedBaseValues = {
-            year: 3,
+            year: 50003,
             month: 2,
             date: 1
         };
@@ -489,8 +482,8 @@ describe('Data type test', function () {
         }
     });
     it('should be able to decode/serialize TIME', async function () {
-        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
-        const SqlColumnType = getSqlColumnType();
+        const leftZeroPadInteger = TestUtil.getDatetimeUtil().leftZeroPadInteger;
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
 
         const script = `
@@ -503,6 +496,7 @@ describe('Data type test', function () {
 
         let result;
         if (clientVersionNewerThanFive) {
+            const LocalTime = TestUtil.getLocalTime();
             result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [new LocalTime(1, 0, 0, 0), new LocalTime(10, 0, 0, 0)]
@@ -549,8 +543,8 @@ describe('Data type test', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP', async function () {
-        const leftZeroPadInteger = getDatetimeUtil().leftZeroPadInteger;
-        const SqlColumnType = getSqlColumnType();
+        const leftZeroPadInteger = TestUtil.getDatetimeUtil().leftZeroPadInteger;
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
 
         // major versions different skip
@@ -572,6 +566,10 @@ describe('Data type test', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         let result;
         if (clientVersionNewerThanFive) {
+            const LocalDateTime = TestUtil.getLocalDateTime();
+            const LocalTime = TestUtil.getLocalTime();
+            const LocalDate = TestUtil.getLocalDate();
+
             result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
@@ -633,11 +631,11 @@ describe('Data type test', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP WITH TIMEZONE', async function () {
-        const datetimeUtil = getDatetimeUtil();
+        const datetimeUtil = TestUtil.getDatetimeUtil();
         const leftZeroPadInteger = datetimeUtil.leftZeroPadInteger;
         const getTimezoneOffsetFromSeconds = datetimeUtil.getTimezoneOffsetFromSeconds;
 
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
 
         // major versions different skip
@@ -663,6 +661,11 @@ describe('Data type test', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         let result;
         if (clientVersionNewerThanFive) {
+            const LocalDateTime = TestUtil.getLocalDateTime();
+            const LocalTime = TestUtil.getLocalTime();
+            const LocalDate = TestUtil.getLocalDate();
+            const OffsetDateTime = TestUtil.getOffsetDateTime();
+
             result = TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
@@ -728,7 +731,7 @@ describe('Data type test', function () {
         }
     });
     it('should be able to decode/serialize OBJECT(portable) without server config', async function () {
-        const SqlColumnType = getSqlColumnType();
+        const SqlColumnType = TestUtil.getSqlColumnType();
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             serialization: {

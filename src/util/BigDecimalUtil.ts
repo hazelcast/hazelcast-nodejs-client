@@ -35,27 +35,28 @@ export function bufferToBigInt(buffer: Buffer): BigInt {
         // When converting from 2 s complement, need to add 1 to the inverted bits.
         // Since adding 1 to a buffer is hard, it is done here.
         bigint += BigInt(1);
-    }
-
-    if (isNegative) {
         bigint *= -BigInt(1);
     }
 
     return bigint;
 }
 
-export function bigintToBuffer(bigintValue: BigInt): Buffer {
+/**
+ * Converts a bigint to buffer
+ * @param big
+ */
+export function bigIntToBuffer(big: BigInt): Buffer {
     // Using toString(16) is problematic since it does not return two's complement
 
-    const isNegative = bigintValue < BigInt(0);
+    const isNegative = big < BigInt(0);
     let hex;
 
     // for getting two's complement of it
     if (isNegative) {
-        bigintValue = bigintValue.valueOf() + BigInt(1); // for two's complement representation, add 1. we'll negate later
-        hex = bigintValue.toString(16).slice(1); // exclude minus sign
+        big = big.valueOf() + BigInt(1); // for two's complement representation, add 1. we'll negate later
+        hex = big.toString(16).slice(1); // exclude minus sign
     } else {
-        hex = bigintValue.toString(16);
+        hex = big.toString(16);
     }
 
     // prepend 0 to get a even length string
@@ -65,7 +66,9 @@ export function bigintToBuffer(bigintValue: BigInt): Buffer {
 
     // we need to add the zero byte if the value is positive
     // js BigInt toString(16) omits it
-    hex = '00' + hex;
+    if (!isNegative) {
+        hex = '00' + hex;
+    }
 
     const numberOfBytes = hex.length / 2;
     const byteArray = new Array(numberOfBytes);

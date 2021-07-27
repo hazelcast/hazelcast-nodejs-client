@@ -41,7 +41,7 @@ export class FixSizedTypesCodec {
     }
 
     static decodeLocalDate(buffer: Buffer, offset: number): LocalDate {
-        const year = FixSizedTypesCodec.decodeShort(buffer, offset);
+        const year = FixSizedTypesCodec.decodeInt(buffer, offset);
         const month = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.INT_SIZE_IN_BYTES);
         const date = FixSizedTypesCodec.decodeByte(buffer, offset + BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.BYTE_SIZE_IN_BYTES);
 
