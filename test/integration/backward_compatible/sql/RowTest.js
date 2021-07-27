@@ -20,7 +20,6 @@ chai.should();
 
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
-const { BuildInfo } = require('../../../../lib/BuildInfo');
 const { Client } = require('../../../../');
 
 describe('SqlRowTest', function () {
@@ -29,12 +28,9 @@ describe('SqlRowTest', function () {
     let someMap;
     let mapName;
     let result;
-    let versionFive;
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        const clientVersion = BuildInfo.calculateServerVersionFromString(BuildInfo.getClientVersion());
-        versionFive = clientVersion >= BuildInfo.calculateServerVersionFromString('5.0');
         cluster = await RC.createCluster(null, null);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
@@ -50,12 +46,7 @@ describe('SqlRowTest', function () {
         await someMap.put(1, '2');
         await someMap.put(2, '3');
 
-        let sqlService;
-        if (versionFive) {
-            sqlService = client.getSql();
-        } else {
-            sqlService = client.getSqlService();
-        }
+        const sqlService = TestUtil.getSql(client);
         result = sqlService.execute(`SELECT * FROM ${mapName} WHERE __key > ?`, [0], {
             returnRawResult: true
         });

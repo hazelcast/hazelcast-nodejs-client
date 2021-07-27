@@ -27,8 +27,6 @@ chai.should();
 describe('Jet Test', function () {
     let client;
     let cluster;
-    let map;
-    let map2;
 
     const mapName = 'a';
     const mapName2 = 'b';
@@ -36,7 +34,7 @@ describe('Jet Test', function () {
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/config
-            http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+            http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
             <jet enabled="true"></jet>
         </hazelcast>`;
 
@@ -46,8 +44,6 @@ describe('Jet Test', function () {
     });
 
     beforeEach(async function () {
-        map = undefined;
-        map2 = undefined;
         cluster = await RC.createCluster(null, jetEnabledConfig);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
@@ -56,12 +52,6 @@ describe('Jet Test', function () {
     });
 
     afterEach(async function () {
-        if (map) {
-            await map.destroy();
-        }
-        if (map2) {
-            await map2.destroy();
-        }
         await client.shutdown();
         await RC.terminateCluster(cluster.id);
     });
@@ -90,8 +80,8 @@ describe('Jet Test', function () {
     });
 
     it('should be able to run join query', async function () {
-        map = await client.getMap(mapName);
-        map2 = await client.getMap(mapName2);
+        const map = await client.getMap(mapName);
+        const map2 = await client.getMap(mapName2);
 
         const result = client.getSql().execute(`
             CREATE MAPPING ${mapName} (__key DOUBLE, age INTEGER, name VARCHAR) TYPE IMap OPTIONS (
@@ -99,7 +89,7 @@ describe('Jet Test', function () {
               'valueFormat'='json')
         `);
 
-        await result.executeDeferred.promise; // wait for execution to end
+        await result.getUpdateCount(); // wait for execution to end
 
         const result2 = client.getSql().execute(`
             CREATE MAPPING ${mapName2} (__key DOUBLE, name VARCHAR, height DOUBLE) TYPE IMap OPTIONS (
@@ -107,7 +97,7 @@ describe('Jet Test', function () {
               'valueFormat'='json')
         `);
 
-        await result2.executeDeferred.promise; // wait for execution to end
+        await result2.getUpdateCount(); // wait for execution to end
 
         await map.set(1, {
             age: 11,
@@ -145,7 +135,7 @@ describe('Jet Test', function () {
     });
 
     it('should be able to run create mapping and insert into query', async function () {
-        map = await client.getMap(mapName);
+        const map = await client.getMap(mapName);
 
         const result = client.getSql().execute(`
             CREATE MAPPING ${mapName} (__key DOUBLE, this DOUBLE) TYPE IMap OPTIONS (
@@ -153,11 +143,11 @@ describe('Jet Test', function () {
               'valueFormat'='double')
         `);
 
-        await result.executeDeferred.promise; // wait for execution to end
+        await result.getUpdateCount(); // wait for execution to end
 
         const result2 = client.getSql().execute(`INSERT INTO ${mapName} VALUES (1, 2)`);
 
-        await result2.executeDeferred.promise; // wait for execution to end
+        await result2.getUpdateCount(); // wait for execution to end
 
         (await map.get(1)).should.be.eq(2);
     });

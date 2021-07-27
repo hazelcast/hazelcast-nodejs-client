@@ -18,11 +18,10 @@
 import {Buffer} from 'buffer';
 
 /**
- * Constructs a big decimal string from a buffer and a scale
+ * Converts Buffer to BigInt
  * @param buffer
- * @param scale
  */
-export function fromBufferAndScale(buffer: Buffer, scale: number): string {
+export function bufferToBigInt(buffer: Buffer): BigInt {
     const isNegative = (buffer[0] & 0x80) > 0;
     if (isNegative) { // negative, convert two's complement to positive
         for (let i = 0; i < buffer.length; i++) {
@@ -36,20 +35,51 @@ export function fromBufferAndScale(buffer: Buffer, scale: number): string {
         // When converting from 2 s complement, need to add 1 to the inverted bits.
         // Since adding 1 to a buffer is hard, it is done here.
         bigint += BigInt(1);
+        bigint *= -BigInt(1);
     }
-    const bigIntString = bigint.toString();
 
-    if (scale === 0) {
-        return (isNegative ? '-' : '') + bigIntString;
-    } else if (scale > 0) {
-        if (scale < bigIntString.length) {
-            return (isNegative ? '-' : '') + bigIntString.substring(0, bigIntString.length - scale) + '.'
-                + bigIntString.substring(bigIntString.length - scale);
-        } else {
-            const numberOfZerosAfterDecimal = scale - bigIntString.length;
-            return (isNegative ? '-0.' : '0.') + '0'.repeat(numberOfZerosAfterDecimal) + bigIntString
-        }
+    return bigint;
+}
+
+/**
+ * Converts BigInt to Buffer
+ * @param big
+ */
+export function bigIntToBuffer(big: BigInt): Buffer {
+    // Using toString(16) is problematic since it does not return two's complement
+
+    const isNegative = big < BigInt(0);
+    let hex;
+
+    // for getting two's complement of it
+    if (isNegative) {
+        big = big.valueOf() + BigInt(1); // for two's complement representation, add 1. we'll negate later
+        hex = big.toString(16).slice(1); // exclude minus sign
     } else {
-        return (isNegative ? '-' : '') + bigIntString + '0'.repeat(-1 * scale);
+        hex = big.toString(16);
     }
+
+    // prepend 0 to get a even length string
+    if (hex.length % 2) {
+        hex = '0' + hex;
+    }
+
+    // we need to add the zero byte if the value is positive
+    // js BigInt toString(16) omits it
+    if (!isNegative) {
+        hex = '00' + hex;
+    }
+
+    const numberOfBytes = hex.length / 2;
+    const byteArray = new Array(numberOfBytes);
+
+    let i = 0;
+    let j = 0;
+    while (i < numberOfBytes) {
+        const byte = parseInt(hex.slice(j, j + 2), 16);
+        byteArray[i] = isNegative ? ~byte : byte; // for two's complement
+        i += 1;
+        j += 2;
+    }
+    return Buffer.from(byteArray);
 }

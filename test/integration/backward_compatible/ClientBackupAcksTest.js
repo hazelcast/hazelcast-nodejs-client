@@ -113,7 +113,9 @@ describe('ClientBackupAcksTest', function () {
     it('should receive ack in unisocket mode', async function () {
         client = await Client.newHazelcastClient({
             clusterName: cluster.id,
-            smartRouting: false
+            network: {
+                smartRouting: false
+            }
         });
         const map = await client.getMap('test-map');
 
