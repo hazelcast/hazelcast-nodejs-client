@@ -2333,7 +2333,7 @@ SELECT * FROM employee
 
 ### 8.7.3. Data Types
 
-The SQL service supports a set of SQL data types. The  table below shows SQL data types and corresponding Javascript types:
+The SQL service supports a set of SQL data types. The table below shows SQL data types and corresponding JavaScript types:
 
 | Column Type                  | Javascript           |
 |------------------------------|----------------------|
