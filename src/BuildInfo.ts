@@ -16,8 +16,6 @@
 /** @ignore */
 import {MemberVersion} from './core/MemberVersion';
 
-/** */
-
 const clientVersion = require('../package.json').version;
 
 /** @internal */
