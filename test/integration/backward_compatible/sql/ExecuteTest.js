@@ -450,47 +450,9 @@ describe('SqlExecuteTest', function () {
         });
     });
     describe('errors/invalid usage', function () {
-        const LITE_MEMBER_CONFIG = `
-            <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-                    <lite-member enabled="true" />
-            </hazelcast>
-        `;
-
         afterEach(async function () {
             await RC.terminateCluster(cluster.id);
             await client.shutdown();
-        });
-
-        it('should return an error if sql query sent to lite member', async function () {
-            cluster = await RC.createCluster(null, LITE_MEMBER_CONFIG);
-            await RC.startMember(cluster.id);
-            client = await Client.newHazelcastClient({
-                clusterName: cluster.id
-            });
-            TestUtil.markServerVersionAtLeast(this, client, '4.2');
-            mapName = TestUtil.randomString(10);
-            someMap = await client.getMap(mapName);
-
-            const error1 = TestUtil.getThrownErrorOrThrow(() => {
-                TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`);
-            });
-            error1.should.be.instanceof(getHazelcastSqlException());
-            error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
-            error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
-
-            const error2 = TestUtil.getThrownErrorOrThrow(() => {
-                TestUtil.getSql(client).executeStatement({
-                    sql: `SELECT * FROM ${mapName}`,
-                    params: [],
-                    options: {}
-                });
-            });
-            error2.should.be.instanceof(getHazelcastSqlException());
-            error2.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
-            error2.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
         });
 
         it('should return an error if connection lost', async function () {

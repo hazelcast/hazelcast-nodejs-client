@@ -24,7 +24,7 @@ const expect = chai.expect;
 chai.use(sinonChai);
 
 const { ConnectionRegistryImpl } = require('../../../lib/network/ConnectionManager');
-const { ConnectionStrategyConfigImpl, ReconnectMode } = require('../../../lib/config/ConnectionStrategyConfig');
+const { ReconnectMode } = require('../../../lib/config/ConnectionStrategyConfig');
 const { RoundRobinLB } = require('../../../lib/util/RoundRobinLB');
 const { UuidUtil } = require('../../../lib/util/UuidUtil');
 const { ClientOfflineError, IOError } = require('../../../lib/core/HazelcastError');
@@ -43,33 +43,14 @@ describe('ConnectionRegistryTest', function () {
 
     describe('getRandomConnection', function () {
 
-        it('should not call nextDataMember() or next() on load balancer ' +
-            'when load balancer does not support data members and data member is requested ', function () {
-            const loadBalancerStub = {};
-            loadBalancerStub.canGetNextDataMember = sandbox.fake.returns(false);
-            loadBalancerStub.next = sandbox.spy();
-            loadBalancerStub.nextDataMember = sandbox.spy();
-
-            const connectionRegistry = new ConnectionRegistryImpl(
-                new ConnectionStrategyConfigImpl(),
-                true,
-                loadBalancerStub,
-                {}
-            );
-
-            connectionRegistry.getRandomConnection(true);
-
-            expect(loadBalancerStub.next.called).to.be.false;
-            expect(loadBalancerStub.nextDataMember.called).to.be.false;
-        });
-
         it('should call load balancer\'s next() when in smart mode', function () {
             const loadBalancerStub = {};
             loadBalancerStub.next = sandbox.fake.returns(null);
             loadBalancerStub.nextDataMember = sandbox.spy();
 
             const connectionRegistry = new ConnectionRegistryImpl(
-                new ConnectionStrategyConfigImpl(),
+                false,
+                ReconnectMode.ON,
                 true,
                 loadBalancerStub,
                 {}
@@ -87,7 +68,8 @@ describe('ConnectionRegistryTest', function () {
             loadBalancerStub.nextDataMember = sandbox.spy();
 
             const connectionRegistry = new ConnectionRegistryImpl(
-                new ConnectionStrategyConfigImpl(),
+                false,
+                ReconnectMode.ON,
                 true,
                 loadBalancerStub,
                 {}
@@ -99,25 +81,6 @@ describe('ConnectionRegistryTest', function () {
             expect(loadBalancerStub.next.called).to.be.true;
         });
 
-        it('should call load balancer\'s nextDataMember() when in smart mode and dataMember is needed', function () {
-            const loadBalancerStub = {};
-            loadBalancerStub.next = sandbox.spy();
-            loadBalancerStub.nextDataMember = sandbox.fake.returns(null);
-            loadBalancerStub.canGetNextDataMember = sandbox.fake.returns(true);
-
-            const connectionRegistry = new ConnectionRegistryImpl(
-                new ConnectionStrategyConfigImpl(),
-                true,
-                loadBalancerStub,
-                {}
-            );
-
-            connectionRegistry.getRandomConnection(true);
-
-            expect(loadBalancerStub.nextDataMember.called).to.be.true;
-            expect(loadBalancerStub.next.called).to.be.false;
-        });
-
         it('should use member uuid returned by load balancer to get connection in smart mode', function () {
             const member = {
                 uuid: UuidUtil.generate()
@@ -127,7 +90,8 @@ describe('ConnectionRegistryTest', function () {
             loadBalancerStub.next = sandbox.fake.returns(member);
 
             const connectionRegistry = new ConnectionRegistryImpl(
-                new ConnectionStrategyConfigImpl(),
+                false,
+                ReconnectMode.ON,
                 true,
                 loadBalancerStub,
                 {}
@@ -144,7 +108,8 @@ describe('ConnectionRegistryTest', function () {
             function () {
                 const loadBalancerStub = {next: sandbox.spy(), nextDataMember: sandbox.spy()};
                 const connectionRegistry = new ConnectionRegistryImpl(
-                    new ConnectionStrategyConfigImpl(),
+                    false,
+                    ReconnectMode.ON,
                     false,
                     loadBalancerStub,
                     {}
@@ -167,102 +132,17 @@ describe('ConnectionRegistryTest', function () {
                 expect(loadBalancerStub.nextDataMember.called).to.be.false;
             }
         );
-
-        it('should return data member connection when one exists and when data member is requested, [dummy mode]',
-            function () {
-                const firstUUID = UuidUtil.generate();
-                const secondUUID = UuidUtil.generate();
-                const thirdUUID = UuidUtil.generate();
-
-                const loadBalancerStub = {next: sandbox.spy(), nextDataMember: sandbox.spy()};
-                const clusterServiceStub = {};
-                clusterServiceStub.getMember = sandbox.stub();
-
-                clusterServiceStub.getMember.withArgs(firstUUID.toString()).returns({
-                    liteMember: true
-                });
-                clusterServiceStub.getMember.withArgs(secondUUID.toString()).returns({
-                    liteMember: false
-                });
-                clusterServiceStub.getMember.withArgs(thirdUUID.toString()).returns({
-                    liteMember: true
-                });
-
-                const connectionRegistry = new ConnectionRegistryImpl(
-                    new ConnectionStrategyConfigImpl(),
-                    false,
-                    loadBalancerStub,
-                    clusterServiceStub
-                );
-
-                const secondConnection = {};
-                const firstConnection = {};
-                connectionRegistry.setConnection(firstUUID, firstConnection);
-                connectionRegistry.setConnection(secondUUID, secondConnection);
-                connectionRegistry.setConnection(thirdUUID, {});
-
-                const connection = connectionRegistry.getRandomConnection();
-                const otherConnection = connectionRegistry.getRandomConnection();
-                const dataMemberConnection = connectionRegistry.getRandomConnection(true);
-
-                expect(connection).to.be.equal(firstConnection);
-                expect(otherConnection).to.be.equal(firstConnection);
-                expect(dataMemberConnection).to.be.equal(secondConnection);
-
-                expect(loadBalancerStub.next.called).to.be.false;
-                expect(loadBalancerStub.nextDataMember.called).to.be.false;
-            }
-        );
-
-        it('should return null if there is no data member connection and data member is requested, [dummy mode]',
-            function () {
-                const firstUUID = UuidUtil.generate();
-                const secondUUID = UuidUtil.generate();
-
-                const loadBalancerStub = {next: sandbox.spy(), nextDataMember: sandbox.spy()};
-                const clusterServiceStub = {};
-                clusterServiceStub.getMember = sandbox.stub();
-
-                clusterServiceStub.getMember.withArgs(firstUUID.toString()).returns({
-                    liteMember: true
-                });
-                clusterServiceStub.getMember.withArgs(secondUUID.toString()).returns({
-                    liteMember: true
-                });
-
-                const connectionRegistry = new ConnectionRegistryImpl(
-                    new ConnectionStrategyConfigImpl(),
-                    false,
-                    loadBalancerStub,
-                    clusterServiceStub
-                );
-
-                const secondConnection = {};
-                const firstConnection = {};
-                connectionRegistry.setConnection(firstUUID, firstConnection);
-                connectionRegistry.setConnection(secondUUID, secondConnection);
-
-                const connection = connectionRegistry.getRandomConnection();
-                const otherConnection = connectionRegistry.getRandomConnection();
-                const dataMemberConnection = connectionRegistry.getRandomConnection(true);
-
-                expect(connection).to.be.equal(firstConnection);
-                expect(otherConnection).to.be.equal(firstConnection);
-                expect(dataMemberConnection).to.be.equal(null);
-
-                expect(loadBalancerStub.next.called).to.be.false;
-                expect(loadBalancerStub.nextDataMember.called).to.be.false;
-            }
-        );
     });
 
     describe('checkIfInvocationAllowed', function () {
         it('should return null when connection state is INITIALIZED_ON_CLUSTER and there are some active connections',
             function () {
                 const connectionRegistry = new ConnectionRegistryImpl(
-                    new ConnectionStrategyConfigImpl(),
                     false,
-                    new RoundRobinLB()
+                    ReconnectMode.ON,
+                    false,
+                    new RoundRobinLB(),
+                    {}
                 );
 
                 connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
@@ -273,13 +153,12 @@ describe('ConnectionRegistryTest', function () {
         );
 
         it('should return ClientOfflineError when connection state is INITIAL and with async start', function () {
-            const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
-            connectionStrategyConfig.asyncStart = true;
-
             const connectionRegistry = new ConnectionRegistryImpl(
-                connectionStrategyConfig,
+                true,
+                ReconnectMode.ON,
                 false,
-                new RoundRobinLB()
+                new RoundRobinLB(),
+                {}
             );
 
             connectionRegistry.setConnectionState(connectionState.INITIAL);
@@ -288,13 +167,12 @@ describe('ConnectionRegistryTest', function () {
         });
 
         it('should return IOError when connection state is INITIAL and without async start', function () {
-            const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
-            connectionStrategyConfig.asyncStart = false;
-
             const connectionRegistry = new ConnectionRegistryImpl(
-                connectionStrategyConfig,
                 false,
-                new RoundRobinLB()
+                ReconnectMode.ON,
+                false,
+                new RoundRobinLB(),
+                {}
             );
 
             connectionRegistry.setConnectionState(connectionState.INITIAL);
@@ -304,13 +182,12 @@ describe('ConnectionRegistryTest', function () {
 
         it('should return ClientOfflineError when reconnect mode is async, connection state is INITIALIZED_ON_CLUSTER '
             + 'and there are no connections', function () {
-                const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
-                connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
-
                 const connectionRegistry = new ConnectionRegistryImpl(
-                    connectionStrategyConfig,
                     false,
-                    new RoundRobinLB()
+                    ReconnectMode.ASYNC,
+                    false,
+                    new RoundRobinLB(),
+                    {}
                 );
 
                 connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
