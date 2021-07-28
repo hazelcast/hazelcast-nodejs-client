@@ -304,18 +304,18 @@ describe('ConnectionRegistryTest', function () {
 
         it('should return ClientOfflineError when reconnect mode is async, connection state is INITIALIZED_ON_CLUSTER '
             + 'and there are no connections', function () {
-            const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
-            connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
+                const connectionStrategyConfig = new ConnectionStrategyConfigImpl();
+                connectionStrategyConfig.reconnectMode = ReconnectMode.ASYNC;
 
-            const connectionRegistry = new ConnectionRegistryImpl(
-                connectionStrategyConfig,
-                false,
-                new RoundRobinLB()
-            );
+                const connectionRegistry = new ConnectionRegistryImpl(
+                    connectionStrategyConfig,
+                    false,
+                    new RoundRobinLB()
+                );
 
-            connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
+                connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
 
-            expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
-        });
+                expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
+            });
     });
 });

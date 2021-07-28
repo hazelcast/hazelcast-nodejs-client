@@ -18,16 +18,7 @@
 import * as assert from 'assert';
 import * as Long from 'long';
 import * as Path from 'path';
-import {
-    BigDecimal,
-    IllegalStateError,
-    LocalDate,
-    LocalDateTime,
-    LocalTime,
-    MemberImpl,
-    OffsetDateTime,
-    UUID
-} from '../core';
+import {BigDecimal, IllegalStateError, LocalDate, LocalDateTime, LocalTime, MemberImpl, OffsetDateTime, UUID} from '../core';
 import {MemberVersion} from '../core/MemberVersion';
 import {BuildInfo} from '../BuildInfo';
 
