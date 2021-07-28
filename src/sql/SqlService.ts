@@ -255,7 +255,7 @@ export class SqlServiceImpl implements SqlService {
      * @param connection
      * @returns {@link HazelcastSqlException}
      */
-    toHazelcastSqlException(err: any, connection: Connection) : HazelcastSqlException {
+    rethrow(err: any, connection: Connection): HazelcastSqlException {
         if (!connection.isAlive()) {
             return new HazelcastSqlException(
                 this.connectionManager.getClientUuid(),
@@ -265,20 +265,25 @@ export class SqlServiceImpl implements SqlService {
                 err
             )
         } else {
-            if (err instanceof HazelcastSqlException) {
-                return err;
-            }
-            let originatingMemberId;
-            if (err.hasOwnProperty('originatingMemberId')) {
-                originatingMemberId = err.originatingMemberId;
-            } else {
-                originatingMemberId = this.connectionManager.getClientUuid();
-            }
-            return new HazelcastSqlException(
-                originatingMemberId, SqlErrorCode.GENERIC, err.message, err
-            );
+            return this.toHazelcastSqlException(err);
         }
     }
+
+    toHazelcastSqlException(err: any): HazelcastSqlException {
+        if (err instanceof HazelcastSqlException) {
+            return err;
+        }
+        let originatingMemberId;
+        if (err.hasOwnProperty('originatingMemberId')) {
+            originatingMemberId = err.originatingMemberId;
+        } else {
+            originatingMemberId = this.connectionManager.getClientUuid();
+        }
+        return new HazelcastSqlException(
+            originatingMemberId, SqlErrorCode.GENERIC, err.message, err
+        );
+    }
+
 
     executeStatement(sqlStatement: SqlStatement): SqlResult {
         try {
@@ -287,9 +292,16 @@ export class SqlServiceImpl implements SqlService {
             throw new IllegalArgumentError(`Invalid argument given to execute(): ${error.message}`, error)
         }
 
-        const connection = this.connectionRegistry.getRandomConnection();
+        let connection: Connection | null;
+
+        try {
+            connection = this.connectionRegistry.getConnectionForSql();
+        } catch (e) {
+            throw this.toHazelcastSqlException(e);
+        }
+
         if (connection === null) {
-            // Either the client is not connected to the cluster, or there are no data members in the cluster.
+            // The client is not connected to the cluster.
             throw new HazelcastSqlException(
                 this.connectionManager.getClientUuid(),
                 SqlErrorCode.CONNECTION_PROBLEM,
@@ -300,7 +312,7 @@ export class SqlServiceImpl implements SqlService {
         const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
 
         const expectedResultType: SqlExpectedResultType = sqlStatement.options?.hasOwnProperty('expectedResultType') ?
-                SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
+            SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
         let timeoutMillis: Long;
         if (sqlStatement.options?.hasOwnProperty('timeoutMillis')) {
@@ -352,13 +364,13 @@ export class SqlServiceImpl implements SqlService {
                 SqlServiceImpl.handleExecuteResponse(clientMessage, res);
             }).catch(err => {
                 res.onExecuteError(
-                    this.toHazelcastSqlException(err, connection)
+                    this.rethrow(err, connection)
                 );
             });
 
             return res;
         } catch (error) {
-            throw this.toHazelcastSqlException(error, connection);
+            throw this.rethrow(error, connection);
         }
     }
 

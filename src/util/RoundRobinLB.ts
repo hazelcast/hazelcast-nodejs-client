@@ -34,8 +34,12 @@ export class RoundRobinLB extends AbstractLoadBalancer {
         this.index = randomInt(INITIAL_SEED_CAP);
     }
 
-    next(): Member {
-        const members = this.getMembers();
+    next(): Member | null {
+        return this._next(false);
+    }
+
+    private _next(dataMember: boolean): Member | null {
+        const members = dataMember ? this.getDataMembers() : this.getMembers();
         if (members == null || members.length === 0) {
             return null;
         }
@@ -43,5 +47,13 @@ export class RoundRobinLB extends AbstractLoadBalancer {
         const length = members.length;
         const idx = (this.index++) % length;
         return members[idx];
+    }
+
+    canGetNextDataMember(): boolean {
+        return true;
+    }
+
+    nextDataMember(): Member | null {
+        return this._next(true);
     }
 }

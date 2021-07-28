@@ -26,4 +26,16 @@ export class MemberVersion {
         this.minor = minor;
         this.patch = patch;
     }
+
+    /**
+     * @param other other version to compare to
+     * @return true if this version equals `other`
+     */
+    equals(other: MemberVersion): boolean {
+        return this.major === other.major && this.minor === other.minor;
+    }
+
+    toString(): string {
+        return `${this.major}.${this.minor}`;
+    }
 }
