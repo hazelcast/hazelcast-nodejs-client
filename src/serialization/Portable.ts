@@ -157,20 +157,20 @@ export interface PortableWriter {
     writeShort(fieldName: string, value: number): void;
 
     /**
-     * Writes a portable.
+     * Writes a Portable.
      * Use {@link writeNullPortable} to write a `null` Portable
      *
      * @param fieldName name of the field
-     * @param portable  Portable to be written
+     * @param Portable  Portable to be written
      */
-    writePortable(fieldName: string, portable: Portable | null): void;
+    writePortable(fieldName: string, Portable: Portable | null): void;
 
     /**
-     * To write a null portable value, user needs to provide class and factoryIds of related class.
+     * To write a `null` Portable value, you need to provide class and factory IDs of the related class.
      *
      * @param fieldName name of the field
-     * @param factoryId factory ID of related portable class
-     * @param classId   class ID of related portable class
+     * @param factoryId factory ID of related Portable class
+     * @param classId   class ID of related Portable class
      */
     writeNullPortable(fieldName: string, factoryId: number, classId: number): void;
 
@@ -223,7 +223,7 @@ export interface PortableWriter {
     writeByteArray(fieldName: string, bytes: Buffer | null): void;
 
     /**
-     * Writes a primitive boolean array.
+     * Writes an array of primitive booleans.
      *
      * @param fieldName name of the field
      * @param booleans  boolean array to be written
@@ -242,7 +242,7 @@ export interface PortableWriter {
     writeCharArray(fieldName: string, chars: string[] | null): void;
 
     /**
-     * Writes a number array as 32-bit signed integer array.
+     * Writes an array of numbers as 32-bit signed integer array.
      *
      * @param fieldName name of the field
      * @param ints      int array to be written. Each value must be a valid signed 32-bit integer.
@@ -251,7 +251,7 @@ export interface PortableWriter {
     writeIntArray(fieldName: string, ints: number[] | null): void;
 
     /**
-     * Writes a long array.
+     * Writes an array of longs.
      *
      * @param fieldName name of the field
      * @param longs     long array to be written
@@ -259,7 +259,7 @@ export interface PortableWriter {
     writeLongArray(fieldName: string, longs: Long[] | null): void;
 
     /**
-     * Writes a number array as doubles.
+     * Writes an array of numbers as doubles.
      *
      * @param fieldName name of the field
      * @param values    double array to be written. Each value must be a JavaScript number.
@@ -268,7 +268,7 @@ export interface PortableWriter {
     writeDoubleArray(fieldName: string, values: number[] | null): void;
 
     /**
-     * Writes a number array as floats.
+     * Writes an array of numbers as floats.
      *
      * @param fieldName name of the field
      * @param values    float array to be written. Each value must be a JavaScript number.
@@ -277,7 +277,7 @@ export interface PortableWriter {
     writeFloatArray(fieldName: string, values: number[] | null): void;
 
     /**
-     * Writes a number array as 16-bit signed integers.
+     * Writes an array of numbers as 16-bit signed integers.
      *
      * @param fieldName name of the field
      * @param values    short array to be written. Each value must be a valid signed 16-bit integer.
@@ -286,7 +286,7 @@ export interface PortableWriter {
     writeShortArray(fieldName: string, values: number[] | null): void;
 
     /**
-     * Writes a string array. Each string is written as UTF-8 encoded bytes.
+     * Writes an array of strings. Each string is written as UTF-8 encoded bytes.
      *
      * @param fieldName name of the field
      * @param values    string array to be written
@@ -296,7 +296,7 @@ export interface PortableWriter {
     writeUTFArray(fieldName: string, values: string[] | null): void;
 
     /**
-     * Writes a string array. Each string is written as UTF-8 encoded bytes.
+     * Writes an array of strings. Each string is written as UTF-8 encoded bytes.
      *
      * @param fieldName name of the field
      * @param values    string array to be written
@@ -304,15 +304,15 @@ export interface PortableWriter {
     writeStringArray(fieldName: string, values: string[] | null): void;
 
     /**
-     * Writes an array of portables.
+     * Writes an array Portables.
      *
      * @param fieldName name of the field
-     * @param values    portable array to be written
+     * @param values    Portable array to be written
      */
     writePortableArray(fieldName: string, values: Portable[] | null): void;
 
     /**
-     * Writes an array of decimals.
+     * Writes an array of `BigDecimal`s.
      *
      * @param fieldName name of the field
      * @param values    BigDecimal array to be written
@@ -321,7 +321,7 @@ export interface PortableWriter {
     writeDecimalArray(fieldName: string, values: BigDecimal[] | null): void;
 
     /**
-     * Writes an array of times.
+     * Writes an array of `LocalTime`s.
      *
      * @param fieldName name of the field
      * @param values    LocalTime array to be written
@@ -330,7 +330,7 @@ export interface PortableWriter {
     writeTimeArray(fieldName: string, values: LocalTime[] | null): void;
 
     /**
-     * Writes an array of dates.
+     * Writes an array of `LocalDate`s.
      *
      * @param fieldName name of the field
      * @param values    LocalDate array to be written
@@ -339,7 +339,7 @@ export interface PortableWriter {
     writeDateArray(fieldName: string, values: LocalDate[] | null): void;
 
     /**
-     * Writes an array of timestamps.
+     * Writes an array of `LocalDateTime`s.
      *
      * @param fieldName name of the field
      * @param values    LocalDateTime array to be written
@@ -348,7 +348,7 @@ export interface PortableWriter {
     writeTimestampArray(fieldName: string, values: LocalDateTime[] | null): void;
 
     /**
-     * Writes an array of timestampWithTimezones.
+     * Writes an array of `OffsetDateTime`s.
      *
      * @param fieldName name of the field
      * @param values    OffsetDateTime array to be written
@@ -362,7 +362,7 @@ export interface PortableWriter {
  */
 export interface PortableReader {
     /**
-     * @return global version of portable classes
+     * @return global version of Portable classes
      */
     getVersion(): number;
 
@@ -373,7 +373,7 @@ export interface PortableReader {
     hasField(fieldName: string): boolean;
 
     /**
-     * @return set of field names on this portable class
+     * @return set of field names on this Portable class
      */
     getFieldNames(): string[];
 
@@ -467,10 +467,10 @@ export interface PortableReader {
     readShort(fieldName: string): number;
 
     /**
-     * Reads a portable.
+     * Reads a Portable.
      *
      * @param fieldName name of the field
-     * @return the portable value read
+     * @return the Portable value read
      */
     readPortable(fieldName: string): Portable | null;
 
@@ -515,7 +515,7 @@ export interface PortableReader {
     readTimestampWithTimezone(fieldName: string): OffsetDateTime | null;
 
     /**
-     * Reads a byte array.
+     * Reads an array of bytes.
      *
      * @param fieldName name of the field
      * @return the byte array value read
@@ -523,7 +523,7 @@ export interface PortableReader {
     readByteArray(fieldName: string): Buffer | null;
 
     /**
-     * Reads a primitive boolean array.
+     * Reads an array of primitive booleans.
      *
      * @param fieldName name of the field
      * @return the boolean array value read
@@ -548,7 +548,7 @@ export interface PortableReader {
     readIntArray(fieldName: string): number[] | null;
 
     /**
-     * Reads a long array.
+     * Reads an array of longs.
      *
      * @param fieldName name of the field
      * @return the long array value read
@@ -580,33 +580,33 @@ export interface PortableReader {
     readShortArray(fieldName: string): number[] | null;
 
     /**
-     * Reads a string array. Strings are read using UTF-8 encoding.
+     * Reads an array strings. Strings are read using UTF-8 encoding.
      *
      * @param fieldName name of the field
-     * @return the String array value read
+     * @return the string array value read
      * @deprecated since version 4.2 for the sake of better naming. This method will be removed in next major version.
      * Please use {@link readStringArray} instead
      */
     readUTFArray(fieldName: string): string[] | null;
 
     /**
-     * Reads a string array. Strings are read using UTF-8 encoding.
+     * Reads an array of strings. Strings are read using UTF-8 encoding.
      *
      * @param fieldName name of the field
-     * @return the String array value read
+     * @return the string array value read
      */
     readStringArray(fieldName: string): string[] | null;
 
     /**
-     * Reads a portable array.
+     * Reads an array of Portables.
      *
      * @param fieldName name of the field
-     * @return the portable array read
+     * @return the Portable array read
      */
     readPortableArray(fieldName: string): Portable[] | null;
 
     /**
-     * Reads an array of decimals.
+     * Reads an array of `BigDecimal`s.
      *
      * @param fieldName name of the field
      * @return the BigDecimal array read
@@ -615,7 +615,7 @@ export interface PortableReader {
     readDecimalArray(fieldName: string): BigDecimal[] | null;
 
     /**
-     * Reads an array of times.
+     * Reads an array of `LocalTime`s.
      *
      * @param fieldName name of the field
      * @return the LocalTime array read
@@ -624,7 +624,7 @@ export interface PortableReader {
     readTimeArray(fieldName: string): LocalTime[] | null;
 
     /**
-     * Reads an array of dates.
+     * Reads an array of `LocalDate`s.
      *
      * @param fieldName name of the field
      * @return the LocalDate array read
@@ -633,7 +633,7 @@ export interface PortableReader {
     readDateArray(fieldName: string): LocalDate[] | null;
 
     /**
-     * Reads an array of timestamps.
+     * Reads an array of `LocalDateTime`s.
      *
      * @param fieldName name of the field
      * @return the LocalDateTime array read
@@ -642,7 +642,7 @@ export interface PortableReader {
     readTimestampArray(fieldName: string): LocalDateTime[] | null;
 
     /**
-     * Reads an array of timestampWithTimezones.
+     * Reads an array of `OffsetDateTime`s.
      *
      * @param fieldName name of the field
      * @return the OffsetDateTime array read
@@ -657,24 +657,24 @@ export interface PortableReader {
 export interface Portable {
 
     /**
-     * Factory id of the portable object.
+     * Factory id of the Portable object.
      */
     factoryId: number;
 
     /**
-     * Class id of the portable object.
+     * Class id of the Portable object.
      */
     classId: number;
 
     /**
-     * Reads fields of the portable object from the binary representation.
+     * Reads fields of the Portable object from the binary representation.
      *
      * @param reader read helper
      */
     readPortable(reader: PortableReader): void;
 
     /**
-     * Writes fields of the portable object into the binary representation.
+     * Writes fields of the Portable object into the binary representation.
      *
      * @param writer write helper
      */
@@ -688,7 +688,7 @@ export interface Portable {
 export interface VersionedPortable extends Portable {
 
     /**
-     * Version of the portable object.
+     * Version of the Portable object.
      */
     version: number;
 

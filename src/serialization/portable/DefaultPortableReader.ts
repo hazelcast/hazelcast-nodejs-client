@@ -142,15 +142,15 @@ export class DefaultPortableReader implements PortableReader {
     }
 
     readDate(fieldName: string): LocalDate | null {
-        return this.readNullableField(fieldName, FieldType.DATE, PortableUtil.readLocalDateForPortable);
+        return this.readNullableField(fieldName, FieldType.DATE, PortableUtil.readLocalDate);
     }
 
     readTimestamp(fieldName: string): LocalDateTime | null {
-        return this.readNullableField(fieldName, FieldType.TIMESTAMP, PortableUtil.readLocalDatetimeForPortable);
+        return this.readNullableField(fieldName, FieldType.TIMESTAMP, PortableUtil.readLocalDateTime);
     }
 
     readTimestampWithTimezone(fieldName: string): OffsetDateTime | null {
-        return this.readNullableField(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, PortableUtil.readOffsetDatetimeForPortable);
+        return this.readNullableField(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, PortableUtil.readOffsetDateTime);
     }
 
     readByteArray(fieldName: string): Buffer | null {
@@ -268,16 +268,16 @@ export class DefaultPortableReader implements PortableReader {
     }
 
     readDateArray(fieldName: string): LocalDate[] | null {
-        return this.readObjectArrayField(fieldName, FieldType.DATE_ARRAY, PortableUtil.readLocalDateForPortable);
+        return this.readObjectArrayField(fieldName, FieldType.DATE_ARRAY, PortableUtil.readLocalDate);
     }
 
     readTimestampArray(fieldName: string): LocalDateTime[] | null {
-        return this.readObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, PortableUtil.readLocalDatetimeForPortable);
+        return this.readObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, PortableUtil.readLocalDateTime);
     }
 
     readTimestampWithTimezoneArray(fieldName: string): OffsetDateTime[] | null {
         return this.readObjectArrayField(
-            fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, PortableUtil.readOffsetDatetimeForPortable
+            fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, PortableUtil.readOffsetDateTime
         );
     }
 

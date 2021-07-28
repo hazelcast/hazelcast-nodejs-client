@@ -355,7 +355,7 @@ class Child {
 
 }
 
-class SameFieldNamePortable {
+class DuplicateFieldNamePortable {
 
     constructor(name, surname) {
         this.name = name;
@@ -383,4 +383,4 @@ exports.SimplePortable = SimplePortable;
 exports.SimplePortableV3 = SimplePortableV3;
 exports.Parent = Parent;
 exports.Child = Child;
-exports.SameFieldNamePortable = SameFieldNamePortable;
+exports.DuplicateFieldNamePortable = DuplicateFieldNamePortable;

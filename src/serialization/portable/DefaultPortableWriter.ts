@@ -68,11 +68,11 @@ export class DefaultPortableWriter implements PortableWriter {
         this.output.writeLong(long);
     }
 
-    writeUTF(fieldName: string, str: string): void {
+    writeUTF(fieldName: string, str: string | null): void {
         this.writeString(fieldName, str);
     }
 
-    writeString(fieldName: string, str: string): void {
+    writeString(fieldName: string, str: string | null): void {
         this.setPosition(fieldName, FieldType.STRING);
         this.output.writeString(str);
     }
@@ -107,7 +107,7 @@ export class DefaultPortableWriter implements PortableWriter {
         this.output.writeShort(value);
     }
 
-    writePortable(fieldName: string, portable: Portable): void {
+    writePortable(fieldName: string, portable: Portable | null): void {
         const fieldDefinition = this.setPosition(fieldName, FieldType.PORTABLE);
         const isNullPortable = (portable == null);
         this.output.writeBoolean(isNullPortable);
@@ -125,24 +125,24 @@ export class DefaultPortableWriter implements PortableWriter {
         this.output.writeInt(classId);
     }
 
-    writeDecimal(fieldName: string, value: BigDecimal): void {
+    writeDecimal(fieldName: string, value: BigDecimal | null): void {
         this.writeNullable(fieldName, FieldType.DECIMAL, value, IOUtil.writeDecimal);
     }
 
-    writeTime(fieldName: string, value: LocalTime): void {
+    writeTime(fieldName: string, value: LocalTime | null): void {
         this.writeNullable(fieldName, FieldType.TIME, value, IOUtil.writeLocalTime);
     }
 
-    writeDate(fieldName: string, value: LocalDate): void {
-        this.writeNullable(fieldName, FieldType.DATE, value, PortableUtil.writeLocalDateForPortable);
+    writeDate(fieldName: string, value: LocalDate | null): void {
+        this.writeNullable(fieldName, FieldType.DATE, value, PortableUtil.writeLocalDate);
     }
 
-    writeTimestamp(fieldName: string, value: LocalDateTime): void {
-        this.writeNullable(fieldName, FieldType.TIMESTAMP, value, PortableUtil.writeLocalDatetimeForPortable);
+    writeTimestamp(fieldName: string, value: LocalDateTime | null): void {
+        this.writeNullable(fieldName, FieldType.TIMESTAMP, value, PortableUtil.writeLocalDateTime);
     }
 
-    writeTimestampWithTimezone(fieldName: string, value: OffsetDateTime): void {
-        this.writeNullable(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, value, PortableUtil.writeOffsetDatetimeForPortable);
+    writeTimestampWithTimezone(fieldName: string, value: OffsetDateTime | null): void {
+        this.writeNullable(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, value, PortableUtil.writeOffsetDateTime);
     }
 
     writeNullable<T>(fieldName: string, fieldType: FieldType, value: T | null, writeFn: (out: DataOutput, value: T) => void) {
@@ -233,16 +233,16 @@ export class DefaultPortableWriter implements PortableWriter {
     }
 
     writeDateArray(fieldName: string, values: LocalDate[] | null): void {
-        this.writeObjectArrayField(fieldName, FieldType.DATE_ARRAY, values, PortableUtil.writeLocalDateForPortable)
+        this.writeObjectArrayField(fieldName, FieldType.DATE_ARRAY, values, PortableUtil.writeLocalDate)
     }
 
     writeTimestampArray(fieldName: string, values: LocalDateTime[] | null): void {
-        this.writeObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, values, PortableUtil.writeLocalDatetimeForPortable)
+        this.writeObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, values, PortableUtil.writeLocalDateTime)
     }
 
     writeTimestampWithTimezoneArray(fieldName: string, values: OffsetDateTime[] | null): void {
         this.writeObjectArrayField(
-            fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, values, PortableUtil.writeOffsetDatetimeForPortable
+            fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, values, PortableUtil.writeOffsetDateTime
         );
     }
 

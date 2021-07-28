@@ -48,26 +48,18 @@ export class IOUtil {
         return new LocalDate(year, month, date);
     }
 
-    static readLocalDatetime(inp: DataInput): LocalDateTime {
+    static readLocalDateTime(inp: DataInput): LocalDateTime {
         const localDate = IOUtil.readLocalDate(inp);
         const localTime = IOUtil.readLocalTime(inp);
 
         return new LocalDateTime(localDate, localTime);
     }
 
-    static readOffsetDatetime(inp: DataInput): OffsetDateTime {
-        const localDate = IOUtil.readLocalDate(inp);
-        const localTime = IOUtil.readLocalTime(inp);
-
+    static readOffsetDateTime(inp: DataInput): OffsetDateTime {
+        const localDateTime = IOUtil.readLocalDateTime(inp);
         const offsetSeconds = inp.readInt();
 
-        return new OffsetDateTime(
-            new LocalDateTime(
-                localDate,
-                localTime
-            ),
-            offsetSeconds
-        );
+        return new OffsetDateTime(localDateTime, offsetSeconds);
     }
 
     static writeDecimal(out: DataOutput, value: BigDecimal): void {
@@ -88,16 +80,14 @@ export class IOUtil {
         out.writeByte(value.date);
     }
 
-    static writeLocalDatetime(out: DataOutput, value: LocalDateTime): void {
+    static writeLocalDateTime(out: DataOutput, value: LocalDateTime): void {
         IOUtil.writeLocalDate(out, value.localDate);
         IOUtil.writeLocalTime(out, value.localTime);
     }
 
-    static writeOffsetDatetime(out: DataOutput, value: OffsetDateTime): void {
-        IOUtil.writeLocalDatetime(out, value.localDateTime);
+    static writeOffsetDateTime(out: DataOutput, value: OffsetDateTime): void {
+        IOUtil.writeLocalDateTime(out, value.localDateTime);
         out.writeInt(value.offsetSeconds);
     }
 
 }
-
-
