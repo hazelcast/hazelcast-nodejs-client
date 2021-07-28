@@ -25,7 +25,7 @@ const {
 } = require('../../../lib/core/DatetimeClasses');
 
 describe('DatetimeClassesTest', function () {
-    describe('HzLocalTimeTest', function () {
+    describe('LocalTimeTest', function () {
         it('should throw if hour is not an integer between 0-23(inclusive)', function () {
             (() => new LocalTime(-1, 1, 1, 1)).should.throw(RangeError, 'Hour');
             (() => new LocalTime(1.1, 1, 1, 1)).should.throw(RangeError, 'All arguments must be integers.');
@@ -111,7 +111,7 @@ describe('DatetimeClassesTest', function () {
             (() => LocalTime.fromString()).should.throw(TypeError, 'String expected');
         });
     });
-    describe('HzLocalDateTest', function () {
+    describe('LocalDateTest', function () {
         it('should throw RangeError if year is not an integer between -999_999_999-999_999_999(inclusive)',
             function () {
                 (() => new LocalDate(1e9, 1, 1)).should.throw(RangeError, 'Year');
@@ -206,7 +206,7 @@ describe('DatetimeClassesTest', function () {
             (() => LocalDate.fromString()).should.throw(TypeError, 'String expected');
         });
     });
-    describe('HzLocalDateTimeTest', function () {
+    describe('LocalDateTimeTest', function () {
 
         it('should throw RangeError if local time is not valid', function () {
             (() => new LocalDateTime(new LocalDate(2000, 2, 29), '')).should.throw(TypeError, 'Invalid local time');
@@ -290,7 +290,7 @@ describe('DatetimeClassesTest', function () {
             dateTime.asDate().toISOString().should.be.eq('2000-02-29T02:19:04.006Z');
         });
     });
-    describe('HzOffsetDateTimeTest', function () {
+    describe('OffsetDateTimeTest', function () {
 
         it('should return parse values correctly', function () {
             const dateTime1 = new OffsetDateTime(new LocalDateTime(new LocalDate(2000, 2, 29), new LocalTime(2, 3, 4, 6)), 1000);
