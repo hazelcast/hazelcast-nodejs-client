@@ -23,7 +23,7 @@ const {
     LocalDateTime,
     LocalTime,
     OffsetDateTime,
-    Big
+    BigDecimal
 } = require('../../../lib/core');
 const { SerializationServiceV1 } = require('../../../lib/serialization/SerializationService');
 const {
@@ -69,7 +69,7 @@ describe('PortableSerializationTest', function () {
                 a_double: 32435.6533,
                 a_string: 'hazelcast',
                 a_portable: new InnerPortable('a', 'b'),
-                a_decimal: Big('1.111111111111111111'),
+                a_decimal: new BigDecimal('1.111111111111111111'),
                 a_time: new LocalTime(1, 2, 3, 4),
                 a_date: new LocalDate(1, 2, 3),
                 a_timestamp: new LocalDateTime(new LocalDate(1, 2, 3), new LocalTime(4, 5, 6, 7)),
@@ -85,7 +85,7 @@ describe('PortableSerializationTest', function () {
                 doubles: [43645.325, 887.56756],
                 strings: ['hazelcast', 'ankara', 'istanbul', 'london', 'palo alto'],
                 portables: [new InnerPortable('elma', 'armut'), new InnerPortable('masa', 'sandalye')],
-                decimals: [Big('1.111111111111111111'), Big('2.222222222222222222222')],
+                decimals: [new BigDecimal('1.111111111111111111'), new BigDecimal('2.222222222222222222222')],
                 times: [new LocalTime(1, 2, 3, 4), new LocalTime(2, 3, 4, 5)],
                 dates: [new LocalDate(1, 2, 3), new LocalDate(2, 3, 4)],
                 timestamps: [
@@ -111,7 +111,7 @@ describe('PortableSerializationTest', function () {
             a_float: 24.1,
             a_double: 32435.6533,
             a_portable: new InnerPortable('a', 'b'),
-            a_decimal: Big('1.111111111111111111'),
+            a_decimal: new BigDecimal('1.111111111111111111'),
             a_time: new LocalTime(1, 2, 3, 4),
             a_date: new LocalDate(1, 2, 3),
             a_timestamp: new LocalDateTime(new LocalDate(1, 2, 3), new LocalTime(4, 5, 6, 7)),
@@ -127,7 +127,7 @@ describe('PortableSerializationTest', function () {
             doubles: [43645.325, 887.56756],
             strings: ['hazelcast', 'ankara', 'istanbul', 'london', 'palo alto'],
             portables: [new InnerPortable('elma', 'armut'), new InnerPortable('masa', 'sandalye')],
-            decimals: [Big('1.111111111111111111'), Big('2.222222222222222222222')],
+            decimals: [new BigDecimal('1.111111111111111111'), new BigDecimal('2.222222222222222222222')],
             times: [new LocalTime(1, 2, 3, 4), new LocalTime(2, 3, 4, 5)],
             dates: [new LocalDate(1, 2, 3), new LocalDate(2, 3, 4)],
             timestamps: [
