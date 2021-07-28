@@ -131,10 +131,9 @@ export interface ConnectionRegistry {
 
     /**
      * Returns a random connection from active connections
-     * @param dataMember true if only data members should be considered
      * @return Connection if there is at least one connection, otherwise null
      */
-    getRandomConnection(dataMember?: boolean): Connection | null;
+    getRandomConnection(): Connection | null;
 
     /**
      * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
@@ -153,19 +152,16 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
     private readonly smartRoutingEnabled: boolean;
     private readonly asyncStart: boolean;
     private readonly reconnectMode: ReconnectMode;
-    private readonly clusterService: ClusterService;
 
     constructor(
         connectionStrategy: ConnectionStrategyConfig,
         smartRoutingEnabled: boolean,
-        loadBalancer: LoadBalancer,
-        clusterService: ClusterService
+        loadBalancer: LoadBalancer
     ) {
         this.smartRoutingEnabled = smartRoutingEnabled;
         this.asyncStart = connectionStrategy.asyncStart;
         this.reconnectMode = connectionStrategy.reconnectMode;
         this.loadBalancer = loadBalancer;
-        this.clusterService = clusterService;
     }
 
     isActive(): boolean {
@@ -188,20 +184,10 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         return this.activeConnections.get(uuid.toString());
     }
 
-    getRandomConnection(dataMember = false): Connection | null {
+    getRandomConnection(): Connection | null {
         if (this.smartRoutingEnabled) {
-            let member;
-            if (dataMember) {
-                if (this.loadBalancer.canGetNextDataMember()) {
-                    member = this.loadBalancer.nextDataMember();
-                } else {
-                    member = null;
-                }
-            } else {
-                member = this.loadBalancer.next();
-            }
-
-            if (member !== null) {
+            const member = this.loadBalancer.next();
+            if (member != null) {
                 const connection = this.getConnection(member.uuid);
                 if (connection != null) {
                     return connection;
@@ -209,20 +195,13 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
             }
         }
 
-
-        for (const entry of this.activeConnections.entries()) {
-            const uuid = entry[0];
-            const connection = entry[1];
-            if (dataMember) {
-                const member = this.clusterService.getMember(uuid);
-                if (!member || member.liteMember) {
-                    continue;
-                }
-            }
-            return connection;
+        const iterator = this.activeConnections.values();
+        const next = iterator.next();
+        if (!next.done) {
+            return next.value;
+        } else {
+            return null;
         }
-
-        return null;
     }
 
     forEachConnection(fn: (conn: Connection) => void): void {

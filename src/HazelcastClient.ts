@@ -163,8 +163,7 @@ export class HazelcastClient {
         this.connectionRegistry = new ConnectionRegistryImpl(
             this.config.connectionStrategy,
             this.config.network.smartRouting,
-            this.loadBalancer,
-            this.clusterService
+            this.loadBalancer
         );
         this.invocationService = new InvocationService(
             this.config,

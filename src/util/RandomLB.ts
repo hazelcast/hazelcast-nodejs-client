@@ -24,24 +24,12 @@ import {randomInt} from '../util/Util';
  * @internal
  */
 export class RandomLB extends AbstractLoadBalancer {
-    next(): Member | null {
-        return this._next(false);
-    }
-
-    private _next(dataMember: boolean): Member | null {
-        const members = dataMember ? this.getDataMembers() : this.getMembers();
+    next(): Member {
+        const members = this.getMembers();
         if (members == null || members.length === 0) {
             return null;
         }
         const index = randomInt(members.length);
         return members[index];
-    }
-
-    canGetNextDataMember(): boolean {
-        return true;
-    }
-
-    nextDataMember(): Member | null {
-        return this._next(true);
     }
 }

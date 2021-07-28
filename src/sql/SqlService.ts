@@ -287,7 +287,7 @@ export class SqlServiceImpl implements SqlService {
             throw new IllegalArgumentError(`Invalid argument given to execute(): ${error.message}`, error)
         }
 
-        const connection = this.connectionRegistry.getRandomConnection(true);
+        const connection = this.connectionRegistry.getRandomConnection();
         if (connection === null) {
             // Either the client is not connected to the cluster, or there are no data members in the cluster.
             throw new HazelcastSqlException(
