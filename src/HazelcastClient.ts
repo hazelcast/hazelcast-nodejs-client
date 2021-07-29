@@ -290,7 +290,16 @@ export class HazelcastClient {
     }
 
     /**
-     * Gives all known distributed objects in the cluster.
+     * Returns all {@link DistributedObject}s, that is all maps, queues,
+     * topics, locks etc.
+     *
+     * The results are returned on a best-effort basis. The result might miss
+     * just-created objects and contain just-deleted objects. An existing
+     * object can also be missing from the list occasionally. One cluster
+     * member is queried to obtain the list. Unknown proxies to Node.js client such
+     * as ICache.
+     *
+     * @return the collection of all instances in the cluster
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
@@ -310,7 +319,8 @@ export class HazelcastClient {
                 const newDistributedObjectInfos = ClientGetDistributedObjectsCodec.decodeResponse(responseMessage);
                 const createLocalProxiesPromise = newDistributedObjectInfos.map((doi) => {
                     return this.proxyManager.getOrCreateProxy(doi.name, doi.serviceName, false)
-                        .then(() => localDistributedObjects.delete(doi.serviceName + NAMESPACE_SEPARATOR + doi.name));
+                        .then(() => localDistributedObjects.delete(doi.serviceName + NAMESPACE_SEPARATOR + doi.name))
+                        .catch(() => {}); // ignore errors that might happen due to unknown proxy objects
                 });
 
                 return Promise.all(createLocalProxiesPromise);
