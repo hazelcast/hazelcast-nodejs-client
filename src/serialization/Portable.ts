@@ -112,7 +112,7 @@ export interface PortableWriter {
      * Writes a number as 8-bit unsigned integer.
      *
      * @param fieldName name of the field
-     * @param value     Byte value to be written. Must be a valid unsigned 8-bit integer.
+     * @param value     byte value to be written. Must be a valid unsigned 8-bit integer.
      * Behaviour is undefined when value is anything other than a unsigned 8-bit integer.
      */
     writeByte(fieldName: string, value: number): void;
@@ -504,7 +504,7 @@ export interface PortableReader {
     readTimestamp(fieldName: string): LocalDateTime | null;
 
     /**
-     * Reads a timestampWithTimezone.
+     * Reads a timestamp with timezone.
      *
      * @param fieldName name of the field
      * @return the OffsetDateTime value read
