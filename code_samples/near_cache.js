@@ -38,8 +38,8 @@ async function do50000Gets(client, mapName) {
 
 (async () => {
     try {
-        const nearCachedMapName = 'nearCachedMap' + Math.random().toString();
-        const regularMapName = 'reqularMap' + Math.random().toString();
+        const nearCachedMapName = 'nearCachedMap';
+        const regularMapName = 'reqularMap';
 
         const client = await Client.newHazelcastClient({
             nearCaches: {

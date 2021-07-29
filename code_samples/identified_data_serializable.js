@@ -50,7 +50,7 @@ class Employee {
                 }
             }
         });
-        const map = await client.getMap('my-distributed-map' + Math.random().toString());
+        const map = await client.getMap('my-distributed-map');
 
         let employee = new Employee(42, 'John');
         await map.put('key', employee);

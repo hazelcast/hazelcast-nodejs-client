@@ -68,7 +68,7 @@ class Comparator {
             }
         });
 
-        const map = await client.getMap('test' + Math.random().toString());
+        const map = await client.getMap('test');
 
         await map.putAll([
             ['a', 1], ['b', 2], ['c', 3], ['d', 4],

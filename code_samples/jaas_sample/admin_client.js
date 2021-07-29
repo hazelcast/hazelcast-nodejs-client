@@ -31,7 +31,7 @@ const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory
         });
         console.log('Admin client connected');
 
-        const adminMap = await adminClient.getMap('importantAdminMap' + Math.random().toString());
+        const adminMap = await adminClient.getMap('importantAdminMap');
         console.log('Admin can create a map');
         let value = await adminMap.get('someKey');
         console.log('Admin can read from map:', value);

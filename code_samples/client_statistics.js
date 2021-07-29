@@ -29,7 +29,7 @@ const { Client } = require('hazelcast-client');
                 'hazelcast.client.statistics.period.seconds': 2
             }
         });
-        const ncMap = await client.getMap('nearCachedMap' + Math.random().toString());
+        const ncMap = await client.getMap('nearCachedMap');
 
         // Warm up the near cache
         await ncMap.put('key1', 'value1');

@@ -1,10 +1,10 @@
 'use strict';
 const fs = require('fs');
-const path = require('path');
 const os = require('os');
 const net = require('net');
 const {spawnSync, spawn} = require('child_process');
 const TestUtil = require('../test/TestUtil');
+const codeSampleChecker = require('./code-sample-checker');
 
 const {
     HAZELCAST_RC_VERSION,
@@ -175,7 +175,7 @@ if (process.argv.length === 3 || process.argv.length === 4) {
         testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha "test/**/*.js"';
         testType = 'coverage';
     } else if (process.argv[2] === 'check-code-samples') {
-        testCommand = `node ${path.join(__dirname, 'code-sample-checker.js')}`;
+        runTests = false;
         testType = 'check-code-samples';
     } else {
         throw 'Operation type can be one of "unit", "integration", "all", "startrc", "check-code-samples"';
@@ -220,19 +220,23 @@ process.on('SIGHUP', shutdownProcesses);
 startRC().then(async () => {
     console.log('Hazelcast Remote Controller is started!');
     if (runTests) {
-        if (testType === 'check-code-samples') {
-            const RC = getRC();
-            // cluster = await RC.createCluster(null, null);
-            cluster = await RC.createClusterKeepClusterName(null, TestUtil.createClusterConfig({clusterName: 'dev'}));
-            console.log(cluster);
-            await RC.startMember(cluster.id);
-        }
         console.log(`Running ${testType}, Command: ${testCommand}`);
         testProcess = spawn(testCommand, [], {
             stdio: ['ignore', 'inherit', 'inherit'],
             shell: true
         });
         testProcess.on('exit', shutdownRC);
+    } else if (testType === 'check-code-samples') {
+        const RC = getRC();
+        cluster = await RC.createClusterKeepClusterName(null, TestUtil.createClusterConfig({clusterName: 'dev'}));
+        try {
+            await codeSampleChecker.main(cluster);
+        } catch (e) {
+            console.error(e);
+            process.exit(1);
+        } finally {
+            await shutdownRC();
+        }
     }
 }).catch(err => {
     console.log('Could not start Hazelcast Remote Controller due to an error:');

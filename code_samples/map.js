@@ -20,7 +20,7 @@ const { Client } = require('hazelcast-client');
 (async () => {
     try {
         const client = await Client.newHazelcastClient();
-        const map = await client.getMap('my-distributed-map' + Math.random().toString());
+        const map = await client.getMap('my-distributed-map');
 
         await map.put('key', 'value');
         const value = await map.get('key');

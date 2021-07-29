@@ -40,7 +40,7 @@ const path = require('path');
         };
         const client = await Client.newHazelcastClient(cfg);
 
-        const map = await client.getMap('testMap' + Math.random().toString());
+        const map = await client.getMap('testMap');
         await map.put('key', 'value');
         const value = await map.get('key');
         console.log(value);

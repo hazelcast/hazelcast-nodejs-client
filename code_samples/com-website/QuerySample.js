@@ -66,7 +66,7 @@ async function generateUsers(usersMap) {
                 }
             }
         });
-        const usersMap = await hz.getMap('users' + Math.random().toString());
+        const usersMap = await hz.getMap('users');
         // Add some users to the Distributed Map
         await generateUsers(usersMap);
         // Create a Predicate from a String (a SQL like Where clause)

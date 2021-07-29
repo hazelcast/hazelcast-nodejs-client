@@ -163,7 +163,7 @@ function portableFactory3(classId) {
          * If you modified the class by adding a new field, the new client's put
          * operations include that new field.
          */
-        const mapName = 'employee-map' + Math.random().toString();
+        const mapName = 'employee-map';
 
         const map = await client.getMap(mapName);
         const map2 = await client2.getMap(mapName);

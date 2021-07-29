@@ -36,24 +36,32 @@ async function walkJsFiles(dir) {
     return files.reduce((all, folderContents) => all.concat(folderContents), []);
 }
 
-(async () => {
+// remote controller should be running for this script to work
+exports.main = async (cluster) => {
+    // Import lazily to defer side affect of the import (connection attempt to 9701)
+    const RC = require('../test/integration/RC');
+
     const files = await walkJsFiles(path.join(__dirname, '..', 'code_samples'));
     console.log(`Will run ${JSON.stringify(files)}`);
+
     const numberOfFiles = files.length;
     let counter = 0;
     for (const file of files) {
-        counter++;
+        // start and terminate for each code sample to avoid map name clashes
+        const member = await RC.startMember(cluster.id);
+
         console.log(`Running ${file}, ${counter}/${numberOfFiles}`);
+        counter++;
+
         const subprocess = spawnSync('node', [file], {
             stdio: ['ignore', 'inherit', 'pipe'] // redirect stderr and stdout to parent process, ignore stdin
         });
+
+        await RC.terminateMember(cluster.id, member.uuid);
+
         const stderrString = subprocess.stderr.toString().trim();
         if (stderrString) {
-            console.error(`An error occurred while running ${file}: ${stderrString}`);
-            process.exit(1);
+            throw new Error(`An error occurred while running ${file}: ${stderrString}`);
         }
     }
-})().catch(async e => {
-    console.log(`An error occurred ${e}`);
-    process.exit(1);
-});
+};

@@ -40,7 +40,7 @@ class Student {
 
 const varcharExample = async (client) => {
     console.log('----------VARCHAR Example----------');
-    const someMap = await client.getMap('varcharMap' + Math.random().toString());
+    const someMap = await client.getMap('varcharMap');
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, key.toString());
@@ -73,7 +73,7 @@ const varcharExample = async (client) => {
 */
 const integersExample = async (client) => {
     console.log('---------- BIGINT Example----------');
-    const someMap = await client.getMap('bigintMap' + Math.random().toString());
+    const someMap = await client.getMap('bigintMap');
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, long.fromNumber(key * 2));
@@ -127,7 +127,7 @@ const integersExample = async (client) => {
 const objectExample = async (client) => {
     console.log('----------OBJECT Example----------');
 
-    const someMap = await client.getMap('studentMap' + Math.random().toString());
+    const someMap = await client.getMap('studentMap');
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, new Student(long.fromNumber(key), 1.1));

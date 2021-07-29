@@ -69,7 +69,7 @@ const giveInformation = (timeofday) => {
         const t = new TimeOfDay(5, 32, 59);
         giveInformation(t);
 
-        const map = await client.getMap('time' + Math.random().toString());
+        const map = await client.getMap('time');
         await map.put(1, t);
         const deserialized = await map.get(1);
         giveInformation(deserialized);

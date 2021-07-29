@@ -29,7 +29,7 @@ const {
             }
         });
 
-        const map = await client.getMap('employees' + Math.random().toString());
+        const map = await client.getMap('employees');
         const employeesData = [
             { name: 'Alice', age: 35 },
             { name: 'Andy', age: 22},

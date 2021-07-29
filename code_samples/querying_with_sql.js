@@ -31,7 +31,7 @@ class Customer {
 (async () => {
     try {
         const client = await Client.newHazelcastClient();
-        const personMap = await client.getMap('personMap' + Math.random().toString());
+        const personMap = await client.getMap('personMap');
 
         await personMap.putAll([
             ['1', new Customer('Peter', true, 36)],

@@ -20,7 +20,7 @@ const { Client, HazelcastSqlException } = require('hazelcast-client');
 (async () => {
     try {
         const client = await Client.newHazelcastClient();
-        const map = await client.getMap('myMap' + Math.random().toString());
+        const map = await client.getMap('myMap');
 
         // populate map
         await map.put('key1', 1);
