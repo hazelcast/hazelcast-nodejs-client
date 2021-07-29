@@ -78,9 +78,9 @@ export function getType(obj: any): string {
     } else if (obj instanceof LocalTime) {
         return 'localTime';
     } else if (obj instanceof LocalDateTime) {
-        return 'localDatetime';
+        return 'localDateTime';
     } else if (obj instanceof OffsetDateTime) {
-        return 'offsetDatetime';
+        return 'offsetDateTime';
     } else if (obj instanceof BigDecimal) {
         return 'bigDecimal';
     } else {

@@ -275,8 +275,8 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('date', new DateSerializer());
         this.registerSerializer('localDate', new LocalDateSerializer());
         this.registerSerializer('localTime', new LocalTimeSerializer());
-        this.registerSerializer('localDatetime', new LocalDateTimeSerializer());
-        this.registerSerializer('offsetDatetime', new OffsetDateTimeSerializer());
+        this.registerSerializer('localDateTime', new LocalDateTimeSerializer());
+        this.registerSerializer('offsetDateTime', new OffsetDateTimeSerializer());
         this.registerSerializer('byteArray', new ByteArraySerializer());
         this.registerSerializer('charArray', new CharArraySerializer());
         this.registerSerializer('booleanArray', new BooleanArraySerializer());

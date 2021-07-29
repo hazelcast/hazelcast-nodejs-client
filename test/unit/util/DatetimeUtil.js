@@ -22,9 +22,9 @@ const {
     getTimezoneOffsetFromSeconds,
     leftZeroPadInteger,
     getOffsetSecondsFromTimezoneString,
-} = require('../../../lib/util/DatetimeUtil');
+} = require('../../../lib/util/DateTimeUtil');
 
-describe('DatetimeUtilTest', function () {
+describe('DateTimeUtilTest', function () {
     describe('getTimezoneOffsetFromSecondsTest', function () {
         it('should extract 0 seconds correctly', function () {
             expect(
