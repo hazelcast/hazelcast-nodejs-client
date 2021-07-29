@@ -297,7 +297,7 @@ export class HazelcastClient {
      * just-created objects and contain just-deleted objects. An existing
      * object can also be missing from the list occasionally. One cluster
      * member is queried to obtain the list. Unknown proxies to Node.js client such
-     * as ICache.
+     * as ICache will be ignored.
      *
      * @return the collection of all instances in the cluster
      */
