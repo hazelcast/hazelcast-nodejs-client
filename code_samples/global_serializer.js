@@ -48,7 +48,7 @@ selfReferringObject.self = selfReferringObject;
             }
         });
 
-        const map = await client.getMap('objects');
+        const map = await client.getMap('objects' + Math.random().toString());
         await map.put(1, selfReferringObject);
 
         const obj = await map.get(1);
@@ -59,5 +59,6 @@ selfReferringObject.self = selfReferringObject;
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

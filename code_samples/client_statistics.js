@@ -29,7 +29,7 @@ const { Client } = require('hazelcast-client');
                 'hazelcast.client.statistics.period.seconds': 2
             }
         });
-        const ncMap = await client.getMap('nearCachedMap');
+        const ncMap = await client.getMap('nearCachedMap' + Math.random().toString());
 
         // Warm up the near cache
         await ncMap.put('key1', 'value1');
@@ -45,5 +45,6 @@ const { Client } = require('hazelcast-client');
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

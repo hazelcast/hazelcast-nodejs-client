@@ -29,20 +29,6 @@ const {
 const { deferredPromise } = require('../../../lib/util/Util');
 const TestUtil = require('../../TestUtil');
 
-function createClusterConfig({ clusterName, partitionCount }) {
-    partitionCount = partitionCount || 271;
-    return `<?xml version="1.0" encoding="UTF-8"?>
-            <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-                <cluster-name>${clusterName}</cluster-name>
-                <properties>
-                    <property name="hazelcast.partition.count">${partitionCount}</property>
-                </properties>
-            </hazelcast>`;
-}
-
 function createClientConfig({ clusterName, lifecycleListener, connectTimeoutMs }) {
     const config = {
         clusterName: clusterName
@@ -75,10 +61,10 @@ describe('ClientFailoverTest - community', function () {
 
     beforeEach(async function () {
         cluster1 = await RC.createClusterKeepClusterName(null,
-            createClusterConfig({ clusterName: 'dev1' }));
+            TestUtil.createClusterConfig({ clusterName: 'dev1' }));
         await RC.startMember(cluster1.id);
         cluster2 = await RC.createClusterKeepClusterName(null,
-            createClusterConfig({ clusterName: 'dev2' }));
+            TestUtil.createClusterConfig({ clusterName: 'dev2' }));
     });
 
     afterEach(async function () {
@@ -116,10 +102,10 @@ describe('ClientFailoverTest - enterprise', function () {
 
     beforeEach(async function () {
         cluster1 = await RC.createClusterKeepClusterName(null,
-            createClusterConfig({ clusterName: 'dev1' }));
+            TestUtil.createClusterConfig({ clusterName: 'dev1' }));
         member1 = await RC.startMember(cluster1.id);
         cluster2 = await RC.createClusterKeepClusterName(null,
-            createClusterConfig({ clusterName: 'dev2' }));
+            TestUtil.createClusterConfig({ clusterName: 'dev2' }));
         member2 = await RC.startMember(cluster2.id);
     });
 
@@ -224,7 +210,7 @@ describe('ClientFailoverTest - enterprise', function () {
 
     it('should shutdown when switching to cluster with different partition count', async function () {
         cluster3 = await RC.createClusterKeepClusterName(null,
-            createClusterConfig({ clusterName: 'dev3', partitionCount: 42 }));
+            TestUtil.createClusterConfig({ clusterName: 'dev3', partitionCount: 42 }));
         await RC.startMember(cluster3.id);
 
         const shutdownTriggeredDeferred = deferredPromise();

@@ -31,7 +31,7 @@ class Customer {
 (async () => {
     try {
         const client = await Client.newHazelcastClient();
-        const personMap = await client.getMap('personMap');
+        const personMap = await client.getMap('personMap' + Math.random().toString());
 
         await personMap.putAll([
             ['1', new Customer('Peter', true, 36)],
@@ -52,5 +52,6 @@ class Customer {
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

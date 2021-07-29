@@ -24,7 +24,7 @@ const {
 (async () => {
     try {
         const client = await Client.newHazelcastClient();
-        const map = await client.getMap('person-age-map');
+        const map = await client.getMap('person-age-map' + Math.random().toString());
 
         await map.putAll([
             ['Philip', 46],
@@ -43,5 +43,6 @@ const {
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

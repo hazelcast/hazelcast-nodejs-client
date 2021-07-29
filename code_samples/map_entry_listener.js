@@ -20,7 +20,7 @@ const { Client } = require('hazelcast-client');
 (async () => {
     try {
         const client = await Client.newHazelcastClient();
-        const map = await client.getMap('notifications');
+        const map = await client.getMap('notifications' + Math.random().toString());
 
         const listener = {
             added: (entryEvent) => {
@@ -42,5 +42,6 @@ const { Client } = require('hazelcast-client');
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

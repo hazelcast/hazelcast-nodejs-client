@@ -25,7 +25,7 @@ const { Client } = require('hazelcast-client');
             console.log('Distributed object event >>>', event);
         });
 
-        const mapname = 'test';
+        const mapname = 'test' + Math.random().toString();
         // This causes a 'created' event
         let map = await client.getMap(mapname);
         // This causes no event because map was already created
@@ -37,5 +37,6 @@ const { Client } = require('hazelcast-client');
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

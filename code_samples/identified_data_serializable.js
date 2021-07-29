@@ -50,7 +50,7 @@ class Employee {
                 }
             }
         });
-        const map = await client.getMap('my-distributed-map');
+        const map = await client.getMap('my-distributed-map' + Math.random().toString());
 
         let employee = new Employee(42, 'John');
         await map.put('key', employee);
@@ -61,5 +61,6 @@ class Employee {
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

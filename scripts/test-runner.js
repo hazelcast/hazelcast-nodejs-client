@@ -1,8 +1,10 @@
 'use strict';
 const fs = require('fs');
+const path = require('path');
 const os = require('os');
 const net = require('net');
 const {spawnSync, spawn} = require('child_process');
+const TestUtil = require('../test/TestUtil');
 
 const {
     HAZELCAST_RC_VERSION,
@@ -16,6 +18,8 @@ const {
 const ON_WINDOWS = os.platform() === 'win32';
 const HAZELCAST_ENTERPRISE_KEY = process.env.HAZELCAST_ENTERPRISE_KEY ? process.env.HAZELCAST_ENTERPRISE_KEY : '';
 const PATH_SEPARATOR = ON_WINDOWS ? ';' : ':';
+
+let cluster; // We create a cluster for checking code samples
 
 let testCommand;
 let testType;
@@ -50,6 +54,11 @@ const isAddressReachable = (host, port, timeoutMs) => {
             resolve(true);
         });
     });
+};
+
+// Import lazily to defer side affect of the import (connection attempt to 9701)
+const getRC = () => {
+    return require('../test/integration/RC');
 };
 
 const startRC = async () => {
@@ -123,7 +132,11 @@ const shutdownProcesses = () => {
     }
 };
 
-const shutdownRC = () => {
+const shutdownRC = async () => {
+    if (cluster) {
+        const RC = getRC();
+        await RC.terminateCluster(cluster.id);
+    }
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', rcProcess.pid, '/f', '/t']);
     } else {
@@ -161,8 +174,11 @@ if (process.argv.length === 3 || process.argv.length === 4) {
     } else if (process.argv[2] === 'coverage') {
         testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha "test/**/*.js"';
         testType = 'coverage';
+    } else if (process.argv[2] === 'check-code-samples') {
+        testCommand = `node ${path.join(__dirname, 'code-sample-checker.js')}`;
+        testType = 'check-code-samples';
     } else {
-        throw 'Operation type can be one of "unit", "integration", "all", "startrc"';
+        throw 'Operation type can be one of "unit", "integration", "all", "startrc", "check-code-samples"';
     }
 } else {
     throw 'Usage: node <script-file> <operation-type> [test regex].\n'
@@ -201,10 +217,17 @@ process.on('SIGINT', shutdownProcesses);
 process.on('SIGTERM', shutdownProcesses);
 process.on('SIGHUP', shutdownProcesses);
 
-startRC().then(() => {
+startRC().then(async () => {
     console.log('Hazelcast Remote Controller is started!');
     if (runTests) {
-        console.log(`Running tests... Test type: ${testType}, Test command: ${testCommand}`);
+        if (testType === 'check-code-samples') {
+            const RC = getRC();
+            // cluster = await RC.createCluster(null, null);
+            cluster = await RC.createClusterKeepClusterName(null, TestUtil.createClusterConfig({clusterName: 'dev'}));
+            console.log(cluster);
+            await RC.startMember(cluster.id);
+        }
+        console.log(`Running ${testType}, Command: ${testCommand}`);
         testProcess = spawn(testCommand, [], {
             stdio: ['ignore', 'inherit', 'inherit'],
             shell: true

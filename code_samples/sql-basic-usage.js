@@ -20,7 +20,7 @@ const { Client, SqlColumnType, HazelcastSqlException } = require('hazelcast-clie
 (async () => {
     try {
         const client = await Client.newHazelcastClient();
-        const map = await client.getMap('myMap');
+        const map = await client.getMap('myMap' + Math.random().toString());
 
         await map.put('key1', 1);
         await map.put('key2', 2);
@@ -76,5 +76,6 @@ const { Client, SqlColumnType, HazelcastSqlException } = require('hazelcast-clie
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

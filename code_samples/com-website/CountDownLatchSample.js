@@ -47,5 +47,6 @@ const { Client } = require('hazelcast-client');
         await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

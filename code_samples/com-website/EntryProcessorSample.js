@@ -51,7 +51,7 @@ function entryProcessorDataSerializableFactory(classId) {
             }
         });
         // Get the Distributed Map from Cluster
-        const map = hz.getMap('my-distributed-map');
+        const map = await hz.getMap('my-distributed-map' + Math.random().toString());
         // Put the double value of 0 into the Distributed Map
         await map.put('key', 0);
         // Run the IdentifiedEntryProcessor class on the Cluster Member
@@ -64,5 +64,6 @@ function entryProcessorDataSerializableFactory(classId) {
         await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

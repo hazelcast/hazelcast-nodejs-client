@@ -23,7 +23,7 @@ const { Client } = require('hazelcast-client');
         // Hazelcast Cluster on 127.0.0.1
         const hz = await Client.newHazelcastClient();
         // Get the Distributed Map from Cluster
-        const map = await hz.getMap('my-distributed-map');
+        const map = await hz.getMap('my-distributed-map' + Math.random().toString());
         // Standard Put and Get
         await map.put('key', 'value');
         await map.get('key');
@@ -34,5 +34,6 @@ const { Client } = require('hazelcast-client');
         await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

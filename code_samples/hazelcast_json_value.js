@@ -29,7 +29,7 @@ const {
             }
         });
 
-        const map = await client.getMap('employees');
+        const map = await client.getMap('employees' + Math.random().toString());
         const employeesData = [
             { name: 'Alice', age: 35 },
             { name: 'Andy', age: 22},
@@ -53,5 +53,6 @@ const {
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

@@ -66,7 +66,7 @@ async function generateUsers(usersMap) {
                 }
             }
         });
-        const usersMap = await hz.getMap('users');
+        const usersMap = await hz.getMap('users' + Math.random().toString());
         // Add some users to the Distributed Map
         await generateUsers(usersMap);
         // Create a Predicate from a String (a SQL like Where clause)
@@ -86,5 +86,6 @@ async function generateUsers(usersMap) {
         await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

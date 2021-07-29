@@ -38,8 +38,8 @@ async function do50000Gets(client, mapName) {
 
 (async () => {
     try {
-        const nearCachedMapName = 'nearCachedMap';
-        const regularMapName = 'reqularMap';
+        const nearCachedMapName = 'nearCachedMap' + Math.random().toString();
+        const regularMapName = 'reqularMap' + Math.random().toString();
 
         const client = await Client.newHazelcastClient({
             nearCaches: {
@@ -56,5 +56,6 @@ async function do50000Gets(client, mapName) {
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

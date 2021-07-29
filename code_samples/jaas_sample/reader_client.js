@@ -31,7 +31,7 @@ const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory
         });
         console.log('Admin client connected');
 
-        const readerMap = await readerClient.getMap('importantReaderMap');
+        const readerMap = await readerClient.getMap('importantReaderMap' + Math.random().toString());
         console.log('Reader can create a map');
         const value = await readerMap.get('someKey');
         console.log('Reader can read from map:', value);
@@ -44,5 +44,6 @@ const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory
         await readerClient.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

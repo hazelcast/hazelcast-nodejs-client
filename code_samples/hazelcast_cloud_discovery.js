@@ -40,7 +40,7 @@ const path = require('path');
         };
         const client = await Client.newHazelcastClient(cfg);
 
-        const map = await client.getMap('testMap');
+        const map = await client.getMap('testMap' + Math.random().toString());
         await map.put('key', 'value');
         const value = await map.get('key');
         console.log(value);
@@ -48,5 +48,6 @@ const path = require('path');
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

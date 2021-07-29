@@ -23,7 +23,7 @@ const { Client } = require('hazelcast-client');
         // Hazelcast Cluster on 127.0.0.1
         const hz = await Client.newHazelcastClient();
         // Get the Distributed MultiMap from Cluster
-        const multiMap = await hz.getMap('my-distributed-multimap');
+        const multiMap = await hz.getMap('my-distributed-multimap' + Math.random().toString());
         // Put values in the map against the same key
         await multiMap.put('my-key', 'value1');
         await multiMap.put('my-key', 'value2');
@@ -39,5 +39,6 @@ const { Client } = require('hazelcast-client');
         await hz.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

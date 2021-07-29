@@ -163,9 +163,11 @@ function portableFactory3(classId) {
          * If you modified the class by adding a new field, the new client's put
          * operations include that new field.
          */
-        const map = await client.getMap('employee-map');
-        const map2 = await client2.getMap('employee-map');
-        const map3 = await client3.getMap('employee-map');
+        const mapName = 'employee-map' + Math.random().toString();
+
+        const map = await client.getMap(mapName);
+        const map2 = await client2.getMap(mapName);
+        const map3 = await client3.getMap(mapName);
 
         await map.put(0, new Employee('Jack', 28));
         await map2.put(1, new Employee2('Jane', 29, 'Josh'));
@@ -217,5 +219,6 @@ function portableFactory3(classId) {
         await client3.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();
