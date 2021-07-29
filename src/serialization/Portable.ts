@@ -89,7 +89,6 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param value     UTF string value to be written
      * @deprecated since version 4.2 for the sake of better naming. Please use {@link writeString} instead.
-     * This method will be removed in the next major version.
      */
     writeUTF(fieldName: string, value: string | null): void;
 
@@ -291,7 +290,6 @@ export interface PortableWriter {
      * @param fieldName name of the field
      * @param values    string array to be written
      * @deprecated  since version 4.2. for the sake of better naming. Please use {@link writeStringArray} instead.
-     * This method will be removed in next major version.
      */
     writeUTFArray(fieldName: string, values: string[] | null): void;
 
@@ -406,7 +404,6 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the UTF string value read
      * @deprecated since version 4.2 for the sake of better naming. Please use {@link readString} instead.
-     * This method will be removed in next major version.
      */
     readUTF(fieldName: string): string | null;
 
@@ -584,8 +581,7 @@ export interface PortableReader {
      *
      * @param fieldName name of the field
      * @return the string array value read
-     * @deprecated since version 4.2 for the sake of better naming. This method will be removed in next major version.
-     * Please use {@link readStringArray} instead
+     * @deprecated since version 4.2 for the sake of better naming. Please use {@link readStringArray} instead
      */
     readUTFArray(fieldName: string): string[] | null;
 
