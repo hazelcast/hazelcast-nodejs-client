@@ -2,7 +2,7 @@
     "env": {
         "commonjs": true,
         "node": true,
-        "es2020": true
+        "es2017": true
     },
     "extends": "eslint:recommended",
     "rules": {
@@ -98,5 +98,8 @@
         }],
         "space-in-parens": "error",
         "curly": "error"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018
     }
 }

@@ -1,6 +1,7 @@
 {
     "env": {
         "mocha": true,
+        "es2020": true
     },
     "plugins": [
         "mocha"
@@ -17,5 +18,8 @@
         "mocha/prefer-arrow-callback": ["error", {
             "allowNamedFunctions": true
         }]
+    },
+    "parserOptions": {
+        "ecmaVersion": 11
     }
 }
