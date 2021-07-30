@@ -18,8 +18,6 @@
 * [2. Features](#2-features)
 * [3. Configuration Overview](#3-configuration-overview)
   * [3.1. Configuration Options](#31-configuration-options)
-    * [3.1.1. Programmatic Configuration](#311-programmatic-configuration)
-    * [3.1.2. Declarative Configuration (JSON)](#312-declarative-configuration-json)
   * [3.2. Importing Multiple Configurations](#32-importing-multiple-configurations)
   * [3.3. Loading Objects and Path Resolution](#33-loading-objects-and-path-resolution)
 * [4. Serialization](#4-serialization)
