@@ -312,7 +312,7 @@ export class SqlServiceImpl implements SqlService {
         const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
 
         const expectedResultType: SqlExpectedResultType = sqlStatement.options?.hasOwnProperty('expectedResultType') ?
-            SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
+                SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
         let timeoutMillis: Long;
         if (sqlStatement.options?.hasOwnProperty('timeoutMillis')) {
