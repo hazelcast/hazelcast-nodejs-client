@@ -18,8 +18,6 @@
 * [2. Features](#2-features)
 * [3. Configuration Overview](#3-configuration-overview)
   * [3.1. Configuration Options](#31-configuration-options)
-  * [3.2. Importing Multiple Configurations](#32-importing-multiple-configurations)
-  * [3.3. Loading Objects and Path Resolution](#33-loading-objects-and-path-resolution)
 * [4. Serialization](#4-serialization)
   * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
   * [4.2. Portable Serialization](#42-portable-serialization)
