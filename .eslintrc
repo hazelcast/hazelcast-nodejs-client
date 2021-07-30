@@ -98,8 +98,5 @@
         }],
         "space-in-parens": "error",
         "curly": "error"
-    },
-    "parserOptions": {
-        "ecmaVersion": 2020
     }
 }
