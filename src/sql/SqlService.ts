@@ -284,7 +284,6 @@ export class SqlServiceImpl implements SqlService {
         );
     }
 
-
     executeStatement(sqlStatement: SqlStatement): SqlResult {
         try {
             SqlServiceImpl.validateSqlStatement(sqlStatement);

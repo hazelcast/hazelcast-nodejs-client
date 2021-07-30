@@ -218,7 +218,7 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
             // couple of times, the memberOfLargerSameVersionGroup returns a random connection,
             // we might be lucky...
             for (let i = 0; i < SQL_CONNECTION_RANDOM_ATTEMPTS; i++) {
-                const member = memberOfLargerSameVersionGroup(this.clusterService.getMembers(), null);
+                const member = memberOfLargerSameVersionGroup(this.clusterService.getMembers());
 
                 if (member === null) {
                     break;

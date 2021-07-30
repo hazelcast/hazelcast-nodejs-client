@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @ignore */
+/** @ignore *//** */
 import {MemberVersion} from './core/MemberVersion';
 
 const clientVersion = require('../package.json').version;

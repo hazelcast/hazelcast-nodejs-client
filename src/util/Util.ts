@@ -291,26 +291,24 @@ export function timedPromise<T>(wrapped: Promise<T>, timeout: number, err?: Erro
 
 /**
  * Finds a larger same-version group of data members from a collection of
- * members and, if `localMember` is from that group, return that.
+ * members.
  * Otherwise return a random member from the group. If the same-version
- * groups have the same size, return a member from the newer group
- * (preferably the local one).
+ * groups have the same size, return a member from the newer group.
  *
  * Used for getting an SQL connection for executing SQL.
  *
  * @param members list of all members
- * @param localMember the local member, null for client instance
  * @throws IllegalStateError If there are more than 2 distinct member versions found
  * @return the chosen member or null, if no data member is found
  */
-export function memberOfLargerSameVersionGroup(members: MemberImpl[], localMember: MemberImpl | null): MemberImpl | null {
+export function memberOfLargerSameVersionGroup(members: MemberImpl[]): MemberImpl | null {
     // The members should have at most 2 different version (ignoring the patch version).
     // Find a random member from the larger same-version group.
 
-    let version0: MemberVersion | null = null, version1: MemberVersion | null = null;
-    let count0 = 0, count1 = 0;
-
-    const grossMajority = Math.trunc(members.length / 2); // Integer division like in Java side
+    let version0: MemberVersion | null = null;
+    let version1: MemberVersion | null = null;
+    const count0 = 0;
+    const count1 = 0;
 
     for (const m of members) {
         if (m.liteMember) {
@@ -319,21 +317,12 @@ export function memberOfLargerSameVersionGroup(members: MemberImpl[], localMembe
 
         const version = m.version;
 
-        let currentCount;
-
-        if (!version0 || version0.equals(version)) {
+        if (version0 === null || version0.equals(version)) {
             version0 = version;
-            currentCount = ++count0;
-        } else if (!version1 || version1.equals(version)) {
+        } else if (version1 === null || version1.equals(version)) {
             version1 = version;
-            currentCount = ++count1;
         } else {
             throw new IllegalStateError(`More than 2 distinct member versions found: ${version0}, ${version1}, ${version}`);
-        }
-
-        // a shortcut
-        if (currentCount > grossMajority && localMember !== null && localMember.version.equals(version)) {
-            return localMember;
         }
     }
 
@@ -352,11 +341,6 @@ export function memberOfLargerSameVersionGroup(members: MemberImpl[], localMembe
     } else {
         count = count1;
         version = version1;
-    }
-
-    // if the local member is data member and is from the larger group, use that
-    if (localMember !== null && !localMember.liteMember && localMember.version.equals(version)) {
-        return localMember;
     }
 
     // otherwise return a random member from the larger group
