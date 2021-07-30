@@ -307,8 +307,8 @@ export function memberOfLargerSameVersionGroup(members: MemberImpl[]): MemberImp
 
     let version0: MemberVersion | null = null;
     let version1: MemberVersion | null = null;
-    const count0 = 0;
-    const count1 = 0;
+    let count0 = 0;
+    let count1 = 0;
 
     for (const m of members) {
         if (m.liteMember) {
@@ -319,8 +319,10 @@ export function memberOfLargerSameVersionGroup(members: MemberImpl[]): MemberImp
 
         if (version0 === null || version0.equals(version, true)) {
             version0 = version;
+            count0++;
         } else if (version1 === null || version1.equals(version, true)) {
             version1 = version;
+            count1++
         } else {
             const strVer0 = version0.toString(true);
             const strVer1 = version1.toString(true);
