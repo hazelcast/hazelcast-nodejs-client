@@ -31,7 +31,7 @@ const {
     PortableObjectV2,
     InnerPortable,
     SimplePortableV3,
-    SameFieldNamePortable
+    DuplicateFieldNamePortable
 } = require('./PortableObjects');
 const TestUtil = require('../../TestUtil');
 const chai = require('chai');
@@ -50,7 +50,7 @@ describe('PortableSerializationTest', function () {
             } else if (classId === 21) {
                 return new SimplePortableV3();
             } else if (classId === 1) {
-                return new SameFieldNamePortable();
+                return new DuplicateFieldNamePortable();
             }
         };
         return new SerializationServiceV1(cfg);
@@ -189,7 +189,7 @@ describe('PortableSerializationTest', function () {
 
     it('should throw when same field name is used again', function () {
         const service = createSerializationService(PortableObject);
-        const emp = new SameFieldNamePortable('Name', 'Surname');
+        const emp = new DuplicateFieldNamePortable('Name', 'Surname');
 
         (() => service.toData(emp)).should.throw(HazelcastSerializationError);
     });

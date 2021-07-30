@@ -496,7 +496,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should serialize OffsetDateTime correctly', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
-        const getTimezoneOffsetFromSeconds = TestUtil.getDatetimeUtil().getTimezoneOffsetFromSeconds;
+        const getTimezoneOffsetFromSeconds = TestUtil.getDateTimeUtil().getTimezoneOffsetFromSeconds;
         const OffsetDateTime = TestUtil.getOffsetDateTime();
 
         for (let i = 0; i < dtParams.length; i++) {

@@ -17,7 +17,7 @@
 
 const Long = require('long');
 const { UUID } = require('../../../lib/core/UUID');
-const { LocalDate, LocalDateTime, LocalTime, OffsetDateTime } = require('../../../lib/core/DatetimeClasses');
+const { LocalDate, LocalDateTime, LocalTime, OffsetDateTime } = require('../../../lib/core/DateTimeClasses');
 const { BigDecimal } = require('../../../lib/core/BigDecimal');
 const { HeapData } = require('../../../lib/serialization/HeapData');
 const AnInnerPortable = require('./AnInnerPortable');

@@ -418,7 +418,7 @@ describe('Data type test', function () {
     });
 
     it('should be able to decode/serialize DATE', async function () {
-        const leftZeroPadInteger = TestUtil.getDatetimeUtil().leftZeroPadInteger;
+        const leftZeroPadInteger = TestUtil.getDateTimeUtil().leftZeroPadInteger;
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
 
@@ -482,7 +482,7 @@ describe('Data type test', function () {
         }
     });
     it('should be able to decode/serialize TIME', async function () {
-        const leftZeroPadInteger = TestUtil.getDatetimeUtil().leftZeroPadInteger;
+        const leftZeroPadInteger = TestUtil.getDateTimeUtil().leftZeroPadInteger;
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
 
@@ -543,7 +543,7 @@ describe('Data type test', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP', async function () {
-        const leftZeroPadInteger = TestUtil.getDatetimeUtil().leftZeroPadInteger;
+        const leftZeroPadInteger = TestUtil.getDateTimeUtil().leftZeroPadInteger;
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
 
@@ -631,7 +631,7 @@ describe('Data type test', function () {
         }
     });
     it('should be able to decode/serialize TIMESTAMP WITH TIMEZONE', async function () {
-        const datetimeUtil = TestUtil.getDatetimeUtil();
+        const datetimeUtil = TestUtil.getDateTimeUtil();
         const leftZeroPadInteger = datetimeUtil.leftZeroPadInteger;
         const getTimezoneOffsetFromSeconds = datetimeUtil.getTimezoneOffsetFromSeconds;
 
