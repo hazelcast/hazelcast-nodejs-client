@@ -285,7 +285,7 @@ describe('SqlExecuteTest', function () {
         });
 
         after(async function () {
-            await RC.terminateCluster('dev');
+            await RC.terminateCluster(cluster.id);
             await client.shutdown();
         });
 
