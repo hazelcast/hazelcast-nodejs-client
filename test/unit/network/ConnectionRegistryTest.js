@@ -21,12 +21,14 @@ const sinon = require('sinon');
 
 const sandbox = sinon.createSandbox();
 const expect = chai.expect;
+const should = chai.should();
 chai.use(sinonChai);
 
 const { ConnectionRegistryImpl } = require('../../../lib/network/ConnectionManager');
 const { ReconnectMode } = require('../../../lib/config/ConnectionStrategyConfig');
 const { RoundRobinLB } = require('../../../lib/util/RoundRobinLB');
 const { UuidUtil } = require('../../../lib/util/UuidUtil');
+const Util = require('../../../lib/util/Util');
 const { ClientOfflineError, IOError } = require('../../../lib/core/HazelcastError');
 
 describe('ConnectionRegistryTest', function () {
@@ -194,5 +196,95 @@ describe('ConnectionRegistryTest', function () {
 
                 expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
             });
+    });
+
+    describe('getConnectionForSql', function () {
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('should return the connection to the member returned from memberOfLargerSameVersionGroup in smart mode', function () {
+            const fakeClusterService = {
+                getMembers: () => {}
+            };
+            const connectionRegistry = new ConnectionRegistryImpl(false, ReconnectMode.ON, true, {}, fakeClusterService);
+            const fakeMember = {uuid: UuidUtil.generate()};
+            const memberConnection = {};
+
+            sandbox.replace(Util, 'memberOfLargerSameVersionGroup', sandbox.fake.returns(fakeMember));
+
+            // add connection to the member
+            connectionRegistry.setConnection(fakeMember.uuid, memberConnection);
+            const connection = connectionRegistry.getConnectionForSql();
+            connection.should.be.eq(memberConnection);
+        });
+
+        it('should return the first connection to a data member in dummy mode', function () {
+            const fakeLiteMember = {uuid: UuidUtil.generate(), liteMember: true};
+            const fakeDataMember = {uuid: UuidUtil.generate(), liteMember: false};
+            const fakeDataMember2 = {uuid: UuidUtil.generate(), liteMember: false};
+
+            const fakeClusterService = {
+                members: {
+                    [fakeLiteMember.uuid.toString()]: fakeLiteMember,
+                    [fakeDataMember.uuid.toString()]: fakeDataMember,
+                    [fakeDataMember2.uuid.toString()]: fakeDataMember2,
+                },
+                getMember: function (memberId) { // arrow function won't work here
+                    return this.members[memberId];
+                }
+            };
+
+            const connectionRegistry = new ConnectionRegistryImpl(false, ReconnectMode.ON, false, {}, fakeClusterService);
+
+            // add connections
+            const firstDataMemberConnection = {};
+            connectionRegistry.setConnection(fakeDataMember.uuid, firstDataMemberConnection);
+            connectionRegistry.setConnection(fakeDataMember2.uuid, {});
+            connectionRegistry.setConnection(fakeLiteMember.uuid, {});
+
+            const connection = connectionRegistry.getConnectionForSql();
+            connection.should.be.eq(firstDataMemberConnection);
+        });
+
+        it('should return the first connection if no data members found in dummy mode', function () {
+            const fakeLiteMember = {uuid: UuidUtil.generate(), liteMember: true};
+            const fakeLiteMember2 = {uuid: UuidUtil.generate(), liteMember: true};
+
+            const fakeClusterService = {
+                members: {
+                    [fakeLiteMember.uuid.toString()]: fakeLiteMember,
+                    [fakeLiteMember2.uuid.toString()]: fakeLiteMember2,
+                },
+                getMember: function (memberId) { // arrow function won't work here
+                    return this.members[memberId];
+                }
+            };
+
+            const connectionRegistry = new ConnectionRegistryImpl(false, ReconnectMode.ON, false, {}, fakeClusterService);
+
+            // add connections
+            const firstConnection = {};
+            connectionRegistry.setConnection(fakeLiteMember.uuid, firstConnection);
+            connectionRegistry.setConnection(fakeLiteMember2.uuid, {});
+
+            const connection = connectionRegistry.getConnectionForSql();
+            connection.should.be.eq(firstConnection);
+        });
+
+        it('should return null if no connection exists', function () {
+            const connectionRegistry = new ConnectionRegistryImpl(false, ReconnectMode.ON, false, {}, {
+                getMembers: () => []
+            });
+
+            const connection = connectionRegistry.getConnectionForSql();
+            should.equal(connection, null);
+
+            const connectionRegistry2 = new ConnectionRegistryImpl(false, ReconnectMode.ON, true, {}, {
+                getMembers: () => []
+            });
+            const connection2 = connectionRegistry2.getConnectionForSql();
+            should.equal(connection2, null);
+        });
     });
 });

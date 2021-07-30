@@ -317,12 +317,16 @@ export function memberOfLargerSameVersionGroup(members: MemberImpl[]): MemberImp
 
         const version = m.version;
 
-        if (version0 === null || version0.equals(version)) {
+        if (version0 === null || version0.equals(version, true)) {
             version0 = version;
-        } else if (version1 === null || version1.equals(version)) {
+        } else if (version1 === null || version1.equals(version, true)) {
             version1 = version;
         } else {
-            throw new IllegalStateError(`More than 2 distinct member versions found: ${version0}, ${version1}, ${version}`);
+            const strVer0 = version0.toString(true);
+            const strVer1 = version1.toString(true);
+            const strVer = version.toString(true);
+
+            throw new IllegalStateError(`More than 2 distinct member versions found: ${strVer0}, ${strVer1}, ${strVer}`);
         }
     }
 
@@ -346,7 +350,7 @@ export function memberOfLargerSameVersionGroup(members: MemberImpl[]): MemberImp
     // otherwise return a random member from the larger group
     let randomMemberIndex = randomInt(count);
     for (const m of members) {
-        if (!m.liteMember && m.version.equals(version)) {
+        if (!m.liteMember && m.version.equals(version, true)) {
             randomMemberIndex--;
             if (randomMemberIndex < 0) {
                 return m;

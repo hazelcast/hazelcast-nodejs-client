@@ -29,13 +29,26 @@ export class MemberVersion {
 
     /**
      * @param other other version to compare to
+     * @param ignorePatchVersion whether patch in the version should be ignored
      * @return true if this version equals `other`
      */
-    equals(other: MemberVersion): boolean {
-        return this.major === other.major && this.minor === other.minor;
+    equals(other: MemberVersion, ignorePatchVersion = false): boolean {
+        if (ignorePatchVersion) {
+            return this.major === other.major && this.minor === other.minor;
+        } else {
+            return this.major === other.major && this.minor === other.minor && this.patch === other.patch;
+        }
     }
 
-    toString(): string {
-        return `${this.major}.${this.minor}`;
+    /**
+     * @param ignorePatchVersion whether patch in the version should be ignored
+     * @return string format of this `MemberVersion`
+     */
+    toString(ignorePatchVersion = false): string {
+        if (ignorePatchVersion) {
+            return `${this.major}.${this.minor}`;
+        } else {
+            return `${this.major}.${this.minor}.${this.patch}`;
+        }
     }
 }
