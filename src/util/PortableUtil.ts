@@ -26,22 +26,22 @@ import {IOUtil} from './IOUtil';
 /** @internal */
 export class PortableUtil {
 
-    static readLocalDateForPortable(inp: DataInput): LocalDate {
+    static readLocalDate(inp: DataInput): LocalDate {
         const year = inp.readShort(); // this is different due to backward compatibility
         const month = inp.readByte();
         const date = inp.readByte();
         return new LocalDate(year, month, date);
     }
 
-    static readLocalDatetimeForPortable(inp: DataInput): LocalDateTime {
-        const localDate = PortableUtil.readLocalDateForPortable(inp);
+    static readLocalDateTime(inp: DataInput): LocalDateTime {
+        const localDate = PortableUtil.readLocalDate(inp);
         const localTime = IOUtil.readLocalTime(inp);
 
         return new LocalDateTime(localDate, localTime);
     }
 
-    static readOffsetDatetimeForPortable(inp: DataInput): OffsetDateTime {
-        const localDate = PortableUtil.readLocalDateForPortable(inp);
+    static readOffsetDateTime(inp: DataInput): OffsetDateTime {
+        const localDate = PortableUtil.readLocalDate(inp);
         const localTime = IOUtil.readLocalTime(inp);
 
         const offsetSeconds = inp.readInt();
@@ -55,20 +55,19 @@ export class PortableUtil {
         );
     }
 
-
-    static writeLocalDateForPortable(out: DataOutput, value: LocalDate): void {
+    static writeLocalDate(out: DataOutput, value: LocalDate): void {
         out.writeShort(value.year); // this is different due to backward compatibility
         out.writeByte(value.month);
         out.writeByte(value.date);
     }
 
-    static writeLocalDatetimeForPortable(out: DataOutput, value: LocalDateTime): void {
-        PortableUtil.writeLocalDateForPortable(out, value.localDate);
+    static writeLocalDateTime(out: DataOutput, value: LocalDateTime): void {
+        PortableUtil.writeLocalDate(out, value.localDate);
         IOUtil.writeLocalTime(out, value.localTime);
     }
 
-    static writeOffsetDatetimeForPortable(out: DataOutput, value: OffsetDateTime): void {
-        PortableUtil.writeLocalDatetimeForPortable(out, value.localDateTime);
+    static writeOffsetDateTime(out: DataOutput, value: OffsetDateTime): void {
+        PortableUtil.writeLocalDateTime(out, value.localDateTime);
         out.writeInt(value.offsetSeconds);
     }
 

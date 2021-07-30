@@ -17,7 +17,7 @@
 import {
     getOffsetSecondsFromTimezoneString,
     getTimezoneOffsetFromSeconds
-} from '../util/DatetimeUtil';
+} from '../util/DateTimeUtil';
 
 /**
  * ### Local time object

@@ -142,78 +142,54 @@ export class DefaultPortableReader implements PortableReader {
     }
 
     readDate(fieldName: string): LocalDate | null {
-        return this.readNullableField(fieldName, FieldType.DATE, PortableUtil.readLocalDateForPortable);
+        return this.readNullableField(fieldName, FieldType.DATE, PortableUtil.readLocalDate);
     }
 
     readTimestamp(fieldName: string): LocalDateTime | null {
-        return this.readNullableField(fieldName, FieldType.TIMESTAMP, PortableUtil.readLocalDatetimeForPortable);
+        return this.readNullableField(fieldName, FieldType.TIMESTAMP, PortableUtil.readLocalDateTime);
     }
 
     readTimestampWithTimezone(fieldName: string): OffsetDateTime | null {
-        return this.readNullableField(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, PortableUtil.readOffsetDatetimeForPortable);
+        return this.readNullableField(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, PortableUtil.readOffsetDateTime);
     }
 
     readByteArray(fieldName: string): Buffer | null {
         const pos = this.positionByField(fieldName, FieldType.BYTE_ARRAY);
-        if (DefaultPortableReader.isNullOrEmpty(pos)) {
-            return null;
-        }
         return this.input.readByteArray(pos);
     }
 
     readBooleanArray(fieldName: string): boolean[] | null {
         const pos = this.positionByField(fieldName, FieldType.BOOLEAN_ARRAY);
-        if (DefaultPortableReader.isNullOrEmpty(pos)) {
-            return null;
-        }
         return this.input.readBooleanArray(pos);
     }
 
     readCharArray(fieldName: string): string[] | null {
         const pos = this.positionByField(fieldName, FieldType.CHAR_ARRAY);
-        if (DefaultPortableReader.isNullOrEmpty(pos)) {
-            return null;
-        }
         return this.input.readCharArray(pos);
     }
 
     readIntArray(fieldName: string): number[] | null {
         const pos = this.positionByField(fieldName, FieldType.INT_ARRAY);
-        if (DefaultPortableReader.isNullOrEmpty(pos)) {
-            return null;
-        }
         return this.input.readIntArray(pos);
     }
 
     readLongArray(fieldName: string): Long[] | null {
         const pos = this.positionByField(fieldName, FieldType.LONG_ARRAY);
-        if (DefaultPortableReader.isNullOrEmpty(pos)) {
-            return null;
-        }
         return this.input.readLongArray(pos);
     }
 
     readDoubleArray(fieldName: string): number[] | null {
         const pos = this.positionByField(fieldName, FieldType.DOUBLE_ARRAY);
-        if (DefaultPortableReader.isNullOrEmpty(pos)) {
-            return null;
-        }
         return this.input.readDoubleArray(pos);
     }
 
     readFloatArray(fieldName: string): number[] | null {
         const pos = this.positionByField(fieldName, FieldType.FLOAT_ARRAY);
-        if (DefaultPortableReader.isNullOrEmpty(pos)) {
-            return null;
-        }
         return this.input.readFloatArray(pos);
     }
 
     readShortArray(fieldName: string): number[] | null {
         const pos = this.positionByField(fieldName, FieldType.SHORT_ARRAY);
-        if (DefaultPortableReader.isNullOrEmpty(pos)) {
-            return null;
-        }
         return this.input.readShortArray(pos);
     }
 
@@ -223,9 +199,6 @@ export class DefaultPortableReader implements PortableReader {
 
     readStringArray(fieldName: string): string[] | null {
         const pos = this.positionByField(fieldName, FieldType.STRING_ARRAY);
-        if (DefaultPortableReader.isNullOrEmpty(pos)) {
-            return null;
-        }
         return this.input.readStringArray(pos);
     }
 
@@ -233,9 +206,6 @@ export class DefaultPortableReader implements PortableReader {
         const backupPos = this.input.position();
         try {
             const pos = this.positionByField(fieldName, FieldType.PORTABLE_ARRAY);
-            if (DefaultPortableReader.isNullOrEmpty(pos)) {
-                return null;
-            }
             this.input.position(pos);
             const len = this.input.readInt();
             const factoryId = this.input.readInt();
@@ -268,21 +238,17 @@ export class DefaultPortableReader implements PortableReader {
     }
 
     readDateArray(fieldName: string): LocalDate[] | null {
-        return this.readObjectArrayField(fieldName, FieldType.DATE_ARRAY, PortableUtil.readLocalDateForPortable);
+        return this.readObjectArrayField(fieldName, FieldType.DATE_ARRAY, PortableUtil.readLocalDate);
     }
 
     readTimestampArray(fieldName: string): LocalDateTime[] | null {
-        return this.readObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, PortableUtil.readLocalDatetimeForPortable);
+        return this.readObjectArrayField(fieldName, FieldType.TIMESTAMP_ARRAY, PortableUtil.readLocalDateTime);
     }
 
     readTimestampWithTimezoneArray(fieldName: string): OffsetDateTime[] | null {
         return this.readObjectArrayField(
-            fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, PortableUtil.readOffsetDatetimeForPortable
+            fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, PortableUtil.readOffsetDateTime
         );
-    }
-
-    private static isNullOrEmpty(pos: number) {
-        return pos === -1;
     }
 
     private readNullableField<T>(fieldName: string, fieldType: FieldType, readFn: (inp: DataInput) => T): T {
@@ -306,9 +272,6 @@ export class DefaultPortableReader implements PortableReader {
 
         try {
             const pos = this.positionByField(fieldName, fieldType);
-            if (DefaultPortableReader.isNullOrEmpty(pos)) {
-                return null;
-            }
             this.input.position(pos);
             const len = this.input.readInt();
 

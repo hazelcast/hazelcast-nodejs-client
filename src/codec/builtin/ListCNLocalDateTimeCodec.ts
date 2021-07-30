@@ -10,7 +10,7 @@ export class ListCNLocalDateTimeCodec {
         return ListCNFixedSizeCodec.decode(
             clientMessage.nextFrame(),
             BitsUtil.LOCAL_DATETIME_SIZE_IN_BYTES,
-            FixSizedTypesCodec.decodeLocalDatetime
+            FixSizedTypesCodec.decodeLocalDateTime
         );
     }
 }
