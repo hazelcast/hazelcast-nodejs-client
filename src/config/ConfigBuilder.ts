@@ -282,7 +282,7 @@ export class ConfigBuilder {
                         value = tryGetBoolean(value);
                         break;
                     case 'hazelcast.discovery.public.ip.enabled':
-                        if (value !== null || typeof value !== 'boolean') {
+                        if (value !== null && typeof value !== 'boolean') {
                             throw new RangeError(`${value} is not null or a boolean.`);
                         }
                         break;
