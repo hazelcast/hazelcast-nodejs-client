@@ -567,66 +567,29 @@ In the following chapters you will learn the description of all options supporte
 
 # 3.1 Client Properties
 
-- `hazelcast.client.autopipelining.enabled`:
-Default value is `true`. Turns automated pipelining feature on/off.
-If your application does only write operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughput.
+The following is the list of all client properties in alphabetical order.
 
-- `hazelcast.client.autopipelining.threshold.bytes`:
-Default value is `65536` bytes (64 KB). This is the coalescing threshold for the internal queue used by automated pipelining.
-Once the total size of operation payloads taken from the queue reaches this value during batch preparation,
-these operations are written to the socket. Notice that automated pipelining will still send operations if their total size
-is smaller than the threshold and there are no more operations in the internal queue.
+> **NOTE: When you want to reconfigure a client property, you need to restart the client.**
 
-- `hazelcast.client.cloud.url`: Hazelcast Cloud URL. Default value is `https://coordinator.hazelcast.cloud`.
-
-- `hazelcast.client.heartbeat.interval`:
-Frequency of the heartbeat messages sent by the clients to members. Default value is `5000` milliseconds.
-
-- `hazelcast.client.heartbeat.timeout`:
-Timeout for the heartbeat messages sent by the client to members. If no messages pass between the client and member
-within the given time via this property in milliseconds, the connection will be closed. Default value is `60000` milliseconds.
-
-- `hazelcast.client.invocation.retry.pause.millis`:
-Pause time between each retry cycle of an invocation in milliseconds. Default value is `1000` milliseconds.
-
-- `hazelcast.client.invocation.timeout.millis`:
-Period, in milliseconds, to give up the invocation when a member in the member list is not reachable. Default value is `120000` milliseconds.
-
-- `hazelcast.client.operation.backup.timeout.millis`: Default value is `5000` milliseconds. If an operation has
-backups, this property specifies how long (in milliseconds) the invocation waits for acks from the backup replicas.
-If acks are not received from some of the backups, there will not be any rollback on the other successful replicas.
-
-- `hazelcast.client.operation.fail.on.indeterminate.state`:
-Default value is `false`. When it is `true`, if an operation has sync backups and acks are not received
-from backup replicas in time, or the member which owns primary replica of the target partition leaves the cluster,
-then the invocation fails. However, even if the invocation fails, there will not be any rollback on other successful replicas.
-
-- `hazelcast.client.shuffle.member.list`:
-The client shuffles the given member list to prevent all the clients to connect to the same member when this property is true.
-When it is set to false, the client tries to connect to the members in the given order. Default value is `true`.
-
-- `hazelcast.client.socket.no.delay`:
-The [setNoDelay](https://nodejs.org/api/net.html#net_socket_setnodelay_nodelay) setting for connections. Default value is `true`.
-
-- `hazelcast.client.statistics.enabled`:
-If set to `true`, it enables collecting the client statistics and sending them to the cluster.
-When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center.
-Its default value is `false`.
-
-- `hazelcast.client.statistics.period.seconds`:
-Period in seconds the client statistics are collected and sent to the cluster. Its default value is `3`.
-
-- `hazelcast.discovery.public.ip.enabled`:
-Default value is `null` (detection enabled). When set to `true`, the client will assume that it needs to use public IP addresses reported by members.
-When set to `false`, the client will always use private addresses reported by members.
-
-- `hazelcast.invalidation.max.tolerated.miss.count`:
-Default value is `10`. If missed invalidation count is bigger than this value, relevant cached data will be made unreachable.
-
-- `hazelcast.invalidation.reconciliation.interval.seconds`: Default value is `60` seconds.
-This is a periodic task that scans cluster members periodically to compare generated invalidation events with the received ones from the client Near Cache.
-
-- `hazelcast.logging.level`: Logging level. Can be one of `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`. Default value is `INFO`.
+| Property Name                                          | Default Value                       | Type            | Description                                                                                                                                                                                                                                                                                                                                                                                                         |
+|--------------------------------------------------------|-------------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| hazelcast.client.autopipelining.enabled                | true                                | boolean         | Turns automated pipelining feature on/off. If your application does only write operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughput.                                                                                                                                                                                                                       |
+| hazelcast.client.autopipelining.threshold.bytes        | 65536 (64 KB)                       | number          | This is the coalescing threshold for the internal queue used by automated pipelining. Once the total size of operation payloads taken from the queue reaches this value during batch preparation, these operations are written to the socket. Notice that automated pipelining will still send operations if their total size is smaller than the threshold and there are no more operations in the internal queue. |
+| hazelcast.client.cloud.url                             | https://coordinator.hazelcast.cloud | string          | Hazelcast Cloud URL.                                                                                                                                                                                                                                                                                                                                                                                                |
+| hazelcast.client.heartbeat.interval                    | 5000                                | number          | Frequency of the heartbeat messages sent by the clients to members.                                                                                                                                                                                                                                                                                                                                                 |
+| hazelcast.client.heartbeat.timeout                     | 60000                               | number          | Timeout for the heartbeat messages sent by the client to members. If no messages pass between the client and member within the given time via this property in milliseconds, the connection will be closed.                                                                                                                                                                                                         |
+| hazelcast.client.invocation.retry.pause.millis         | 1000                                | number          | Pause time between each retry cycle of an invocation in milliseconds.                                                                                                                                                                                                                                                                                                                                               |
+| hazelcast.client.invocation.timeout.millis             | 120000                              | number          | Period, in milliseconds, to give up the invocation when a member in the member list is not reachable.                                                                                                                                                                                                                                                                                                               |
+| hazelcast.client.operation.backup.timeout.millis       | 5000                                | number          | If an operation has backups, this property specifies how long (in milliseconds) the invocation waits for acks from the backup replicas. If acks are not received from some of the backups, there will not be any rollback on the other successful replicas.                                                                                                                                                         |
+| hazelcast.client.operation.fail.on.indeterminate.state | false                               | boolean         | When it is `true`, if an operation has sync backups and acks are not received from backup replicas in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails. However, even if the invocation fails, there will not be any rollback on other successful replicas.                                                                                     |
+| hazelcast.client.shuffle.member.list                   | true                                | boolean         | The client shuffles the given member list to prevent all the clients to connect to the same member when this property is true. When it is set to false, the client tries to connect to the members in the given order.                                                                                                                                                                                              |
+| hazelcast.client.socket.no.delay                       | true                                | boolean         | The [setNoDelay](https://nodejs.org/api/net.html#net_socket_setnodelay_nodelay) setting for connections.                                                                                                                                                                                                                                                                                                            |
+| hazelcast.client.statistics.enabled                    | false                               | boolean         | If set to `true`, it enables collecting the client statistics and sending them to the cluster. When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center.                                                                                                                                                                                       |
+| hazelcast.client.statistics.period.seconds             | 3                                   | number          | Period in seconds the client statistics are collected and sent to the cluster.                                                                                                                                                                                                                                                                                                                                      |
+| hazelcast.discovery.public.ip.enabled                  | null(detection enabled)             | boolean or null | When set to `true`, the client will assume that it needs to use public IP addresses reported by members. When set to `false`, the client will always use private addresses reported by members.                                                                                                                                                                                                                     |
+| hazelcast.invalidation.max.tolerated.miss.count        | 10                                  | number          | If missed invalidation count is bigger than this value, relevant cached data will be made unreachable.                                                                                                                                                                                                                                                                                                              |
+| hazelcast.invalidation.reconciliation.interval.seconds | 60                                  | number          | This is a periodic task that scans cluster members periodically to compare generated invalidation events with the received ones from the client Near Cache.                                                                                                                                                                                                                                                         |
+| hazelcast.logging.level                                | INFO                                | string          | Logging level. Can be one of `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`.                                                                                                                                                                                                                                                                                                                                      |
 
 # 4. Serialization
 
