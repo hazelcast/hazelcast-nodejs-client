@@ -127,6 +127,8 @@ export class HazelcastClient {
     private readonly connectionRegistry: ConnectionRegistryImpl;
     /** @internal */
     private readonly sqlService: SqlService;
+    /** @internal */
+    private shutdownPromise: Promise<void> | undefined;
 
     /** @internal */
     constructor(config?: ClientConfigImpl, failoverConfig?: ClientFailoverConfigImpl) {
@@ -520,8 +522,8 @@ export class HazelcastClient {
      * Shuts down this client instance.
      */
     shutdown(): Promise<void> {
-        if (!this.lifecycleService.isRunning()) {
-            return Promise.resolve();
+        if (this.shutdownPromise) { // return the initiated shutdown promise if it exists.
+            return this.shutdownPromise;
         }
         this.lifecycleService.onShutdownStart();
 
@@ -531,7 +533,7 @@ export class HazelcastClient {
         this.nearCacheManager.destroyAllNearCaches();
         this.proxyManager.destroy();
         this.statistics.stop();
-        return this.cpSubsystem.shutdown()
+        this.shutdownPromise = this.cpSubsystem.shutdown()
             .then(() => {
                 this.invocationService.shutdown();
                 this.connectionManager.shutdown();
@@ -539,6 +541,7 @@ export class HazelcastClient {
             .then(() => {
                 this.lifecycleService.onShutdownFinished();
             });
+        return this.shutdownPromise;
     }
 
     /** @internal */
