@@ -257,8 +257,11 @@ export class ConfigBuilder {
                     case 'hazelcast.invalidation.max.tolerated.miss.count':
                         value = tryGetNumber(value);
                         break;
+                    case 'hazelcast.invalidation.min.reconciliation.interval.seconds':
+                        value = tryGetNumber(value);
+                        break;
                     case 'hazelcast.logging.level':
-                        value = tryGetEnum(LogLevel, value);
+                        tryGetEnum(LogLevel, value); // only validate
                         break;
                     case 'hazelcast.client.autopipelining.enabled':
                         value = tryGetBoolean(value);
