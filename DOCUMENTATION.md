@@ -16,12 +16,7 @@
   * [1.5. Basic Usage](#15-basic-usage)
   * [1.6. Code Samples](#16-code-samples)
 * [2. Features](#2-features)
-* [3. Configuration Overview](#3-configuration-overview)
-  * [3.1. Configuration Options](#31-configuration-options)
-    * [3.1.1. Programmatic Configuration](#311-programmatic-configuration)
-    * [3.1.2. Declarative Configuration (JSON)](#312-declarative-configuration-json)
-  * [3.2. Importing Multiple Configurations](#32-importing-multiple-configurations)
-  * [3.3. Loading Objects and Path Resolution](#33-loading-objects-and-path-resolution)
+* [3. Configuration](#3-configuration)
 * [4. Serialization](#4-serialization)
   * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
   * [4.2. Portable Serialization](#42-portable-serialization)
@@ -82,12 +77,12 @@
   * [8.6. Distributed Computing](#86-distributed-computing)
     * [8.6.1. Using EntryProcessor](#861-using-entryprocessor)
   * [8.7. SQL](#87-sql)
-    * [8.7.1. Querying IMap](#871-querying-imap)
-    * [8.7.2. Data Types](#872-data-types)
-    * [8.7.3. Casting](#873-casting)
-    * [8.7.4. SELECT](#874-select)
+    * [8.7.1. SQL Statements](#871-sql-statements)
+    * [8.7.2. Querying IMap](#872-querying-imap)
+    * [8.7.3. Data Types](#873-data-types)
+    * [8.7.4. Casting](#874-casting)
     * [8.7.5. Expressions](#875-expressions)
-    * [8.7.6. Lite Members](#876-lite-members)
+    * [8.7.6. Source and Sink Connectors](#876-source-and-sink-connectors)
     * [8.7.7. More Information](#877-more-information)
   * [8.8. Distributed Query](#88-distributed-query)
     * [8.8.1. How Distributed Query Works](#881-how-distributed-query-works)
@@ -250,7 +245,7 @@ This section describes the most common configuration elements to get you started
 It discusses some member side configuration options to ease the understanding of Hazelcast's ecosystem. Then, the client side configuration options
 regarding the cluster connection are discussed. The configurations for the Hazelcast IMDG data structures that can be used in the Node.js client are discussed in the following sections.
 
-See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.com/imdg/latest/) and [Configuration Overview section](#3-configuration-overview) for more information.
+See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.com/imdg/latest/) and [Configuration section](#3-configuration) for more information.
 
 ### 1.4.1. Configuring Hazelcast IMDG
 
@@ -316,7 +311,7 @@ These configuration elements are enough for most connection scenarios. Now we wi
 To configure your Hazelcast Node.js client you need to create a config object and set the appropriate options. Then you can
 supply this object to your client at the startup. The structure of the config object is similar to the `hazelcast.xml` configuration file used when configuring the member. It is done this way to make it easier to transfer Hazelcast skills to multiple platforms.
 
-This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview) and the following sections for information about detailed network configurations and/or additional features of Hazelcast Node.js client configuration.
+This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration section](#3-configuration) and the following sections for information about detailed network configurations and/or additional features of Hazelcast Node.js client configuration.
 
 You need to create a `ClientConfig` object and adjust its properties. Then you can pass this object to the client when starting it.
 
@@ -549,11 +544,9 @@ Hazelcast Node.js client supports the following data structures and features:
 * Blue-Green Deployment and Disaster Recovery (requires Enterprise server)
 
 
-# 3. Configuration Overview
+# 3. Configuration
 
 This chapter describes the options to configure your Node.js client. If an invalid value is given to any configuration option, an `InvalidConfigurationError` error will be thrown.
-
-## 3.1. Configuration Options
 
 For configuration of the Hazelcast Node.js client, just instantiate a config object and configure the desired aspects. An example is shown below.
 
@@ -1204,7 +1197,7 @@ Most of the functions in the API return Promises. Therefore, you need to be fami
 
 If you are ready to go, let's start to use Hazelcast Node.js client.
 
-The first step is the configuration. See the [Programmatic Configuration section](#311-programmatic-configuration) for details.
+The first step is the configuration. See the [Configuration section](#3-configuration) for details.
 
 The following is an example on how to create a `ClientConfig` object and configure it programmatically:
 
@@ -1296,7 +1289,7 @@ await map.putIfAbsent('somekey', 'somevalue');
 await map.replace('key', 'value', 'newvalue');
 ```
 
-Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#882-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
+Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#892-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
 
 Hazelcast Map uses `MapListener` to listen to the events that occur when the entries are added to, updated/merged in or evicted/removed from the Map. See the [Map Listener section](#8521-map-listener) for information on how to create a map listener object and register it.
 
@@ -2190,12 +2183,42 @@ console.log(value);
 
 ## 8.7. SQL
 
-The SQL service provided by Hazelcast Node.js client allows you to query data stored in `IMap` declaratively.
+The SQL service provided by Hazelcast Node.js client allows you to run SQL queries.
 
-> **WARNING: The SQL feature is currently in beta. The compatibility between versions is not guaranteed. API might change between versions without notice. While in beta, SQL feature is tested against the same version of the IMDG, e.g 4.2.x
-> client is tested against 4.2.x IMDG server.**
+> **WARNING: The SQL feature have become stable in 5.0. In order a client and a server to be fully compatible with each other, their major
+> versions must be the same.**
 
-### Example: How to Query an IMap using SQL
+> **WARNING: A [Unisocket Client](#822-unisocket-client) must connect to a member that is not
+> [lite](https://docs.hazelcast.com/hazelcast/latest/management/cluster-utilities.html#enabling-lite-members) (non-lite members are called data members),
+> otherwise Data Manipulation Language(DML) statements below won't work for that client.**
+
+### 8.7.1 SQL Statements
+
+#### Data Manipulation Language(DML) Statements
+
+- [SELECT:](https://docs.hazelcast.com/hazelcast/latest/sql/select.html) Read data from a table.
+- [SINK INTO/INSERT INTO:](https://docs.hazelcast.com/hazelcast/latest/sql/sink-into.html) Ingest data into a map and/or forward data to other systems.
+- [UPDATE:](https://docs.hazelcast.com/hazelcast/latest/sql/update.html) Overwrite values in map entries.
+- [DELETE:](https://docs.hazelcast.com/hazelcast/latest/sql/delete.html) Delete map entries.
+
+####  Data Definition Language(DDL) Statements
+
+- [CREATE MAPPING:](https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping.html) Map a local or remote data object to a table that Hazelcast can access.
+- [SHOW MAPPINGS:](https://docs.hazelcast.com/hazelcast/latest/sql/show-mappings.html) Get the names of existing mappings.
+- [DROP MAPPING](https://docs.hazelcast.com/hazelcast/latest/sql/drop-mapping.html) Remove a mapping.
+
+#### Job Management Statements
+
+- [CREATE JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/create-job.html) Create a job that is not tied to the client session.
+- [ALTER JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/alter-job.html) Restart, suspend, or resume a job.
+- [SHOW JOBS:](https://docs.hazelcast.com/hazelcast/latest/sql/show-jobs.html) Get the names of all running jobs.
+- [DROP JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/drop-job.html) Cancel a job.
+- [CREATE OR REPLACE SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/latest/sql/create-snapshot.html) Create a snapshot of a running job, so you can stop and restart it at a later date.
+- [DROP SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/latest/sql/drop-snapshot.html) Cancel a running job.
+
+### 8.7.2. Querying IMap
+
+> **WARNING: SQL queries against heterogenous maps is not supported and it may not work as expected.**
 
 This SQL query returns map entries whose values are more than 1:
 
@@ -2205,14 +2228,12 @@ await map.put('key1', 1);
 await map.put('key2', 2);
 await map.put('key3', 3);
 
-const result = client.getSqlService().execute(`SELECT __key, this FROM my-distributed-map WHERE this > 1`);
+const result = client.getSql().execute(`SELECT __key, this FROM my-distributed-map WHERE this > 1`);
 
 for await (const row of result) {
     console.log(row); // {__key: 'key3', this: 3} and {__key: 'key2', this: 2}
 }
 ```
-
-### 8.7.1. Querying IMap
 
 The following subsections describe how you can access Hazelcast map objects and perform queries on them.
 
@@ -2231,8 +2252,7 @@ SELECT * FROM partitioned.employee
 #### Fields
 
 The SQL service resolves fields accessible from the SQL automatically. The service reads the first local entry pair of
-the `IMap` to construct the list of fields. If the `IMap` does not have local entries on the member where the query is
-started, then the list of fields cannot be resolved, and an exception is thrown.
+the `IMap` to construct the list of fields.
 
 Field names are case-sensitive.
 
@@ -2250,7 +2270,6 @@ SELECT __key, this FROM employee
 You may also access the nested fields of a key or value. The list of exposed fields depends on the serialization format, as described below:
 
 * For [IdentifiedDataSerializable](#41-identifieddataserializable-serialization) objects, you can use public field name or getter names.
-  See [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/querying-imap.html#key-and-value-fields) for more information.
 * For [Portable](#42-portable-serialization) objects, the fields written with `PortableWriter` methods are exposed using their exact names.
 
 > **NOTE: You cannot query JSON fields in SQL. If you want to query JSON, see [Querying with JSON Strings](#8814-querying-with-json-strings).**
@@ -2293,7 +2312,7 @@ SELECT __key, this, name, age FROM employee
 
 If both the key and value have fields with the same name, then the field of the value is exposed.
 
-##### "SELECT *" Queries
+#### "SELECT *" Queries
 
 You may use the `SELECT * FROM <table>` syntax to get all the table fields.
 
@@ -2305,57 +2324,34 @@ the following query does not return the `this` field, because the value has nest
 SELECT * FROM employee
 ```
 
-### 8.7.2. Data Types
+### 8.7.3. Data Types
 
-The SQL service supports a set of SQL data types. The
-table below shows SQL datatype, and corresponding Javascript types:
+The SQL service supports a set of SQL data types. The table below shows SQL data types and corresponding JavaScript types:
 
-| Column Type                  | Javascript          |
-|------------------------------|---------------------|
-| **VARCHAR**                  | `string`            |
-| **BOOLEAN**                  | `boolean`           |
-| **TINYINT**                  | `number`            |
-| **SMALLINT**                 | `number`            |
-| **INTEGER**                  | `number`            |
-| **BIGINT**                   | `long`              |
-| **DECIMAL**                  | `string`            |
-| **REAL**                     | `number`            |
-| **DOUBLE**                   | `number`            |
-| **DATE**                     | `string`            |
-| **TIME**                     | `string`            |
-| **TIMESTAMP**                | `string`            |
-| **TIMESTAMP_WITH_TIME_ZONE** | `string`            |
-| **OBJECT**                   | Any class           |
-| **NULL**                     | `null`              |
+| Column Type                  | Javascript           |
+|------------------------------|----------------------|
+| **VARCHAR**                  | `string`             |
+| **BOOLEAN**                  | `boolean`            |
+| **TINYINT**                  | `number`             |
+| **SMALLINT**                 | `number`             |
+| **INTEGER**                  | `number`             |
+| **BIGINT**                   | `long`               |
+| **DECIMAL**                  | `BigDecimal`         |
+| **REAL**                     | `number`             |
+| **DOUBLE**                   | `number`             |
+| **DATE**                     | `LocalDate`        |
+| **TIME**                     | `LocalTime`        |
+| **TIMESTAMP**                | `LocalDateTime`    |
+| **TIMESTAMP_WITH_TIME_ZONE** | `OffsetDateTime`   |
+| **OBJECT**                   | Any class            |
+| **NULL**                     | `null`               |
 
-#### Decimal String Format
+See [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for how you can use
+`BigDecimal`, `LocalDate`, `LocalTime`, `LocalDateTime` and `OffsetDateTime` classes.
 
-SQL `DECIMAL` type is sent and received as strings.
+### 8.7.4. Casting
 
-#### Date String Format
-
-SQL `DATE` type is sent and received as a string with the `yyyy-mm-dd` format.
-
-#### Time String Format
-
-SQL `TIME` type is sent and received as a string with the `HH:mm:ss.SSS` format where `SSS` represents nanoseconds and can
-be at most 9 digits long.
-
-#### Timestamp String Format
-
-SQL `TIMESTAMP` type is sent and received as a string with the `yyyy-mm-dd(T|t)HH:mm:ss.SSS` format which is the combination of
-`DATE` and `TIME` strings. There must be a `T` letter in between which can be in any case.
-
-#### Timestamp with Timezone String Format
-
-SQL `TIMESTAMP WITH TIMEZONE` type is sent and received as a string with the `yyyy-mm-dd(T|t)HH:mm:ss.SSS{timezoneString}` format which is the combination of
-`TIMESTAMP` and timezone strings. The timezone string is can be one of `Z`, `+hh:mm` or `-hh:mm` where `hh` represents hour-in-day, and `mm` represents minutes-in-hour.
-The timezone must be in the range `[-18:00, +18:00]`.
-
-### 8.7.3. Casting
-
-You may need to use casting when sending parameters for certain types. In general, you should try to send a parameter
-that has same data type with the related column.
+In general, you should try to send parameters having same data type with its related column. Otherwise, you need to cast parameters to suitable types.
 
 #### How to Cast
 
@@ -2367,96 +2363,46 @@ Example casting:
 SELECT * FROM someMap WHERE this = CAST(? AS INTEGER)
 ```
 
-#### Casting Between Types
-
-When comparing a column with a parameter, your parameter must be of a compatible type. Since Node.js client uses double
-as default number type, to compare with an integer based column you can use long objects or casting.
-
-The similar thing applies to other data types. You can cast string to every SQL type.
-
-##### Using Long
-
-In the example below, age column is of type `INTEGER`. Since long objects are sent as `BIGINT` and `BIGINT` is comparable with `INTEGER`, the query is valid without an explicit `CAST`.
-
-```javascript
-const result = client.getSqlService().execute(
-    'SELECT * FROM myMap WHERE age > ? AND age < ?',
-    [long.fromNumber(13), long.fromNumber(18)]
-);
-```
-
 #### An Example of Casting
 
-In the example below, age column is of type `INTEGER`. The default number type is `double` in Node.js client. We cast
-doubles as `BIGINT`, and `BIGINT` is comparable with `INTEGER` the query is valid. Note that we can also cast to other types that are
-comparable with `INTEGER`.
+Since Node.js client uses double as default number type, to compare with an integer based column you need to use casting.
+
+In the example below, age column is of type `INTEGER`. Since numbers are sent as `DOUBLE` by default and `DOUBLE` is not comparable with `INTEGER`, the query needs a `CAST`.
+Note that, the cast can fail if the sent number cannot be converted to an integer.
 
 ```javascript
-const result = client.getSqlService().execute(
-    'SELECT * FROM myMap WHERE age > CAST(? AS BIGINT) AND age < CAST(? AS BIGINT)',
+const result = client.getSql().execute('SELECT * FROM myMap WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)',
     [13, 18]
 );
 ```
 
 ##### Important Notes About Comparison and Casting
 
-* Note that default number type in Node.js client is double. This means you need to cast when you are dealing with
-integer based columns. (`TINYINT`, `SMALLINT`, `INTEGER`, `BIGINT`)
-
-* In case of comparison operators (=, <, <>, ...), if one side is `?`, it's assumed to be exactly the other side's type,
-  except that `TINYINT`, `SMALLINT`, `INTEGER` are all converted to `BIGINT`.
+* In case of comparison operators (=, <, <>, ...), if one side is `?`, it's assumed to be exactly the other side's type.
 
 * String parameters can be cast to any type. The cast operation may fail though.
-
-* To send a `DECIMAL` type, use a string with an explicit `CAST`.
-
-* To send date and time related types, use a string with an explicit `CAST`.
-
-* See [SQL data types code samples](code_samples/sql-data-types.js) for example usage of all data types.
-
-### 8.7.4. SELECT
-
-#### Synopsis
-
-```sql
-SELECT [ * | expression [ [ AS ] expression_alias ] [, ...] ]
-FROM table_name [ [ AS ] table_alias ]
-[WHERE condition]
-```
-
-#### Description
-
-The `SELECT` command retrieves rows from a table. A row is a sequence of expressions defined after the `SELECT` keyword. Expressions may have optional aliases.
-
-`table_name` refers to a single `IMap` data structure. A table may have an optional alias.
-
-An optional `WHERE` clause defines a condition, that is any expression that evaluates to a result of type boolean. Any row that doesn’t satisfy the condition is eliminated from the result.
-
-#### Sorting
-
-You can use the standard SQL clauses ORDER BY, LIMIT, and OFFSET to sort and limit the result set. In order to do so, you need server configuration. See [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/select-statement.html#sorting) for more.
-
-#### Unsupported Features
-
-The following features are **not supported** and are planned for future releases:
-
-* `GROUP BY`/`HAVING`
-* `JOIN`
-* set operators (`UNION`, `INTERSECT`, `MINUS`)
-* subqueries (`SELECT … FROM table WHERE x = (SELECT …)`)
 
 ### 8.7.5. Expressions
 
 Hazelcast SQL supports logical predicates, `IS` predicates, comparison operators, mathematical functions and operators, string functions, and special functions.
-Refer to [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/expressions.html) for all possible operations.
+Refer to [Hazelcast](https://docs.hazelcast.com/hazelcast/latest/sql/expressions.html) for all possible operations.
 
-### 8.7.6. Lite Members
+### 8.7.6 Source and Sink Connectors
 
-You cannot start SQL queries on lite members. This limitation will be removed in future releases.
+SQL connectors are extensions that allow you to communicate with external systems such as databases, using SQL.
+These connectors are configured to read and write data in the most efficient way for their respective system.
+
+Available connectors:
+
+- Apache Kafka: Read from and write to Kafka topics.
+- File: Read from a local or remote file.
+- IMap: Read from and write to an IMap.
+
+To learn how you can use them, refer to [SQL Connectors section](https://docs.hazelcast.com/hazelcast/latest/sql/connectors.html) in Hazelcast docs.
 
 ### 8.7.7. More Information
 
-Please refer to [IMDG SQL docs](https://docs.hazelcast.com/imdg/4.2/sql/distributed-sql.html) for more information.
+Please refer to [Hazelcast SQL docs](https://docs.hazelcast.com/hazelcast/latest/sql/sql-statements.html) for more information.
 
 For basic usage of SQL, see [this](code_samples/sql-basic-usage.js) code sample.
 

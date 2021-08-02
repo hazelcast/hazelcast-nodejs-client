@@ -48,7 +48,7 @@ export class FixSizedTypesCodec {
         return new LocalDate(year, month, date);
     }
 
-    static decodeLocalDatetime(buffer: Buffer, offset: number): LocalDateTime {
+    static decodeLocalDateTime(buffer: Buffer, offset: number): LocalDateTime {
         const localDate = FixSizedTypesCodec.decodeLocalDate(buffer, offset);
         const localTime = FixSizedTypesCodec.decodeLocalTime(buffer, offset + BitsUtil.LOCAL_DATE_SIZE_IN_BYTES);
 
@@ -56,7 +56,7 @@ export class FixSizedTypesCodec {
     }
 
     static decodeOffsetDateTime(buffer: Buffer, offset: number): OffsetDateTime {
-        const localDateTime = FixSizedTypesCodec.decodeLocalDatetime(buffer, offset);
+        const localDateTime = FixSizedTypesCodec.decodeLocalDateTime(buffer, offset);
         const offsetSeconds = FixSizedTypesCodec.decodeInt(buffer, offset + BitsUtil.LOCAL_DATETIME_SIZE_IN_BYTES);
 
         return new OffsetDateTime(localDateTime, offsetSeconds);

@@ -281,8 +281,8 @@ exports.getSqlColumnType = function () {
     return SqlColumnType;
 };
 
-exports.getDatetimeUtil = function () {
-    return require('../lib/util/DatetimeUtil');
+exports.getDateTimeUtil = function () {
+    return require('../lib/util/DateTimeUtil');
 };
 
 exports.getOffsetDateTime = function() {

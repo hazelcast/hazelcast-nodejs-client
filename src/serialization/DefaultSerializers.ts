@@ -449,10 +449,10 @@ export class LocalDateSerializer implements Serializer<LocalDate> {
         return new LocalDate(year, month, date);
     }
 
-    write(output: DataOutput, hzLocalDate: LocalDate): void {
-        output.writeInt(hzLocalDate.year);
-        output.writeByte(hzLocalDate.month);
-        output.writeByte(hzLocalDate.date);
+    write(output: DataOutput, localDate: LocalDate): void {
+        output.writeInt(localDate.year);
+        output.writeByte(localDate.month);
+        output.writeByte(localDate.date);
     }
 }
 
@@ -470,11 +470,11 @@ export class LocalTimeSerializer implements Serializer<LocalTime> {
         return new LocalTime(hour, minute, second, nano);
     }
 
-    write(output: DataOutput, hzLocalTime: LocalTime): void {
-        output.writeByte(hzLocalTime.hour);
-        output.writeByte(hzLocalTime.minute);
-        output.writeByte(hzLocalTime.second);
-        output.writeInt(hzLocalTime.nano);
+    write(output: DataOutput, localTime: LocalTime): void {
+        output.writeByte(localTime.hour);
+        output.writeByte(localTime.minute);
+        output.writeByte(localTime.second);
+        output.writeInt(localTime.nano);
     }
 }
 
@@ -496,15 +496,15 @@ export class LocalDateTimeSerializer implements Serializer<LocalDateTime> {
         return LocalDateTime.from(year, month, date, hour, minute, second, nano);
     }
 
-    write(output: DataOutput, hzLocalDateTime: LocalDateTime): void {
-        output.writeInt(hzLocalDateTime.localDate.year);
-        output.writeByte(hzLocalDateTime.localDate.month);
-        output.writeByte(hzLocalDateTime.localDate.date);
+    write(output: DataOutput, localDateTime: LocalDateTime): void {
+        output.writeInt(localDateTime.localDate.year);
+        output.writeByte(localDateTime.localDate.month);
+        output.writeByte(localDateTime.localDate.date);
 
-        output.writeByte(hzLocalDateTime.localTime.hour);
-        output.writeByte(hzLocalDateTime.localTime.minute);
-        output.writeByte(hzLocalDateTime.localTime.second);
-        output.writeInt(hzLocalDateTime.localTime.nano);
+        output.writeByte(localDateTime.localTime.hour);
+        output.writeByte(localDateTime.localTime.minute);
+        output.writeByte(localDateTime.localTime.second);
+        output.writeInt(localDateTime.localTime.nano);
     }
 }
 
@@ -528,17 +528,17 @@ export class OffsetDateTimeSerializer implements Serializer<OffsetDateTime> {
         return OffsetDateTime.from(year, month, date, hour, minute, second, nano, offsetSeconds);
     }
 
-    write(output: DataOutput, hzOffsetDateTime: OffsetDateTime): void {
-        output.writeInt(hzOffsetDateTime.localDateTime.localDate.year);
-        output.writeByte(hzOffsetDateTime.localDateTime.localDate.month);
-        output.writeByte(hzOffsetDateTime.localDateTime.localDate.date);
+    write(output: DataOutput, offsetDateTime: OffsetDateTime): void {
+        output.writeInt(offsetDateTime.localDateTime.localDate.year);
+        output.writeByte(offsetDateTime.localDateTime.localDate.month);
+        output.writeByte(offsetDateTime.localDateTime.localDate.date);
 
-        output.writeByte(hzOffsetDateTime.localDateTime.localTime.hour);
-        output.writeByte(hzOffsetDateTime.localDateTime.localTime.minute);
-        output.writeByte(hzOffsetDateTime.localDateTime.localTime.second);
-        output.writeInt(hzOffsetDateTime.localDateTime.localTime.nano);
+        output.writeByte(offsetDateTime.localDateTime.localTime.hour);
+        output.writeByte(offsetDateTime.localDateTime.localTime.minute);
+        output.writeByte(offsetDateTime.localDateTime.localTime.second);
+        output.writeInt(offsetDateTime.localDateTime.localTime.nano);
 
-        output.writeInt(hzOffsetDateTime.offsetSeconds);
+        output.writeInt(offsetDateTime.offsetSeconds);
     }
 }
 

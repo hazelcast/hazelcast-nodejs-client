@@ -22,10 +22,10 @@ const {
     LocalDate,
     LocalDateTime,
     OffsetDateTime,
-} = require('../../../lib/core/DatetimeClasses');
+} = require('../../../lib/core/DateTimeClasses');
 
-describe('DatetimeClassesTest', function () {
-    describe('HzLocalTimeTest', function () {
+describe('DateTimeClassesTest', function () {
+    describe('LocalTimeTest', function () {
         it('should throw if hour is not an integer between 0-23(inclusive)', function () {
             (() => new LocalTime(-1, 1, 1, 1)).should.throw(RangeError, 'Hour');
             (() => new LocalTime(1.1, 1, 1, 1)).should.throw(RangeError, 'All arguments must be integers.');
@@ -111,7 +111,7 @@ describe('DatetimeClassesTest', function () {
             (() => LocalTime.fromString()).should.throw(TypeError, 'String expected');
         });
     });
-    describe('HzLocalDateTest', function () {
+    describe('LocalDateTest', function () {
         it('should throw RangeError if year is not an integer between -999_999_999-999_999_999(inclusive)',
             function () {
                 (() => new LocalDate(1e9, 1, 1)).should.throw(RangeError, 'Year');
@@ -206,7 +206,7 @@ describe('DatetimeClassesTest', function () {
             (() => LocalDate.fromString()).should.throw(TypeError, 'String expected');
         });
     });
-    describe('HzLocalDateTimeTest', function () {
+    describe('LocalDateTimeTest', function () {
 
         it('should throw RangeError if local time is not valid', function () {
             (() => new LocalDateTime(new LocalDate(2000, 2, 29), '')).should.throw(TypeError, 'Invalid local time');
@@ -221,9 +221,9 @@ describe('DatetimeClassesTest', function () {
         });
 
         it('should construct from string correctly', function () {
-            const localDatetime1 = LocalDateTime.fromString('2021-04-15T07:33:04.914456789');
-            const localTime1 = localDatetime1.localTime;
-            const localDate1 = localDatetime1.localDate;
+            const localDateTime1 = LocalDateTime.fromString('2021-04-15T07:33:04.914456789');
+            const localTime1 = localDateTime1.localTime;
+            const localDate1 = localDateTime1.localDate;
             localTime1.nano.should.be.eq(914456789);
             localTime1.second.should.be.eq(4);
             localTime1.minute.should.be.eq(33);
@@ -234,9 +234,9 @@ describe('DatetimeClassesTest', function () {
             localDate1.date.should.be.eq(15);
 
             // use t instead of T
-            const localDatetime2 = LocalDateTime.fromString('2020-04-15t07:35:02.1');
-            const localTime2 = localDatetime2.localTime;
-            const localDate2 = localDatetime2.localDate;
+            const localDateTime2 = LocalDateTime.fromString('2020-04-15t07:35:02.1');
+            const localTime2 = localDateTime2.localTime;
+            const localDate2 = localDateTime2.localDate;
             localTime2.nano.should.be.eq(100000000);
             localTime2.second.should.be.eq(2);
             localTime2.minute.should.be.eq(35);
@@ -290,7 +290,7 @@ describe('DatetimeClassesTest', function () {
             dateTime.asDate().toISOString().should.be.eq('2000-02-29T02:19:04.006Z');
         });
     });
-    describe('HzOffsetDateTimeTest', function () {
+    describe('OffsetDateTimeTest', function () {
 
         it('should return parse values correctly', function () {
             const dateTime1 = new OffsetDateTime(new LocalDateTime(new LocalDate(2000, 2, 29), new LocalTime(2, 3, 4, 6)), 1000);
@@ -339,11 +339,11 @@ describe('DatetimeClassesTest', function () {
         });
 
         it('should construct from string correctly', function () {
-            const offsetDatetime1 = OffsetDateTime.fromString('2000-02-29T02:03:04+01:30');
-            const offsetSeconds1 = offsetDatetime1.offsetSeconds;
-            const localDatetime1 = offsetDatetime1.localDateTime;
-            const localTime1 = localDatetime1.localTime;
-            const localDate1 = localDatetime1.localDate;
+            const offsetDateTime1 = OffsetDateTime.fromString('2000-02-29T02:03:04+01:30');
+            const offsetSeconds1 = offsetDateTime1.offsetSeconds;
+            const localDateTime1 = offsetDateTime1.localDateTime;
+            const localTime1 = localDateTime1.localTime;
+            const localDate1 = localDateTime1.localDate;
 
             localDate1.year.should.be.eq(2000);
             localDate1.month.should.be.eq(2);
@@ -357,11 +357,11 @@ describe('DatetimeClassesTest', function () {
             offsetSeconds1.should.be.eq(90 * 60);
 
             // use t instead of T
-            const offsetDatetime2 = OffsetDateTime.fromString('2021-04-15t07:33:04.914+02:30');
-            const offsetSeconds2 = offsetDatetime2.offsetSeconds;
-            const localDatetime2 = offsetDatetime2.localDateTime;
-            const localTime2 = localDatetime2.localTime;
-            const localDate2 = localDatetime2.localDate;
+            const offsetDateTime2 = OffsetDateTime.fromString('2021-04-15t07:33:04.914+02:30');
+            const offsetSeconds2 = offsetDateTime2.offsetSeconds;
+            const localDateTime2 = offsetDateTime2.localDateTime;
+            const localTime2 = localDateTime2.localTime;
+            const localDate2 = localDateTime2.localDate;
 
             localDate2.year.should.be.eq(2021);
             localDate2.month.should.be.eq(4);
@@ -375,11 +375,11 @@ describe('DatetimeClassesTest', function () {
             offsetSeconds2.should.be.eq(150 * 60);
 
             // Use of Z
-            const offsetDatetime3 = OffsetDateTime.fromString('2021-04-15T07:33:04.914Z');
-            const offsetSeconds3 = offsetDatetime3.offsetSeconds;
-            const localDatetime3 = offsetDatetime3.localDateTime;
-            const localTime3 = localDatetime3.localTime;
-            const localDate3 = localDatetime3.localDate;
+            const offsetDateTime3 = OffsetDateTime.fromString('2021-04-15T07:33:04.914Z');
+            const offsetSeconds3 = offsetDateTime3.offsetSeconds;
+            const localDateTime3 = offsetDateTime3.localDateTime;
+            const localTime3 = localDateTime3.localTime;
+            const localDate3 = localDateTime3.localDate;
 
             localDate3.year.should.be.eq(2021);
             localDate3.month.should.be.eq(4);
@@ -393,11 +393,11 @@ describe('DatetimeClassesTest', function () {
             offsetSeconds3.should.be.eq(0);
 
             // Timezone info omitted, UTC should be assumed
-            const offsetDatetime4 = OffsetDateTime.fromString('2021-04-15T07:33:04.914Z');
-            const offsetSeconds4 = offsetDatetime4.offsetSeconds;
-            const localDatetime4 = offsetDatetime4.localDateTime;
-            const localTime4 = localDatetime4.localTime;
-            const localDate4 = localDatetime4.localDate;
+            const offsetDateTime4 = OffsetDateTime.fromString('2021-04-15T07:33:04.914Z');
+            const offsetSeconds4 = offsetDateTime4.offsetSeconds;
+            const localDateTime4 = offsetDateTime4.localDateTime;
+            const localTime4 = localDateTime4.localTime;
+            const localDate4 = localDateTime4.localDate;
 
             localDate4.year.should.be.eq(2021);
             localDate4.month.should.be.eq(4);
