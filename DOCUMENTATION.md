@@ -569,7 +569,7 @@ In the following chapters you will learn the description of all options supporte
 
 - `hazelcast.client.autopipelining.enabled`:
 Default value is `true`. Turns automated pipelining feature on/off.
-If your application does only writes operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughput.
+If your application does only write operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughput.
 
 - `hazelcast.client.autopipelining.threshold.bytes`:
 Default value is `65536` bytes (64 KB). This is the coalescing threshold for the internal queue used by automated pipelining.
@@ -623,13 +623,10 @@ When set to `false`, the client will always use private addresses reported by me
 - `hazelcast.invalidation.max.tolerated.miss.count`:
 Default value is `10`. If missed invalidation count is bigger than this value, relevant cached data will be made unreachable.
 
-- `hazelcast.invalidation.min.reconciliation.interval.seconds`:
-Minimum allowed value for `hazelcast.invalidation.reconciliation.interval.seconds`.
-
 - `hazelcast.invalidation.reconciliation.interval.seconds`: Default value is `60` seconds.
 This is a periodic task that scans cluster members periodically to compare generated invalidation events with the received ones from the client Near Cache.
 
-- `hazelcast.logging.level`: Logging level. Can be one of `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`.
+- `hazelcast.logging.level`: Logging level. Can be one of `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`. Default value is `INFO`.
 
 # 4. Serialization
 

@@ -25,7 +25,7 @@ import {
     tryGetNumber,
     tryGetString
 } from '../util/Util';
-import {ClientConfig, ClientConfigImpl, PROPERTY_SET} from './Config';
+import {ClientConfig, ClientConfigImpl} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfigImpl} from './FlakeIdGeneratorConfig';
 import {InMemoryFormat} from './InMemoryFormat';
@@ -35,6 +35,7 @@ import {ReliableTopicConfigImpl} from './ReliableTopicConfig';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 import {ReconnectMode} from './ConnectionStrategyConfig';
 import {LoadBalancerType} from './LoadBalancerConfig';
+import {LogLevel} from '../logging';
 
 /**
  * Responsible for user-defined config validation. Builds the effective config with necessary defaults.
@@ -223,10 +224,73 @@ export class ConfigBuilder {
 
     private handleProperties(jsonObject: any): void {
         for (const key in jsonObject) {
-            if (!PROPERTY_SET.has(key)) {
-                throw new RangeError(`Unexpected property '${key}' is passed to the Hazelcast Client`);
+            let value = jsonObject[key];
+            try {
+                switch (key) {
+                    case 'hazelcast.client.heartbeat.interval':
+                        value = tryGetNumber(value);
+                        break;
+                    case 'hazelcast.client.heartbeat.timeout':
+                        value = tryGetNumber(value);
+                        break;
+                    case 'hazelcast.client.invocation.retry.pause.millis':
+                        value = tryGetNumber(value);
+                        break;
+                    case 'hazelcast.client.invocation.timeout.millis':
+                        value = tryGetNumber(value);
+                        break;
+                    case 'hazelcast.client.internal.clean.resources.millis':
+                        value = tryGetNumber(value);
+                        break;
+                    case 'hazelcast.client.cloud.url':
+                        value = tryGetString(value);
+                        break;
+                    case 'hazelcast.client.statistics.enabled':
+                        value = tryGetBoolean(value);
+                        break;
+                    case 'hazelcast.client.statistics.period.seconds':
+                        value = tryGetNumber(value);
+                        break;
+                    case 'hazelcast.invalidation.reconciliation.interval.seconds':
+                        value = tryGetNumber(value);
+                        break;
+                    case 'hazelcast.invalidation.max.tolerated.miss.count':
+                        value = tryGetNumber(value);
+                        break;
+                    case 'hazelcast.logging.level':
+                        value = tryGetEnum(LogLevel, value);
+                        break;
+                    case 'hazelcast.client.autopipelining.enabled':
+                        value = tryGetBoolean(value);
+                        break;
+                    case 'hazelcast.client.autopipelining.threshold.bytes':
+                        value = tryGetNumber(value);
+                        break;
+                    case 'hazelcast.client.socket.no.delay':
+                        value = tryGetBoolean(value);
+                        break;
+                    case 'hazelcast.client.shuffle.member.list':
+                        value = tryGetBoolean(value);
+                        break;
+                    case 'hazelcast.client.operation.backup.timeout.millis':
+                        value = tryGetNumber(value);
+                        break;
+                    case 'hazelcast.client.operation.fail.on.indeterminate.state':
+                        value = tryGetBoolean(value);
+                        break;
+                    case 'hazelcast.discovery.public.ip.enabled':
+                        if (value !== null || typeof value !== 'boolean') {
+                            throw new RangeError(`${value} is not null or a boolean.`);
+                        }
+                        break;
+                    default:
+                        throw new RangeError(`Unexpected property '${key}' is passed to the Hazelcast Client`);
+                }
+            } catch (e) {
+                throw new RangeError(`Property validation error: Property: ${key}, value: ${value}. Error: ${e}`);
             }
-            this.effectiveConfig.properties[key] = jsonObject[key];
+
+            this.effectiveConfig.properties[key] = value;
         }
     }
 
