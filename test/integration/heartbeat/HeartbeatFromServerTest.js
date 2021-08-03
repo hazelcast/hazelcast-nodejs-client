@@ -28,9 +28,13 @@ describe('HeartbeatFromServerTest', function () {
 
     let cluster;
     let client;
+    let timeouts;
 
     function simulateHeartbeatLost(client, address, timeout) {
         const connection = client.getConnectionManager().getConnectionForAddress(address);
+        if (!connection) {
+            return;
+        }
         connection.lastReadTimeMillis = connection.getLastReadTimeMillis() - timeout;
     }
 
@@ -57,6 +61,11 @@ describe('HeartbeatFromServerTest', function () {
     });
 
     afterEach(async function () {
+        if (Array.isArray(timeouts)) {
+            for (const timeout of timeouts) {
+                clearInterval(timeout);
+            }
+        }
         if (client != null) {
             await client.shutdown();
         }
@@ -104,6 +113,8 @@ describe('HeartbeatFromServerTest', function () {
                         + member2.host + ':' + member2.port));
                 }
             });
+            // We will need to cancel timeouts after test passed.
+            timeouts = new Array(5);
             /*
             Run more than once to avoid the following case:
 
@@ -114,7 +125,10 @@ describe('HeartbeatFromServerTest', function () {
             runs and since lastReadTime is updated, it won't close the connection.
              */
             for (let i = 0; i < 5; i++) {
-                setTimeout(() => simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000), 100 * i);
+                timeouts[i] = setTimeout(
+                    () => simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000),
+                    100 * i
+                );
             }
         }).catch(done);
     });
@@ -163,6 +177,8 @@ describe('HeartbeatFromServerTest', function () {
                         + member2.host + ':' + member2.port));
                 }
             });
+            // We will need to cancel timeouts after test passed.
+            timeouts = new Array(5);
             /*
             Run more than once to avoid the following case:
 
@@ -173,7 +189,7 @@ describe('HeartbeatFromServerTest', function () {
             runs and since lastReadTime is updated, it won't close the connection.
              */
             for (let i = 0; i < 5; i++) {
-                setTimeout(
+                timeouts[i] = setTimeout(
                     () => simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000),
                     2000 + i * 100
                 );
