@@ -26,6 +26,7 @@ import * as Util from '../util/Util';
 import {Data, DataInput, DataOutput} from './Data';
 import {Serializer, IdentifiedDataSerializableFactory} from './Serializable';
 import {
+    ArrayListSerializer,
     BooleanArraySerializer,
     BooleanSerializer,
     ByteArraySerializer,
@@ -43,6 +44,7 @@ import {
     IntegerSerializer,
     JavaClassSerializer,
     JsonSerializer,
+    LinkedListSerializer,
     LongArraySerializer,
     LongSerializer,
     NullSerializer,
@@ -266,6 +268,8 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('stringArray', new StringArraySerializer());
         this.registerSerializer('javaClass', new JavaClassSerializer());
         this.registerSerializer('floatArray', new FloatArraySerializer());
+        this.registerSerializer('arrayList', new ArrayListSerializer());
+        this.registerSerializer('linkedList', new LinkedListSerializer());
         this.registerSerializer('uuid', new UuidSerializer());
         this.registerIdentifiedFactories();
         this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
