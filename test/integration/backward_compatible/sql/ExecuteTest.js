@@ -496,7 +496,7 @@ describe('SqlExecuteTest', function () {
         });
 
         it('should return an error if sql query sent to lite member', async function () {
-            cluster = await RC.createClusterKeepClusterName(null, LITE_MEMBER_CONFIG);
+            cluster = await RC.createCluster(null, LITE_MEMBER_CONFIG);
             await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
