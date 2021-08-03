@@ -53,7 +53,6 @@ describe('HeartbeatFromServerTest', function () {
     }
 
     beforeEach(async function () {
-        this.timeout(200000);
         cluster = await RC.createCluster(null, null);
     });
 
@@ -105,7 +104,18 @@ describe('HeartbeatFromServerTest', function () {
                         + member2.host + ':' + member2.port));
                 }
             });
-            simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000);
+            /*
+            Run more than once to avoid the following case:
+
+            as a result of ping requests lastReadTime of a connection is continuously updated.
+            let's say we called simulateHeartbeatLost and then
+            before the heartbeatFunction() has a chance to run(it has 500 interval for this test)
+            data may be received on the socket, which updates the lastReadTime. Then heartbeatFunction
+            runs and since lastReadTime is updated, it won't close the connection.
+             */
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000), 100 * i);
+            }
         }).catch(done);
     });
 
@@ -153,7 +163,21 @@ describe('HeartbeatFromServerTest', function () {
                         + member2.host + ':' + member2.port));
                 }
             });
-            simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000);
+            /*
+            Run more than once to avoid the following case:
+
+            as a result of ping requests lastReadTime of a connection is continuously updated.
+            let's say we called simulateHeartbeatLost and then
+            before the heartbeatFunction() has a chance to run(it has 500 interval for this test)
+            data may be received on the socket, which updates the lastReadTime. Then heartbeatFunction
+            runs and since lastReadTime is updated, it won't close the connection.
+             */
+            for (let i = 0; i < 5; i++) {
+                setTimeout(
+                    () => simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000),
+                    2000 + i * 100
+                );
+            }
         }).catch(done);
     });
 });
