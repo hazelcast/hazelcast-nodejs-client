@@ -53,6 +53,7 @@ describe('HeartbeatFromServerTest', function () {
     }
 
     beforeEach(async function () {
+        this.timeout(200000);
         cluster = await RC.createCluster(null, null);
     });
 
