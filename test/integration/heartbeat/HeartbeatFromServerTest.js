@@ -90,8 +90,6 @@ describe('HeartbeatFromServerTest', function () {
             member2 = m2;
             return memberAddedPromise.promise;
         }).then(() => {
-            simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000);
-        }).then(() => {
             client.getConnectionManager().once('connectionRemoved', (connection) => {
                 const remoteAddress = connection.getRemoteAddress();
                 if (remoteAddress.host === member2.host && remoteAddress.port === member2.port) {
@@ -106,6 +104,7 @@ describe('HeartbeatFromServerTest', function () {
                         + member2.host + ':' + member2.port));
                 }
             });
+            simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000);
         }).catch(done);
     });
 
