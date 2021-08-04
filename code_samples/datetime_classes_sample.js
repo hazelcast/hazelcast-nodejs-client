@@ -83,11 +83,9 @@ function portableFactory(classId) {
         // You can also use other data structures
 
         const queue = await client.getQueue('dateQueue');
-
         await queue.add(new LocalDate(1998, 12, 2));
 
         console.log((await queue.take()).toString()); // 1998-12-02
-
         console.log(await map.get('1')); // OffsetDateTime object
 
         // You can run an SQL query:
