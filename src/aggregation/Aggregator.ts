@@ -17,7 +17,24 @@
 import * as Long from 'long';
 import {DataInput, DataOutput} from '../serialization/Data';
 import {IdentifiedDataSerializable} from '../serialization/Serializable';
-import * as AggregatorFactory from './AggregatorFactory';
+import {
+    AGGREGATOR_FACTORY_ID,
+    CANONICALIZING_SET,
+    COUNT,
+    DISTINCT,
+    DOUBLE_AVG,
+    DOUBLE_SUM,
+    FIXED_SUM,
+    FLOATING_POINT_SUM,
+    INT_AVG,
+    INT_SUM,
+    LONG_AVG,
+    LONG_SUM,
+    MAX,
+    MIN,
+    NUMBER_AVG
+} from './AggregatorConstants';
+import {HazelcastError} from '../core';
 
 /**
  * Base interface for all aggregators.
@@ -30,7 +47,7 @@ export interface Aggregator<R> extends IdentifiedDataSerializable {
 export abstract class AbstractAggregator<R> implements Aggregator<R> {
 
     abstract classId: number;
-    factoryId = AggregatorFactory.AGGREGATOR_FACTORY_ID;
+    factoryId = AGGREGATOR_FACTORY_ID;
     protected attributePath: string;
 
     constructor(attributePath?: string) {
@@ -45,7 +62,7 @@ export abstract class AbstractAggregator<R> implements Aggregator<R> {
 /** @internal */
 export class CountAggregator extends AbstractAggregator<Long> {
 
-    classId = AggregatorFactory.COUNT;
+    classId = COUNT;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -63,7 +80,7 @@ export class CountAggregator extends AbstractAggregator<Long> {
 /** @internal */
 export class DoubleAverageAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.DOUBLE_AVG;
+    classId = DOUBLE_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -81,7 +98,7 @@ export class DoubleAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class DoubleSumAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.DOUBLE_SUM;
+    classId = DOUBLE_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -97,7 +114,7 @@ export class DoubleSumAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class NumberAverageAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.NUMBER_AVG;
+    classId = NUMBER_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -115,7 +132,7 @@ export class NumberAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class FixedPointSumAggregator extends AbstractAggregator<Long> {
 
-    classId = AggregatorFactory.FIXED_SUM;
+    classId = FIXED_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -131,7 +148,7 @@ export class FixedPointSumAggregator extends AbstractAggregator<Long> {
 /** @internal */
 export class FloatingPointSumAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.FLOATING_POINT_SUM;
+    classId = FLOATING_POINT_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -147,7 +164,7 @@ export class FloatingPointSumAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class MaxAggregator<R> extends AbstractAggregator<R> {
 
-    classId = AggregatorFactory.MAX;
+    classId = MAX;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -163,7 +180,7 @@ export class MaxAggregator<R> extends AbstractAggregator<R> {
 /** @internal */
 export class MinAggregator<R> extends AbstractAggregator<R> {
 
-    classId = AggregatorFactory.MIN;
+    classId = MIN;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -179,7 +196,7 @@ export class MinAggregator<R> extends AbstractAggregator<R> {
 /** @internal */
 export class IntegerAverageAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.INT_AVG;
+    classId = INT_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -197,7 +214,7 @@ export class IntegerAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class IntegerSumAggregator extends AbstractAggregator<Long> {
 
-    classId = AggregatorFactory.INT_SUM;
+    classId = INT_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -213,7 +230,7 @@ export class IntegerSumAggregator extends AbstractAggregator<Long> {
 /** @internal */
 export class LongAverageAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.LONG_AVG;
+    classId = LONG_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -231,7 +248,7 @@ export class LongAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class LongSumAggregator extends AbstractAggregator<Long> {
 
-    classId = AggregatorFactory.LONG_SUM;
+    classId = LONG_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -241,5 +258,118 @@ export class LongSumAggregator extends AbstractAggregator<Long> {
     writeData(output: DataOutput): void {
         output.writeString(this.attributePath);
         output.writeLong(Long.ZERO);
+    }
+}
+
+/** @internal */
+export class DistinctValuesAggregator<R> extends AbstractAggregator<Set<R>> {
+
+    classId = DISTINCT;
+
+    readData(input: DataInput): any {
+        this.attributePath = input.readString();
+        const count = input.readInt();
+        for (let i = 0; i < count; i++) {
+            input.readObject();
+        }
+    }
+
+    writeData(output: DataOutput): void {
+        output.writeString(this.attributePath);
+        output.writeInt(0);
+    }
+}
+
+/** @internal */
+export class CanonicalizingHashSet<R> implements IdentifiedDataSerializable, Set<R> {
+
+    classId = CANONICALIZING_SET;
+    factoryId = AGGREGATOR_FACTORY_ID;
+    private _values = new Set<R>();
+
+    readData(input: DataInput): void {
+        const count = input.readInt();
+        for (let i = 0; i < count; i++) {
+            const element = input.readObject();
+            this._values.add(element);
+        }
+    }
+
+    writeData(output: DataOutput): void {
+        output.writeInt(this._values.size);
+        for (const element of this._values) {
+            output.writeObject(element);
+        }
+    }
+
+    readonly [Symbol.toStringTag]: string = this._values[Symbol.toStringTag];
+
+    get size() : number {
+        return this._values.size;
+    }
+
+    [Symbol.iterator](): IterableIterator<R> {
+        return undefined;
+    }
+
+    add(value: R): this {
+        this._values.add(value);
+        return this;
+    }
+
+    clear(): void {
+        this._values.clear();
+    }
+
+    delete(value: R): boolean {
+        return this._values.delete(value);
+    }
+
+    entries(): IterableIterator<[R, R]> {
+        return this._values.entries();
+    }
+
+    forEach(callbackfn: (value: R, value2: R, set: Set<R>) => void, thisArg?: any): void {
+        this._values.forEach(callbackfn, thisArg);
+    }
+
+    has(value: R): boolean {
+        return this._values.has(value);
+    }
+
+    keys(): IterableIterator<R> {
+        return this._values.keys();
+    }
+
+    values(): IterableIterator<R> {
+        return this._values.values();
+    }
+
+}
+
+/** @internal */
+export const idToConstructor: { [id: number]: new () => Aggregator<any> } = {
+    [COUNT]: CountAggregator,
+    [DISTINCT]: DistinctValuesAggregator,
+    [DOUBLE_AVG]: DoubleAverageAggregator,
+    [DOUBLE_SUM]: DoubleSumAggregator,
+    [FIXED_SUM]: FixedPointSumAggregator,
+    [FLOATING_POINT_SUM]: FloatingPointSumAggregator,
+    [INT_AVG]: IntegerAverageAggregator,
+    [INT_SUM]: IntegerSumAggregator,
+    [LONG_AVG]: LongAverageAggregator,
+    [LONG_SUM]: LongSumAggregator,
+    [MAX]: MaxAggregator,
+    [MIN]: MinAggregator,
+    [NUMBER_AVG]: NumberAverageAggregator,
+    [CANONICALIZING_SET]: CanonicalizingHashSet
+};
+
+/** @internal */
+export function aggregatorFactory(classId: number): IdentifiedDataSerializable {
+    try {
+        return new idToConstructor[classId]();
+    } catch (e) {
+        throw new HazelcastError('There is no known aggregator with type id ' + classId, e);
     }
 }

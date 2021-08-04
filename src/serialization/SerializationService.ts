@@ -15,7 +15,8 @@
  */
 /** @ignore *//** */
 
-import {AGGREGATOR_FACTORY_ID, aggregatorFactory} from '../aggregation/AggregatorFactory';
+import {AGGREGATOR_FACTORY_ID} from '../aggregation/AggregatorConstants';
+import {aggregatorFactory} from '../aggregation/Aggregator';
 import {CLUSTER_DATA_FACTORY_ID, clusterDataFactory} from './ClusterDataFactory';
 import {SerializationConfigImpl} from '../config/SerializationConfig';
 import {
