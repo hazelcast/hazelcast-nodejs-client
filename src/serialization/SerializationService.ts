@@ -292,7 +292,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('linkedList', new LinkedListSerializer());
         this.registerSerializer('uuid', new UuidSerializer());
         this.registerSerializer('bigDecimal', new BigDecimalSerializer());
-        this.registerSerializer('bigInt', new BigIntSerializer());
+        this.registerSerializer('bigint', new BigIntSerializer());
         this.registerIdentifiedFactories();
         this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
