@@ -15,9 +15,9 @@
  */
 'use strict';
 
-// This sample code demonstrates big decimal usage.
+// This sample code demonstrates BigDecimal usage.
 
-const { Client, Big } = require('..');
+const { Client, BigDecimal } = require('..');
 
 class CustomNumber {
     constructor(decimal) {
@@ -56,19 +56,19 @@ function portableFactory(classId) {
         const client = await Client.newHazelcastClient(cfg);
         const map = await client.getMap('decimalMap');
 
-        // You can use big decimals for any operation
-        // Let's add some big decimals using big decimal constructor `Big`:
+        // You can use BigDecimals for any operation
+        // Let's add some BigDecimals:
 
-        await map.set('1', Big('1.12345678910111213'));
-        await map.set('2', Big('2.12345678910111213'));
-        await map.set('3', Big('3.12345678910111213'));
-        await map.set('4', Big('4.12345678910111213'));
+        await map.set('1', BigDecimal.fromString('1.12345678910111213'));
+        await map.set('2', BigDecimal.fromString('2.12345678910111213'));
+        await map.set('3', BigDecimal.fromString('3.12345678910111213'));
+        await map.set('4', BigDecimal.fromString('4.12345678910111213'));
 
         // You can also use other data structures
 
         const queue = await client.getQueue('decimalQueue');
 
-        await queue.add(Big('1231.1231231e-13'));
+        await queue.add(BigDecimal.fromString('1231.1231231e-13'));
 
         // BigDecimal has toString() method but no arithmetic methods:
         console.log((await queue.take()).toString()); // 0.00000000012311231231
@@ -77,7 +77,10 @@ function portableFactory(classId) {
 
         // You can run an SQL query:
 
-        const result = client.getSql().execute('SELECT * FROM decimalMap WHERE this > ?', [Big('2.22222222222222222')]);
+        const result = client.getSql().execute(
+            'SELECT * FROM decimalMap WHERE this > ?',
+            [BigDecimal.fromString('2.22222222222222222')]
+        );
 
         // The following for loop prints:
         // key: 4, value: 4.12345678910111213
