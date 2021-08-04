@@ -53,6 +53,7 @@ export interface LoadBalancer {
      * Returns the next data member to route to.
      *
      * @return Returns the next data member or `null` if no data member is available
+     * @deprecated Since 5.0, the method is unused
      */
     nextDataMember(): Member | null;
 
@@ -60,6 +61,7 @@ export interface LoadBalancer {
      * Returns whether this instance supports getting data members through a call to {@link nextDataMember()}.
      *
      * @return Returns `true` if this load balancer can get a data member.
+     * @deprecated Since 5.0, the method is unused
      */
     canGetNextDataMember(): boolean;
 }

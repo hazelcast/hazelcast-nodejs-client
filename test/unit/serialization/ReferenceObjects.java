@@ -30,6 +30,7 @@ import com.hazelcast.internal.serialization.impl.HeapData;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.nio.serialization.Portable;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.CharBuffer;
 import java.time.LocalTime;
 import java.time.LocalDate;
@@ -141,6 +142,7 @@ class ReferenceObjects {
         aOffsetDateTime = OffsetDateTime.of(aLocalDateTime, ZoneOffset.ofHours(18));
     }
 
+    static BigInteger aBigInteger = new BigInteger("1314432323232411");
     static BigDecimal aBigDecimal = new BigDecimal(31231);
     static Class aClass = BigDecimal.class;
 
@@ -150,6 +152,6 @@ class ReferenceObjects {
             booleans, bytes, chars, doubles, shorts, floats, ints, longs, strings,
             aCustomStreamSerializable, aCustomByteArraySerializable,
             anIdentifiedDataSerializable, aPortable,
-            aDate, aLocalDate, aLocalTime, aLocalDateTime, aOffsetDateTime, aBigDecimal, aClass
+            aDate, aLocalDate, aLocalTime, aLocalDateTime, aOffsetDateTime, aBigInteger, aBigDecimal, aClass
     };
 }
