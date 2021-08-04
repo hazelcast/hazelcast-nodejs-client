@@ -17,9 +17,9 @@
 
 // This sample code demonstrates datetime classes usage.
 
-const { Client, LocalDate, OffsetDateTime } = require('..');
+const { Client, LocalDate, LocalTime, LocalDateTime, OffsetDateTime } = require('hazelcast-client');
 
-class CustomNumber {
+class DateTimePortable {
     constructor(date, time, timestamp, timestampWithTz) {
         this.date = date;
         this.time = time;
@@ -46,7 +46,7 @@ class CustomNumber {
 
 function portableFactory(classId) {
     if (classId === 1) {
-        return new CustomNumber();
+        return new DateTimePortable();
     }
     return null;
 }
@@ -68,7 +68,14 @@ function portableFactory(classId) {
         // You can use datetime classes for any operation
         // Let's add some timestamp with timezones using `OffsetDatetime`:
 
-        await map.set('1', OffsetDateTime.from(2020, 2, 29, 3, 4, 5, 123456789, 64800));
+        // You can construct a datetime class from other datetime classes:
+        await map.set('1', new OffsetDateTime(
+            new LocalDateTime(
+                new LocalDate(2020, 2, 29),
+                new LocalTime(3, 4, 5, 123456789)
+            ), 64800)
+        );
+        // You can also construct it using primitive fields:
         await map.set('2', OffsetDateTime.from(2021, 2, 28, 3, 4, 5, 12345, 3600));
         await map.set('3', OffsetDateTime.from(2022, 2, 28, 3, 4, 5, 12345, -3600));
         await map.set('4', OffsetDateTime.from(2023, 2, 28, 3, 4, 5, 16789, 12000));
@@ -96,6 +103,18 @@ function portableFactory(classId) {
         for await (const row of result) {
             console.log(`key: ${row['__key']}, value: ${row['this']}`);
         }
+
+        // You can use datetime classes as portable fields:
+
+        const set = await client.getSet('datetimePortableSet');
+        const portable1 = new DateTimePortable(
+            new LocalDate(2020, 8, 12),
+            new LocalTime(10, 20, 30, 4000),
+            LocalDateTime.from(2020, 8, 12, 10, 20, 30, 4000),
+            OffsetDateTime.from(2020, 8, 12, 10, 20, 30, 4000, 3600)
+        );
+        await set.add(portable1);
+        console.log(await set.contains(portable1)); // true
 
     } catch (err) {
         console.error('Error occurred:', err);

@@ -17,7 +17,7 @@
 
 // This sample code demonstrates BigDecimal usage.
 
-const { Client, BigDecimal } = require('..');
+const { Client, BigDecimal } = require('hazelcast-client');
 
 class CustomNumber {
     constructor(decimal) {
@@ -27,7 +27,6 @@ class CustomNumber {
     }
 
     readPortable(reader) {
-        // decimal is supported for portable serialization
         this.decimal = reader.readDecimal('decimal');
     }
 
@@ -59,7 +58,9 @@ function portableFactory(classId) {
         // You can use BigDecimals for any operation
         // Let's add some BigDecimals:
 
-        await map.set('1', BigDecimal.fromString('1.12345678910111213'));
+        // You can construct a BigDecimal from a bigint(unscaled value) and a scale:
+        await map.set('1', new BigDecimal(123n, 3));
+        // or from a string:
         await map.set('2', BigDecimal.fromString('2.12345678910111213'));
         await map.set('3', BigDecimal.fromString('3.12345678910111213'));
         await map.set('4', BigDecimal.fromString('4.12345678910111213'));
@@ -67,15 +68,13 @@ function portableFactory(classId) {
         // You can also use other data structures
 
         const queue = await client.getQueue('decimalQueue');
-
         await queue.add(BigDecimal.fromString('1231.1231231e-13'));
 
         // BigDecimal has toString() method but no arithmetic methods:
         console.log((await queue.take()).toString()); // 0.00000000012311231231
+        console.log(await map.get('1')); // BigDecimal { unscaledValue: 123n, scale: 3 }
 
-        console.log(await map.get('1')); // BigDecimal object: { unscaledValue: 112345678910111213n, scale: 17 }
-
-        // You can run an SQL query:
+        // You can run an SQL query with a BigDecimal:
 
         const result = client.getSql().execute(
             'SELECT * FROM decimalMap WHERE this > ?',
@@ -89,6 +88,13 @@ function portableFactory(classId) {
         for await (const row of result) {
             console.log(`key: ${row['__key']}, value: ${row['this']}`);
         }
+
+        // You can use BigDecimal as a portable field:
+
+        const set = await client.getSet('bigDecimalPortableSet');
+        const customNumber = new CustomNumber(BigDecimal.fromString('4.12345678910111213'));
+        await set.add(customNumber);
+        console.log(await set.contains(customNumber)); // true
 
     } catch (err) {
         console.error('Error occurred:', err);
