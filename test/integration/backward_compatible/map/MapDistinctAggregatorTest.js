@@ -94,5 +94,4 @@ describe('MapDistinctAggregatorTest', function () {
             set.size.should.be.equal(expectedResult);
         });
     }
-
 });
