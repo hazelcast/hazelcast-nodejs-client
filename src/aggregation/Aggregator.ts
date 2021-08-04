@@ -17,23 +17,7 @@
 import * as Long from 'long';
 import {DataInput, DataOutput} from '../serialization/Data';
 import {IdentifiedDataSerializable} from '../serialization/Serializable';
-import {
-    AGGREGATOR_FACTORY_ID,
-    CANONICALIZING_SET,
-    COUNT,
-    DISTINCT,
-    DOUBLE_AVG,
-    DOUBLE_SUM,
-    FIXED_SUM,
-    FLOATING_POINT_SUM,
-    INT_AVG,
-    INT_SUM,
-    LONG_AVG,
-    LONG_SUM,
-    MAX,
-    MIN,
-    NUMBER_AVG
-} from './AggregatorConstants';
+import * as AggregatorConstants from './AggregatorConstants';
 import {HazelcastError} from '../core';
 
 /**
@@ -47,7 +31,7 @@ export interface Aggregator<R> extends IdentifiedDataSerializable {
 export abstract class AbstractAggregator<R> implements Aggregator<R> {
 
     abstract classId: number;
-    factoryId = AGGREGATOR_FACTORY_ID;
+    factoryId = AggregatorConstants.AGGREGATOR_FACTORY_ID;
     protected attributePath: string;
 
     constructor(attributePath?: string) {
@@ -62,7 +46,7 @@ export abstract class AbstractAggregator<R> implements Aggregator<R> {
 /** @internal */
 export class CountAggregator extends AbstractAggregator<Long> {
 
-    classId = COUNT;
+    classId = AggregatorConstants.COUNT;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -80,7 +64,7 @@ export class CountAggregator extends AbstractAggregator<Long> {
 /** @internal */
 export class DoubleAverageAggregator extends AbstractAggregator<number> {
 
-    classId = DOUBLE_AVG;
+    classId = AggregatorConstants.DOUBLE_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -98,7 +82,7 @@ export class DoubleAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class DoubleSumAggregator extends AbstractAggregator<number> {
 
-    classId = DOUBLE_SUM;
+    classId = AggregatorConstants.DOUBLE_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -114,7 +98,7 @@ export class DoubleSumAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class NumberAverageAggregator extends AbstractAggregator<number> {
 
-    classId = NUMBER_AVG;
+    classId = AggregatorConstants.NUMBER_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -132,7 +116,7 @@ export class NumberAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class FixedPointSumAggregator extends AbstractAggregator<Long> {
 
-    classId = FIXED_SUM;
+    classId = AggregatorConstants.FIXED_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -148,7 +132,7 @@ export class FixedPointSumAggregator extends AbstractAggregator<Long> {
 /** @internal */
 export class FloatingPointSumAggregator extends AbstractAggregator<number> {
 
-    classId = FLOATING_POINT_SUM;
+    classId = AggregatorConstants.FLOATING_POINT_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -164,7 +148,7 @@ export class FloatingPointSumAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class MaxAggregator<R> extends AbstractAggregator<R> {
 
-    classId = MAX;
+    classId = AggregatorConstants.MAX;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -180,7 +164,7 @@ export class MaxAggregator<R> extends AbstractAggregator<R> {
 /** @internal */
 export class MinAggregator<R> extends AbstractAggregator<R> {
 
-    classId = MIN;
+    classId = AggregatorConstants.MIN;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -196,7 +180,7 @@ export class MinAggregator<R> extends AbstractAggregator<R> {
 /** @internal */
 export class IntegerAverageAggregator extends AbstractAggregator<number> {
 
-    classId = INT_AVG;
+    classId = AggregatorConstants.INT_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -214,7 +198,7 @@ export class IntegerAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class IntegerSumAggregator extends AbstractAggregator<Long> {
 
-    classId = INT_SUM;
+    classId = AggregatorConstants.INT_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -230,7 +214,7 @@ export class IntegerSumAggregator extends AbstractAggregator<Long> {
 /** @internal */
 export class LongAverageAggregator extends AbstractAggregator<number> {
 
-    classId = LONG_AVG;
+    classId = AggregatorConstants.LONG_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -248,7 +232,7 @@ export class LongAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class LongSumAggregator extends AbstractAggregator<Long> {
 
-    classId = LONG_SUM;
+    classId = AggregatorConstants.LONG_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -264,7 +248,7 @@ export class LongSumAggregator extends AbstractAggregator<Long> {
 /** @internal */
 export class DistinctValuesAggregator<R> extends AbstractAggregator<Set<R>> {
 
-    classId = DISTINCT;
+    classId = AggregatorConstants.DISTINCT;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -283,8 +267,8 @@ export class DistinctValuesAggregator<R> extends AbstractAggregator<Set<R>> {
 /** @internal */
 export class CanonicalizingHashSet<R> implements IdentifiedDataSerializable, Set<R> {
 
-    classId = CANONICALIZING_SET;
-    factoryId = AGGREGATOR_FACTORY_ID;
+    classId = AggregatorConstants.CANONICALIZING_SET;
+    factoryId = AggregatorConstants.AGGREGATOR_FACTORY_ID;
     private _values = new Set<R>();
 
     readData(input: DataInput): void {
@@ -349,20 +333,20 @@ export class CanonicalizingHashSet<R> implements IdentifiedDataSerializable, Set
 
 /** @internal */
 export const idToConstructor: { [id: number]: new () => Aggregator<any> } = {
-    [COUNT]: CountAggregator,
-    [DISTINCT]: DistinctValuesAggregator,
-    [DOUBLE_AVG]: DoubleAverageAggregator,
-    [DOUBLE_SUM]: DoubleSumAggregator,
-    [FIXED_SUM]: FixedPointSumAggregator,
-    [FLOATING_POINT_SUM]: FloatingPointSumAggregator,
-    [INT_AVG]: IntegerAverageAggregator,
-    [INT_SUM]: IntegerSumAggregator,
-    [LONG_AVG]: LongAverageAggregator,
-    [LONG_SUM]: LongSumAggregator,
-    [MAX]: MaxAggregator,
-    [MIN]: MinAggregator,
-    [NUMBER_AVG]: NumberAverageAggregator,
-    [CANONICALIZING_SET]: CanonicalizingHashSet
+    [AggregatorConstants.COUNT]: CountAggregator,
+    [AggregatorConstants.DISTINCT]: DistinctValuesAggregator,
+    [AggregatorConstants.DOUBLE_AVG]: DoubleAverageAggregator,
+    [AggregatorConstants.DOUBLE_SUM]: DoubleSumAggregator,
+    [AggregatorConstants.FIXED_SUM]: FixedPointSumAggregator,
+    [AggregatorConstants.FLOATING_POINT_SUM]: FloatingPointSumAggregator,
+    [AggregatorConstants.INT_AVG]: IntegerAverageAggregator,
+    [AggregatorConstants.INT_SUM]: IntegerSumAggregator,
+    [AggregatorConstants.LONG_AVG]: LongAverageAggregator,
+    [AggregatorConstants.LONG_SUM]: LongSumAggregator,
+    [AggregatorConstants.MAX]: MaxAggregator,
+    [AggregatorConstants.MIN]: MinAggregator,
+    [AggregatorConstants.NUMBER_AVG]: NumberAverageAggregator,
+    [AggregatorConstants.CANONICALIZING_SET]: CanonicalizingHashSet
 };
 
 /** @internal */
