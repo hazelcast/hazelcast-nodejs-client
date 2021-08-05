@@ -1,0 +1,11 @@
+{
+    "env": {
+        "es2020": true
+    },
+    "extends": [
+        "../.eslintrc"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 11
+    }
+}
