@@ -1,4 +1,4 @@
-name: Test Branch
+name: Run tests
 on:
     push:
         branches-ignore:
@@ -8,8 +8,8 @@ on:
     pull_request:
 
 jobs:
-    test-branch:
-        name: Test Branch (${{ matrix.os }})
+    run-tests:
+        name: Run Tests on (${{ matrix.os }})
         runs-on: ${{ matrix.os }}
 
         strategy:
