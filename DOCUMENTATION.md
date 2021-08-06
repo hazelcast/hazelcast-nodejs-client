@@ -2734,7 +2734,7 @@ You can configure this using `metadata-policy` element for the map configuration
 #### 8.8.1.5. Filtering with Paging Predicates
 
 > **WARNING: Starting from version 4.2, [the SQL querying feature](#87-sql) is introduced.
-> The SQL querying feature is more efficient than paging predicates, and it is recommended to be used instead of paging predicates.**
+> The SQL querying feature is more efficient than paging predicates, and it is recommended to be used instead.**
 
 The Node.js client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
 You can find an example code [here.](https://github.com/srknzl/hazelcast-paging-predicate-example)
