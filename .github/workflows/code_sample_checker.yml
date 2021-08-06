@@ -3,7 +3,7 @@ on: pull_request
 
 jobs:
     test-code-samples:
-        name: check-code-samples
+        name: Check code samples
         runs-on: ${{matrix.os}}
 
         strategy:

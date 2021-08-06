@@ -17,12 +17,13 @@ async function walkJsFiles(dir) {
     let files = await fs.readdir(dir);
     files = await Promise.all(files.map(async file => {
         const filePath = path.join(dir, file);
-        const stats = await fs.stat(filePath);
 
         if (ignoredNames.includes(file)) {
             console.log(`Ignoring ${filePath}`);
             return [];
         }
+
+        const stats = await fs.stat(filePath);
 
         if (stats.isDirectory()) {
             return walkJsFiles(filePath);
@@ -59,9 +60,8 @@ exports.main = async (cluster) => {
 
         await RC.terminateMember(cluster.id, member.uuid);
 
-        const stderrString = subprocess.stderr.toString().trim();
-        if (stderrString) {
-            throw new Error(`An error occurred while running ${file}: ${stderrString}`);
+        if (subprocess.status !== 0) {
+            throw new Error(`An error occurred while running ${file}: ${subprocess.stderr}`);
         }
     }
 };
