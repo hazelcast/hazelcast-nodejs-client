@@ -3,6 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const net = require('net');
 const {spawnSync, spawn} = require('child_process');
+const codeSampleChecker = require('./code-sample-checker');
 
 const {
     HAZELCAST_RC_VERSION,
@@ -13,9 +14,19 @@ const {
     downloadRC
 } = require('./download-rc.js');
 
+const DEV_CLUSTER_CONFIG = `
+    <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.hazelcast.com/schema/config
+        http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+        <cluster-name>dev</cluster-name>
+    </hazelcast>
+`;
 const ON_WINDOWS = os.platform() === 'win32';
 const HAZELCAST_ENTERPRISE_KEY = process.env.HAZELCAST_ENTERPRISE_KEY ? process.env.HAZELCAST_ENTERPRISE_KEY : '';
 const PATH_SEPARATOR = ON_WINDOWS ? ';' : ':';
+
+let cluster; // We create a cluster for checking code samples
 
 let testCommand;
 let testType;
@@ -50,6 +61,11 @@ const isAddressReachable = (host, port, timeoutMs) => {
             resolve(true);
         });
     });
+};
+
+// Import lazily to defer side affect of the import (connection attempt to 9701)
+const getRC = () => {
+    return require('../test/integration/RC');
 };
 
 const startRC = async () => {
@@ -123,7 +139,11 @@ const shutdownProcesses = () => {
     }
 };
 
-const shutdownRC = () => {
+const shutdownRC = async () => {
+    if (cluster) {
+        const RC = getRC();
+        await RC.terminateCluster(cluster.id);
+    }
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', rcProcess.pid, '/f', '/t']);
     } else {
@@ -161,8 +181,11 @@ if (process.argv.length === 3 || process.argv.length === 4) {
     } else if (process.argv[2] === 'coverage') {
         testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha "test/**/*.js"';
         testType = 'coverage';
+    } else if (process.argv[2] === 'check-code-samples') {
+        runTests = false;
+        testType = 'check-code-samples';
     } else {
-        throw 'Operation type can be one of "unit", "integration", "all", "startrc"';
+        throw 'Operation type can be one of "unit", "integration", "all", "startrc", "check-code-samples"';
     }
 } else {
     throw 'Usage: node <script-file> <operation-type> [test regex].\n'
@@ -201,15 +224,26 @@ process.on('SIGINT', shutdownProcesses);
 process.on('SIGTERM', shutdownProcesses);
 process.on('SIGHUP', shutdownProcesses);
 
-startRC().then(() => {
+startRC().then(async () => {
     console.log('Hazelcast Remote Controller is started!');
     if (runTests) {
-        console.log(`Running tests... Test type: ${testType}, Test command: ${testCommand}`);
+        console.log(`Running ${testType}, Command: ${testCommand}`);
         testProcess = spawn(testCommand, [], {
             stdio: ['ignore', 'inherit', 'inherit'],
             shell: true
         });
         testProcess.on('exit', shutdownRC);
+    } else if (testType === 'check-code-samples') {
+        const RC = getRC();
+        cluster = await RC.createClusterKeepClusterName(null, DEV_CLUSTER_CONFIG);
+        try {
+            await codeSampleChecker.main(cluster);
+        } catch (e) {
+            console.error(e);
+            process.exit(1);
+        } finally {
+            await shutdownRC();
+        }
     }
 }).catch(err => {
     console.log('Could not start Hazelcast Remote Controller due to an error:');
