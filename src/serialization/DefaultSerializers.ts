@@ -559,3 +559,19 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
         output.writeInt(bigDecimal.scale);
     }
 }
+
+/** @internal */
+export class BigIntSerializer implements Serializer<BigInt> {
+
+    id = -26;
+
+    read(input: DataInput): BigInt {
+        const body = input.readByteArray();
+        return BigDecimalUtil.bufferToBigInt(body);
+    }
+
+    write(output: DataOutput, bigint: BigInt): void {
+        output.writeByteArray(BigDecimalUtil.bigIntToBuffer(bigint));
+    }
+}
+

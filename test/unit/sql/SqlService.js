@@ -64,7 +64,7 @@ describe('SqlServiceTest', function () {
                 isAlive: sandbox.fake.returns(true)
             };
             fakeConnectionRegistry = {
-                getRandomConnection: sandbox.fake.returns(fakeConnection)
+                getConnectionForSql: sandbox.fake.returns(fakeConnection)
             };
             fakeSerializationService = { toData: sandbox.fake(v => v) };
             fakeInvocationService = { invokeOnConnection: sandbox.fake.resolves(fakeClientResponseMessage) };
@@ -87,9 +87,9 @@ describe('SqlServiceTest', function () {
             sqlService.execute('s', [], {}).should.be.instanceof(SqlResultImpl);
         });
 
-        it('should call getRandomConnection once with data member argument being true', function () {
+        it('should call getConnectionForSql', function () {
             sqlService.execute('s', [], {});
-            fakeConnectionRegistry.getRandomConnection.calledOnceWithExactly(true).should.be.true;
+            fakeConnectionRegistry.getConnectionForSql.calledOnce.should.be.true;
         });
 
         it('should call toData on params', function () {
@@ -131,9 +131,9 @@ describe('SqlServiceTest', function () {
             ).should.be.true;
         });
 
-        it('should throw HazelcastSqlException if no connection to a data member is available', function () {
+        it('should throw HazelcastSqlException if no connection is available', function () {
             fakeConnectionRegistry = {
-                getRandomConnection: sandbox.fake.returns(null)
+                getConnectionForSql: sandbox.fake.returns(null)
             };
             sqlService = new SqlServiceImpl(
                 fakeConnectionRegistry,
@@ -189,7 +189,7 @@ describe('SqlServiceTest', function () {
             ).should.be.true;
         });
 
-        it('should invoke on connection returned from getRandomConnection', function () {
+        it('should invoke on connection returned from getConnectionForSql', function () {
             sqlService.execute('s', [], {});
             fakeInvocationService.invokeOnConnection.calledOnceWithExactly(fakeConnection, fakeClientMessage).should.be.true;
         });
