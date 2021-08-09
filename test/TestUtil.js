@@ -295,8 +295,13 @@ exports.getSqlColumnType = function () {
     return SqlColumnType;
 };
 
-exports.getDatetimeUtil = function () {
-    return require('../lib/util/DatetimeUtil');
+exports.getDateTimeUtil = function () {
+    // Renamed in 5.0
+    if (exports.isClientVersionAtLeast('5.0')) {
+        return require('../lib/util/DateTimeUtil');
+    } else {
+        return require('../lib/util/DatetimeUtil');
+    }
 };
 
 exports.getOffsetDateTime = function() {

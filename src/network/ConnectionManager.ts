@@ -47,14 +47,15 @@ import {
     scheduleWithRepetition,
     shuffleArray,
     Task,
-    timedPromise
+    timedPromise,
+    memberOfLargerSameVersionGroup
 } from '../util/Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {ILogger} from '../logging/ILogger';
 import {HeartbeatManager} from './HeartbeatManager';
 import {UuidUtil} from '../util/UuidUtil';
 import {WaitStrategy} from './WaitStrategy';
-import {ConnectionStrategyConfig, ReconnectMode} from '../config/ConnectionStrategyConfig';
+import {ReconnectMode} from '../config/ConnectionStrategyConfig';
 import {ClientConfig, ClientConfigImpl} from '../config/Config';
 import {LifecycleState, LifecycleServiceImpl, LifecycleService} from '../LifecycleService';
 import {ClientMessage} from '../protocol/ClientMessage';
@@ -81,6 +82,7 @@ export const CLIENT_TYPE = 'NJS';
 const SERIALIZATION_VERSION = 1;
 const SET_TIMEOUT_MAX_DELAY = 2147483647;
 const BINARY_PROTOCOL_VERSION = Buffer.from('CP2');
+const SQL_CONNECTION_RANDOM_ATTEMPTS = 10;
 
 enum ConnectionState {
     /**
@@ -131,10 +133,21 @@ export interface ConnectionRegistry {
 
     /**
      * Returns a random connection from active connections
-     * @param dataMember true if only data members should be considered
      * @return Connection if there is at least one connection, otherwise null
      */
-    getRandomConnection(dataMember?: boolean): Connection | null;
+    getRandomConnection(): Connection | null;
+
+    /**
+     * Returns a connection for executing SQL.
+     *
+     * @throws IllegalStateError If there are more than 2 distinct member versions found
+     * @return
+     * * A random connection to a data member from the larger same-version group
+     * * If there's no such connection, return connection to a random data member
+     * * If there's no such connection, return any random connection
+     * * If there are no connections, null is returned
+     */
+    getConnectionForSql(): Connection | null;
 
     /**
      * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
@@ -148,24 +161,15 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
 
     private active = false;
     private readonly activeConnections = new Map<string, Connection>();
-    private readonly loadBalancer: LoadBalancer;
     private connectionState = ConnectionState.INITIAL;
-    private readonly smartRoutingEnabled: boolean;
-    private readonly asyncStart: boolean;
-    private readonly reconnectMode: ReconnectMode;
-    private readonly clusterService: ClusterService;
 
     constructor(
-        connectionStrategy: ConnectionStrategyConfig,
-        smartRoutingEnabled: boolean,
-        loadBalancer: LoadBalancer,
-        clusterService: ClusterService
+        private readonly asyncStart: boolean,
+        private readonly reconnectMode: ReconnectMode,
+        private readonly smartRoutingEnabled: boolean,
+        private readonly loadBalancer: LoadBalancer,
+        private readonly clusterService: ClusterService
     ) {
-        this.smartRoutingEnabled = smartRoutingEnabled;
-        this.asyncStart = connectionStrategy.asyncStart;
-        this.reconnectMode = connectionStrategy.reconnectMode;
-        this.loadBalancer = loadBalancer;
-        this.clusterService = clusterService;
     }
 
     isActive(): boolean {
@@ -188,20 +192,10 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         return this.activeConnections.get(uuid.toString());
     }
 
-    getRandomConnection(dataMember = false): Connection | null {
+    getRandomConnection(): Connection | null {
         if (this.smartRoutingEnabled) {
-            let member;
-            if (dataMember) {
-                if (this.loadBalancer.canGetNextDataMember()) {
-                    member = this.loadBalancer.nextDataMember();
-                } else {
-                    member = null;
-                }
-            } else {
-                member = this.loadBalancer.next();
-            }
-
-            if (member !== null) {
+            const member = this.loadBalancer.next();
+            if (member != null) {
                 const connection = this.getConnection(member.uuid);
                 if (connection != null) {
                     return connection;
@@ -209,20 +203,51 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
             }
         }
 
+        const iterator = this.activeConnections.values();
+        const next = iterator.next();
+        if (!next.done) {
+            return next.value;
+        } else {
+            return null;
+        }
+    }
 
-        for (const entry of this.activeConnections.entries()) {
-            const uuid = entry[0];
-            const connection = entry[1];
-            if (dataMember) {
-                const member = this.clusterService.getMember(uuid);
-                if (!member || member.liteMember) {
-                    continue;
+    getConnectionForSql(): Connection | null {
+        if (this.smartRoutingEnabled) {
+            // There might be a race - the chosen member might be just connected or disconnected - try a
+            // couple of times, the memberOfLargerSameVersionGroup returns a random connection,
+            // we might be lucky...
+            for (let i = 0; i < SQL_CONNECTION_RANDOM_ATTEMPTS; i++) {
+                const member = memberOfLargerSameVersionGroup(this.clusterService.getMembers());
+
+                if (member === null) {
+                    break;
                 }
+                const connection = this.getConnection(member.uuid);
+                if (connection !== undefined) {
+                    return connection;
+                }
+            }
+        }
+
+        // Otherwise iterate over connections and return the first one that's not to a lite member
+        let firstConnection: Connection | null = null;
+        for (const entry of this.activeConnections) {
+            const memberId = entry[0];
+            const connection = entry[1];
+
+            if (firstConnection === null) {
+                firstConnection = connection;
+            }
+            const member = this.clusterService.getMember(memberId);
+            if (member === undefined || member.liteMember) {
+                continue;
             }
             return connection;
         }
 
-        return null;
+        // Failed to get a connection to a data member
+        return firstConnection;
     }
 
     forEachConnection(fn: (conn: Connection) => void): void {

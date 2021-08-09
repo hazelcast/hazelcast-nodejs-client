@@ -18,7 +18,9 @@
 import * as assert from 'assert';
 import * as Long from 'long';
 import * as Path from 'path';
-import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, UUID} from '../core';
+import {BigDecimal, IllegalStateError, LocalDate, LocalDateTime, LocalTime, MemberImpl, OffsetDateTime, UUID} from '../core';
+import {MemberVersion} from '../core/MemberVersion';
+import {BuildInfo} from '../BuildInfo';
 
 /** @internal */
 export function assertNotNull(v: any): void {
@@ -78,9 +80,9 @@ export function getType(obj: any): string {
     } else if (obj instanceof LocalTime) {
         return 'localTime';
     } else if (obj instanceof LocalDateTime) {
-        return 'localDatetime';
+        return 'localDateTime';
     } else if (obj instanceof OffsetDateTime) {
-        return 'offsetDatetime';
+        return 'offsetDateTime';
     } else if (obj instanceof BigDecimal) {
         return 'bigDecimal';
     } else {
@@ -285,4 +287,76 @@ export function timedPromise<T>(wrapped: Promise<T>, timeout: number, err?: Erro
     });
 
     return deferred.promise;
+}
+
+/**
+ * Finds a larger same-version group of data members from a collection of
+ * members.
+ * Otherwise return a random member from the group. If the same-version
+ * groups have the same size, return a member from the newer group.
+ *
+ * Used for getting an SQL connection for executing SQL.
+ *
+ * @param members list of all members
+ * @throws IllegalStateError If there are more than 2 distinct member versions found
+ * @return the chosen member or null, if no data member is found
+ */
+export function memberOfLargerSameVersionGroup(members: MemberImpl[]): MemberImpl | null {
+    // The members should have at most 2 different version (ignoring the patch version).
+    // Find a random member from the larger same-version group.
+
+    let version0: MemberVersion | null = null;
+    let version1: MemberVersion | null = null;
+    let count0 = 0;
+    let count1 = 0;
+
+    for (const m of members) {
+        if (m.liteMember) {
+            continue;
+        }
+
+        const version = m.version;
+
+        if (version0 === null || version0.equals(version, true)) {
+            version0 = version;
+            count0++;
+        } else if (version1 === null || version1.equals(version, true)) {
+            version1 = version;
+            count1++
+        } else {
+            const strVer0 = version0.toString(true);
+            const strVer1 = version1.toString(true);
+            const strVer = version.toString(true);
+
+            throw new IllegalStateError(`More than 2 distinct member versions found: ${strVer0}, ${strVer1}, ${strVer}`);
+        }
+    }
+
+    // no data members
+    if (count0 === 0) {
+        return null;
+    }
+
+    let count: number;
+    let version: MemberVersion;
+
+    if (count0 > count1 || count0 === count1
+        && BuildInfo.calculateMemberVersion(version0) > BuildInfo.calculateMemberVersion(version1)) {
+        count = count0;
+        version = version0;
+    } else {
+        count = count1;
+        version = version1;
+    }
+
+    // otherwise return a random member from the larger group
+    let randomMemberIndex = randomInt(count);
+    for (const m of members) {
+        if (!m.liteMember && m.version.equals(version, true)) {
+            randomMemberIndex--;
+            if (randomMemberIndex < 0) {
+                return m;
+            }
+        }
+    }
 }

@@ -16,12 +16,7 @@
   * [1.5. Basic Usage](#15-basic-usage)
   * [1.6. Code Samples](#16-code-samples)
 * [2. Features](#2-features)
-* [3. Configuration Overview](#3-configuration-overview)
-  * [3.1. Configuration Options](#31-configuration-options)
-    * [3.1.1. Programmatic Configuration](#311-programmatic-configuration)
-    * [3.1.2. Declarative Configuration (JSON)](#312-declarative-configuration-json)
-  * [3.2. Importing Multiple Configurations](#32-importing-multiple-configurations)
-  * [3.3. Loading Objects and Path Resolution](#33-loading-objects-and-path-resolution)
+* [3. Configuration](#3-configuration)
 * [4. Serialization](#4-serialization)
   * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
   * [4.2. Portable Serialization](#42-portable-serialization)
@@ -250,7 +245,7 @@ This section describes the most common configuration elements to get you started
 It discusses some member side configuration options to ease the understanding of Hazelcast's ecosystem. Then, the client side configuration options
 regarding the cluster connection are discussed. The configurations for the Hazelcast IMDG data structures that can be used in the Node.js client are discussed in the following sections.
 
-See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.com/imdg/latest/) and [Configuration Overview section](#3-configuration-overview) for more information.
+See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.com/imdg/latest/) and [Configuration section](#3-configuration) for more information.
 
 ### 1.4.1. Configuring Hazelcast IMDG
 
@@ -316,7 +311,7 @@ These configuration elements are enough for most connection scenarios. Now we wi
 To configure your Hazelcast Node.js client you need to create a config object and set the appropriate options. Then you can
 supply this object to your client at the startup. The structure of the config object is similar to the `hazelcast.xml` configuration file used when configuring the member. It is done this way to make it easier to transfer Hazelcast skills to multiple platforms.
 
-This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview) and the following sections for information about detailed network configurations and/or additional features of Hazelcast Node.js client configuration.
+This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration section](#3-configuration) and the following sections for information about detailed network configurations and/or additional features of Hazelcast Node.js client configuration.
 
 You need to create a `ClientConfig` object and adjust its properties. Then you can pass this object to the client when starting it.
 
@@ -549,11 +544,9 @@ Hazelcast Node.js client supports the following data structures and features:
 * Blue-Green Deployment and Disaster Recovery (requires Enterprise server)
 
 
-# 3. Configuration Overview
+# 3. Configuration
 
 This chapter describes the options to configure your Node.js client. If an invalid value is given to any configuration option, an `InvalidConfigurationError` error will be thrown.
-
-## 3.1. Configuration Options
 
 For configuration of the Hazelcast Node.js client, just instantiate a config object and configure the desired aspects. An example is shown below.
 
@@ -582,6 +575,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 |-----------------|---------------------------------------|
 | boolean         | Boolean                               |
 | number          | Byte, Short, Integer, Float, Double   |
+| BigInt          | BigInteger                            |
 | string          | String                                |
 | Long            | Long                                  |
 | Buffer          | byte[]                                |
@@ -591,7 +585,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 
 > **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `defaultNumberType` serialization config option. See [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for more information.**
 
-Arrays of the `boolean`, `number`, `string`, and `Long` types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
+Arrays of the `boolean`, `number`, `BigInt`, `string`, and `Long` types can be serialized as `boolean[]`, `BigInteger[]', `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
 
 **Serialization Priority**
 
@@ -1204,7 +1198,7 @@ Most of the functions in the API return Promises. Therefore, you need to be fami
 
 If you are ready to go, let's start to use Hazelcast Node.js client.
 
-The first step is the configuration. See the [Programmatic Configuration section](#311-programmatic-configuration) for details.
+The first step is the configuration. See the [Configuration section](#3-configuration) for details.
 
 The following is an example on how to create a `ClientConfig` object and configure it programmatically:
 
@@ -1296,7 +1290,7 @@ await map.putIfAbsent('somekey', 'somevalue');
 await map.replace('key', 'value', 'newvalue');
 ```
 
-Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#882-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
+Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#892-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
 
 Hazelcast Map uses `MapListener` to listen to the events that occur when the entries are added to, updated/merged in or evicted/removed from the Map. See the [Map Listener section](#8521-map-listener) for information on how to create a map listener object and register it.
 

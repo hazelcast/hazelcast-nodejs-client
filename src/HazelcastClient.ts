@@ -161,7 +161,8 @@ export class HazelcastClient {
             this.clusterFailoverService
         );
         this.connectionRegistry = new ConnectionRegistryImpl(
-            this.config.connectionStrategy,
+            this.config.connectionStrategy.asyncStart,
+            this.config.connectionStrategy.reconnectMode,
             this.config.network.smartRouting,
             this.loadBalancer,
             this.clusterService

@@ -17,7 +17,7 @@
 
 const Long = require('long');
 const { UUID } = require('../../../lib/core/UUID');
-const { LocalDate, LocalDateTime, LocalTime, OffsetDateTime } = require('../../../lib/core/DatetimeClasses');
+const { LocalDate, LocalDateTime, LocalTime, OffsetDateTime } = require('../../../lib/core/DateTimeClasses');
 const { BigDecimal } = require('../../../lib/core/BigDecimal');
 const { HeapData } = require('../../../lib/serialization/HeapData');
 const AnInnerPortable = require('./AnInnerPortable');
@@ -79,6 +79,7 @@ to.APortable = new APortable(
     to.aCustomByteArraySerializable, exports.aData
 );
 to.aDate = new Date(Date.UTC(1990, 2, 1, 0, 0, 0, 0));
+to.aBigInteger = BigInt('1314432323232411');
 to.aBigDecimal = BigDecimal.fromString('31231');
 to.aClass = 'java.math.BigDecimal';
 

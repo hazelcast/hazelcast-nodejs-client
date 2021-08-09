@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 /** @ignore *//** */
+import {MemberVersion} from './core/MemberVersion';
 
 const clientVersion = require('../package.json').version;
 
@@ -52,4 +53,7 @@ export class BuildInfo {
         return clientVersion;
     }
 
+    public static calculateMemberVersion(m: MemberVersion) : number {
+        return BuildInfo.calculateServerVersion(m.major, m.minor, m.patch);
+    }
 }

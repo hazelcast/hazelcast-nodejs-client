@@ -62,13 +62,13 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('string', async function () {
         await map.put('testStringKey', 'testStringValue');
-        const response = await RC.executeOnController(cluster.id, generateGet('testStringKey'), 1);
+        const response = await RC.executeOnController(cluster.id, generateGet('testStringKey'), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal('testStringValue');
     });
 
     it('utf8 sample string test', async function () {
         await map.put('key', 'Iñtërnâtiônàlizætiøn');
-        const response = await RC.executeOnController(cluster.id, generateGet('key'), 1);
+        const response = await RC.executeOnController(cluster.id, generateGet('key'), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal('Iñtërnâtiônàlizætiøn');
     });
 
@@ -80,7 +80,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('array', async function () {
         await map.put('a', ['a', 'v', 'vg']);
-        const response = await RC.executeOnController(cluster.id, generateGet('a'), 1);
+        const response = await RC.executeOnController(cluster.id, generateGet('a'), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal(['a', 'v', 'vg'].toString());
     });
 
@@ -111,19 +111,19 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('emoji string test on RC', async function () {
         await map.put('key', '1⚐中💦2😭‍🙆😔5');
-        const response = await RC.executeOnController(cluster.id, generateGet('key'), 1);
+        const response = await RC.executeOnController(cluster.id, generateGet('key'), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal('1⚐中💦2😭‍🙆😔5');
     });
 
     it('utf8 characters test on RC', async function () {
         await map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
-        const response = await RC.executeOnController(cluster.id, generateGet('key'), 1);
+        const response = await RC.executeOnController(cluster.id, generateGet('key'), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
     });
 
     it('utf8 characters test on RC with surrogates', async function () {
         await map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06');
-        const response = await RC.executeOnController(cluster.id, generateGet('key'), 1);
+        const response = await RC.executeOnController(cluster.id, generateGet('key'), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
     });
 
@@ -142,7 +142,7 @@ describe('DefaultSerializersLiveTest', function () {
             '\\"value\\": \\"" +  new String(value) + "\\"}"\n';
 
         await map.put('key', restValue);
-        const response = await RC.executeOnController(cluster.id, script, 1);
+        const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = JSON.parse(response.result.toString());
         expect(result.contentType).to.equal(restValue.contentType);
         expect(result.value).to.equal(restValue.value);
@@ -157,7 +157,7 @@ describe('DefaultSerializersLiveTest', function () {
             'result = "\\"" + uuid.toString() + "\\"";\n';
 
         await map.put('key', uuid);
-        const response = await RC.executeOnController(cluster.id, script, 1);
+        const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = JSON.parse(response.result);
         expect(result).to.equal(uuid.toString());
     });
@@ -171,7 +171,7 @@ describe('DefaultSerializersLiveTest', function () {
             'list.add(3);\n' +
             'map.set("key", list);\n';
 
-        await RC.executeOnController(cluster.id, script, 1);
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
 
         const actualValue = await map.get('key');
         expect(actualValue).to.deep.equal([1, 2, 3]);
@@ -186,7 +186,7 @@ describe('DefaultSerializersLiveTest', function () {
             'list.add(3);\n' +
             'map.set("key", list);\n';
 
-        await RC.executeOnController(cluster.id, script, 1);
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
 
         const actualValue = await map.get('key');
         expect(actualValue).to.deep.equal([1, 2, 3]);
@@ -496,7 +496,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should serialize OffsetDateTime correctly', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
-        const getTimezoneOffsetFromSeconds = TestUtil.getDatetimeUtil().getTimezoneOffsetFromSeconds;
+        const getTimezoneOffsetFromSeconds = TestUtil.getDateTimeUtil().getTimezoneOffsetFromSeconds;
         const OffsetDateTime = TestUtil.getOffsetDateTime();
 
         for (let i = 0; i < dtParams.length; i++) {
@@ -543,6 +543,49 @@ describe('DefaultSerializersLiveTest', function () {
                 expect(responseString).to.satisfy(msg => msg.startsWith(`${yearString}-${monthString}-${dateString}` +
                     `T${hourString}:${minuteString}:${secondString}.${nanoString}${timezoneOffsetString}`));
             }
+        }
+    });
+
+    const bigIntParams = [
+        ['1111', 1111n],
+        ['-1111', -1111n],
+        ['9999999999999999999999999', 9999999999999999999999999n],
+        ['-9999999999999999999999999', -9999999999999999999999999n],
+        ['0', 0n],
+        ['1', 1n],
+        ['-7', -7n],
+    ];
+
+    it('should deserialize BigInt', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+
+        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+
+        bigIntParams.forEach((values, index) => {
+            const bigIntString = values[0];
+            script += `map.set("${index}", new java.math.BigInteger("${bigIntString}"));\n`;
+        });
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        for (let i = 0; i < bigIntParams.length; i++) {
+            const actualValue = await map.get(i.toString());
+            const expectedBigIntValue = bigIntParams[i][1];
+
+            expect(actualValue).to.be.equal(expectedBigIntValue);
+        }
+    });
+
+    it('should serialize BigInt correctly', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.0');
+        for (let i = 0; i < bigIntParams.length; i++) {
+            const bigintValue = bigIntParams[i][1];
+            await map.put(i.toString(), bigintValue);
+        }
+
+        for (let i = 0; i < bigIntParams.length; i++) {
+            const responseString = await getMapValueAsString(i);
+            expect(responseString).to.be.equal(bigIntParams[i][0]);
         }
     });
 });
