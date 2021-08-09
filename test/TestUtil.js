@@ -189,20 +189,6 @@ exports.getRandomInt = function (lowerLim, upperLim) {
     return Math.floor(Math.random() * (upperLim - lowerLim)) + lowerLim;
 };
 
-exports.createClusterConfig = function ({ clusterName, partitionCount }) {
-    partitionCount = partitionCount || 271;
-    return `<?xml version="1.0" encoding="UTF-8"?>
-            <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-                <cluster-name>${clusterName}</cluster-name>
-                <properties>
-                    <property name="hazelcast.partition.count">${partitionCount}</property>
-                </properties>
-            </hazelcast>`;
-};
-
 exports.randomString = function (length) {
     const result = [];
     const characters = 'abcdefghijklmnopqrstuvwxyz';

@@ -3,7 +3,6 @@ const fs = require('fs');
 const os = require('os');
 const net = require('net');
 const {spawnSync, spawn} = require('child_process');
-const TestUtil = require('../test/TestUtil');
 const codeSampleChecker = require('./code-sample-checker');
 
 const {
@@ -15,6 +14,14 @@ const {
     downloadRC
 } = require('./download-rc.js');
 
+const DEV_CLUSTER_CONFIG = `
+    <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.hazelcast.com/schema/config
+        http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+        <cluster-name>dev</cluster-name>
+    </hazelcast>
+`;
 const ON_WINDOWS = os.platform() === 'win32';
 const HAZELCAST_ENTERPRISE_KEY = process.env.HAZELCAST_ENTERPRISE_KEY ? process.env.HAZELCAST_ENTERPRISE_KEY : '';
 const PATH_SEPARATOR = ON_WINDOWS ? ';' : ':';
@@ -228,7 +235,7 @@ startRC().then(async () => {
         testProcess.on('exit', shutdownRC);
     } else if (testType === 'check-code-samples') {
         const RC = getRC();
-        cluster = await RC.createClusterKeepClusterName(null, TestUtil.createClusterConfig({clusterName: 'dev'}));
+        cluster = await RC.createClusterKeepClusterName(null, DEV_CLUSTER_CONFIG);
         try {
             await codeSampleChecker.main(cluster);
         } catch (e) {
