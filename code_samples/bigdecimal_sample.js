@@ -96,6 +96,7 @@ function portableFactory(classId) {
         await set.add(customNumber);
         console.log(await set.contains(customNumber)); // true
 
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
         process.exit(1);
