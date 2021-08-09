@@ -114,6 +114,7 @@ function portableFactory(classId) {
         await set.add(portable1);
         console.log(await set.contains(portable1)); // true
 
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
         process.exit(1);
