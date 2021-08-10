@@ -16,13 +16,6 @@
 
 import {UUID} from './UUID';
 
-/** @internal */
-export interface HazelcastErrorConstructor {
-    readonly prototype: Error;
-
-    new(message: string, cause?: Error): HazelcastError;
-}
-
 /**
  * Represents a stack trace element of server-side exception.
  */
