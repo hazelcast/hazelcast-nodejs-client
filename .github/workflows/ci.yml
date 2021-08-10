@@ -1,0 +1,53 @@
+name: Run tests
+on:
+    push:
+        branches-ignore:
+            - 'gh-pages'
+        tags-ignore:
+            - '*'
+    pull_request:
+
+jobs:
+    run-tests:
+        name: Run Tests on (${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            matrix:
+                os: [ ubuntu-latest, windows-latest ]
+
+        steps:
+            - name: Setup Java
+              uses: actions/setup-java@v1
+              with:
+                  java-version: 8
+            - name: Setup Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 10
+            - name: Disable line ending conversion of git
+              if: ${{ matrix.os == 'windows-latest'}}
+              run: |
+                  git config --global core.autocrlf false
+            - name: Checkout code
+              uses: actions/checkout@v2
+            - name: Install dependencies and compile client
+              run: |
+                  npm install
+                  npm run compile
+            - name: Lint
+              run: |
+                  npm run lint
+            - name: Validate User Code
+              run: |
+                  npm run validate-user-code
+            - name: Run OS tests
+              if: ${{ github.event_name == 'pull_request' }}
+              run: |
+                  npm run coverage
+            - name: Run Enterprise tests
+              if: ${{ github.event_name == 'push' }}
+              env:
+                  HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+              run: |
+                  npm run coverage

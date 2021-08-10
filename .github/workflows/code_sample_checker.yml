@@ -1,0 +1,34 @@
+name: Code sample checker
+on: pull_request
+
+jobs:
+    test-code-samples:
+        name: Check code samples
+        runs-on: ${{matrix.os}}
+
+        strategy:
+            matrix:
+                os: [ ubuntu-latest, windows-latest ]
+
+        steps:
+            - name: Setup Java
+              uses: actions/setup-java@v1
+              with:
+                  java-version: 8
+            - name: Setup Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 10
+            - name: Disable line ending conversion of git
+              if: ${{ matrix.os == 'windows-latest'}}
+              run: |
+                  git config --global core.autocrlf false
+            - name: Checkout code
+              uses: actions/checkout@v2
+            - name: Install dependencies and compile client
+              run: |
+                  npm install
+                  npm run compile
+            - name: Check code samples
+              run: |
+                  npm run check-code-samples

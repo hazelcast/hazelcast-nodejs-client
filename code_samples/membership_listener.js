@@ -31,7 +31,10 @@ const { Client } = require('hazelcast-client');
         };
         // When a member is added and removed, the listener will be triggered
         client.getClusterService().addMembershipListener(membershipListener);
+
+        await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

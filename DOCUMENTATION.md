@@ -575,6 +575,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 |-----------------|---------------------------------------|
 | boolean         | Boolean                               |
 | number          | Byte, Short, Integer, Float, Double   |
+| BigInt          | BigInteger                            |
 | string          | String                                |
 | Long            | Long                                  |
 | Buffer          | byte[]                                |
@@ -584,7 +585,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 
 > **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `defaultNumberType` serialization config option. See [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for more information.**
 
-Arrays of the `boolean`, `number`, `string`, and `Long` types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
+Arrays of the `boolean`, `number`, `BigInt`, `string`, and `Long` types can be serialized as `boolean[]`, `BigInteger[]', `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
 
 **Serialization Priority**
 
@@ -2737,7 +2738,7 @@ You can configure this using `metadata-policy` element for the map configuration
 > The SQL querying feature is more efficient than paging predicates, and it is recommended to be used instead.**
 
 The Node.js client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
-You can find an example code [here.](https://github.com/srknzl/hazelcast-paging-predicate-example)
+You can find an example code [here.](code_samples/paging_predicate_sample)
 
 ```javascript
 const map = await client.getMap('students');

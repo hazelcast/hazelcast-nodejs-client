@@ -43,5 +43,6 @@ const {
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

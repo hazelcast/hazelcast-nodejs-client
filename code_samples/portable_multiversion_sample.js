@@ -217,5 +217,6 @@ function portableFactory3(classId) {
         await client3.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();
