@@ -261,7 +261,7 @@ export class ConfigBuilder {
                         value = tryGetNumber(value);
                         break;
                     case 'hazelcast.logging.level':
-                        tryGetEnum(LogLevel, value); // only validate
+                        value = tryGetEnum(LogLevel, value);
                         break;
                     case 'hazelcast.client.autopipelining.enabled':
                         value = tryGetBoolean(value);

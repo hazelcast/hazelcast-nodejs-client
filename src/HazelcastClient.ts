@@ -66,6 +66,7 @@ import {ClientMessage} from './protocol/ClientMessage';
 import {Connection} from './network/Connection';
 import {ConnectionRegistryImpl} from './network/ConnectionManager';
 import {SqlService, SqlServiceImpl} from './sql/SqlService';
+import {LogLevel} from './logging';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -141,7 +142,7 @@ export class HazelcastClient {
         this.serializationService = new SerializationServiceV1(this.config.serialization);
         this.instanceName = this.config.instanceName || 'hz.client_' + this.id;
         this.loggingService = new LoggingService(this.config.customLogger,
-            this.config.properties['hazelcast.logging.level'] as string);
+            this.config.properties['hazelcast.logging.level'] as LogLevel);
         this.nearCacheManager = new NearCacheManager(
             this.config,
             this.serializationService
