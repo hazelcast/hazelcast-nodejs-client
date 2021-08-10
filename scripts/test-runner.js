@@ -127,8 +127,22 @@ const startRC = async () => {
     throw `Could not reach to Hazelcast Remote Controller (127.0.0.1:9701) after trying ${retryCount} times.`;
 };
 
-const shutdownProcesses = () => {
-    console.log('Stopping remote controller and test processes...');
+const shutdown = async () => {
+    if (testProcess && testProcess.exitCode === null) {
+        stopTestProcess();
+    }
+
+    if (rcProcess && rcProcess.exitCode === null) {
+        await stopRC();
+    }
+
+    if (testProcess && testProcess.exitCode !== null) {
+        process.exit(testProcess.exitCode);
+    }
+};
+
+const stopTestProcess = () => {
+    console.log('Stopping test process');
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', testProcess.pid, '/f', '/t']); // simple sigkill not enough on windows
     } else {
@@ -136,10 +150,10 @@ const shutdownProcesses = () => {
             testProcess.kill('SIGKILL');
         }
     }
-    shutdownRC();
 };
 
-const shutdownRC = async () => {
+const stopRC = async () => {
+    console.log('Stopping cluster and remote controller');
     if (cluster) {
         const RC = getRC();
         await RC.terminateCluster(cluster.id);
@@ -151,7 +165,6 @@ const shutdownRC = async () => {
             rcProcess.kill('SIGKILL');
         }
     }
-    process.exit(testProcess.exitCode);
 };
 
 if (process.argv.length === 3 || process.argv.length === 4) {
@@ -221,9 +234,9 @@ try {
     throw err;
 }
 
-process.on('SIGINT', shutdownProcesses);
-process.on('SIGTERM', shutdownProcesses);
-process.on('SIGHUP', shutdownProcesses);
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+process.on('SIGHUP', shutdown);
 
 startRC().then(async () => {
     console.log('Hazelcast Remote Controller is started!');
@@ -233,17 +246,20 @@ startRC().then(async () => {
             stdio: ['ignore', 'inherit', 'inherit'],
             shell: true
         });
-        testProcess.on('exit', shutdownRC);
+        testProcess.on('exit', shutdown);
     } else if (testType === 'check-code-samples') {
         const RC = getRC();
         cluster = await RC.createClusterKeepClusterName(null, DEV_CLUSTER_CONFIG);
+        let exitCode = 0;
         try {
             await codeSampleChecker.main(cluster);
         } catch (e) {
             console.error(e);
-            process.exit(1);
+            exitCode = 1;
         } finally {
-            await shutdownRC();
+            await shutdown();
+            // testProcess is undefined `shutdown` won't exit the process, so we exit with non-zero error code
+            process.exit(exitCode);
         }
     }
 }).catch(err => {
