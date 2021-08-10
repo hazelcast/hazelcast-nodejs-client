@@ -48,7 +48,7 @@ This folder contains an extensive collection of Hazelcast Node.js Client code sa
 
 **portable_multiversion_sample.js** — Usage of Portable serialization with multiple versions.
 
-**querying_with_SQL.js** — Usage of SQL predicate for map queries.
+**querying_with_sql.js** — Usage of SQL predicate for map queries.
 
 **queue.js** — Usage of distributed queue.
 

@@ -43,5 +43,6 @@ const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory
         await adminClient.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

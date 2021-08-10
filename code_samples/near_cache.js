@@ -56,5 +56,6 @@ async function do50000Gets(client, mapName) {
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();
