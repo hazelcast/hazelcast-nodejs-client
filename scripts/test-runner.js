@@ -113,7 +113,6 @@ const startRC = async () => {
 
 const shutdownProcesses = () => {
     console.log('Stopping remote controller and test processes...');
-    shutdownRC();
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', testProcess.pid, '/f', '/t']); // simple sigkill not enough on windows
     } else {
@@ -121,6 +120,7 @@ const shutdownProcesses = () => {
             testProcess.kill('SIGKILL');
         }
     }
+    shutdownRC();
 };
 
 const shutdownRC = () => {
@@ -131,6 +131,7 @@ const shutdownRC = () => {
             rcProcess.kill('SIGKILL');
         }
     }
+    process.exit(testProcess.exitCode);
 };
 
 if (process.argv.length === 3 || process.argv.length === 4) {
@@ -182,11 +183,11 @@ if (!fs.existsSync('./lib')) {
 // If running unit test, no need to start rc.
 if (testType === 'unit') {
     console.log(`Running unit tests... Test command: ${testCommand}`);
-    spawnSync(testCommand, [], {
+    const subprocess = spawnSync(testCommand, [], {
         stdio: ['ignore', 'inherit', 'inherit'],
         shell: true
     });
-    process.exit(0);
+    process.exit(subprocess.status);
 }
 
 // For other tests, download rc files if needed.
