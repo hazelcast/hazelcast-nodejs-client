@@ -23,6 +23,8 @@ const { Client } = require('../../../../');
 
 const chai = require('chai');
 const long = require('long');
+const path = require('path');
+const fs = require('fs');
 
 chai.should();
 
@@ -59,6 +61,7 @@ describe('Data type test', function () {
     let mapName;
     const clientVersionNewerThanFive = TestUtil.isClientVersionAtLeast('5.0');
     const serverVersionNewerThanFive = TestUtil.isServerVersionAtLeast(client, '5.0');
+    const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     const validateResults = (rows, expectedKeys, expectedValues) => {
         rows.length.should.be.eq(expectedValues.length);
@@ -71,7 +74,7 @@ describe('Data type test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await RC.createCluster(null, null);
+        cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
         await RC.startMember(cluster.id);
     });
 

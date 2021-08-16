@@ -22,6 +22,8 @@ const long = require('long');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { Client } = require('../../../../');
+const fs = require('fs');
+const path = require('path');
 
 const getHazelcastSqlException = () => {
     const { HazelcastSqlException } = require('../../../../lib/core/HazelcastError');
@@ -45,9 +47,11 @@ describe('SqlResultTest', function () {
     let mapName;
     let result;
 
+    const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
+
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await RC.createCluster(null, null);
+        cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id
