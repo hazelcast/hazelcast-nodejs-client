@@ -20,6 +20,7 @@ const DEV_CLUSTER_CONFIG = `
         xsi:schemaLocation="http://www.hazelcast.com/schema/config
         http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
         <cluster-name>dev</cluster-name>
+        <jet enabled="true"></jet>
     </hazelcast>
 `;
 const ON_WINDOWS = os.platform() === 'win32';
