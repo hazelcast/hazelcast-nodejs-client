@@ -1,4 +1,8 @@
 {
     "cache": true,
-    "reporter": "cobertura"
+    "reporter": "cobertura",
+    "exclude": [
+        "src/codec/*.ts",
+        "src/codec/custom/*.ts"
+    ]
 }
