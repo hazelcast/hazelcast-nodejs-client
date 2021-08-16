@@ -26,7 +26,6 @@ const {
 } = require('../../../../');
 
 describe('HazelcastJsonValue with JsonSerializer', function () {
-
     let cluster, client;
     let map;
     const object = { 'a': 1 };

@@ -19,7 +19,6 @@ const { expect } = require('chai');
 const { LazyReadResultSet } = require('../../../lib/proxy/ringbuffer/LazyReadResultSet');
 
 describe('LazyReadResultSetTest', function () {
-
     const mockSerializationService = {
         toObject: (x) => x + 100,
         isData: (x) => x < 3

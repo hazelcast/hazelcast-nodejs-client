@@ -24,7 +24,6 @@ const { HazelcastError } = require('../../../');
 const { ConfigBuilder } = require('../../../lib/config/ConfigBuilder');
 
 describe('ConfigBuilderSSLTest', function () {
-
     function loadJson(jsonPath) {
         const config = require(path.join(__dirname, jsonPath));
         return new ConfigBuilder(config).build();

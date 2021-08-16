@@ -25,7 +25,6 @@ const RC = require('../../RC');
 const { Client, NoDataMemberInClusterError } = require('../../../../');
 
 describe('PNCounterWithLiteMembersTest', function () {
-
     let cluster;
     let client;
     let pncounter;

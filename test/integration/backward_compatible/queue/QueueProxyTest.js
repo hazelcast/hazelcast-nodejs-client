@@ -26,7 +26,6 @@ const { Client } = require('../../../../');
 const { ItemEventType } = require('../../../../lib/proxy/ItemListener');
 
 describe('QueueProxyTest', function () {
-
     let cluster;
     let client;
     let queue;

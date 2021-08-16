@@ -28,7 +28,6 @@ const {
 } = require('../../../../');
 
 describe('CountDownLatchTest', function () {
-
     let cluster;
     let client;
     let groupSeq = 0;

@@ -22,7 +22,6 @@ const { Client } = require('../../../../');
 const { SimplePortable, InnerPortable } = require('../../../unit/serialization/PortableObjects');
 
 describe('PortableSerializersLiveTest', function () {
-
     let cluster;
     let client;
     let map;

@@ -20,7 +20,6 @@ const RC = require('../RC');
 const { Client } = require('../../../');
 
 describe('RepairingTask', function () {
-
     let cluster;
     let client;
 

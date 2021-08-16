@@ -31,7 +31,6 @@ const { ConnectionManager } = require('../../lib/network/ConnectionManager');
 const { InvocationService } = require('../../lib/invocation/InvocationService');
 
 describe('ClientShutdownTest', function () {
-
     let cluster;
 
     afterEach(async function () {

@@ -22,7 +22,6 @@ const { deferredPromise } = require('../../../lib/util/Util');
 const TestUtil = require('../../TestUtil');
 
 class ManagedObjects {
-
     constructor() {
         this.managedObjects = [];
     }
@@ -53,7 +52,6 @@ class ManagedObjects {
         });
         return deferred.promise;
     }
-
 }
 
 const dummyConfig = {
@@ -75,7 +73,6 @@ const configParams = [
 
 configParams.forEach((cfg) => {
     describe('HazelcastClientTest[smart=' + cfg.network.smartRouting + ']', function () {
-
         let cluster;
         let client;
         let managed;

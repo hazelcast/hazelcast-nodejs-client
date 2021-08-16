@@ -21,7 +21,6 @@ const { Client } = require('../../../../');
 const { Musician, MusicianSerializer } = require('./Musician');
 
 describe('CustomSerializerConfigTest', function () {
-
     let cluster;
     let client;
 

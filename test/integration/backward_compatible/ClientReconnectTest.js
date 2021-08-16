@@ -24,7 +24,6 @@ const { markClientVersionAtLeast } = require('../../TestUtil');
  * Basic tests for reconnection to cluster scenarios.
  */
 describe('ClientReconnectTest', function () {
-
     let cluster;
     let client;
 

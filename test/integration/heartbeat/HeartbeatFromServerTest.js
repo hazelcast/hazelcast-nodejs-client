@@ -25,7 +25,6 @@ const { deferredPromise } = require('../../../lib/util/Util');
 const TestUtil = require('../../TestUtil');
 
 describe('HeartbeatFromServerTest', function () {
-
     let cluster;
     let client;
 

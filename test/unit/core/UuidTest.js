@@ -21,7 +21,6 @@ const Long = require('long');
 const { UUID } = require('../../../lib/core/UUID');
 
 describe('UuidTest', function () {
-
     it('with small most significant high bits', function () {
         const uuid = new UUID(new Long(-99999, 1), new Long(213231, -213321));
         // Should pad first part with zeros

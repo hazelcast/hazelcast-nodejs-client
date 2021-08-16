@@ -27,7 +27,6 @@ const {
 } = require('../../../../');
 
 describe('AtomicReferenceTest', function () {
-
     let cluster;
     let client;
     let ref;
