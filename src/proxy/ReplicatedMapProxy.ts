@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import * as Long from 'long';
 import {
@@ -53,6 +54,7 @@ import {deserializeEntryList} from '../serialization/SerializationUtil';
 type EntryEventHander = (key: Data, value: Data, oldValue: Data, mergingValue: Data,
                          eventType: number, uuid: UUID, numberOfAffectedEntries: number) => void
 
+/** @internal */
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements ReplicatedMap<K, V> {
 
     put(key: K, value: V, ttl: Long | number = 0): Promise<V> {

@@ -80,22 +80,16 @@ configParams.forEach((cfg) => {
         let client;
         let managed;
 
-        before(async function () {
+        beforeEach(async function () {
             cluster = await RC.createCluster(null, null);
             await RC.startMember(cluster.id);
             cfg.clusterName = cluster.id;
             client = await Client.newHazelcastClient(cfg);
-        });
-
-        beforeEach(function () {
             managed = new ManagedObjects();
         });
 
         afterEach(async function () {
             await managed.destroyAll();
-        });
-
-        after(async function () {
             await client.shutdown();
             await RC.terminateCluster(cluster.id);
         });
@@ -104,6 +98,12 @@ configParams.forEach((cfg) => {
             const distributedObjects = await client.getDistributedObjects();
             expect(distributedObjects).to.be.an('array');
             expect(distributedObjects).to.be.empty;
+        });
+
+        it('more than one call to shutdown returns same promise', async function () {
+            const promise1 = client.shutdown();
+            const promise2 = client.shutdown();
+            expect(promise1).to.be.eq(promise2);
         });
 
         it('getLocalEndpoint returns correct info', function () {
