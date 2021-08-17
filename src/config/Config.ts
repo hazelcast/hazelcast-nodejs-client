@@ -24,7 +24,7 @@ import {Properties} from './Properties';
 import {ReliableTopicConfig, ReliableTopicConfigImpl} from './ReliableTopicConfig';
 import {SerializationConfig, SerializationConfigImpl} from './SerializationConfig';
 import {Statistics} from '../statistics/Statistics';
-import {ILogger, LogLevel} from '../logging/ILogger';
+import {ILogger} from '../logging/ILogger';
 import {ConnectionStrategyConfig, ConnectionStrategyConfigImpl} from './ConnectionStrategyConfig';
 import {LoadBalancerConfig, LoadBalancerConfigImpl} from './LoadBalancerConfig';
 
@@ -170,7 +170,7 @@ const DEFAULT_PROPERTIES: Properties = {
     'hazelcast.invalidation.reconciliation.interval.seconds': 60,
     'hazelcast.invalidation.max.tolerated.miss.count': 10,
     'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
-    'hazelcast.logging.level': LogLevel.INFO,
+    'hazelcast.logging.level': 'INFO',
     'hazelcast.client.autopipelining.enabled': true,
     'hazelcast.client.autopipelining.threshold.bytes': 65536,
     'hazelcast.client.socket.no.delay': true,
