@@ -25,7 +25,6 @@ const {
 } = require('../../../../');
 
 describe('MapAggregatorsLongTest', function () {
-
     const ENTRY_COUNT = 50;
 
     let cluster;

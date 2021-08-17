@@ -32,7 +32,6 @@ const { LifecycleState } = require('../../../lib/LifecycleService');
 const TestUtil = require('../../TestUtil');
 
 describe('ConnectionStrategyTest', function () {
-
     let cluster;
     let client;
 

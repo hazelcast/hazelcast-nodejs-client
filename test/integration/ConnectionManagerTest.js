@@ -31,7 +31,6 @@ const { promiseWaitMilliseconds } = require('../TestUtil');
  * Basic tests for `ConnectionManager`.
  */
 describe('ConnectionManagerTest', function () {
-
     let cluster;
     let client;
     let server;

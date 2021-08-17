@@ -16,7 +16,6 @@
 'use strict';
 
 class AnIdentifiedDataSerializable {
-
     constructor(bool, b, c, d, s, f, i, l, str, booleans, bytes, chars,
                 doubles, shorts, floats, ints, longs, strings, portable,
                 identifiedDataSerializable, customStreamSerializable,
@@ -164,7 +163,6 @@ class AnIdentifiedDataSerializable {
 
         dataOutput.writeData(this.data);
     }
-
 }
 
 module.exports = AnIdentifiedDataSerializable;

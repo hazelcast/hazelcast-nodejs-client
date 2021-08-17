@@ -61,7 +61,6 @@ function extractIntStatValue(stats, statName) {
 }
 
 describe('StatisticsTest (default period)', function () {
-
     let cluster;
     let client;
     let map;
@@ -145,7 +144,6 @@ describe('StatisticsTest (default period)', function () {
 });
 
 describe('StatisticsTest (non-default period)', function () {
-
     let cluster;
     let client;
 
@@ -183,7 +181,6 @@ describe('StatisticsTest (non-default period)', function () {
 });
 
 describe('StatisticsTest (negative period)', function () {
-
     let client;
     let cluster;
 

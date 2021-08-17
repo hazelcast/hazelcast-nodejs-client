@@ -154,7 +154,10 @@ export interface ClientConfig {
 
 }
 
-/** @internal */
+/**
+ * If you are adding a new property, don't forget to add its validation in `handleProperties`.
+ * @internal
+ */
 const DEFAULT_PROPERTIES: Properties = {
     'hazelcast.client.heartbeat.interval': 5000,
     'hazelcast.client.heartbeat.timeout': 60000,
@@ -178,9 +181,6 @@ const DEFAULT_PROPERTIES: Properties = {
     // as a tri-state boolean (see TranslateAddressProvider)
     'hazelcast.discovery.public.ip.enabled': null,
 };
-
-/** @internal */
-export const PROPERTY_SET = new Set(Object.keys(DEFAULT_PROPERTIES));
 
 /** @internal */
 export class ClientConfigImpl implements ClientConfig {

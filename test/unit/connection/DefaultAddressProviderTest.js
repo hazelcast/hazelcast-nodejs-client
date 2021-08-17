@@ -25,7 +25,6 @@ const { DefaultAddressProvider } = require('../../../lib/connection/DefaultAddre
 const { ClientNetworkConfigImpl } = require('../../../lib/config/ClientNetworkConfig');
 
 describe('DefaultAddressProviderTest', function () {
-
     function addressProvider(...clusterMembers) {
         const networkConfig = new ClientNetworkConfigImpl();
         if (clusterMembers) {

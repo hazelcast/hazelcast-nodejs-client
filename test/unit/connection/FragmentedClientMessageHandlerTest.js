@@ -27,7 +27,6 @@ const cm = require('../../../lib/protocol/ClientMessage');
 const { FixSizedTypesCodec } = require('../../../lib/codec/builtin/FixSizedTypesCodec');
 
 describe('FragmentedClientMessageHandlerTest', function () {
-
     let reader;
     let handler;
 
@@ -174,5 +173,4 @@ describe('FragmentedClientMessageHandlerTest', function () {
         fragment.addFrame(frame);
         return fragment;
     };
-
 });

@@ -21,7 +21,6 @@ const { Parent, Child } = require('../PortableObjects');
 const TestUtil = require('../../../TestUtil');
 
 describe('NestedPortableVersionTest', function () {
-
     it('compatible versions', function () {
         const sc = new SerializationConfigImpl();
         sc.portableVersion = 6;

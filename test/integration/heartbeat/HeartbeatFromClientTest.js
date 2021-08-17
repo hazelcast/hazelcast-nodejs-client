@@ -22,7 +22,6 @@ const { Client } = require('../../../');
 const TestUtil = require('../../TestUtil');
 
 describe('HeartbeatFromClientTest', function () {
-
     let cluster;
 
     beforeEach(async function () {

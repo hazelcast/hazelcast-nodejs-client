@@ -21,7 +21,6 @@ const { SerializationServiceV1 } = require('../../../lib/serialization/Serializa
 const TestUtil = require('../../TestUtil');
 
 class IdentifiedDataClass {
-
     constructor(a_byte, a_boolean, a_character, a_short, an_integer,
                 a_long, a_float, a_double, a_string, bytes, booleans,
                 chars, shorts, integers, longs, floats, doubles, strings) {
@@ -91,11 +90,9 @@ class IdentifiedDataClass {
         outp.writeDoubleArray(this.doubles);
         outp.writeStringArray(this.strings);
     }
-
 }
 
 describe('IdentifiedDataSerializableTest', function () {
-
     const identifiedFactory = (classId) => {
         if (classId === 1) {
             return new IdentifiedDataClass();

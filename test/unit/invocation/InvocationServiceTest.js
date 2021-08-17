@@ -38,7 +38,6 @@ const { ConnectionManager } = require('../../../lib/network/ConnectionManager');
 const { deferredPromise } = require('../../../lib/util/Util');
 
 describe('InvocationServiceTest', function () {
-
     let service;
 
     function mockClient(config) {

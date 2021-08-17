@@ -24,7 +24,6 @@ const {
 } = require('../../../');
 
 describe('JsonSerializersTest', function () {
-
     const object = { key: 'value' };
     const hzJsonValue = new HazelcastJsonValue(JSON.stringify(object));
 

@@ -28,7 +28,6 @@ const {
 const { deferredPromise } = require('../../../lib/util/Util');
 
 describe('DirectWriterTest', function () {
-
     let queue;
     let mockSocket;
 
@@ -121,5 +120,4 @@ describe('DirectWriterTest', function () {
             done();
         });
     });
-
 });

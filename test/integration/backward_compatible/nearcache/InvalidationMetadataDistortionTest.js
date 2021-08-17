@@ -24,7 +24,6 @@ const identifiedFactory = require('../../javaclasses/IdentifiedFactory');
 const DistortInvalidationMetadataEntryProcessor = require('../../javaclasses/DistortInvalidationMetadataEntryProcessor');
 
 describe('Invalidation metadata distortion', function () {
-
     const mapName = 'nc-map';
     const mapSize = 10;
 

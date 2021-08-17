@@ -27,7 +27,6 @@ const {
 } = require('../../../../');
 
 describe('SessionAwareSemaphoreTest', function () {
-
     let cluster;
     let client;
     let groupSeq = 0;

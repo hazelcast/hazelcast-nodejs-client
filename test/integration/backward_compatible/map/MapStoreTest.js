@@ -22,7 +22,6 @@ const { Client } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('MapStoreTest', function () {
-
     let cluster;
     let client;
     let map;

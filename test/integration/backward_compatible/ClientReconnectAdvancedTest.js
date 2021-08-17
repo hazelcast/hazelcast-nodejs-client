@@ -25,7 +25,6 @@ const TestUtil = require('../../TestUtil');
  * Advanced tests for reconnection to cluster scenarios.
  */
 describe('ClientReconnectAdvancedTest', function () {
-
     let cluster;
     let client;
 
@@ -95,7 +94,6 @@ describe('ClientReconnectAdvancedTest', function () {
             const member = members[0];
             expect(member.uuid.toString()).to.be.equal(newMember.uuid);
         });
-
     }
 
     async function testListenersAfterClientDisconnected(memberAddress, clientAddress) {

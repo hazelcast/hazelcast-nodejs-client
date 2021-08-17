@@ -22,7 +22,6 @@ const RC = require('../RC');
 const { Client, LogLevel } = require('../../../');
 
 describe('LoggingTest', function () {
-
     let cluster;
     let client;
 

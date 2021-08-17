@@ -32,7 +32,6 @@ const Util = require('../../../lib/util/Util');
 const { ClientOfflineError, IOError } = require('../../../lib/core/HazelcastError');
 
 describe('ConnectionRegistryTest', function () {
-
     const connectionState = {
         INITIAL: 0,
         CONNECTED_TO_CLUSTER: 1,
@@ -44,7 +43,6 @@ describe('ConnectionRegistryTest', function () {
     });
 
     describe('getRandomConnection', function () {
-
         it('should call load balancer\'s next() when in smart mode', function () {
             const loadBalancerStub = {};
             loadBalancerStub.next = sandbox.fake.returns(null);

@@ -21,7 +21,6 @@ const fs = require('fs');
 const path = require('path');
 
 describe('SchemaValidationTest', function () {
-
     let schema;
 
     before(function () {
