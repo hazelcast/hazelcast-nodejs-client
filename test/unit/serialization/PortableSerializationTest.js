@@ -39,7 +39,6 @@ const chai = require('chai');
 chai.should();
 
 describe('PortableSerializationTest', function () {
-
     function createSerializationService(Ctor) {
         const cfg = new SerializationConfigImpl();
         cfg.portableFactories[10] = (classId) => {

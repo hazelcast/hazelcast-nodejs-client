@@ -26,7 +26,6 @@ const TestUtil = require('../../TestUtil');
  * This test assumes cluster with a single member.
  */
 describe('ClientHotRestartEventTest', function () {
-
     let client;
     let cluster;
 

@@ -23,7 +23,6 @@ const { deferredPromise } = require('../../../lib/util/Util');
 const TestUtil = require('../../TestUtil');
 
 describe('LostInvalidationTest', function () {
-
     const entryCount = 1000;
     const mapName = 'ncmap';
 

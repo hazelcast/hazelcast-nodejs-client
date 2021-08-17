@@ -16,7 +16,6 @@
 'use strict';
 
 class APortable {
-
     constructor(bool, b, c, d, s, f, i, l, str, p, booleans, bytes, chars,
                 doubles, shorts, floats, ints, longs, strings, portables,
                 identifiedDataSerializable, customStreamSerializableObject,

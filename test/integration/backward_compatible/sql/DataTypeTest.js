@@ -719,7 +719,6 @@ describe('Data type test', function () {
                 datetimeWithOffset.localDateTime.localTime.second.should.be.eq(expectedBaseValues.second + i);
                 datetimeWithOffset.localDateTime.localTime.nano.should.be.eq(expectedBaseValues.nano + i);
             } else {
-
                 datetimeWithOffset.should.be.a('string');
                 datetimeWithOffset.should.be.eq(`${leftZeroPadInteger(expectedBaseValues.year + i, 4)}-`
                     + `${leftZeroPadInteger(expectedBaseValues.month + i, 2)}-`

@@ -30,7 +30,6 @@ const {
 const TestUtil = require('../../../TestUtil');
 
 describe('AtomicLongTest', function () {
-
     let cluster;
     let client;
     let long;

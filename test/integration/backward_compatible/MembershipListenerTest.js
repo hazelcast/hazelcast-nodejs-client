@@ -21,7 +21,6 @@ const { Client, MemberEvent } = require('../../../');
 const { deferredPromise } = require('../../../lib/util/Util');
 
 describe('MembershipListenerTest', function () {
-
     let cluster;
     let client;
 

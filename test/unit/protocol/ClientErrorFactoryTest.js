@@ -21,7 +21,6 @@ const { ClientErrorFactory } = require('../../../lib/protocol/ErrorFactory');
 const { ClientProtocolErrorCodes } = require('../../../lib/protocol/ClientProtocolErrorCodes');
 
 describe('ClientErrorFactoryTest', function () {
-
     const factory = new ClientErrorFactory();
 
     function createErrorHolder(code) {

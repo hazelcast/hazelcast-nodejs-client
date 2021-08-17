@@ -20,7 +20,6 @@ const { SerializationServiceV1 } = require('../../../lib/serialization/Serializa
 const { SerializationConfigImpl } = require('../../../lib/config/SerializationConfig');
 
 describe('CustomSerializerTest', function () {
-
     let service;
 
     class CustomObject {

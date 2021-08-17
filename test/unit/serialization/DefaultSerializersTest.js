@@ -31,7 +31,6 @@ const {
 } = require('../../../');
 
 describe('DefaultSerializersTest', function () {
-
     const restValue = new RestValue();
     restValue.value = '{"test":"data"}';
     restValue.contentType = 'text/plain';

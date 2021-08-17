@@ -20,7 +20,6 @@ const RC = require('../../RC');
 const Client = require('../../../..').Client;
 
 describe('MultiMapProxyLockTest', function () {
-
     let cluster;
     let clientOne;
     let clientTwo;

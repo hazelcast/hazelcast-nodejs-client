@@ -24,7 +24,6 @@ const { Client } = require('../../../../');
 const { promiseWaitMilliseconds, assertTrueEventually, randomString, markClientVersionAtLeast } = require('../../../TestUtil');
 
 describe('ReliableTopicOnClusterRestartTest', function () {
-
     let cluster;
     let member;
     let client1;

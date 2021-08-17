@@ -24,7 +24,6 @@ const {
 } = require('../../../lib/util/Util');
 
 describe('UtilTest', function () {
-
     it('deferredPromise: resolves promise on resolve call', async function () {
         const deferred = deferredPromise();
         let resolveCalled = false;

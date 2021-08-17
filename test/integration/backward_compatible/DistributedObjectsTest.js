@@ -26,7 +26,6 @@ const { Client } = require('../../../');
 const TestUtil = require('../../TestUtil');
 
 describe('DistributedObjectsTest', function () {
-
     let cluster;
     let client;
 

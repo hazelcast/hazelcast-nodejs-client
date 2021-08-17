@@ -21,7 +21,6 @@ const { FlakeIdGeneratorConfigImpl } = require('../../../lib/config/FlakeIdGener
 const { ConfigurationError } = require('../../../');
 
 describe('ConfigPatternMatcherTest', function () {
-
     const inputConfig = {
         flakeIdGenerators: {}
     };

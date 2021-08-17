@@ -27,7 +27,6 @@ const {
 } = require('../../../../');
 
 describe('SemaphoreCommonTest', function () {
-
     let cluster;
     let client;
     const testTypes = ['sessionless', 'sessionaware'];
@@ -78,7 +77,6 @@ describe('SemaphoreCommonTest', function () {
 
     for (const type of testTypes) {
         describe(`[${type}]`, function () {
-
             it('availablePermits: should return available permits count', async function () {
                 const semaphore = await getSemaphore(type, 3);
                 const permits = await semaphore.availablePermits();

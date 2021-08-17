@@ -21,7 +21,6 @@ const RC = require('./../RC');
 const { Client } = require('../../../');
 
 describe('ClientLabelTest', function () {
-
     let cluster;
     let client;
 
@@ -50,5 +49,4 @@ describe('ClientLabelTest', function () {
         expect(res.result).to.not.be.null;
         expect(res.result.toString()).to.equal('testLabel');
     });
-
 });

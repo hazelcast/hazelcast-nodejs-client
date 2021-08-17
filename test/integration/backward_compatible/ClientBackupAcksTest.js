@@ -32,7 +32,6 @@ const { ClientLocalBackupListenerCodec } = require('../../../lib/codec/ClientLoc
  * so there is no need for additional member side configuration.
  */
 describe('ClientBackupAcksTest', function () {
-
     let cluster;
     let client;
 

@@ -29,7 +29,6 @@ const { SerializationConfigImpl } = require('../../../lib/config/SerializationCo
 const { promiseLater } = require('../../TestUtil');
 
 describe('NearCacheTest', function () {
-
     const invalidateOnChange = [false, true];
     const ttls = [0, 1];
     const evictionPolicy = [EvictionPolicy.LFU, EvictionPolicy.LRU, EvictionPolicy.RANDOM, EvictionPolicy.NONE];
@@ -73,7 +72,6 @@ describe('NearCacheTest', function () {
     }
 
     describe('CacheRecord', function () {
-
         it('does not expire if ttl is 0', function (done) {
             const rec = new DataRecord(ds('key'), 'value', undefined, 0);
             setTimeout(() => {
@@ -132,7 +130,6 @@ describe('NearCacheTest', function () {
     });
 
     testConfigs.forEach((testConfig) => {
-
         describe(testConfig.toString(), function () {
             let nearCache;
 
@@ -234,7 +231,6 @@ describe('NearCacheTest', function () {
     });
 
     describe('InMemory format', function () {
-
         it('Object', function () {
             const nearCacheConfig = new NearCacheConfigImpl();
             nearCacheConfig.inMemoryFormat = InMemoryFormat.OBJECT;
