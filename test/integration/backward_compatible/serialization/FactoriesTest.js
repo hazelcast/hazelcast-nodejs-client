@@ -22,7 +22,6 @@ const { myPortableFactory, Foo } = require('./Foo');
 const { myIdentifiedFactory, Address } = require('./Address');
 
 describe('FactoriesTest', function () {
-
     let cluster;
     let client;
 

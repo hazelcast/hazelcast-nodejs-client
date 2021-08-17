@@ -98,5 +98,4 @@ describe('SqlRowTest', function () {
             row.getMetadata().should.be.eq(rowMetadata);
         }
     });
-
 });

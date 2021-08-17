@@ -20,7 +20,6 @@ const path = require('path');
 const { HazelcastError, BasicSSLOptionsFactory } = require('../../../');
 
 describe('BasicSSLOptionsFactoryTest', function () {
-
     it('factory creates sslOptions object with all supported fields', async function () {
         const options = {
             servername: 'foo.bar.com',

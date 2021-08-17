@@ -23,7 +23,6 @@ const { Client } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('FlakeIdGeneratorProxyTest', function () {
-
     const FLAKE_ID_STEP = 1 << 16;
     const SHORT_TERM_BATCH_SIZE = 3;
     const SHORT_TERM_VALIDITY_MILLIS = 3000;

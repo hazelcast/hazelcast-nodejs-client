@@ -23,7 +23,6 @@ const { deferredPromise } = require('../../../../lib/util/Util');
 const TestUtil = require('../../../TestUtil');
 
 describe('MigratedDataTest', function () {
-
     const mapName = 'ncmap';
 
     let cluster;

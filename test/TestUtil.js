@@ -200,7 +200,6 @@ exports.randomString = function (length) {
 };
 
 class CountingMembershipListener {
-
     constructor(expectedAdds, expectedRemoves) {
         this.adds = 0;
         this.expectedAdds = expectedAdds;
@@ -230,7 +229,6 @@ class CountingMembershipListener {
         }
         this._resolve();
     }
-
 }
 
 exports.CountingMembershipListener = CountingMembershipListener;

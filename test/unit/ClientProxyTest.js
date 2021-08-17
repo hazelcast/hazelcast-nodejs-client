@@ -26,7 +26,6 @@ const { Connection } = require('../../lib/network/Connection');
 const { ProxyManager } = require('../../lib/proxy/ProxyManager');
 
 describe('ClientProxyTest', function () {
-
     afterEach(async function () {
         sandbox.restore();
     });

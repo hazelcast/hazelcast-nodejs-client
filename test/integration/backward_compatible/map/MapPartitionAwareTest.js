@@ -20,7 +20,6 @@ const RC = require('../../RC');
 const { Client } = require('../../../../');
 
 describe('MapPartitionAwareTest', function () {
-
     const numOfEntries = 10000;
     const memberCount = 3;
     const mapName = 'testMap';

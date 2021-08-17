@@ -64,7 +64,6 @@ function createClientConfig({ clusterName, lifecycleListener, connectTimeoutMs }
  * Tests blue/green failover support for OSS.
  */
 describe('ClientFailoverTest - community', function () {
-
     let cluster1;
     let cluster2;
 
@@ -101,7 +100,6 @@ describe('ClientFailoverTest - community', function () {
  * Tests blue/green failover support for EE.
  */
 describe('ClientFailoverTest - enterprise', function () {
-
     let cluster1;
     let member1;
     let cluster2;

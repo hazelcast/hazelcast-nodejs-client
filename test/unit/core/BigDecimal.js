@@ -20,7 +20,6 @@ chai.should();
 const { BigDecimal } = require('../../../lib/core/BigDecimal');
 
 describe('BigDecimalTest', function () {
-
     const constructorTestParams = [
         [`1e${Number.MIN_SAFE_INTEGER}`, BigInt(1), -1 * Number.MIN_SAFE_INTEGER],
         [`1e${Number.MAX_SAFE_INTEGER}`, BigInt(1), -1 * Number.MAX_SAFE_INTEGER],

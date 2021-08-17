@@ -19,7 +19,6 @@ const { expect } = require('chai');
 const { FixSizedTypesCodec } = require('../../../../lib/codec/builtin/FixSizedTypesCodec');
 
 describe('FixSizedTypesCodecTest', function () {
-
     const TWO_PWR_63_DBL = 9223372036854776000;
 
     it('should throw error when trying to encode negative number as long', function () {

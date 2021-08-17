@@ -104,7 +104,6 @@ CustomSerializer.prototype.write = function (writer, obj) {
 };
 
 describe('SerializationServiceTest', function () {
-
     it('should use data serializable factory', function () {
         const serializationConfig = new SerializationConfigImpl();
         serializationConfig.dataSerializableFactories[1] = idataSerializableFactory;

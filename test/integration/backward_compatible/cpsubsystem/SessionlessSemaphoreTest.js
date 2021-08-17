@@ -24,7 +24,6 @@ const RC = require('../../RC');
 const { Client } = require('../../../../');
 
 describe('SessionlessSemaphoreTest', function () {
-
     let cluster;
     let client;
     let groupSeq = 0;

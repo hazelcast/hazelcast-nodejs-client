@@ -25,7 +25,6 @@ const RC = require('../../RC');
 const { Client } = require('../../../../');
 
 describe('NearCacheSimpleInvalidationTest', function () {
-
     const mapName = 'nccmap';
 
     let cluster;

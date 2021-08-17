@@ -25,7 +25,6 @@ const { LifecycleServiceImpl } = require('../../../lib/LifecycleService');
 const { ClientMessage } = require('../../../lib/protocol/ClientMessage');
 
 describe('InvocationTest', function () {
-
     let clientStub;
     let serviceStub;
 

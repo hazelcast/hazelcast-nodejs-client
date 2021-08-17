@@ -273,7 +273,6 @@ describe('SqlExecuteTest', function () {
         });
     });
     describe('mixed cluster of lite and data members', function () {
-
         before(async function () {
             cluster = await RC.createCluster(null, LITE_MEMBER_CONFIG);
             await RC.startMember(cluster.id);

@@ -207,7 +207,6 @@ describe('DateTimeClassesTest', function () {
         });
     });
     describe('LocalDateTimeTest', function () {
-
         it('should throw RangeError if local time is not valid', function () {
             (() => new LocalDateTime(new LocalDate(2000, 2, 29), '')).should.throw(TypeError, 'Invalid local time');
             (() => new LocalDateTime(new LocalDate(2000, 2, 29), 100)).should.throw(TypeError, 'Invalid local time');
@@ -291,7 +290,6 @@ describe('DateTimeClassesTest', function () {
         });
     });
     describe('OffsetDateTimeTest', function () {
-
         it('should return parse values correctly', function () {
             const dateTime1 = new OffsetDateTime(new LocalDateTime(new LocalDate(2000, 2, 29), new LocalTime(2, 3, 4, 6)), 1000);
 

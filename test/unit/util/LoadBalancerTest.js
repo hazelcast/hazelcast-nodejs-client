@@ -21,7 +21,6 @@ const { RandomLB } = require('../../../lib/util/RandomLB');
 const { RoundRobinLB } = require('../../../lib/util/RoundRobinLB');
 
 describe('LoadBalancerTest', function () {
-
     const mockMembers = [
         {
             uuid: 0,

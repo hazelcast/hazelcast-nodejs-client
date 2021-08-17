@@ -34,7 +34,6 @@ const { ConnectionManager } = require('../../../../lib/network/ConnectionManager
 const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 
 describe('SessionAwareSemaphoreProxyTest', function () {
-
     let cpSessionManagerStub;
     let connectionManagerStub;
     let serializationServiceStub;

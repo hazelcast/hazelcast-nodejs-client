@@ -18,7 +18,6 @@
 const TestUtil = require('../../TestUtil');
 
 class InnerPortable {
-
     constructor(p1, p2) {
         this.p1 = p1;
         this.p2 = p2;
@@ -35,11 +34,9 @@ class InnerPortable {
         TestUtil.writeStringToWriter(writer, 'p1', this.p1);
         TestUtil.writeStringToWriter(writer, 'p2', this.p2);
     }
-
 }
 
 class PortableObject {
-
     constructor(
         {
             a_byte, a_boolean, a_character, a_short, an_integer,
@@ -156,11 +153,9 @@ class PortableObject {
         this.timestamps = reader.readTimestampArray('timestamps');
         this.timestamp_with_timezones = reader.readTimestampWithTimezoneArray('timestamp_with_timezones');
     }
-
 }
 
 class PortableObjectV2 {
-
     constructor(
         {
             a_new_prop, a_byte, a_boolean, a_character, a_short, an_integer,
@@ -279,11 +274,9 @@ class PortableObjectV2 {
         this.timestamps = reader.readTimestampArray('timestamps');
         this.timestamp_with_timezones = reader.readTimestampWithTimezoneArray('timestamp_with_timezones');
     }
-
 }
 
 class SimplePortable {
-
     constructor(str) {
         this.aString = str;
         this.factoryId = 10;
@@ -297,11 +290,9 @@ class SimplePortable {
     writePortable(writer) {
         TestUtil.writeStringToWriter(writer, 'aString', this.aString);
     }
-
 }
 
 class SimplePortableV3 {
-
     constructor(innerObject) {
         this.innerObject = innerObject;
         this.factoryId = 10;
@@ -316,11 +307,9 @@ class SimplePortableV3 {
     writePortable(writer) {
         writer.writePortable('innerObject', this.innerObject);
     }
-
 }
 
 class Parent {
-
     constructor(child) {
         this.child = child;
         this.factoryId = 1;
@@ -334,11 +323,9 @@ class Parent {
     readPortable(reader) {
         this.child = reader.readPortable('child');
     }
-
 }
 
 class Child {
-
     constructor(name) {
         this.name = name;
         this.factoryId = 1;
@@ -352,11 +339,9 @@ class Child {
     readPortable(reader) {
         this.name = reader.readString('name');
     }
-
 }
 
 class DuplicateFieldNamePortable {
-
     constructor(name, surname) {
         this.name = name;
         this.surname = surname;
@@ -373,7 +358,6 @@ class DuplicateFieldNamePortable {
         this.name = reader.readString('name');
         this.surname = reader.readString('name');
     }
-
 }
 
 exports.PortableObject = PortableObject;
