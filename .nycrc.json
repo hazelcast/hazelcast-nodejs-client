@@ -4,5 +4,6 @@
     "exclude": [
         "src/codec/*.ts",
         "src/codec/custom/*.ts"
-    ]
+    ],
+    "include": ["src"]
 }
