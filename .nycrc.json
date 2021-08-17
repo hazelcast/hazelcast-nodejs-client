@@ -2,8 +2,8 @@
     "cache": true,
     "reporter": "cobertura",
     "exclude": [
+        "src/codec/custom/*.ts",
         "src/codec/*.ts",
-        "src/codec/custom/*.ts"
-    ],
-    "include": ["src"]
+        "test/**"
+    ]
 }
