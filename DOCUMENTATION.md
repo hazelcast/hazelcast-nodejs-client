@@ -2792,6 +2792,7 @@ The `Aggregators` object provides a wide variety of built-in aggregators. The fu
 - `integerSum`
 - `longAvg`
 - `longSum`
+- `distinct`
 
 You can use these aggregators with the `IMap.aggregate()` and `IMap.aggregateWithPredicate()` functions.
 
