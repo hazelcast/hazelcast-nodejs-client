@@ -27,7 +27,6 @@ const {
 const TestUtil = require('../../../TestUtil');
 
 describe('MapDistinctAggregatorTest', function () {
-
     let cluster;
     let client;
     let map;
