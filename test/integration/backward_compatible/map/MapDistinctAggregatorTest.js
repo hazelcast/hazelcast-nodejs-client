@@ -43,8 +43,6 @@ describe('MapDistinctAggregatorTest', function () {
 
         // distinct aggregator is added in 5.0 to the Node.js client
         TestUtil.markClientVersionAtLeast(this, '5.0');
-        // distinct aggregator fixed for non-java clients in 4.0 https://github.com/hazelcast/hazelcast/pull/15506
-        TestUtil.markServerVersionAtLeast(this, client, '4.0');
 
         map = await client.getMap('aggregatorsMap');
     });
@@ -71,15 +69,15 @@ describe('MapDistinctAggregatorTest', function () {
     ];
 
     for (const testParam of testParams) {
-        const isFixed = testParam[0];
+        const isSingleType = testParam[0];
         const usePredicate = testParam[1];
         const useAttributePath = testParam[2];
         const expectedResult = testParam[3];
 
-        it(`distinct test. mapType: ${isFixed ? 'fixed' : 'mixed'},`
+        it(`distinct test. mapType: ${isSingleType ? 'singleType' : 'mixedType'},`
             + ` ${usePredicate ? 'with' : 'without'} predicate,`
             + ` ${useAttributePath ? 'with' : 'without'} attributePath,`, async function () {
-            const mapValues = isFixed ? fixedMapValues : mixedMapValues;
+            const mapValues = isSingleType ? fixedMapValues : mixedMapValues;
             await map.putAll(mapValues.map((value, index) => [index, value]));
 
             const aggregator = useAttributePath ? Aggregators.distinct('this') : Aggregators.distinct();

@@ -250,12 +250,8 @@ export class DistinctValuesAggregator<R> extends AbstractAggregator<Set<R>> {
 
     classId = AggregatorConstants.DISTINCT;
 
-    readData(input: DataInput): any {
-        this.attributePath = input.readString();
-        const count = input.readInt();
-        for (let i = 0; i < count; i++) {
-            input.readObject();
-        }
+    readData(input: DataInput) {
+        // readData is not used on the client side
     }
 
     writeData(output: DataOutput): void {
@@ -265,70 +261,22 @@ export class DistinctValuesAggregator<R> extends AbstractAggregator<Set<R>> {
 }
 
 /** @internal */
-export class CanonicalizingHashSet<R> implements IdentifiedDataSerializable, Set<R> {
+export class CanonicalizingHashSet<R> extends Set<R> implements IdentifiedDataSerializable {
 
     classId = AggregatorConstants.CANONICALIZING_SET;
     factoryId = AggregatorConstants.AGGREGATOR_FACTORY_ID;
-    private _values = new Set<R>();
 
     readData(input: DataInput): void {
         const count = input.readInt();
         for (let i = 0; i < count; i++) {
             const element = input.readObject();
-            this._values.add(element);
+            this.add(element);
         }
     }
 
     writeData(output: DataOutput): void {
-        output.writeInt(this._values.size);
-        for (const element of this._values) {
-            output.writeObject(element);
-        }
+        // writeData is not used on the client side
     }
-
-    readonly [Symbol.toStringTag]: string = this._values[Symbol.toStringTag];
-
-    get size() : number {
-        return this._values.size;
-    }
-
-    [Symbol.iterator](): IterableIterator<R> {
-        return undefined;
-    }
-
-    add(value: R): this {
-        this._values.add(value);
-        return this;
-    }
-
-    clear(): void {
-        this._values.clear();
-    }
-
-    delete(value: R): boolean {
-        return this._values.delete(value);
-    }
-
-    entries(): IterableIterator<[R, R]> {
-        return this._values.entries();
-    }
-
-    forEach(callbackfn: (value: R, value2: R, set: Set<R>) => void, thisArg?: any): void {
-        this._values.forEach(callbackfn, thisArg);
-    }
-
-    has(value: R): boolean {
-        return this._values.has(value);
-    }
-
-    keys(): IterableIterator<R> {
-        return this._values.keys();
-    }
-
-    values(): IterableIterator<R> {
-        return this._values.values();
-    }
-
 }
 
 /** @internal */

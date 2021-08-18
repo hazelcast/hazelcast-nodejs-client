@@ -25,7 +25,7 @@ export const AGGREGATOR_FACTORY_ID = -29;
 /** @internal */
 export const COUNT = 4;
 /** @internal */
-export const DISTINCT = 5; // returns java serializable, not usable in node.js
+export const DISTINCT = 5;
 /** @internal */
 export const DOUBLE_AVG = 6;
 /** @internal */
