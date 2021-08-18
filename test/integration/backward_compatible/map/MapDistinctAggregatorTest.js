@@ -55,7 +55,7 @@ describe('MapDistinctAggregatorTest', function () {
         return map.destroy();
     });
 
-    // isFixed, usePredicate, useAttributePath, expectedResult
+    // isSingleType, usePredicate, useAttributePath, expectedResult
     const testParams = [
         [true, true, true, 5],
         [true, true, false, 5],
