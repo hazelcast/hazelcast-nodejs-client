@@ -1,7 +1,7 @@
 # Paging Predicate Example with Sorting
 
 In this example you will learn how you can use a paging predicate with sorting. In order to define how sorting will work,
-you need a comparator. In order to a member to know this comparator, you need to register the comparator in the member config.
+you need a comparator. In order a member to know this comparator, you need to register the comparator in the member config.
 The following describes how to do it:
 
 You can use the sample project in [main](./main) folder:
