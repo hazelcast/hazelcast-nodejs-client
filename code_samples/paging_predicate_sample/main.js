@@ -7,14 +7,8 @@ class Comparator {
         this.classId = 103;
     }
 
-    sort(a, b) {
-        if (a[1] > b[1]) {
-            return -1;
-        }
-        if (a[1] < b[1]) {
-            return 1;
-        }
-        return 0;
+    sort() {
+        // not necessary because actual sorting happens on the member side
     }
 
     readData() {
