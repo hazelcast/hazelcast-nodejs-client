@@ -36,7 +36,10 @@ describe('Jet Test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
-        TestUtil.markServerVersionAtLeast(this, client, '5.0');
+        const serverOlderThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') < 0;
+        if (serverOlderThanFive) {
+            this.skip();
+        }
     });
 
     beforeEach(async function () {
