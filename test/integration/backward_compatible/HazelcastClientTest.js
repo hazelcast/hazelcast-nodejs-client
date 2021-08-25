@@ -77,6 +77,10 @@ configParams.forEach((cfg) => {
         let client;
         let managed;
 
+        const filterInternalMaps = (distributedObjects) => {
+            return distributedObjects.filter(distObj => !distObj.getName().startsWith('__'));
+        };
+
         beforeEach(async function () {
             cluster = await RC.createCluster(null, null);
             await RC.startMember(cluster.id);
@@ -92,7 +96,7 @@ configParams.forEach((cfg) => {
         });
 
         it('getDistributedObject returns empty array when there is no distributed object', async function () {
-            const distributedObjects = await client.getDistributedObjects();
+            const distributedObjects = filterInternalMaps(await client.getDistributedObjects());
             expect(distributedObjects).to.be.an('array');
             expect(distributedObjects).to.be.empty;
         });
@@ -117,7 +121,7 @@ configParams.forEach((cfg) => {
             managed.getObject(client.getMap.bind(client, 'map'));
             managed.getObject(client.getSet.bind(client, 'set'));
             return TestUtil.assertTrueEventually(async () => {
-                const distObjects = await client.getDistributedObjects();
+                const distObjects = filterInternalMaps(await client.getDistributedObjects());
                 const names = distObjects.map((o) => {
                     return o.getName();
                 });
@@ -132,7 +136,7 @@ configParams.forEach((cfg) => {
 
             return TestUtil.assertTrueEventually(async () => {
                 await managed.destroy('map1');
-                const distObjects = await client.getDistributedObjects();
+                const distObjects = filterInternalMaps(await client.getDistributedObjects());
                 const names = distObjects.map(o => {
                     return o.getName();
                 });
