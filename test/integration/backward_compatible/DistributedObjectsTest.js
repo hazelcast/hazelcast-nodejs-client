@@ -33,6 +33,10 @@ describe('DistributedObjectsTest', function () {
         return distributedObjects.map((distObj) => distObj.getServiceName() + distObj.getName());
     };
 
+    const filterInternalMaps = (distributedObjects) => {
+        return distributedObjects.filter(distObj => !distObj.getName().startsWith('__'));
+    };
+
     beforeEach(async function () {
         cluster = await RC.createCluster(null, null);
         await RC.startMember(cluster.id);
@@ -48,7 +52,7 @@ describe('DistributedObjectsTest', function () {
 
     it('get distributed objects with no object on cluster', async function () {
         const objects = await client.getDistributedObjects();
-        expect(objects).to.have.lengthOf(0);
+        expect(filterInternalMaps(objects)).to.have.lengthOf(0);
     });
 
     it('get distributed objects', async function () {
@@ -56,10 +60,10 @@ describe('DistributedObjectsTest', function () {
         const set = await client.getSet(TestUtil.randomString());
         const queue = await client.getQueue(TestUtil.randomString());
         let objects = await client.getDistributedObjects();
-        expect(objects).to.have.deep.members([map, set, queue]);
+        expect(filterInternalMaps(objects)).to.have.deep.members([map, set, queue]);
         objects = await client.getDistributedObjects();
         // Make sure that live objects are not deleted
-        expect(objects).to.have.deep.members([map, set, queue]);
+        expect(filterInternalMaps(objects)).to.have.deep.members([map, set, queue]);
     });
 
     it('get distributed objects creates local instances of received proxies', async function () {
@@ -67,15 +71,15 @@ describe('DistributedObjectsTest', function () {
         const set = await client.getSet(TestUtil.randomString());
         const queue = await client.getQueue(TestUtil.randomString());
         let objects = await client.getDistributedObjects();
-        expect(objects).to.have.deep.members([map, set, queue]);
+        expect(filterInternalMaps(objects)).to.have.deep.members([map, set, queue]);
         const otherClient = await Client.newHazelcastClient({ clusterName: cluster.id });
         objects = await otherClient.getDistributedObjects();
         // Proxies have different clients, therefore deep equality check fails.
         // Namespace check should be enough
-        expect(toNamespace(objects)).to.have.deep.members(toNamespace([map, set, queue]));
+        expect(toNamespace(filterInternalMaps(objects))).to.have.deep.members(toNamespace([map, set, queue]));
         objects = await otherClient.getDistributedObjects();
         // Make sure that live objects are not deleted
-        expect(toNamespace(objects)).to.have.deep.members(toNamespace([map, set, queue]));
+        expect(toNamespace(filterInternalMaps(objects))).to.have.deep.members(toNamespace([map, set, queue]));
         await otherClient.shutdown();
     });
 
@@ -85,18 +89,18 @@ describe('DistributedObjectsTest', function () {
         const set = await otherClient.getSet(TestUtil.randomString());
         const queue = await client.getQueue(TestUtil.randomString());
         let objects = await client.getDistributedObjects();
-        expect(toNamespace(objects)).to.have.deep.members(toNamespace([map, set, queue]));
+        expect(toNamespace(filterInternalMaps(objects))).to.have.deep.members(toNamespace([map, set, queue]));
         await map.destroy();
         objects = await client.getDistributedObjects();
-        expect(toNamespace(objects)).to.have.deep.members(toNamespace([set, queue]));
+        expect(toNamespace(filterInternalMaps(objects))).to.have.deep.members(toNamespace([set, queue]));
         await set.destroy();
         objects = await client.getDistributedObjects();
-        expect(toNamespace(objects)).to.have.deep.members(toNamespace([queue]));
+        expect(toNamespace(filterInternalMaps(objects))).to.have.deep.members(toNamespace([queue]));
         await queue.destroy();
         objects = await client.getDistributedObjects();
-        expect(objects).to.have.lengthOf(0);
+        expect(filterInternalMaps(objects)).to.have.lengthOf(0);
         objects = await otherClient.getDistributedObjects();
-        expect(objects).to.have.lengthOf(0);
+        expect(filterInternalMaps(objects)).to.have.lengthOf(0);
         await otherClient.shutdown();
     });
 });
