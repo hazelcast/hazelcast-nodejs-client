@@ -107,7 +107,7 @@ export class ClusterService implements Cluster {
     }
 
     addMembershipListener(listener: MembershipListener): string {
-        assertNotNull(listener);
+        assertNotNull(listener, true);
 
         const registrationId = UuidUtil.generate().toString();
         this.listeners.set(registrationId, listener);
@@ -125,7 +125,7 @@ export class ClusterService implements Cluster {
     }
 
     removeMembershipListener(listenerId: string): boolean {
-        assertNotNull(listenerId);
+        assertNotNull(listenerId, true);
         return this.listeners.delete(listenerId);
     }
 

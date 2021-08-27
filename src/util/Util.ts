@@ -35,9 +35,15 @@ export function assert(value: any, message?: string | Error): asserts value {
     }
 }
 
-/** @internal */
-export function assertNotNull(v: any): void {
-    if (IS_DEVELOPMENT_MODE) {
+/**
+ * Asserts a value is not null.
+ *
+ * @param v value to assert.
+ * @param alwaysAssert whether assertion should be run no matter we are in development mode or not.
+ * @internal
+ */
+export function assertNotNull(v: any, alwaysAssert?: boolean): void {
+    if (IS_DEVELOPMENT_MODE || alwaysAssert) {
         _assert.notStrictEqual(v, null, 'Non null value expected.');
     }
 }
