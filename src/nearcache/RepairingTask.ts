@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
+import { assert } from '../util/Util';
 import * as Long from 'long';
 import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';

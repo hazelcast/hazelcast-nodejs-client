@@ -42,18 +42,18 @@
     "scripts": {
         "clean": "rimraf lib *.jar *.log",
         "compile": "tsc",
-        "test": "node scripts/test-runner.js all",
-        "test:unit": "node scripts/test-runner.js unit",
-        "test:integration": "node scripts/test-runner.js integration",
+        "test": "HZ_NODEJS_ENV=development node scripts/test-runner.js all",
+        "test:unit": "HZ_NODEJS_ENV=development node scripts/test-runner.js unit",
+        "test:integration": "HZ_NODEJS_ENV=development node scripts/test-runner.js integration",
         "validate-user-code": "tsc --build test/user_code/tsconfig.json",
-        "coverage": "node scripts/test-runner.js coverage",
+        "coverage": "HZ_NODEJS_ENV=development node scripts/test-runner.js coverage",
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --options typedoc.json",
         "generate-docs:watch": "typedoc --watch --options typedoc.json",
         "lint": "eslint --cache --ext .ts src && eslint --cache --plugin mocha test && eslint --cache  code_samples && eslint --cache scripts",
         "lint:fix": "eslint --cache --fix --ext .ts src && eslint --cache --fix --plugin mocha test && eslint --cache --fix code_samples && eslint --cache --fix scripts",
         "startrc": "node scripts/test-runner.js startrc",
-        "check-code-samples": "node scripts/test-runner.js check-code-samples",
+        "check-code-samples": "HZ_NODEJS_ENV=development node scripts/test-runner.js check-code-samples",
         "prepare": "husky install"
     },
     "repository": {

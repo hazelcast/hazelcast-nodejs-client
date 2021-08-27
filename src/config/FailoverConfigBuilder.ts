@@ -15,14 +15,14 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
 import * as util from 'util';
 import {InvalidConfigurationError} from '../core';
 import {
     assertPositiveNumber,
     assertNonNegativeNumber,
     tryGetArray,
-    tryGetNumber
+    tryGetNumber,
+    assert
 } from '../util/Util';
 import {ConfigBuilder} from './ConfigBuilder';
 import {ClientConfigImpl} from './Config';

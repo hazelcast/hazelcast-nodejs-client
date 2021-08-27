@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
 import {
     DistributedObject,
     IllegalStateError
@@ -31,7 +30,7 @@ import {SessionAwareSemaphoreProxy} from './SessionAwareSemaphoreProxy';
 import {RaftGroupId} from './RaftGroupId';
 import {CPGroupCreateCPGroupCodec} from '../../codec/CPGroupCreateCPGroupCodec';
 import {SemaphoreGetSemaphoreTypeCodec} from '../../codec/SemaphoreGetSemaphoreTypeCodec';
-import {assertString} from '../../util/Util';
+import {assertString, assert} from '../../util/Util';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
 import {CPSessionManager} from './CPSessionManager';

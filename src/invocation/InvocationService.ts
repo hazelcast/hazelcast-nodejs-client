@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
 import {
     ClientNotActiveError,
     HazelcastInstanceNotActiveError,
@@ -39,7 +38,8 @@ import {
     cancelRepetitionTask,
     Task,
     deferredPromise,
-    DeferredPromise
+    DeferredPromise,
+    assert
 } from '../util/Util';
 import {ClientConfig} from '../config';
 import {ListenerService} from '../listener/ListenerService';

@@ -15,43 +15,58 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
+import * as _assert from 'assert';
 import * as Long from 'long';
 import * as Path from 'path';
 import {BigDecimal, IllegalStateError, LocalDate, LocalDateTime, LocalTime, MemberImpl, OffsetDateTime, UUID} from '../core';
 import {MemberVersion} from '../core/MemberVersion';
 import {BuildInfo} from '../BuildInfo';
 
+// Used to assert only in development mode
+const IS_DEVELOPMENT_MODE = process.env.HZ_NODEJS_ENV === 'development';
+
+/**
+ * Used to only turn on asserts in development mode
+ * @internal
+ */
+export function assert(value: any, message?: string | Error): asserts value {
+    if (IS_DEVELOPMENT_MODE) {
+        _assert(value, message);
+    }
+}
+
 /** @internal */
 export function assertNotNull(v: any): void {
-    assert.notStrictEqual(v, null, 'Non null value expected.');
+    if (IS_DEVELOPMENT_MODE) {
+        _assert.notStrictEqual(v, null, 'Non null value expected.');
+    }
 }
 
 /** @internal */
 export function assertArray(x: any): void {
-    assert(Array.isArray(x), 'Should be array.');
+    exports.assert(Array.isArray(x), 'Should be array.');
 }
 
 /** @internal */
 export function assertString(v: any): void {
-    assert(typeof v === 'string', 'String value expected.');
+    exports.assert(typeof v === 'string', 'String value expected.');
 }
 
 /** @internal */
 export function assertNumber(v: any): void {
-    assert(typeof v === 'number', 'Number value expected.');
+    exports.assert(typeof v === 'number', 'Number value expected.');
 }
 
 /** @internal */
 export function assertNonNegativeNumber(v: any, m?: string): void {
-    assert(typeof v === 'number', m || 'Number value expected.');
-    assert(v >= 0, m || 'Non-negative value expected.');
+    exports.assert(typeof v === 'number', m || 'Number value expected.');
+    exports.assert(v >= 0, m || 'Non-negative value expected.');
 }
 
 /** @internal */
 export function assertPositiveNumber(v: any, m?: string): void {
-    assert(typeof v === 'number', m || 'Number value expected.');
-    assert(v > 0, m || 'Positive value expected.');
+    exports.assert(typeof v === 'number', m || 'Number value expected.');
+    exports.assert(v > 0, m || 'Positive value expected.');
 }
 
 /** @internal */
@@ -68,7 +83,9 @@ export function shuffleArray<T>(array: T[]): void {
 
 /** @internal */
 export function getType(obj: any): string {
-    assertNotNull(obj);
+    if (IS_DEVELOPMENT_MODE) {
+        assertNotNull(obj);
+    }
     if (Long.isLong(obj)) {
         return 'long';
     } else if (Buffer.isBuffer(obj)) {

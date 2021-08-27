@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
+import { assert } from '../util/Util';
 import * as Long from 'long';
 import {BitsUtil} from '../util/BitsUtil';
 import {Data, DataInput, DataOutput, PositionalDataOutput} from './Data';

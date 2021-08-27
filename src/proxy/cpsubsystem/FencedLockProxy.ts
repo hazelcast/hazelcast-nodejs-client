@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
+import { assert } from '../../util/Util';
 import * as Long from 'long';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {FencedLock} from '../FencedLock';
