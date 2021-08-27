@@ -39,6 +39,9 @@ let CLASSPATH = `hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar${PATH_S
               + `hazelcast-sql-${HAZELCAST_VERSION}.jar${PATH_SEPARATOR}`
               + 'test/javaclasses';
 
+// Set environment to development so that assertions in the code work.
+process.env.HZ_NODEJS_ENV = 'development';
+
 if (HAZELCAST_ENTERPRISE_KEY) {
     CLASSPATH = `hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar${PATH_SEPARATOR}`
               + `hazelcast-enterprise-${HAZELCAST_ENTERPRISE_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
