@@ -82,7 +82,7 @@ describe('Jet Test', function () {
         const result = client.getSql().execute(`
             CREATE MAPPING ${mapName} (__key DOUBLE, age INTEGER, name VARCHAR) TYPE IMap OPTIONS (
               'keyFormat'='double',
-              'valueFormat'='json')
+              'valueFormat'='json-flat')
         `);
 
         await result.getUpdateCount(); // wait for execution to end
@@ -90,7 +90,7 @@ describe('Jet Test', function () {
         const result2 = client.getSql().execute(`
             CREATE MAPPING ${mapName2} (__key DOUBLE, name VARCHAR, height DOUBLE) TYPE IMap OPTIONS (
               'keyFormat'='double',
-              'valueFormat'='json')
+              'valueFormat'='json-flat')
         `);
 
         await result2.getUpdateCount(); // wait for execution to end
