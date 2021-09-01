@@ -23,7 +23,7 @@
         "husky": "^6.0.0",
         "jsonschema": "~1.4.0",
         "mocha": "~8.4.0",
-        "mocha-jenkins-reporter": "^0.4.5",
+        "mocha-jenkins-reporter": "^0.4.6",
         "mousse": "~0.3.1",
         "nyc": "~15.1.0",
         "rimraf": "~3.0.2",
