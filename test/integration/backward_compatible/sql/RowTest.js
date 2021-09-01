@@ -34,8 +34,11 @@ describe('SqlRowTest', function () {
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     before(async function () {
+        const serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
+        const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
+
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
+        cluster = await RC.createCluster(null, CLUSTER_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id
@@ -49,6 +52,7 @@ describe('SqlRowTest', function () {
         await someMap.put(0, '1');
         await someMap.put(1, '2');
         await someMap.put(2, '3');
+        await TestUtil.createMapping(true, client, 'double', 'varchar', mapName);
 
         const sqlService = TestUtil.getSql(client);
         result = sqlService.execute(`SELECT * FROM ${mapName} WHERE __key > ?`, [0], {

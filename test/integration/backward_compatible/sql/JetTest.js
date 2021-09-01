@@ -36,7 +36,10 @@ describe('Jet Test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
-        TestUtil.markServerVersionAtLeast(this, client, '5.0');
+        const serverOlderThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') < 0;
+        if (serverOlderThanFive) {
+            this.skip();
+        }
     });
 
     beforeEach(async function () {
@@ -151,6 +154,7 @@ describe('Jet Test', function () {
     it('should be able to run aggregate methods', async function () {
         const mapName = 'a';
         const map = await client.getMap(mapName);
+        await TestUtil.createMapping(true, client, 'double', 'double', mapName);
 
         await map.set(1, 2);
         await map.set(2, 3);
