@@ -53,7 +53,22 @@ function portableFactory(classId) {
         };
 
         const client = await Client.newHazelcastClient(cfg);
-        const map = await client.getMap('decimalMap');
+        const mapName = 'decimalMap';
+        const map = await client.getMap(mapName);
+        // To be able to use our map in SQL we need to create mapping for it.
+        const createMappingQuery = `
+            CREATE MAPPING ${mapName} (
+                __key VARCHAR,
+                this DECIMAL
+            )
+            TYPE IMAP
+            OPTIONS (
+                'keyFormat' = 'varchar',
+                'valueFormat' = 'decimal'
+            )
+        `;
+        // executions are async, await on update count to wait for execution.
+        await client.getSql().execute(createMappingQuery).getUpdateCount();
 
         // You can use BigDecimals for any operation
         // Let's add some BigDecimals:
