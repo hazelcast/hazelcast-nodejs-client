@@ -5,7 +5,6 @@
            http://www.hazelcast.com/schema/config/hazelcast-config-4.2.xsd">
 
     <serialization>
-        <portable-version>0</portable-version>
         <data-serializable-factories>
             <data-serializable-factory factory-id="66">
                 IdentifiedFactory

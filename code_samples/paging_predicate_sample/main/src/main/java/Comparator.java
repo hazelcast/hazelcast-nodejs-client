@@ -19,7 +19,6 @@ public class Comparator implements java.util.Comparator<Map.Entry<String, Double
     public void readData(ObjectDataInput in) throws IOException {
     }
 
-
     // We needed a Double comparator since the default number type is 'double' in Node.js client. You can change it via defaultNumberType serialization setting.
     @Override
     public int compare(Map.Entry<String, Double> e1, Map.Entry<String, Double> e2) {
