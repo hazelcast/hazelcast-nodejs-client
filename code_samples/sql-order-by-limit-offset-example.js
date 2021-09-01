@@ -20,7 +20,22 @@ const { Client, HazelcastSqlException } = require('hazelcast-client');
 (async () => {
     try {
         const client = await Client.newHazelcastClient();
-        const map = await client.getMap('myMap');
+        const mapName = 'myMap';
+        const map = await client.getMap(mapName);
+        // To be able to use our map in SQL we need to create mapping for it.
+        const createMappingQuery = `
+            CREATE MAPPING ${mapName} (
+                __key VARCHAR,
+                this DOUBLE
+            )
+            TYPE IMAP
+            OPTIONS (
+                'keyFormat' = 'varchar',
+                'valueFormat' = 'double'
+            )
+        `;
+        // executions are async, await on update count to wait for execution.
+        await client.getSql().execute(createMappingQuery).getUpdateCount();
 
         // populate map
         await map.put('key1', 1);

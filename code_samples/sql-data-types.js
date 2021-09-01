@@ -40,7 +40,22 @@ class Student {
 
 const varcharExample = async (client) => {
     console.log('----------VARCHAR Example----------');
-    const someMap = await client.getMap('varcharMap');
+    const mapName = 'varcharMap';
+    const someMap = await client.getMap(mapName);
+    // To be able to use our map in SQL we need to create mapping for it.
+    const createMappingQuery = `
+            CREATE MAPPING ${mapName} (
+                __key DOUBLE,
+                this VARCHAR
+            )
+            TYPE IMAP
+            OPTIONS (
+                'keyFormat' = 'double',
+                'valueFormat' = 'varchar'
+            )
+        `;
+    // executions are async, await on update count to wait for execution.
+    await client.getSql().execute(createMappingQuery).getUpdateCount();
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, key.toString());
@@ -73,7 +88,22 @@ const varcharExample = async (client) => {
 */
 const integersExample = async (client) => {
     console.log('---------- BIGINT Example----------');
-    const someMap = await client.getMap('bigintMap');
+    const mapName = 'bigintMap';
+    const someMap = await client.getMap(mapName);
+    // To be able to use our map in SQL we need to create mapping for it.
+    const createMappingQuery = `
+            CREATE MAPPING ${mapName} (
+                __key DOUBLE,
+                this BIGINT
+            )
+            TYPE IMAP
+            OPTIONS (
+                'keyFormat' = 'double',
+                'valueFormat' = 'bigint'
+            )
+        `;
+    // executions are async, await on update count to wait for execution.
+    await client.getSql().execute(createMappingQuery).getUpdateCount();
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, long.fromNumber(key * 2));
@@ -124,10 +154,27 @@ const integersExample = async (client) => {
 };
 
 // Portable example
-const objectExample = async (client) => {
+const objectExample = async (client, classId, factoryId) => {
     console.log('----------OBJECT Example----------');
-
-    const someMap = await client.getMap('studentMap');
+    const mapName = 'studentMap';
+    const someMap = await client.getMap(mapName);
+    // To be able to use our map in SQL we need to create mapping for it.
+    const createMappingQuery = `
+            CREATE MAPPING ${mapName} (
+                __key DOUBLE,
+                age INT,
+                height DOUBLE
+            )
+            TYPE IMAP
+            OPTIONS (
+                'keyFormat' = 'double',
+                'valueFormat' = 'portable',
+                'valuePortableFactoryId' = '${factoryId}',
+                'valuePortableClassId' = '${classId}'
+            )
+        `;
+    // executions are async, await on update count to wait for execution.
+    await client.getSql().execute(createMappingQuery).getUpdateCount();
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, new Student(long.fromNumber(key), 1.1));
@@ -182,7 +229,7 @@ const objectExample = async (client) => {
 
         await varcharExample(client);
         await integersExample(client);
-        await objectExample(client);
+        await objectExample(client, 1, 23);
 
         await client.shutdown();
     } catch (err) {
