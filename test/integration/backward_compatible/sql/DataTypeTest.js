@@ -95,13 +95,7 @@ describe('Data type test', function () {
             return;
         }
 
-        const entries = Object.entries(columns);
-
-        const numberOfColumns = entries.length;
-
-        const columnsString = entries.reduce((accumulator, current, currentIndex) => {
-            return accumulator + `${current[0]} ${current[1].toUpperCase()}${currentIndex !== numberOfColumns - 1 ? ',' : ''}\n`;
-        }, '');
+        const columnsString = Object.entries(columns).map(column => `${column[0]} ${column[1].toUpperCase()}`).join(',\n');
 
         const createMappingQuery = `
             CREATE MAPPING ${mapName} (
