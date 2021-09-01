@@ -17,6 +17,7 @@
 
 const { expect } = require('chai');
 const { BuildInfo } = require('../lib/BuildInfo');
+const { Lang } = require('./integration/remote_controller/remote-controller_types');
 
 exports.promiseLater = function (time, func) {
     if (func === undefined) {
@@ -156,6 +157,22 @@ exports.isServerVersionAtLeast = function(client, version) {
     }
     const expected = BuildInfo.calculateServerVersionFromString(version);
     return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
+};
+
+/**
+ * Returns
+ * - 0 if they are equal
+ * - positive number if server version is newer than the version
+ * - negative number if server version is older than the version
+ */
+exports.compareServerVersionWithRC = async function (rc, version) {
+    const script = 'result=com.hazelcast.instance.GeneratedBuildProperties.VERSION;';
+    const result = await rc.executeOnController(null, script, Lang.JAVASCRIPT);
+
+    const rcServerVersion = BuildInfo.calculateServerVersionFromString(result.result.toString());
+    const comparedVersion = BuildInfo.calculateServerVersionFromString(version);
+
+    return rcServerVersion - comparedVersion;
 };
 
 exports.isClientVersionAtLeast = function(version) {

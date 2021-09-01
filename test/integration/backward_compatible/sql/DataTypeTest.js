@@ -59,8 +59,9 @@ describe('Data type test', function () {
     let cluster;
     let someMap;
     let mapName;
+    let serverVersionNewerThanFive;
+
     const clientVersionNewerThanFive = TestUtil.isClientVersionAtLeast('5.0');
-    const serverVersionNewerThanFive = TestUtil.isServerVersionAtLeast(client, '5.0');
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     const validateResults = (rows, expectedKeys, expectedValues) => {
@@ -73,8 +74,11 @@ describe('Data type test', function () {
     };
 
     before(async function () {
+        serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
+        const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
+
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
+        cluster = await RC.createCluster(null, CLUSTER_CONFIG);
         await RC.startMember(cluster.id);
     });
 
@@ -488,6 +492,11 @@ describe('Data type test', function () {
         const leftZeroPadInteger = TestUtil.getDateTimeUtil().leftZeroPadInteger;
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
+
+        if (clientVersionNewerThanFive && !serverVersionNewerThanFive) {
+            // in this case client will send parameters using default serializers but server does not have them yet.
+            this.skip();
+        }
 
         const script = `
                     var map = instance_0.getMap("${mapName}");

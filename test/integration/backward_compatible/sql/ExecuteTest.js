@@ -54,16 +54,6 @@ const getSqlErrorCode = () => {
     return SqlErrorCode;
 };
 
-const LITE_MEMBER_CONFIG = `
-    <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.hazelcast.com/schema/config
-        http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-        <lite-member enabled="true" />
-        <jet enabled="true"></jet>
-    </hazelcast>
-`;
-
 /**
  * Sql tests
  */
@@ -72,8 +62,7 @@ describe('SqlExecuteTest', function () {
     let cluster;
     let someMap;
     let mapName;
-
-    const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
+    let CLUSTER_CONFIG;
 
     const runSQLQueryWithParams = async () => {
         for (const _mapName of [mapName, 'partitioned.' + mapName]) {
@@ -120,8 +109,12 @@ describe('SqlExecuteTest', function () {
         });
     };
 
-    before(function () {
+    before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
+
+        const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
+        const serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
+        CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
     });
 
     const populateMap = async function (numberOfRecords) {
@@ -134,7 +127,7 @@ describe('SqlExecuteTest', function () {
 
     describe('sql parameter count', function () {
         before(async function () {
-            cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
+            cluster = await RC.createCluster(null, CLUSTER_CONFIG);
             await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
@@ -220,7 +213,7 @@ describe('SqlExecuteTest', function () {
     });
     describe('basic valid usage', function () {
         before(async function () {
-            cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
+            cluster = await RC.createCluster(null, CLUSTER_CONFIG);
             await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
@@ -274,6 +267,19 @@ describe('SqlExecuteTest', function () {
     });
     describe('mixed cluster of lite and data members', function () {
         before(async function () {
+            const jetConfigOrEmpty =
+                await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0 ? '<jet enabled="true"></jet>' : '';
+
+            const LITE_MEMBER_CONFIG = `
+                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                    http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                    <lite-member enabled="true" />
+                    ${jetConfigOrEmpty}
+                </hazelcast>
+            `;
+
             cluster = await RC.createCluster(null, LITE_MEMBER_CONFIG);
             await RC.startMember(cluster.id);
             await RC.startMember(cluster.id);
@@ -299,7 +305,7 @@ describe('SqlExecuteTest', function () {
     });
     describe('options', function () {
         before(async function () {
-            cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
+            cluster = await RC.createCluster(null, CLUSTER_CONFIG);
             await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
@@ -500,6 +506,19 @@ describe('SqlExecuteTest', function () {
         });
 
         it('should return an error if sql query sent to lite member', async function () {
+            const jetConfigOrEmpty =
+                await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0 ? '<jet enabled="true"></jet>' : '';
+
+            const LITE_MEMBER_CONFIG = `
+                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                    http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                    <lite-member enabled="true" />
+                    ${jetConfigOrEmpty}
+                </hazelcast>
+            `;
+
             cluster = await RC.createCluster(null, LITE_MEMBER_CONFIG);
             await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
@@ -527,7 +546,7 @@ describe('SqlExecuteTest', function () {
         });
 
         it('should return an error if connection lost', async function () {
-            cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
+            cluster = await RC.createCluster(null, CLUSTER_CONFIG);
             const member = await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
@@ -556,7 +575,7 @@ describe('SqlExecuteTest', function () {
         });
 
         it('should return an error if connection lost - statement', async function () {
-            cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
+            cluster = await RC.createCluster(null, CLUSTER_CONFIG);
             const member = await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
@@ -589,7 +608,7 @@ describe('SqlExecuteTest', function () {
         });
 
         it('should return an error if sql is invalid', async function () {
-            cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
+            cluster = await RC.createCluster(null, CLUSTER_CONFIG);
             const member = await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
