@@ -28,7 +28,6 @@ const {
 const { CodecUtil } = require('../../../lib/codec/builtin/CodecUtil');
 
 describe('ClientMessageTest', function () {
-
     const IS_FINAL_FLAG = 1 << 13;
     const INT_SIZE_IN_BYTES = 4;
 

@@ -20,7 +20,6 @@ const { SerializationConfigImpl } = require('../../../lib/config/SerializationCo
 const { SerializationServiceV1 } = require('../../../lib/serialization/SerializationService');
 
 describe('GlobalSerializerTest', function () {
-
     let service;
 
     function CustomObject(surname) {

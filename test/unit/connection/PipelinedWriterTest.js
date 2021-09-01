@@ -27,7 +27,6 @@ const {
 const { deferredPromise } = require('../../../lib/util/Util');
 
 describe('PipelinedWriterTest', function () {
-
     const THRESHOLD = 8192;
 
     let writer;

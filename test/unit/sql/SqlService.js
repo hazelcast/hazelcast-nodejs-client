@@ -54,7 +54,6 @@ describe('SqlServiceTest', function () {
         const fakeClientUUID = 'asd';
 
         beforeEach(function () {
-
             fakeEncodeRequest = sandbox.replace(SqlExecuteCodec, 'encodeRequest', sandbox.fake.returns(fakeClientMessage));
             fakeHandleExecuteResponse = sandbox.replace(SqlServiceImpl, 'handleExecuteResponse', sandbox.fake());
             fakeFromMemberId = sandbox.replace(SqlQueryId, 'fromMemberId', sandbox.fake.returns(fakeQueryId));
@@ -347,7 +346,6 @@ describe('SqlServiceTest', function () {
                 }
             });
         });
-
     });
     describe('close', function () {
         let sqlService;
@@ -357,7 +355,6 @@ describe('SqlServiceTest', function () {
         const fakeClientMessage = {};
 
         beforeEach(function () {
-
             fakeCloseCodec = sandbox.fake.returns(fakeClientMessage);
             SqlCloseCodec.encodeRequest = fakeCloseCodec;
 
@@ -396,7 +393,6 @@ describe('SqlServiceTest', function () {
                 sandbox.match.same(fakeQueryId)
             ).should.be.true;
         });
-
     });
     describe('handleExecuteResponse', function () {
         const fakeClientMessage = {};
@@ -477,7 +473,6 @@ describe('SqlServiceTest', function () {
         const fakeRequestMessage = {};
 
         beforeEach(function () {
-
             encodeFake = sandbox.fake.returns(fakeRequestMessage);
             sandbox.replace(SqlFetchCodec, 'encodeRequest', encodeFake);
 

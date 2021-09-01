@@ -21,7 +21,6 @@ const { FailoverConfigBuilder } = require('../../../lib/config/FailoverConfigBui
 const { ClientConfigImpl } = require('../../../lib/config/Config');
 
 describe('FailoverConfigBuilderTest', function () {
-
     it('should throw for non-number tryCount', function () {
         const builder = new FailoverConfigBuilder({
             tryCount: 'foo',

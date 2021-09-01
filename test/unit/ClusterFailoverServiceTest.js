@@ -28,7 +28,6 @@ const {
 const { LifecycleServiceImpl } = require('../../lib/LifecycleService');
 
 describe('ClusterFailoverServiceTest', function () {
-
     let lifecycleServiceStub;
 
     function clusterContext(clusterName) {

@@ -27,7 +27,6 @@ const {
 } = require('../../../');
 
 describe('ClientRedoEnabledTest', function () {
-
     let cluster;
     let client;
 

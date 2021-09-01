@@ -96,7 +96,6 @@ function simulateExecuteError(timeoutMs, sqlResult, error = new Error('whoops'))
 
 describe('SqlResultTest', function () {
     describe('iteration', function () {
-
         let fakeSqlService;
         let fakeConnection;
         let fakeQueryId;
@@ -222,10 +221,8 @@ describe('SqlResultTest', function () {
                 err.should.be.eq(executeError);
             });
         });
-
     });
     describe('close', function () {
-
         let fakeSqlService;
 
         beforeEach(function () {
@@ -370,7 +367,6 @@ describe('SqlResultTest', function () {
                 (await sqlResult2.isRowSet()).should.be.false;
                 (await sqlResult2.getUpdateCount()).eq(long.fromNumber(1)).should.be.true;
             });
-
         });
 
         it('should reject after execute error', async function () {
@@ -545,7 +541,6 @@ describe('SqlResultTest', function () {
             fakeQueryId = sandbox.fake();
             sqlResult = new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId,
                 cursorBufferSize);
-
         });
 
         afterEach(function () {
@@ -597,7 +592,6 @@ describe('SqlResultTest', function () {
         });
     });
     describe('onNextPage', function () {
-
         it('should close on last page', function () {
             const sqlResult = new SqlResultImpl({}, {}, {}, {}, 4096);
             const rowPage = new SqlPage(
@@ -633,7 +627,6 @@ describe('SqlResultTest', function () {
 
             sqlResult.currentPage.should.be.eq(rowPage);
         });
-
     });
     describe('onExecuteError', function () {
         it('should reject execute promise and set update count to long(-1)', async function () {
@@ -651,7 +644,6 @@ describe('SqlResultTest', function () {
         });
     });
     describe('onExecuteResponse', function () {
-
         let sqlResult;
         beforeEach(function () {
             sqlResult = new SqlResultImpl({}, {}, {}, {}, 4096);

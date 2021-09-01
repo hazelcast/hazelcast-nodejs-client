@@ -22,7 +22,6 @@ const TestUtil = require('../../TestUtil');
 
 [true, false].forEach((isSmartService) => {
     describe('ListenerServiceTest[smart=' + isSmartService + ']', function () {
-
         let cluster;
         let client;
 

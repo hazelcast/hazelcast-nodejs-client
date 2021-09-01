@@ -36,5 +36,6 @@ const { Client } = require('hazelcast-client');
         await topic.publish('Hello to distributed world');
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();

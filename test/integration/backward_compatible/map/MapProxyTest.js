@@ -45,7 +45,6 @@ async function createClient(nearCacheEnabled, clusterName) {
 describe('MapProxyTest', function () {
     [false, true].forEach((nearCacheEnabled) => {
         describe(' - Near Cache enabled: ' + nearCacheEnabled, function () {
-
             let cluster;
             let client;
             let map;

@@ -20,7 +20,6 @@ const RC = require('../RC');
 const { Client } = require('../../../');
 
 describe('LifecycleServiceTest', function () {
-
     let cluster;
 
     before(async function () {

@@ -27,7 +27,6 @@ import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {RegistrationKey} from '../invocation/RegistrationKey';
 import {ClientMessageHandler} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
-import {deferredPromise} from '../util/Util';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging';
 import {
@@ -96,11 +95,9 @@ export class ListenerService {
     }
 
     invokeRegistrationFromRecord(userKey: string, connection: Connection): Promise<ClientEventRegistration> {
-        const deferred = deferredPromise<ClientEventRegistration>();
         const activeRegsOnUserKey = this.activeRegistrations.get(userKey);
         if (activeRegsOnUserKey !== undefined && activeRegsOnUserKey.has(connection)) {
-            deferred.resolve(activeRegsOnUserKey.get(connection));
-            return deferred.promise;
+            return Promise.resolve(activeRegsOnUserKey.get(connection));
         }
         const registrationKey = this.userKeyInformation.get(userKey);
         // New correlation id will be set on the invoke call
@@ -109,19 +106,16 @@ export class ListenerService {
         const invocation = new Invocation(this.invocationService, registerRequest);
         invocation.handler = registrationKey.getHandler() as any;
         invocation.connection = connection;
-        this.invocationService.invokeUrgent(invocation).then((responseMessage) => {
+        return this.invocationService.invokeUrgent(invocation).then((responseMessage) => {
             const correlationId = responseMessage.getCorrelationId();
             const response = codec.decodeAddResponse(responseMessage);
             const eventRegistration = new ClientEventRegistration(response, correlationId, invocation.connection, codec);
             this.logger.debug('ListenerService',
                 'Listener ' + userKey + ' re-registered on ' + connection.toString());
-
-            deferred.resolve(eventRegistration);
+            return eventRegistration;
         }).catch(((err) => {
-            deferred.reject(new HazelcastError('Could not add listener[' + userKey +
-                '] to connection[' + connection.toString() + ']', err));
+            throw new HazelcastError(`Could not add listener[${userKey}] to connection[${connection}]`, err);
         }));
-        return deferred.promise;
     }
 
     registerListener(codec: ListenerMessageCodec,
@@ -176,11 +170,9 @@ export class ListenerService {
     }
 
     deregisterListener(userKey: string): Promise<boolean> {
-        const deferred = deferredPromise<boolean>();
         const registrationsOnUserKey = this.activeRegistrations.get(userKey);
         if (registrationsOnUserKey === undefined) {
-            deferred.resolve(false);
-            return deferred.promise;
+            return Promise.resolve(false);
         }
 
         this.activeRegistrations.delete(userKey);
@@ -194,8 +186,7 @@ export class ListenerService {
             this.deregisterListenerOnTarget(userKey, eventRegistration);
         });
 
-        deferred.resolve(true);
-        return deferred.promise;
+        return Promise.resolve(true);
     }
 
     /**

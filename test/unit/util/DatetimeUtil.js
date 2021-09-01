@@ -123,6 +123,5 @@ describe('DateTimeUtilTest', function () {
                 leftZeroPadInteger(123456, 5)
             ).to.be.equal('123456');
         });
-
     });
 });

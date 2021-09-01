@@ -21,7 +21,6 @@ const { Client } = require('../../../');
 const TestUtil = require('../../TestUtil');
 
 describe('ListenersOnReconnectTest', function () {
-
     let client;
     let cluster;
     let map;
@@ -80,7 +79,6 @@ describe('ListenersOnReconnectTest', function () {
     }
 
     [true, false].forEach((isSmart) => {
-
         /**
          * We use three members to simulate all configurations where connection is closed to;
          *  - ownerconnection

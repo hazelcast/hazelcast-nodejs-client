@@ -22,7 +22,6 @@ const { Client } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('MultiMap Proxy Listener', function () {
-
     let cluster;
     let client;
     let map;
@@ -53,7 +52,6 @@ describe('MultiMap Proxy Listener', function () {
                       expectedValue,
                       expectedOldValue,
                       expectedMergingValue) {
-
         this[eventName] = function (entryEvent) {
             try {
                 expect(entryEvent.name).to.equal(expectedName);

@@ -20,7 +20,6 @@ const { ClientConfigImpl } = require('../../../lib/config/Config');
 const { HazelcastCloudDiscovery } = require('../../../lib/discovery/HazelcastCloudDiscovery');
 
 describe('HazelcastClientCloudConfigTest', function () {
-
     it('defaultCloudUrlEndpoint', function () {
         const config = new ClientConfigImpl();
         const token = 'TOKEN';

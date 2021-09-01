@@ -24,7 +24,6 @@ const { Client, HazelcastError } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('FlakeIdGeneratorOutOfRangeTest', function () {
-
     let cluster, client;
     let flakeIdGenerator;
 

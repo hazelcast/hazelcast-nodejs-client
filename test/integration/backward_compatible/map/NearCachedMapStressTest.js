@@ -24,7 +24,6 @@ const { deferredPromise } = require('../../../../lib/util/Util');
 const TestUtil = require('../../../TestUtil');
 
 describe('NearCachedMapStress', function () {
-
     const NUMBER_OF_ENTRIES = 1000;
     const MAP_NAME = 'stressncmap';
     const CONCURRENCY_LEVEL = 32;

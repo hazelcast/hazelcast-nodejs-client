@@ -25,7 +25,6 @@ const RC = require('../../RC');
 const { Client, ConsistencyLostError } = require('../../../../');
 
 describe('PNCounterConsistencyTest', function () {
-
     let cluster;
     let client;
 

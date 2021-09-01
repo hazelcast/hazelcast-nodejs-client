@@ -23,7 +23,6 @@ const { Client, RestValue, UUID } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('DefaultSerializersLiveTest', function () {
-
     let cluster, client;
     let map;
 

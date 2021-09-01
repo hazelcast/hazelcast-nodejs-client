@@ -109,16 +109,7 @@ const expectAlmostEqual = function (actual, expected) {
 };
 exports.expectAlmostEqual = expectAlmostEqual;
 
-exports.fillMap = function (map, size, keyPrefix, valuePrefix) {
-    if (size === undefined) {
-        size = 10;
-    }
-    if (keyPrefix === undefined) {
-        keyPrefix = 'key';
-    }
-    if (valuePrefix === undefined) {
-        valuePrefix = 'val';
-    }
+exports.fillMap = function (map, size = 10, keyPrefix = 'key', valuePrefix = 'val') {
     const entries = [];
     for (let i = 0; i < size; i++) {
         entries.push([keyPrefix + i, valuePrefix + i]);
@@ -200,7 +191,6 @@ exports.randomString = function (length) {
 };
 
 class CountingMembershipListener {
-
     constructor(expectedAdds, expectedRemoves) {
         this.adds = 0;
         this.expectedAdds = expectedAdds;
@@ -230,7 +220,6 @@ class CountingMembershipListener {
         }
         this._resolve();
     }
-
 }
 
 exports.CountingMembershipListener = CountingMembershipListener;

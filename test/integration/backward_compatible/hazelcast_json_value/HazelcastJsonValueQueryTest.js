@@ -27,7 +27,6 @@ const {
 } = require('../../../../');
 
 describe('HazelcastJsonValue query test', function () {
-
     let cluster, client;
     let map;
     const object = { 'a': 1 };

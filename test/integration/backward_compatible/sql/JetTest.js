@@ -21,6 +21,8 @@ const TestUtil = require('../../../TestUtil');
 const { Client } = require('../../../../');
 
 const chai = require('chai');
+const fs = require('fs');
+const path = require('path');
 
 chai.should();
 
@@ -30,13 +32,7 @@ describe('Jet Test', function () {
 
     const mapName = 'a';
     const mapName2 = 'b';
-    const jetEnabledConfig = `<?xml version="1.0" encoding="UTF-8"?>
-        <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://www.hazelcast.com/schema/config
-            http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
-            <jet enabled="true"></jet>
-        </hazelcast>`;
+    const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
@@ -44,7 +40,7 @@ describe('Jet Test', function () {
     });
 
     beforeEach(async function () {
-        cluster = await RC.createCluster(null, jetEnabledConfig);
+        cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id
@@ -86,7 +82,7 @@ describe('Jet Test', function () {
         const result = client.getSql().execute(`
             CREATE MAPPING ${mapName} (__key DOUBLE, age INTEGER, name VARCHAR) TYPE IMap OPTIONS (
               'keyFormat'='double',
-              'valueFormat'='json')
+              'valueFormat'='json-flat')
         `);
 
         await result.getUpdateCount(); // wait for execution to end
@@ -94,7 +90,7 @@ describe('Jet Test', function () {
         const result2 = client.getSql().execute(`
             CREATE MAPPING ${mapName2} (__key DOUBLE, name VARCHAR, height DOUBLE) TYPE IMap OPTIONS (
               'keyFormat'='double',
-              'valueFormat'='json')
+              'valueFormat'='json-flat')
         `);
 
         await result2.getUpdateCount(); // wait for execution to end

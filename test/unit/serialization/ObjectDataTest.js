@@ -24,7 +24,6 @@ const {
 } = require('../../../lib/serialization/ObjectData');
 
 describe('ObjectDataTest', function () {
-
     const out = new ODOut(null, true);
     before(function () {
         out.write(15);

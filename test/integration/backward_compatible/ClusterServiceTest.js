@@ -23,7 +23,6 @@ const RC = require('../RC');
 const { Client } = require('../../../');
 
 describe('ClusterServiceTest', function () {
-
     let cluster;
     let member1;
     let client;
