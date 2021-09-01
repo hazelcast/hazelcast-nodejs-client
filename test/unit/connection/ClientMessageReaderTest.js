@@ -22,7 +22,6 @@ const { ClientMessageReader } = require('../../../lib/network/Connection');
 const cm = require('../../../lib/protocol/ClientMessage');
 
 describe('ClientMessageReaderTest', function () {
-
     const HEADER_SIZE = cm.SIZE_OF_FRAME_LENGTH_AND_FLAGS;
 
     let reader;

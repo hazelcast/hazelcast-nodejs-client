@@ -17,10 +17,11 @@
   * [1.6. Code Samples](#16-code-samples)
 * [2. Features](#2-features)
 * [3. Configuration](#3-configuration)
+  * [3.1 Client Properties](#31-client-properties)
 * [4. Serialization](#4-serialization)
   * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
   * [4.2. Portable Serialization](#42-portable-serialization)
-	* [4.2.1. Versioning for Portable Serialization](#421-versioning-for-portable-serialization)
+    * [4.2.1. Versioning for Portable Serialization](#421-versioning-for-portable-serialization)
   * [4.3. Custom Serialization](#43-custom-serialization)
   * [4.4. Global Serialization](#44-global-serialization)
   * [4.5. JSON Serialization](#45-json-serialization)
@@ -564,6 +565,28 @@ const client = await Client.newHazelcastClient(cfg);
 
 In the following chapters you will learn the description of all options supported by Hazelcast Node.js client.
 
+# 3.1 Client Properties
+
+The following is the list of all client properties in alphabetical order.
+
+| Property Name                                          | Default Value                       | Type            | Description                                                                                                                                                                                                                                                                                                                                                                                                         |
+|--------------------------------------------------------|-------------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| hazelcast.client.autopipelining.enabled                | true                                | boolean         | Turns automated pipelining feature on/off. If your application does only write operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughput.                                                                                                                                                                                                                       |
+| hazelcast.client.autopipelining.threshold.bytes        | 65536 (64 KB)                       | number          | This is the coalescing threshold for the internal queue used by automated pipelining. Once the total size of operation payloads taken from the queue reaches this value during batch preparation, these operations are written to the socket. Notice that automated pipelining will still send operations if their total size is smaller than the threshold and there are no more operations in the internal queue. |
+| hazelcast.client.heartbeat.interval                    | 5000                                | number          | Frequency of the heartbeat messages sent by the clients to members in milliseconds.                                                                                                                                                                                                                                                                                                                                 |
+| hazelcast.client.heartbeat.timeout                     | 60000                               | number          | Timeout for the heartbeat messages sent by the client to members in milliseconds. If no messages pass between the client and member within the given time via this property, the connection will be closed.                                                                                                                                                                                                         |
+| hazelcast.client.invocation.retry.pause.millis         | 1000                                | number          | Pause time between each retry cycle of an invocation in milliseconds.                                                                                                                                                                                                                                                                                                                                               |
+| hazelcast.client.invocation.timeout.millis             | 120000                              | number          | Period, in milliseconds, to give up the invocation when a member in the member list is not reachable, member throws an exception or client's heartbeat requests are timed out.                                                                                                                                                                                                                                      |
+| hazelcast.client.operation.backup.timeout.millis       | 5000                                | number          | If an operation has backups, this property specifies how long (in milliseconds) the invocation waits for acks from the backup replicas. If acks are not received from some of the backups, there will not be any rollback on the other successful replicas.                                                                                                                                                         |
+| hazelcast.client.operation.fail.on.indeterminate.state | false                               | boolean         | When it is `true`, if an operation has sync backups and acks are not received from backup replicas in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails. However, even if the invocation fails, there will not be any rollback on other successful replicas.                                                                                     |
+| hazelcast.client.shuffle.member.list                   | true                                | boolean         | The client shuffles the given member list to prevent all the clients to connect to the same member when this property is `true`. When it is set to `false`, the client tries to connect to the members in the given order.                                                                                                                                                                                          |
+| hazelcast.client.socket.no.delay                       | true                                | boolean         | The [setNoDelay](https://nodejs.org/api/net.html#net_socket_setnodelay_nodelay) setting for connections.                                                                                                                                                                                                                                                                                                            |
+| hazelcast.client.statistics.enabled                    | false                               | boolean         | If set to `true`, it enables collecting the client statistics and sending them to the cluster. When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center.                                                                                                                                                                                       |
+| hazelcast.client.statistics.period.seconds             | 3                                   | number          | Period in seconds the client statistics are collected and sent to the cluster.                                                                                                                                                                                                                                                                                                                                      |
+| hazelcast.discovery.public.ip.enabled                  | null(detection enabled)             | boolean or null | When set to `true`, the client will assume that it needs to use public IP addresses reported by members. When set to `false`, the client will always use private addresses reported by members. If it is `null`, the client will try to infer how the discovery mechanism should be based on the reachability of the members. This inference is not %100 reliable and may result in false negatives.                |
+| hazelcast.invalidation.max.tolerated.miss.count        | 10                                  | number          | If missed invalidation count is bigger than this value, relevant cached data in a Near Cache will be made unreachable.                                                                                                                                                                                                                                                                                              |
+| hazelcast.invalidation.reconciliation.interval.seconds | 60                                  | number          | Period of the task that scans cluster members to compare generated invalidation events with the received ones from the client Near Cache.                                                                                                                                                                                                                                                                           |
+| hazelcast.logging.level                                | INFO                                | string          | Logging level. Can be one of `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`.                                                                                                                                                                                                                                                                                                                                      |
 
 # 4. Serialization
 
@@ -1042,12 +1065,7 @@ const cfg = {
 
 Its default value is `true`. This option has no effect for unisocket clients.
 
-You can also fine-tune this feature using entries of the `properties` config option as described below:
-
-- `hazelcast.client.operation.backup.timeout.millis`: Default value is `5000` milliseconds. If an operation has
-backups, this property specifies how long (in milliseconds) the invocation waits for acks from the backup replicas. If acks are not received from some of the backups, there will not be any rollback on the other successful replicas.
-
-- `hazelcast.client.operation.fail.on.indeterminate.state`: Default value is `false`. When it is `true`, if an operation has sync backups and acks are not received from backup replicas in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails. However, even if the invocation fails, there will not be any rollback on other successful replicas.
+You can also fine-tune this feature using `hazelcast.client.operation.backup.timeout.millis` and `hazelcast.client.operation.fail.on.indeterminate.state` [properties](#31-client-properties):
 
 ## 5.8. External Client Public Address Discovery
 
@@ -1062,9 +1080,7 @@ Hazelcast Node.js client has a built-in mechanism to detect such situation. When
 
 For more details on member-side configuration, refer to the [Discovery SPI section](https://docs.hazelcast.com/imdg/latest/extending-hazelcast/discovery-spi.html) in the Hazelcast IMDG Reference Manual.
 
-You can disable the detection mechanism and specify the client behavior by using the following `properties` config option:
-
-- `hazelcast.discovery.public.ip.enabled`: Default value is `null` (detection enabled). When set to `true`, the client will assume that it needs to use public IP addresses reported by members. When set to `false`, the client will always use private addresses reported by members.
+You can disable the detection mechanism and specify the client behavior by using the `hazelcast.discovery.public.ip.enabled` [property](#31-client-properties).
 
 > **NOTE: The detection mechanism is disabled when the client is configured to use [TLS/SSL encryption](#91-tlsssl). In such setup you should explicitly set the `hazelcast.discovery.public.ip.enabled` property.**
 
@@ -1261,7 +1277,7 @@ The client executes each operation through the already established connection to
 
 While sending requests to cluster members, the operations may fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for non-read-only operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
-You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.millis` in the `properties` option. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
+You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.millis` in the client [properties](#31-client-properties). The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
 * Member throws an exception.
 * Connection between the client and member is closed.
@@ -2780,6 +2796,7 @@ The `Aggregators` object provides a wide variety of built-in aggregators. The fu
 - `integerSum`
 - `longAvg`
 - `longSum`
+- `distinct`
 
 You can use these aggregators with the `IMap.aggregate()` and `IMap.aggregateWithPredicate()` functions.
 
@@ -2976,21 +2993,13 @@ Near Caches are invalidated by invalidation events. Invalidation events can be l
 
 To solve this problem, Hazelcast provides eventually consistent behavior for Map Near Caches by detecting invalidation losses. After detection of an invalidation loss, stale data will be made unreachable and Near Cache’s `get` calls to that data will be directed to underlying Map to fetch the fresh data.
 
-You can configure eventual consistency with entries of the `properties` config option as described below:
-
-- `hazelcast.invalidation.max.tolerated.miss.count`: Default value is `10`. If missed invalidation count is bigger than this value, relevant cached data will be made unreachable.
-
-- `hazelcast.invalidation.reconciliation.interval.seconds`: Default value is `60` seconds. This is a periodic task that scans cluster members periodically to compare generated invalidation events with the received ones from the client Near Cache.
+You can configure eventual consistency with `hazelcast.invalidation.max.tolerated.miss.count` and `hazelcast.invalidation.reconciliation.interval.seconds` [properties](#31-client-properties).
 
 ### 8.9.3. Automated Pipelining
 
 Hazelcast Node.js client performs automated pipelining of operations. It means that the library pushes all operations into an internal queue and tries to send them in batches. This reduces the count of executed `Socket.write()` calls and significantly improves throughtput for read operations.
 
-You can configure automated operation pipelining with entries of the `properties` config option as described below:
-
-- `hazelcast.client.autopipelining.enabled`: Default value is `true`. Turns automated pipelining feature on/off. If your application does only writes operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughtput.
-
-- `hazelcast.client.autopipelining.threshold.bytes`: Default value is `65536` bytes (64 KB). This is the coalescing threshold for the internal queue used by automated pipelining. Once the total size of operation payloads taken from the queue reaches this value during batch preparation, these operations are written to the socket. Notice that automated pipelining will still send operations if their total size is smaller than the threshold and there are no more operations in the internal queue.
+You can configure automated operation pipelining with `hazelcast.client.autopipelining.enabled` and `hazelcast.client.autopipelining.threshold.bytes` [properties](#31-client-properties).
 
 ## 8.10. Monitoring and Logging
 
@@ -2998,11 +3007,8 @@ You can configure automated operation pipelining with entries of the `properties
 
 You can monitor your clients using Hazelcast Management Center.
 
-As a prerequisite, you need to enable the client statistics in the Node.js client. There are two entries supported by the `properties` config option which are related to client statistics:
-
-- `hazelcast.client.statistics.enabled`: If set to `true`, it enables collecting the client statistics and sending them to the cluster. When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center. Its default value is `false`.
-
-- `hazelcast.client.statistics.period.seconds`: Period in seconds the client statistics are collected and sent to the cluster. Its default value is `3`.
+As a prerequisite, you need to enable the client statistics in the Node.js client.
+You can configure client statistics with `hazelcast.client.statistics.enabled` and `hazelcast.client.statistics.period.seconds` [properties](#31-client-properties).
 
 You can enable client statistics and set a non-default period in seconds as follows:
 
@@ -3021,7 +3027,7 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 
 ### 8.10.2. Logging Configuration
 
- By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `hazelcast.logging.level` entry of the `properties` config option.
+By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `hazelcast.logging.level` [property](#31-client-properties).
 
 Below is an example of the logging configuration with the `OFF` log level which disables logging.
 
@@ -3033,7 +3039,7 @@ const cfg = {
 };
 ```
 
- You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn`, `info`, `debug`, `trace` methods. After implementing it, you can use your custom logger using the `customLogger` config option.
+You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn`, `info`, `debug`, `trace` methods. After implementing it, you can use your custom logger using the `customLogger` config option.
 
 See the following for a custom logger example.
 

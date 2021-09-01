@@ -36,7 +36,6 @@ const { InvocationService } = require('../../../../lib/invocation/InvocationServ
 const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 
 describe('FencedLockProxyTest', function () {
-
     let connectionManagerStub;
     let cpSessionManagerStub;
     let serializationServiceStub;

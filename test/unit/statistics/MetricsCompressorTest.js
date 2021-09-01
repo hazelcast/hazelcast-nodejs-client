@@ -28,7 +28,6 @@ const {
 const { BitsUtil } = require('../../../lib/util/BitsUtil');
 
 describe('MetricsCompressorTest', function () {
-
     const HEADER_SIZE = 6;
     const INT_SIZE = 4;
 
@@ -129,7 +128,6 @@ describe('MetricsCompressorTest', function () {
 });
 
 describe('MetricsCompressorTest - OutputBuffer', function () {
-
     it('should increase internal Buffer when necessary', function () {
         const outputBuffer = new OutputBuffer(1);
 
@@ -204,7 +202,6 @@ describe('MetricsCompressorTest - OutputBuffer', function () {
 });
 
 describe('MetricsCompressorTest - MetricsDictionary', function () {
-
     it('getDictionaryId: should throw when word is too long', function () {
         const dictionary = new MetricsDictionary();
 

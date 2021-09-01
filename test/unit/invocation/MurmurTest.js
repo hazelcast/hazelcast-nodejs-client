@@ -19,7 +19,6 @@ const { expect } = require('chai');
 const { murmur } = require('../../../lib/invocation/Murmur');
 
 describe('MurmurTest', function () {
-
     // Expected values are from the Java implementation
     const payloads = [
         { input: Buffer.from('key-1'), expected: 1228513025 },

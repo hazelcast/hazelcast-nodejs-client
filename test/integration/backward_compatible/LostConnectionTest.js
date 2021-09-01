@@ -21,7 +21,6 @@ const { Client } = require('../../../');
 const TestUtil = require('../../TestUtil');
 
 describe('LostConnectionTest', function () {
-
     let cluster;
     let oldMember;
     let client;

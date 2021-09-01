@@ -24,7 +24,6 @@ const { ClientConfigImpl } = require('../../../lib/config/Config');
 const { ConfigBuilder } = require('../../../lib/config/ConfigBuilder');
 
 describe('ConfigBuilderHazelcastCloudTest', function () {
-
     function loadJson(jsonPath) {
         const config = require(path.join(__dirname, jsonPath));
         return new ConfigBuilder(config).build();

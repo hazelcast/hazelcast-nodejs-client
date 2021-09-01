@@ -51,3 +51,9 @@ jobs:
                   HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
               run: |
                   npm run coverage
+            - name: Publish to Codecov
+              if: ${{ matrix.os == 'ubuntu-latest' }}
+              uses: codecov/codecov-action@v2
+              with:
+                files: coverage/cobertura-coverage.xml
+                

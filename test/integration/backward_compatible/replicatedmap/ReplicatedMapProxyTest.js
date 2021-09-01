@@ -23,7 +23,6 @@ const { Client, Predicates } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('ReplicatedMapProxyTest', function () {
-
     const ONE_HOUR = 3600000;
 
     let cluster;
@@ -377,7 +376,6 @@ describe('ReplicatedMapProxyTest', function () {
                     .then(() => {
                         done(error);
                     });
-
             }
         };
         rm.addEntryListenerWithPredicate(listener, Predicates.sql('this == val10'))
@@ -399,7 +397,6 @@ describe('ReplicatedMapProxyTest', function () {
                     expect(entryEvent.oldValue).to.be.equal(null);
                     expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
-
                 } catch (err) {
                     error = err;
                 }

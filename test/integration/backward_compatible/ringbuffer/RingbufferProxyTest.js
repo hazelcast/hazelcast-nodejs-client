@@ -22,7 +22,6 @@ const { Client, StaleSequenceError } = require('../../../../');
 const PrefixFilter = require('../../javaclasses/PrefixFilter');
 
 describe('RingbufferProxyTest', function () {
-
     let cluster;
     let client;
     let rb;

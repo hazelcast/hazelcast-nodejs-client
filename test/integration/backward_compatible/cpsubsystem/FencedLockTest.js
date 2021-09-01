@@ -29,7 +29,6 @@ const {
 const TestUtil = require('../../../TestUtil');
 
 describe('FencedLockTest', function () {
-
     let cluster;
     let client;
     let lock;

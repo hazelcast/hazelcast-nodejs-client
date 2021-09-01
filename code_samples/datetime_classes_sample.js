@@ -63,7 +63,22 @@ function portableFactory(classId) {
 
         const client = await Client.newHazelcastClient(cfg);
 
-        const map = await client.getMap('timestampWithTimezoneMap');
+        const mapName = 'timestampWithTimezoneMap';
+        const map = await client.getMap(mapName);
+        // To be able to use our map in SQL we need to create mapping for it.
+        const createMappingQuery = `
+            CREATE MAPPING ${mapName} (
+                __key VARCHAR,
+                this TIMESTAMP WITH TIME ZONE
+            )
+            TYPE IMAP
+            OPTIONS (
+                'keyFormat' = 'varchar',
+                'valueFormat' = 'timestamp with time zone'
+            )
+        `;
+        // executions are async, await on update count to wait for execution.
+        await client.getSql().execute(createMappingQuery).getUpdateCount();
 
         // You can use datetime classes for any operation
         // Let's add some timestamp with timezones using `OffsetDatetime`:

@@ -26,7 +26,6 @@ const { Client } = require('../../../../');
 const { deferredPromise } = require('../../../../lib/util/Util');
 
 describe('RestValueTest', function () {
-
     let cluster;
     let client;
     let member;

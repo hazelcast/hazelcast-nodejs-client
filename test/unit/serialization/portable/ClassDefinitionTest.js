@@ -21,7 +21,6 @@ const { ClassDefinition, FieldDefinition } = require('../../../../lib/serializat
 should();
 
 describe('ClassDefinitionTest', function () {
-
     let cd;
     beforeEach(function () {
         cd = new ClassDefinition(1, 2, 3);

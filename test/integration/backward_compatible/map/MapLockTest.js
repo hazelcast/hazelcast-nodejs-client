@@ -26,7 +26,6 @@ const TestUtil = require('../../../TestUtil');
  * like member restart.
  */
 describe('MapLockTest', function () {
-
     const INVOCATION_TIMEOUT_FOR_TWO = 1000;
 
     function generateKeyOwnedBy(client, member) {

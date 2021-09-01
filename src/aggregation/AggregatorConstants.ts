@@ -15,24 +15,6 @@
  */
 /** @ignore *//** */
 
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
-import {
-    Aggregator,
-    CountAggregator,
-    DoubleAverageAggregator,
-    DoubleSumAggregator,
-    FixedPointSumAggregator,
-    FloatingPointSumAggregator,
-    IntegerAverageAggregator,
-    IntegerSumAggregator,
-    LongAverageAggregator,
-    LongSumAggregator,
-    MaxAggregator,
-    MinAggregator,
-    NumberAverageAggregator,
-} from './Aggregator';
-import {HazelcastError} from '../core';
-
 /** @internal */
 export const AGGREGATOR_FACTORY_ID = -29;
 
@@ -42,7 +24,8 @@ export const AGGREGATOR_FACTORY_ID = -29;
 // export const BIG_INT_SUM = 3; // not implemented in node.js
 /** @internal */
 export const COUNT = 4;
-// export const DISTINCT = 5; // returns java serializable, not usable in node.js
+/** @internal */
+export const DISTINCT = 5;
 /** @internal */
 export const DOUBLE_AVG = 6;
 /** @internal */
@@ -67,27 +50,4 @@ export const MIN = 15;
 export const NUMBER_AVG = 16;
 // export const MAX_BY = 17; // needs object to implement Java's Comparable interface
 // export const MIN_BY = 18; // needs object to implement Java's Comparable interface
-
-const idToConstructor: { [id: number]: new () => Aggregator<any> } = {
-    [COUNT]: CountAggregator,
-    [DOUBLE_AVG]: DoubleAverageAggregator,
-    [DOUBLE_SUM]: DoubleSumAggregator,
-    [FIXED_SUM]: FixedPointSumAggregator,
-    [FLOATING_POINT_SUM]: FloatingPointSumAggregator,
-    [INT_AVG]: IntegerAverageAggregator,
-    [INT_SUM]: IntegerSumAggregator,
-    [LONG_AVG]: LongAverageAggregator,
-    [LONG_SUM]: LongSumAggregator,
-    [MAX]: MaxAggregator,
-    [MIN]: MinAggregator,
-    [NUMBER_AVG]: NumberAverageAggregator,
-};
-
-/** @internal */
-export function aggregatorFactory(classId: number): IdentifiedDataSerializable {
-    try {
-        return new idToConstructor[classId]();
-    } catch (e) {
-        throw new HazelcastError('There is no known aggregator with type id ' + classId, e);
-    }
-}
+export const CANONICALIZING_SET = 19;

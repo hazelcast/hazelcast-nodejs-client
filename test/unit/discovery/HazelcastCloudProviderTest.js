@@ -26,7 +26,6 @@ const { HazelcastCloudAddressProvider } = require('../../../lib/discovery/Hazelc
 const { HazelcastCloudDiscovery } = require('../../../lib/discovery/HazelcastCloudDiscovery');
 
 describe('HazelcastCloudProviderTest', function () {
-
     const expectedAddresses = new Map();
     let hazelcastCloudDiscovery;
     let provider;
@@ -102,5 +101,4 @@ describe('HazelcastCloudProviderTest', function () {
         });
         return provider.refresh();
     });
-
 });

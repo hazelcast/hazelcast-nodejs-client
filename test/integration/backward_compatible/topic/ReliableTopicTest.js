@@ -24,7 +24,6 @@ const { Client, TopicOverloadPolicy } = require('../../../../');
 const { ReliableTopicMessage } = require('../../../../lib/proxy/topic/ReliableTopicMessage');
 
 describe('ReliableTopicTest', function () {
-
     let cluster;
     let clientOne;
     let clientTwo;

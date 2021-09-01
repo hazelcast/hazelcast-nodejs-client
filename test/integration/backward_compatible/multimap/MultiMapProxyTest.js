@@ -21,7 +21,6 @@ const { Client } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('MultiMapProxyTest', function () {
-
     let cluster;
     let client;
     let map;
@@ -207,6 +206,5 @@ describe('MultiMapProxyTest', function () {
         checkValues([2, 22], values.toArray());
         values = await map.get('c');
         checkValues([3, 33, 333], values.toArray());
-
     });
 });
