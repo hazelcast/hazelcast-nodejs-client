@@ -65,6 +65,7 @@ describe('SqlResultTest', function () {
     beforeEach(async function () {
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
+        await TestUtil.createMapping(true, client, 'double', 'double', mapName);
         await someMap.put(0, 1);
         await someMap.put(1, 2);
         await someMap.put(2, 3);

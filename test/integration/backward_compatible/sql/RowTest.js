@@ -52,6 +52,7 @@ describe('SqlRowTest', function () {
         await someMap.put(0, '1');
         await someMap.put(1, '2');
         await someMap.put(2, '3');
+        await TestUtil.createMapping(true, client, 'double', 'varchar', mapName);
 
         const sqlService = TestUtil.getSql(client);
         result = sqlService.execute(`SELECT * FROM ${mapName} WHERE __key > ?`, [0], {

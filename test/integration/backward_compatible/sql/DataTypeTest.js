@@ -83,32 +83,6 @@ describe('Data type test', function () {
     });
 
     /**
-     * Creates mapping for SQL queries. In 5.0, users started to write explicit mapping for SQL queries against maps.
-     * @param valueFormat SQL column type, case insensitive
-     */
-    const createMapping = async (valueFormat) => {
-        if (!serverVersionNewerThanFive) {
-            // Before 5.0, mappings are created implicitly, thus we don't need to create explicitly.
-            return;
-        }
-        const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
-                __key INT,
-                this ${valueFormat.toUpperCase()}
-            )
-            TYPE IMAP
-            OPTIONS (
-                'keyFormat' = 'int',
-                'valueFormat' = '${valueFormat.toLowerCase()}'
-            )
-        `;
-
-        const result = TestUtil.getSql(client).execute(createMappingQuery);
-        // Wait for execution to end.
-        await result.getUpdateCount();
-    };
-
-    /**
      * Creates portable mapping for SQL queries. In 5.0, users started to write explicit mapping for SQL queries against maps.
      * @param keyFormat Key format
      * @param factoryId Portable's factory id
@@ -179,7 +153,7 @@ describe('Data type test', function () {
     it('should be able to decode/serialize VARCHAR', async function () {
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('varchar');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'varchar', mapName);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -209,7 +183,7 @@ describe('Data type test', function () {
     it('should be able to decode/serialize BOOLEAN', async function () {
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('boolean');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'boolean', mapName);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -236,7 +210,7 @@ describe('Data type test', function () {
     it('should be able to decode/serialize TINYINT', async function () {
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('tinyint');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'tinyint', mapName);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -266,7 +240,7 @@ describe('Data type test', function () {
     it('should be able to decode/serialize SMALLINT', async function () {
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('smallint');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'smallint', mapName);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -296,7 +270,7 @@ describe('Data type test', function () {
     it('should be able to decode/serialize INTEGER', async function () {
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('int');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'int', mapName);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -326,7 +300,7 @@ describe('Data type test', function () {
     it('should be able to decode/serialize BIGINT', async function () {
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('bigint');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'bigint', mapName);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -361,7 +335,7 @@ describe('Data type test', function () {
     it('should be able to decode/serialize DECIMAL', async function () {
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('decimal');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'decimal', mapName);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -430,7 +404,7 @@ describe('Data type test', function () {
     it('should be able to decode/serialize REAL', async function () {
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('real');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'real', mapName);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -465,7 +439,7 @@ describe('Data type test', function () {
     it('should be able to decode/serialize DOUBLE', async function () {
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('double');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'double', mapName);
         const script =
             `
             var map = instance_0.getMap("${mapName}");
@@ -503,7 +477,7 @@ describe('Data type test', function () {
         const leftZeroPadInteger = TestUtil.getDateTimeUtil().leftZeroPadInteger;
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('date');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'date', mapName);
 
         // major versions different skip
         // year in client protocol changed https://github.com/hazelcast/hazelcast/pull/18984
@@ -568,7 +542,7 @@ describe('Data type test', function () {
         const leftZeroPadInteger = TestUtil.getDateTimeUtil().leftZeroPadInteger;
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('time');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'time', mapName);
 
         if (clientVersionNewerThanFive && !serverVersionNewerThanFive) {
             // in this case client will send parameters using default serializers but server does not have them yet.
@@ -635,7 +609,7 @@ describe('Data type test', function () {
         const leftZeroPadInteger = TestUtil.getDateTimeUtil().leftZeroPadInteger;
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('timestamp');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'timestamp', mapName);
 
         // major versions different skip
         // year in client protocol changed https://github.com/hazelcast/hazelcast/pull/18984
@@ -727,7 +701,7 @@ describe('Data type test', function () {
 
         const SqlColumnType = TestUtil.getSqlColumnType();
         await basicSetup(this);
-        await createMapping('timestamp with time zone');
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'int', 'timestamp with time zone', mapName);
 
         // major versions different skip
         // year in client protocol changed https://github.com/hazelcast/hazelcast/pull/18984

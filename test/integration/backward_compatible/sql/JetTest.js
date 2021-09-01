@@ -154,6 +154,7 @@ describe('Jet Test', function () {
     it('should be able to run aggregate methods', async function () {
         const mapName = 'a';
         const map = await client.getMap(mapName);
+        await TestUtil.createMapping(true, client, 'double', 'double', mapName);
 
         await map.set(1, 2);
         await map.set(2, 3);

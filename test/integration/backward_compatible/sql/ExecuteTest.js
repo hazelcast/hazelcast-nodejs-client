@@ -63,9 +63,10 @@ describe('SqlExecuteTest', function () {
     let someMap;
     let mapName;
     let CLUSTER_CONFIG;
+    let serverVersionNewerThanFive;
 
     const runSQLQueryWithParams = async () => {
-        for (const _mapName of [mapName, 'partitioned.' + mapName]) {
+        for (const _mapName of [mapName, 'public.' + mapName]) {
             const entryCount = 10;
             const limit = 6;
 
@@ -113,7 +114,7 @@ describe('SqlExecuteTest', function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
 
         const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
-        const serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
+        serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
         CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
     });
 
@@ -126,17 +127,20 @@ describe('SqlExecuteTest', function () {
     };
 
     describe('sql parameter count', function () {
+        const mapName = 'someMap';
+
         before(async function () {
             cluster = await RC.createCluster(null, CLUSTER_CONFIG);
             await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id
             });
+            await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
             TestUtil.markServerVersionAtLeast(this, client, '4.2');
         });
 
         beforeEach(async function () {
-            someMap = await client.getMap('someMap');
+            someMap = await client.getMap(mapName);
         });
 
         after(async function () {
@@ -224,6 +228,7 @@ describe('SqlExecuteTest', function () {
         beforeEach(async function () {
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
+            await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
         });
 
         after(async function () {
@@ -236,7 +241,7 @@ describe('SqlExecuteTest', function () {
         });
 
         it('should execute without params', async function () {
-            for (const _mapName of [mapName, 'partitioned.' + mapName]) {
+            for (const _mapName of [mapName, 'public.' + mapName]) {
                 const entryCount = 10;
                 await populateMap(entryCount);
 
@@ -292,6 +297,7 @@ describe('SqlExecuteTest', function () {
             TestUtil.markServerVersionAtLeast(this, client, '4.2');
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
+            await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
         });
 
         after(async function () {
@@ -316,6 +322,7 @@ describe('SqlExecuteTest', function () {
         beforeEach(async function () {
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
+            await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
         });
 
         after(async function () {
