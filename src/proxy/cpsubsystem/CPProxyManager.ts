@@ -39,14 +39,14 @@ const DEFAULT_GROUP_NAME = 'default';
 
 /** @internal */
 export function withoutDefaultGroupName(name: string): string {
-    assertString(name);
+    assertString(name, true);
     name = name.trim();
     const i = name.indexOf('@');
     if (i === -1) {
         return name;
     }
 
-    assert(name.indexOf('@', i + 1) === -1, 'Custom group name must be specified at most once');
+    assert(name.indexOf('@', i + 1) === -1, 'Custom group name must be specified at most once', true);
     const groupName = name.slice(i + 1).trim();
     if (groupName === DEFAULT_GROUP_NAME) {
         return name.slice(0, i);
@@ -56,15 +56,15 @@ export function withoutDefaultGroupName(name: string): string {
 
 /** @internal */
 export function getObjectNameForProxy(name: string): string {
-    assertString(name);
+    assertString(name, true);
     const i = name.indexOf('@');
     if (i === -1) {
         return name;
     }
 
-    assert(i < (name.length - 1), 'Custom CP group name cannot be empty string');
+    assert(i < (name.length - 1), 'Custom CP group name cannot be empty string', true);
     const objectName = name.slice(0, i).trim();
-    assert(objectName.length > 0, 'Object name cannot be empty string');
+    assert(objectName.length > 0, 'Object name cannot be empty string', true);
     return objectName;
 }
 

@@ -56,7 +56,7 @@ export class FailoverConfigBuilder {
             const value = jsonObject[key];
             if (key === 'tryCount') {
                 const tryCount = tryGetNumber(value);
-                assertNonNegativeNumber(tryCount, 'tryCount must be a non-negative integer.');
+                assertNonNegativeNumber(tryCount, 'tryCount must be a non-negative integer.', true);
                 this.effectiveConfig.tryCount = tryCount;
             } else if (key === 'clientConfigs') {
                 const configs = tryGetArray(value);
@@ -73,7 +73,7 @@ export class FailoverConfigBuilder {
 
     private validate(): void {
         const clientConfigs = this.effectiveConfig.clientConfigs;
-        assertPositiveNumber(clientConfigs.length, 'FailoverConfig must have at least one client config.');
+        assertPositiveNumber(clientConfigs.length, 'FailoverConfig must have at least one client config.', true);
         const main = clientConfigs[0];
         for (const alternative of clientConfigs.slice(1)) {
             this.validateAlternativeConfigs(main, alternative);
@@ -91,7 +91,8 @@ export class FailoverConfigBuilder {
                 + ' must have the same config as the initial config with cluster name '
                 + main.clusterName + ' except for the following options: '
                 + 'clusterName, customCredentials, network.clusterMembers, '
-                + 'network.ssl, network.hazelcastCloud'
+                + 'network.ssl, network.hazelcastCloud',
+            true
         );
     }
 

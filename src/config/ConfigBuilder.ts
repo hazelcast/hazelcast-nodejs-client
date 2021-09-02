@@ -119,10 +119,10 @@ export class ConfigBuilder {
         for (const key in jsonObject) {
             const value = jsonObject[key];
             if (key === 'initialBackoffMillis') {
-                assertNonNegativeNumber(value, 'Initial backoff must be non-negative!');
+                assertNonNegativeNumber(value, 'Initial backoff must be non-negative!', true);
                 this.effectiveConfig.connectionStrategy.connectionRetry.initialBackoffMillis = value;
             } else if (key === 'maxBackoffMillis') {
-                assertNonNegativeNumber(value, 'Max backoff must be non-negative!');
+                assertNonNegativeNumber(value, 'Max backoff must be non-negative!', true);
                 this.effectiveConfig.connectionStrategy.connectionRetry.maxBackoffMillis = value;
             } else if (key === 'multiplier') {
                 if (typeof value !== 'number' || value < 1.0) {

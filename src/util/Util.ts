@@ -29,8 +29,8 @@ const IS_DEVELOPMENT_MODE = process.env.HZ_NODEJS_ENV === 'development';
  * Used to only turn on asserts in development mode
  * @internal
  */
-export function assert(value: any, message?: string | Error): asserts value {
-    if (IS_DEVELOPMENT_MODE) {
+export function assert(value: any, message?: string | Error, alwaysAssert?: boolean): asserts value {
+    if (IS_DEVELOPMENT_MODE || alwaysAssert) {
         _assert(value, message);
     }
 }
@@ -49,30 +49,30 @@ export function assertNotNull(v: any, alwaysAssert?: boolean): void {
 }
 
 /** @internal */
-export function assertArray(x: any): void {
-    exports.assert(Array.isArray(x), 'Should be array.');
+export function assertArray(x: any, alwaysAssert?: boolean): void {
+    exports.assert(Array.isArray(x), 'Should be array.', alwaysAssert);
 }
 
 /** @internal */
-export function assertString(v: any): void {
-    exports.assert(typeof v === 'string', 'String value expected.');
+export function assertString(v: any, alwaysAssert?: boolean): void {
+    exports.assert(typeof v === 'string', 'String value expected.', alwaysAssert);
 }
 
 /** @internal */
-export function assertNumber(v: any): void {
-    exports.assert(typeof v === 'number', 'Number value expected.');
+export function assertNumber(v: any, alwaysAssert?: boolean): void {
+    exports.assert(typeof v === 'number', 'Number value expected.', alwaysAssert);
 }
 
 /** @internal */
-export function assertNonNegativeNumber(v: any, m?: string): void {
-    exports.assert(typeof v === 'number', m || 'Number value expected.');
-    exports.assert(v >= 0, m || 'Non-negative value expected.');
+export function assertNonNegativeNumber(v: any, m?: string, alwaysAssert?: boolean): void {
+    exports.assert(typeof v === 'number', m || 'Number value expected.', alwaysAssert);
+    exports.assert(v >= 0, m || 'Non-negative value expected.', alwaysAssert);
 }
 
 /** @internal */
-export function assertPositiveNumber(v: any, m?: string): void {
-    exports.assert(typeof v === 'number', m || 'Number value expected.');
-    exports.assert(v > 0, m || 'Positive value expected.');
+export function assertPositiveNumber(v: any, m?: string, alwaysAssert?: boolean): void {
+    exports.assert(typeof v === 'number', m || 'Number value expected.', alwaysAssert);
+    exports.assert(v > 0, m || 'Positive value expected.', alwaysAssert);
 }
 
 /** @internal */

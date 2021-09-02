@@ -51,7 +51,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
     addAndGet(delta: Long | number): Promise<Long> {
         if (!Long.isLong(delta)) {
-            assertNumber(delta);
+            assertNumber(delta, true);
             delta = Long.fromNumber(delta as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongAddAndGetCodec, this.groupId, this.objectName, delta)
@@ -60,11 +60,11 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
     compareAndSet(expect: Long | number, update: Long | number): Promise<boolean> {
         if (!Long.isLong(expect)) {
-            assertNumber(expect);
+            assertNumber(expect, true);
             expect = Long.fromNumber(expect as number);
         }
         if (!Long.isLong(update)) {
-            assertNumber(update);
+            assertNumber(update, true);
             update = Long.fromNumber(update as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongCompareAndSetCodec, this.groupId, this.objectName, expect, update)
@@ -82,7 +82,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
     getAndAdd(delta: Long | number): Promise<Long> {
         if (!Long.isLong(delta)) {
-            assertNumber(delta);
+            assertNumber(delta, true);
             delta = Long.fromNumber(delta as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongGetAndAddCodec, this.groupId, this.objectName, delta)
@@ -95,7 +95,7 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
 
     getAndSet(newValue: Long | number): Promise<Long> {
         if (!Long.isLong(newValue)) {
-            assertNumber(newValue);
+            assertNumber(newValue, true);
             newValue = Long.fromNumber(newValue as number);
         }
         return this.encodeInvokeOnRandomTarget(AtomicLongGetAndSetCodec, this.groupId, this.objectName, newValue)

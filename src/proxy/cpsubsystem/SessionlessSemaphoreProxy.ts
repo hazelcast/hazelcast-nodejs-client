@@ -65,20 +65,20 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     }
 
     init(permits: number): Promise<boolean> {
-        assertNonNegativeNumber(permits);
+        assertNonNegativeNumber(permits, undefined, true);
         return this.encodeInvokeOnRandomTarget(SemaphoreInitCodec, this.groupId, this.objectName, permits)
             .then(SemaphoreInitCodec.decodeResponse);
     }
 
     acquire(permits = 1): Promise<void> {
-        assertPositiveNumber(permits);
+        assertPositiveNumber(permits, undefined, true);
 
         return this.doTryAcquire(permits, -1).then(() => {});
     }
 
     tryAcquire(permits = 1, timeout = 0): Promise<boolean> {
-        assertPositiveNumber(permits);
-        assertNonNegativeNumber(timeout);
+        assertPositiveNumber(permits, undefined, true);
+        assertNonNegativeNumber(timeout, undefined, true);
 
         return this.doTryAcquire(permits, timeout);
     }
@@ -109,7 +109,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     }
 
     release(permits = 1): Promise<void> {
-        assertPositiveNumber(permits);
+        assertPositiveNumber(permits, undefined, true);
 
         const invocationUid = UuidUtil.generate();
         return this.getClusterWideThreadId()
@@ -149,7 +149,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     }
 
     reducePermits(reduction: number): Promise<void> {
-        assertNonNegativeNumber(reduction);
+        assertNonNegativeNumber(reduction, undefined, true);
         if (reduction === 0) {
             return Promise.resolve();
         }
@@ -157,7 +157,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
     }
 
     increasePermits(increase: number): Promise<void> {
-        assertNonNegativeNumber(increase);
+        assertNonNegativeNumber(increase, undefined, true);
         if (increase === 0) {
             return Promise.resolve();
         }

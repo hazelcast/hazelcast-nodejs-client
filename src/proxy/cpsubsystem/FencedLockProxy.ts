@@ -97,7 +97,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
                 return this.requestLock(sessionId, Long.fromNumber(threadId), invocationUid);
             })
             .then((fence: Fence) => {
-                assert(isValidFence(fence), 'FencedLock somehow hit reentrant lock limit');
+                assert(isValidFence(fence), 'FencedLock somehow hit reentrant lock limit', true);
                 this.lockedSessionIds.set(threadId, sessionId);
                 fence[fenceThreadIdSymbol] = threadId;
                 return fence;
@@ -117,7 +117,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
     }
 
     tryLock(timeout = 0): Promise<Fence | undefined> {
-        assertNonNegativeNumber(timeout);
+        assertNonNegativeNumber(timeout, undefined, true);
 
         const threadId = this.nextThreadId();
         const invocationUid = UuidUtil.generate();
