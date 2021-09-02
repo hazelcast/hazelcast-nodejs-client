@@ -50,8 +50,8 @@
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --options typedoc.json",
         "generate-docs:watch": "typedoc --watch --options typedoc.json",
-        "lint": "eslint --cache --ext .ts src && eslint --cache .",
-        "lint:fix": "eslint --cache --fix --ext .ts src && eslint --cache --fix .",
+        "lint": "eslint --cache .",
+        "lint:fix": "eslint --cache --fix .",
         "startrc": "node scripts/test-runner.js startrc",
         "check-code-samples": "node scripts/test-runner.js check-code-samples",
         "prepare": "husky install"
