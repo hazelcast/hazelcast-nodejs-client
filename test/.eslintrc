@@ -10,6 +10,10 @@
         "../.eslintrc",
         "plugin:mocha/recommended"
     ],
+    "overrides": [{
+        "files": ["**/*.ts"],
+        "extends": ["../src/.eslintrc.js"]
+    }],
     "rules": {
         "mocha/no-hooks-for-single-case": "off",
         "mocha/no-setup-in-describe": "off",
