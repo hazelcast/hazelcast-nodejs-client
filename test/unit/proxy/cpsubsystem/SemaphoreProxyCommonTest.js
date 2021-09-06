@@ -29,7 +29,6 @@ const { InvocationService } = require('../../../../lib/invocation/InvocationServ
 const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 
 describe('SemaphoreProxyCommonTest', function () {
-
     let cpSessionManagerStub;
     let invocationServiceStub;
     let serializationServiceStub;
@@ -80,7 +79,6 @@ describe('SemaphoreProxyCommonTest', function () {
 
     for (const type of testTypes) {
         describe(`[${type}]`, function () {
-
             it('unlock: should throw for non-number', function () {
                 const proxy = createProxy(type);
                 expect(() => proxy.init('permits')).to.throw(AssertionError);

@@ -35,13 +35,11 @@ const { RaftGroupId } = require('../../../../lib/proxy/cpsubsystem/RaftGroupId')
 const { deferredPromise } = require('../../../../lib/util/Util');
 
 describe('CPSessionManagerTest', function () {
-
     afterEach(function () {
         sandbox.restore();
     });
 
     describe('SessionState', function () {
-
         it('acquire: should increment counter', function () {
             const state = new SessionState(Long.fromNumber(42), null, 1000);
 
@@ -97,7 +95,6 @@ describe('CPSessionManagerTest', function () {
     });
 
     describe('CPProxySessionManager', function () {
-
         const GROUP_ID = 42;
         const GROUP_ID_AS_STRING = prepareGroupId().getStringId();
         const SESSION_ID = 24;

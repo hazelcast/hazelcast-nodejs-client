@@ -154,33 +154,37 @@ export interface ClientConfig {
 
 }
 
+/**
+ * If you are adding a new property, don't forget to add its validation in `handleProperties`.
+ * @internal
+ */
+const DEFAULT_PROPERTIES: Properties = {
+    'hazelcast.client.heartbeat.interval': 5000,
+    'hazelcast.client.heartbeat.timeout': 60000,
+    'hazelcast.client.invocation.retry.pause.millis': 1000,
+    'hazelcast.client.invocation.timeout.millis': 120000,
+    'hazelcast.client.internal.clean.resources.millis': 100,
+    'hazelcast.client.cloud.url': 'https://coordinator.hazelcast.cloud',
+    'hazelcast.client.statistics.enabled': false,
+    'hazelcast.client.statistics.period.seconds': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
+    'hazelcast.invalidation.reconciliation.interval.seconds': 60,
+    'hazelcast.invalidation.max.tolerated.miss.count': 10,
+    'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
+    'hazelcast.logging.level': 'INFO',
+    'hazelcast.client.autopipelining.enabled': true,
+    'hazelcast.client.autopipelining.threshold.bytes': 65536,
+    'hazelcast.client.socket.no.delay': true,
+    'hazelcast.client.shuffle.member.list': true,
+    'hazelcast.client.operation.backup.timeout.millis': 5000,
+    'hazelcast.client.operation.fail.on.indeterminate.state': false,
+    // `null` is set as the default value here to use this property
+    // as a tri-state boolean (see TranslateAddressProvider)
+    'hazelcast.discovery.public.ip.enabled': null,
+};
+
 /** @internal */
 export class ClientConfigImpl implements ClientConfig {
-
-    properties: Properties = {
-        'hazelcast.client.heartbeat.interval': 5000,
-        'hazelcast.client.heartbeat.timeout': 60000,
-        'hazelcast.client.invocation.retry.pause.millis': 1000,
-        'hazelcast.client.invocation.timeout.millis': 120000,
-        'hazelcast.client.internal.clean.resources.millis': 100,
-        'hazelcast.client.cloud.url': 'https://coordinator.hazelcast.cloud',
-        'hazelcast.client.statistics.enabled': false,
-        'hazelcast.client.statistics.period.seconds': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
-        'hazelcast.invalidation.reconciliation.interval.seconds': 60,
-        'hazelcast.invalidation.max.tolerated.miss.count': 10,
-        'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
-        'hazelcast.logging.level': 'INFO',
-        'hazelcast.client.autopipelining.enabled': true,
-        'hazelcast.client.autopipelining.threshold.bytes': 65536,
-        'hazelcast.client.socket.no.delay': true,
-        'hazelcast.client.shuffle.member.list': true,
-        'hazelcast.client.operation.backup.timeout.millis': 5000,
-        'hazelcast.client.operation.fail.on.indeterminate.state': false,
-        // `null` is set as the default value here to use this property
-        // as a tri-state boolean (see TranslateAddressProvider)
-        'hazelcast.discovery.public.ip.enabled': null,
-    };
-
+    properties: Properties = {...DEFAULT_PROPERTIES}; // Create a new object
     instanceName: string;
     network = new ClientNetworkConfigImpl();
     customLogger: ILogger = null;

@@ -27,7 +27,6 @@ const identifiedFactory = require('../../javaclasses/IdentifiedFactory');
 const CustomComparator = require('../../javaclasses/CustomComparator');
 
 describe('MapPredicateTest', function () {
-
     let cluster;
     let client;
     let map;

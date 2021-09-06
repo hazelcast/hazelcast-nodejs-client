@@ -15,7 +15,8 @@
  */
 /** @ignore *//** */
 
-import {AGGREGATOR_FACTORY_ID, aggregatorFactory} from '../aggregation/AggregatorFactory';
+import {AGGREGATOR_FACTORY_ID} from '../aggregation/AggregatorConstants';
+import {aggregatorFactory} from '../aggregation/Aggregator';
 import {CLUSTER_DATA_FACTORY_ID, clusterDataFactory} from './ClusterDataFactory';
 import {SerializationConfigImpl} from '../config/SerializationConfig';
 import {
@@ -27,6 +28,8 @@ import {Data, DataInput, DataOutput} from './Data';
 import {Serializer, IdentifiedDataSerializableFactory} from './Serializable';
 import {
     ArrayListSerializer,
+    BigDecimalSerializer,
+    BigIntSerializer,
     BooleanArraySerializer,
     BooleanSerializer,
     ByteArraySerializer,
@@ -45,9 +48,13 @@ import {
     JavaClassSerializer,
     JsonSerializer,
     LinkedListSerializer,
+    LocalDateSerializer,
+    LocalDateTimeSerializer,
+    LocalTimeSerializer,
     LongArraySerializer,
     LongSerializer,
     NullSerializer,
+    OffsetDateTimeSerializer,
     ShortArraySerializer,
     ShortSerializer,
     StringArraySerializer,
@@ -268,6 +275,10 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('float', new FloatSerializer());
         this.registerSerializer('char', new CharSerializer());
         this.registerSerializer('date', new DateSerializer());
+        this.registerSerializer('localDate', new LocalDateSerializer());
+        this.registerSerializer('localTime', new LocalTimeSerializer());
+        this.registerSerializer('localDateTime', new LocalDateTimeSerializer());
+        this.registerSerializer('offsetDateTime', new OffsetDateTimeSerializer());
         this.registerSerializer('byteArray', new ByteArraySerializer());
         this.registerSerializer('charArray', new CharArraySerializer());
         this.registerSerializer('booleanArray', new BooleanArraySerializer());
@@ -281,6 +292,8 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('arrayList', new ArrayListSerializer());
         this.registerSerializer('linkedList', new LinkedListSerializer());
         this.registerSerializer('uuid', new UuidSerializer());
+        this.registerSerializer('bigDecimal', new BigDecimalSerializer());
+        this.registerSerializer('bigint', new BigIntSerializer());
         this.registerIdentifiedFactories();
         this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {

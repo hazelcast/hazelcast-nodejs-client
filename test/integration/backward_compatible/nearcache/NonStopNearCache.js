@@ -24,7 +24,6 @@ const { Client, LifecycleState, ClientOfflineError } = require('../../../../');
 const { deferredPromise } = require('../../../../lib/util/Util');
 
 describe('NonStopNearCacheTest', function () {
-
     let map;
     let cluster;
     let client;
@@ -97,5 +96,4 @@ describe('NonStopNearCacheTest', function () {
             done();
         }).catch(done);
     });
-
 });

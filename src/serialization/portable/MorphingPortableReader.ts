@@ -21,6 +21,13 @@ import {DataInput} from '../Data';
 import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {Portable, FieldType} from '../Portable';
 import * as Long from 'long';
+import {
+    BigDecimal,
+    LocalDate,
+    LocalDateTime,
+    LocalTime,
+    OffsetDateTime
+} from '../../core';
 
 /** @internal */
 export class MorphingPortableReader extends DefaultPortableReader {
@@ -194,6 +201,48 @@ export class MorphingPortableReader extends DefaultPortableReader {
 
     readUTF(fieldName: string): string {
         return this.readString(fieldName);
+    }
+
+    readDecimal(fieldName: string): BigDecimal {
+        return this.validateCompatibleAndRead(fieldName, FieldType.DECIMAL, super.readDecimal);
+    }
+
+    readTime(fieldName: string): LocalTime {
+        return this.validateCompatibleAndRead(fieldName, FieldType.TIME, super.readTime);
+    }
+
+    readDate(fieldName: string): LocalDate {
+        return this.validateCompatibleAndRead(fieldName, FieldType.DATE, super.readDate);
+    }
+
+    readTimestamp(fieldName: string): LocalDateTime {
+        return this.validateCompatibleAndRead(fieldName, FieldType.TIMESTAMP, super.readTimestamp);
+    }
+
+    readTimestampWithTimezone(fieldName: string): OffsetDateTime {
+        return this.validateCompatibleAndRead(fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE, super.readTimestampWithTimezone);
+    }
+
+    readDecimalArray(fieldName: string): BigDecimal[] {
+        return this.validateCompatibleAndRead(fieldName, FieldType.DECIMAL_ARRAY, super.readDecimalArray);
+    }
+
+    readTimeArray(fieldName: string): LocalTime[] {
+        return this.validateCompatibleAndRead(fieldName, FieldType.TIME_ARRAY, super.readTimeArray);
+    }
+
+    readDateArray(fieldName: string): LocalDate[] {
+        return this.validateCompatibleAndRead(fieldName, FieldType.DATE_ARRAY, super.readDateArray);
+    }
+
+    readTimestampArray(fieldName: string): LocalDateTime[] {
+        return this.validateCompatibleAndRead(fieldName, FieldType.TIMESTAMP_ARRAY, super.readTimestampArray);
+    }
+
+    readTimestampWithTimezoneArray(fieldName: string): OffsetDateTime[] {
+        return this.validateCompatibleAndRead(
+            fieldName, FieldType.TIMESTAMP_WITH_TIMEZONE_ARRAY, super.readTimestampWithTimezoneArray
+        );
     }
 
     private validateCompatibleAndRead(fieldName: string,

@@ -18,18 +18,27 @@
 const { expect } = require('chai');
 const RC = require('../RC');
 const { Client } = require('../../../');
+const { markClientVersionAtLeast } = require('../../TestUtil');
 
 /**
  * Basic tests for reconnection to cluster scenarios.
  */
 describe('ClientReconnectTest', function () {
-
     let cluster;
     let client;
 
+    beforeEach(function () {
+       client = undefined;
+       cluster = undefined;
+    });
+
     afterEach(async function () {
-        await client.shutdown();
-        await RC.terminateCluster(cluster.id);
+        if (client) {
+            await client.shutdown();
+        }
+        if (cluster) {
+            await RC.terminateCluster(cluster.id);
+        }
     });
 
     it('member restarts, while map.put in progress', async function () {
@@ -80,6 +89,9 @@ describe('ClientReconnectTest', function () {
     });
 
     it('create proxy while member is down, member comes back', async function () {
+        // Before https://github.com/hazelcast/hazelcast-nodejs-client/pull/704, this test is flaky.
+        // https://github.com/hazelcast/hazelcast-nodejs-client/issues/658#issuecomment-868970776
+        markClientVersionAtLeast(this, '4.0.2');
         cluster = await RC.createCluster(null, null);
         const member = await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({

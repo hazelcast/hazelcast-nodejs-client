@@ -21,7 +21,6 @@ const chai = require('chai');
 chai.should();
 
 describe('SqlPageTest', function () {
-
     const columnTypes = [
         SqlColumnType.VARCHAR,
         SqlColumnType.VARCHAR

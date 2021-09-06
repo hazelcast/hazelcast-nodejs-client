@@ -17,6 +17,7 @@
 
 const { expect } = require('chai');
 const { BuildInfo } = require('../lib/BuildInfo');
+const { Lang } = require('./integration/remote_controller/remote-controller_types');
 
 exports.promiseLater = function (time, func) {
     if (func === undefined) {
@@ -109,16 +110,7 @@ const expectAlmostEqual = function (actual, expected) {
 };
 exports.expectAlmostEqual = expectAlmostEqual;
 
-exports.fillMap = function (map, size, keyPrefix, valuePrefix) {
-    if (size === undefined) {
-        size = 10;
-    }
-    if (keyPrefix === undefined) {
-        keyPrefix = 'key';
-    }
-    if (valuePrefix === undefined) {
-        valuePrefix = 'val';
-    }
+exports.fillMap = function (map, size = 10, keyPrefix = 'key', valuePrefix = 'val') {
     const entries = [];
     for (let i = 0; i < size; i++) {
         entries.push([keyPrefix + i, valuePrefix + i]);
@@ -167,6 +159,22 @@ exports.isServerVersionAtLeast = function(client, version) {
     return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
 };
 
+/**
+ * Returns
+ * - 0 if they are equal
+ * - positive number if server version is newer than the version
+ * - negative number if server version is older than the version
+ */
+exports.compareServerVersionWithRC = async function (rc, version) {
+    const script = 'result=com.hazelcast.instance.GeneratedBuildProperties.VERSION;';
+    const result = await rc.executeOnController(null, script, Lang.JAVASCRIPT);
+
+    const rcServerVersion = BuildInfo.calculateServerVersionFromString(result.result.toString());
+    const comparedVersion = BuildInfo.calculateServerVersionFromString(version);
+
+    return rcServerVersion - comparedVersion;
+};
+
 exports.isClientVersionAtLeast = function(version) {
     const actual = BuildInfo.calculateServerVersionFromString(BuildInfo.getClientVersion());
     const expected = BuildInfo.calculateServerVersionFromString(version);
@@ -200,7 +208,6 @@ exports.randomString = function (length) {
 };
 
 class CountingMembershipListener {
-
     constructor(expectedAdds, expectedRemoves) {
         this.adds = 0;
         this.expectedAdds = expectedAdds;
@@ -230,7 +237,6 @@ class CountingMembershipListener {
         }
         this._resolve();
     }
-
 }
 
 exports.CountingMembershipListener = CountingMembershipListener;
@@ -265,4 +271,82 @@ exports.writeStringToOutput = function (output, value) {
     } else {
         output.writeUTF(value);
     }
+};
+
+// functions for backward compatibility
+exports.getSql = function (client) {
+    if (exports.isClientVersionAtLeast('5.0')) {
+        return client.getSql();
+    } else {
+        return client.getSqlService();
+    }
+};
+
+exports.getSqlColumnType = function () {
+    const { SqlColumnType } = require('../lib/sql/SqlColumnMetadata');
+    return SqlColumnType;
+};
+
+exports.getDateTimeUtil = function () {
+    // Renamed in 5.0
+    if (exports.isClientVersionAtLeast('5.0')) {
+        return require('../lib/util/DateTimeUtil');
+    } else {
+        return require('../lib/util/DatetimeUtil');
+    }
+};
+
+exports.getOffsetDateTime = function() {
+    const { OffsetDateTime } = require('..');
+    return OffsetDateTime;
+};
+
+exports.getLocalDateTime = function() {
+    const { LocalDateTime } = require('..');
+    return LocalDateTime;
+};
+
+exports.getLocalDate = function() {
+    const { LocalDate } = require('..');
+    return LocalDate;
+};
+
+exports.getLocalTime = function() {
+    const { LocalTime } = require('..');
+    return LocalTime;
+};
+
+exports.getBigDecimal = function() {
+    const { BigDecimal } = require('..');
+    return BigDecimal;
+};
+
+/**
+ * Creates mapping for SQL queries. In 5.0, users started to write explicit mapping for SQL queries against maps.
+ * @param serverVersionNewerThanFive True if server is newer than version five
+ * @param client Hazelcast client object
+ * @param keyFormat SQL column type of map key, case insensitive
+ * @param valueFormat SQL column type of map value, case insensitive
+ * @param mapName Name of the map
+ */
+exports.createMapping = async (serverVersionNewerThanFive, client, keyFormat, valueFormat, mapName) => {
+    if (!serverVersionNewerThanFive) {
+        // Before 5.0, mappings are created implicitly, thus we don't need to create explicitly.
+        return;
+    }
+    const createMappingQuery = `
+            CREATE MAPPING ${mapName} (
+                __key ${keyFormat.toUpperCase()},
+                this ${valueFormat.toUpperCase()}
+            )
+            TYPE IMAP
+            OPTIONS (
+                'keyFormat' = '${keyFormat.toLowerCase()}',
+                'valueFormat' = '${valueFormat.toLowerCase()}'
+            )
+        `;
+
+    const result = exports.getSql(client).execute(createMappingQuery);
+    // Wait for execution to end.
+    await result.getUpdateCount();
 };

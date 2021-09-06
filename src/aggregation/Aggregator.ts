@@ -17,7 +17,8 @@
 import * as Long from 'long';
 import {DataInput, DataOutput} from '../serialization/Data';
 import {IdentifiedDataSerializable} from '../serialization/Serializable';
-import * as AggregatorFactory from './AggregatorFactory';
+import * as AggregatorConstants from './AggregatorConstants';
+import {HazelcastError} from '../core';
 
 /**
  * Base interface for all aggregators.
@@ -30,7 +31,7 @@ export interface Aggregator<R> extends IdentifiedDataSerializable {
 export abstract class AbstractAggregator<R> implements Aggregator<R> {
 
     abstract classId: number;
-    factoryId = AggregatorFactory.AGGREGATOR_FACTORY_ID;
+    factoryId = AggregatorConstants.AGGREGATOR_FACTORY_ID;
     protected attributePath: string;
 
     constructor(attributePath?: string) {
@@ -45,7 +46,7 @@ export abstract class AbstractAggregator<R> implements Aggregator<R> {
 /** @internal */
 export class CountAggregator extends AbstractAggregator<Long> {
 
-    classId = AggregatorFactory.COUNT;
+    classId = AggregatorConstants.COUNT;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -63,7 +64,7 @@ export class CountAggregator extends AbstractAggregator<Long> {
 /** @internal */
 export class DoubleAverageAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.DOUBLE_AVG;
+    classId = AggregatorConstants.DOUBLE_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -81,7 +82,7 @@ export class DoubleAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class DoubleSumAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.DOUBLE_SUM;
+    classId = AggregatorConstants.DOUBLE_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -97,7 +98,7 @@ export class DoubleSumAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class NumberAverageAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.NUMBER_AVG;
+    classId = AggregatorConstants.NUMBER_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -115,7 +116,7 @@ export class NumberAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class FixedPointSumAggregator extends AbstractAggregator<Long> {
 
-    classId = AggregatorFactory.FIXED_SUM;
+    classId = AggregatorConstants.FIXED_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -131,7 +132,7 @@ export class FixedPointSumAggregator extends AbstractAggregator<Long> {
 /** @internal */
 export class FloatingPointSumAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.FLOATING_POINT_SUM;
+    classId = AggregatorConstants.FLOATING_POINT_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -147,7 +148,7 @@ export class FloatingPointSumAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class MaxAggregator<R> extends AbstractAggregator<R> {
 
-    classId = AggregatorFactory.MAX;
+    classId = AggregatorConstants.MAX;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -163,7 +164,7 @@ export class MaxAggregator<R> extends AbstractAggregator<R> {
 /** @internal */
 export class MinAggregator<R> extends AbstractAggregator<R> {
 
-    classId = AggregatorFactory.MIN;
+    classId = AggregatorConstants.MIN;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -179,7 +180,7 @@ export class MinAggregator<R> extends AbstractAggregator<R> {
 /** @internal */
 export class IntegerAverageAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.INT_AVG;
+    classId = AggregatorConstants.INT_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -197,7 +198,7 @@ export class IntegerAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class IntegerSumAggregator extends AbstractAggregator<Long> {
 
-    classId = AggregatorFactory.INT_SUM;
+    classId = AggregatorConstants.INT_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -213,7 +214,7 @@ export class IntegerSumAggregator extends AbstractAggregator<Long> {
 /** @internal */
 export class LongAverageAggregator extends AbstractAggregator<number> {
 
-    classId = AggregatorFactory.LONG_AVG;
+    classId = AggregatorConstants.LONG_AVG;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -231,7 +232,7 @@ export class LongAverageAggregator extends AbstractAggregator<number> {
 /** @internal */
 export class LongSumAggregator extends AbstractAggregator<Long> {
 
-    classId = AggregatorFactory.LONG_SUM;
+    classId = AggregatorConstants.LONG_SUM;
 
     readData(input: DataInput): any {
         this.attributePath = input.readString();
@@ -241,5 +242,66 @@ export class LongSumAggregator extends AbstractAggregator<Long> {
     writeData(output: DataOutput): void {
         output.writeString(this.attributePath);
         output.writeLong(Long.ZERO);
+    }
+}
+
+/** @internal */
+export class DistinctValuesAggregator<R> extends AbstractAggregator<Set<R>> {
+
+    classId = AggregatorConstants.DISTINCT;
+
+    readData(input: DataInput) {
+        // readData is not used on the client side
+    }
+
+    writeData(output: DataOutput): void {
+        output.writeString(this.attributePath);
+        output.writeInt(0);
+    }
+}
+
+/** @internal */
+export class CanonicalizingHashSet<R> extends Set<R> implements IdentifiedDataSerializable {
+
+    classId = AggregatorConstants.CANONICALIZING_SET;
+    factoryId = AggregatorConstants.AGGREGATOR_FACTORY_ID;
+
+    readData(input: DataInput): void {
+        const count = input.readInt();
+        for (let i = 0; i < count; i++) {
+            const element = input.readObject();
+            this.add(element);
+        }
+    }
+
+    writeData(output: DataOutput): void {
+        // writeData is not used on the client side
+    }
+}
+
+/** @internal */
+export const idToConstructor: { [id: number]: new () => Aggregator<any> } = {
+    [AggregatorConstants.COUNT]: CountAggregator,
+    [AggregatorConstants.DISTINCT]: DistinctValuesAggregator,
+    [AggregatorConstants.DOUBLE_AVG]: DoubleAverageAggregator,
+    [AggregatorConstants.DOUBLE_SUM]: DoubleSumAggregator,
+    [AggregatorConstants.FIXED_SUM]: FixedPointSumAggregator,
+    [AggregatorConstants.FLOATING_POINT_SUM]: FloatingPointSumAggregator,
+    [AggregatorConstants.INT_AVG]: IntegerAverageAggregator,
+    [AggregatorConstants.INT_SUM]: IntegerSumAggregator,
+    [AggregatorConstants.LONG_AVG]: LongAverageAggregator,
+    [AggregatorConstants.LONG_SUM]: LongSumAggregator,
+    [AggregatorConstants.MAX]: MaxAggregator,
+    [AggregatorConstants.MIN]: MinAggregator,
+    [AggregatorConstants.NUMBER_AVG]: NumberAverageAggregator,
+    [AggregatorConstants.CANONICALIZING_SET]: CanonicalizingHashSet
+};
+
+/** @internal */
+export function aggregatorFactory(classId: number): IdentifiedDataSerializable {
+    try {
+        return new idToConstructor[classId]();
+    } catch (e) {
+        throw new HazelcastError('There is no known aggregator with type id ' + classId, e);
     }
 }

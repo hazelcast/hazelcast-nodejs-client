@@ -28,7 +28,6 @@ const identifiedFactory = require('../../javaclasses/IdentifiedFactory');
 const IdentifiedEntryProcessor = require('../../javaclasses/IdentifiedEntryProcessor');
 
 describe('EntryProcessorTest', function () {
-
     const MAP_SIZE = 1000;
 
     let cluster;

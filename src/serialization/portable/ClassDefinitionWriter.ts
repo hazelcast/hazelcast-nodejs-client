@@ -20,7 +20,14 @@ import {ClassDefinition} from './ClassDefinition';
 import {PortableContext} from './PortableContext';
 import * as Long from 'long';
 import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
-import {HazelcastSerializationError} from '../../core';
+import {
+    HazelcastSerializationError,
+    BigDecimal,
+    LocalDate,
+    LocalDateTime,
+    LocalTime,
+    OffsetDateTime
+} from '../../core';
 
 /** @internal */
 export class ClassDefinitionWriter implements PortableWriter {
@@ -93,6 +100,26 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addPortableField(fieldName, nestedClassDef);
     }
 
+    writeDecimal(fieldName: string, value: BigDecimal): void {
+        this.builder.addDecimalField(fieldName);
+    }
+
+    writeTime(fieldName: string, value: LocalTime): void {
+        this.builder.addTimeField(fieldName);
+    }
+
+    writeDate(fieldName: string, value: LocalDate): void {
+        this.builder.addDateField(fieldName);
+    }
+
+    writeTimestamp(fieldName: string, value: LocalDateTime): void {
+        this.builder.addTimestampField(fieldName);
+    }
+
+    writeTimestampWithTimezone(fieldName: string, value: OffsetDateTime): void {
+        this.builder.addTimestampWithTimezoneField(fieldName);
+    }
+
     writeByteArray(fieldName: string, bytes: Buffer): void {
         this.builder.addByteArrayField(fieldName);
     }
@@ -150,6 +177,26 @@ export class ClassDefinitionWriter implements PortableWriter {
         const nestedClassDef = this.createNestedClassDef(portable,
             new ClassDefinitionBuilder(portable.factoryId, portable.classId, version));
         this.builder.addPortableArrayField(fieldName, nestedClassDef);
+    }
+
+    writeDecimalArray(fieldName: string, values: BigDecimal[]): void {
+        this.builder.addDecimalArrayField(fieldName);
+    }
+
+    writeTimeArray(fieldName: string, values: LocalTime[]): void {
+        this.builder.addTimeArrayField(fieldName);
+    }
+
+    writeDateArray(fieldName: string, values: LocalDate[]): void {
+        this.builder.addDateArrayField(fieldName);
+    }
+
+    writeTimestampArray(fieldName: string, values: LocalDateTime[]): void {
+        this.builder.addTimestampArrayField(fieldName);
+    }
+
+    writeTimestampWithTimezoneArray(fieldName: string, values: OffsetDateTime[]): void {
+        this.builder.addTimestampWithTimezoneArrayField(fieldName);
     }
 
     registerAndGet(): ClassDefinition {

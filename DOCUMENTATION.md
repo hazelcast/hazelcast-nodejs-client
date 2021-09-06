@@ -16,16 +16,12 @@
   * [1.5. Basic Usage](#15-basic-usage)
   * [1.6. Code Samples](#16-code-samples)
 * [2. Features](#2-features)
-* [3. Configuration Overview](#3-configuration-overview)
-  * [3.1. Configuration Options](#31-configuration-options)
-    * [3.1.1. Programmatic Configuration](#311-programmatic-configuration)
-    * [3.1.2. Declarative Configuration (JSON)](#312-declarative-configuration-json)
-  * [3.2. Importing Multiple Configurations](#32-importing-multiple-configurations)
-  * [3.3. Loading Objects and Path Resolution](#33-loading-objects-and-path-resolution)
+* [3. Configuration](#3-configuration)
+  * [3.1 Client Properties](#31-client-properties)
 * [4. Serialization](#4-serialization)
   * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
   * [4.2. Portable Serialization](#42-portable-serialization)
-	* [4.2.1. Versioning for Portable Serialization](#421-versioning-for-portable-serialization)
+    * [4.2.1. Versioning for Portable Serialization](#421-versioning-for-portable-serialization)
   * [4.3. Custom Serialization](#43-custom-serialization)
   * [4.4. Global Serialization](#44-global-serialization)
   * [4.5. JSON Serialization](#45-json-serialization)
@@ -82,12 +78,12 @@
   * [8.6. Distributed Computing](#86-distributed-computing)
     * [8.6.1. Using EntryProcessor](#861-using-entryprocessor)
   * [8.7. SQL](#87-sql)
-    * [8.7.1. Querying IMap](#871-querying-imap)
-    * [8.7.2. Data Types](#872-data-types)
-    * [8.7.3. Casting](#873-casting)
-    * [8.7.4. SELECT](#874-select)
+    * [8.7.1. SQL Statements](#871-sql-statements)
+    * [8.7.2. Querying IMap](#872-querying-imap)
+    * [8.7.3. Data Types](#873-data-types)
+    * [8.7.4. Casting](#874-casting)
     * [8.7.5. Expressions](#875-expressions)
-    * [8.7.6. Lite Members](#876-lite-members)
+    * [8.7.6. Source and Sink Connectors](#876-source-and-sink-connectors)
     * [8.7.7. More Information](#877-more-information)
   * [8.8. Distributed Query](#88-distributed-query)
     * [8.8.1. How Distributed Query Works](#881-how-distributed-query-works)
@@ -130,14 +126,14 @@
 
 # Introduction
 
-This document provides information about the Node.js client for [Hazelcast](https://hazelcast.org/). This client uses Hazelcast's [Open Client Protocol](https://github.com/hazelcast/hazelcast-client-protocol) and works with Hazelcast IMDG 4.0 and higher versions.
+This document provides information about the Node.js client for [Hazelcast](https://hazelcast.com/). This client uses Hazelcast's [Open Client Protocol](https://github.com/hazelcast/hazelcast-client-protocol) and works with Hazelcast IMDG 4.0 and higher versions.
 
 ### Resources
 
 See the following for more information on Node.js and Hazelcast IMDG:
 
-* Hazelcast IMDG [website](https://hazelcast.org/)
-* Hazelcast IMDG [Reference Manual](https://hazelcast.org/documentation/#imdg)
+* Hazelcast IMDG [website](https://hazelcast.com/)
+* Hazelcast IMDG [Reference Manual](https://docs.hazelcast.com/imdg/latest/)
 * About [Node.js](https://nodejs.org/en/about/)
 
 ### Release Notes
@@ -184,7 +180,7 @@ We are going to download JARs from the website and run a standalone member for t
 
 Follow the instructions below to create a Hazelcast IMDG cluster:
 
-1. Go to Hazelcast's download [page](https://hazelcast.org/download/) and download either the `.zip` or `.tar` distribution of Hazelcast IMDG.
+1. Go to Hazelcast's download [page](https://hazelcast.com/open-source-projects/downloads/) and download either the `.zip` or `.tar` distribution of Hazelcast IMDG.
 2. Decompress the contents into any directory that you
 want to run members from.
 3. Change into the directory that you decompressed the Hazelcast content and then into the `bin` directory.
@@ -228,7 +224,7 @@ The following is an example configuration when you are adding an `IdentifiedData
 ```
 If you want to add a `Portable` class, you should use `<portable-factories>` instead of `<data-serializable-factories>` in the above configuration.
 
-See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#getting-started) for more information on setting up the clusters.
+See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.com/imdg/latest/getting-started.html) for more information on setting up the clusters.
 
 ## 1.3. Downloading and Installing
 
@@ -250,7 +246,7 @@ This section describes the most common configuration elements to get you started
 It discusses some member side configuration options to ease the understanding of Hazelcast's ecosystem. Then, the client side configuration options
 regarding the cluster connection are discussed. The configurations for the Hazelcast IMDG data structures that can be used in the Node.js client are discussed in the following sections.
 
-See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview section](#3-configuration-overview) for more information.
+See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.com/imdg/latest/) and [Configuration section](#3-configuration) for more information.
 
 ### 1.4.1. Configuring Hazelcast IMDG
 
@@ -316,7 +312,7 @@ These configuration elements are enough for most connection scenarios. Now we wi
 To configure your Hazelcast Node.js client you need to create a config object and set the appropriate options. Then you can
 supply this object to your client at the startup. The structure of the config object is similar to the `hazelcast.xml` configuration file used when configuring the member. It is done this way to make it easier to transfer Hazelcast skills to multiple platforms.
 
-This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview) and the following sections for information about detailed network configurations and/or additional features of Hazelcast Node.js client configuration.
+This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration section](#3-configuration) and the following sections for information about detailed network configurations and/or additional features of Hazelcast Node.js client configuration.
 
 You need to create a `ClientConfig` object and adjust its properties. Then you can pass this object to the client when starting it.
 
@@ -549,11 +545,9 @@ Hazelcast Node.js client supports the following data structures and features:
 * Blue-Green Deployment and Disaster Recovery (requires Enterprise server)
 
 
-# 3. Configuration Overview
+# 3. Configuration
 
 This chapter describes the options to configure your Node.js client. If an invalid value is given to any configuration option, an `InvalidConfigurationError` error will be thrown.
-
-## 3.1. Configuration Options
 
 For configuration of the Hazelcast Node.js client, just instantiate a config object and configure the desired aspects. An example is shown below.
 
@@ -571,6 +565,28 @@ const client = await Client.newHazelcastClient(cfg);
 
 In the following chapters you will learn the description of all options supported by Hazelcast Node.js client.
 
+# 3.1 Client Properties
+
+The following is the list of all client properties in alphabetical order.
+
+| Property Name                                          | Default Value                       | Type            | Description                                                                                                                                                                                                                                                                                                                                                                                                         |
+|--------------------------------------------------------|-------------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| hazelcast.client.autopipelining.enabled                | true                                | boolean         | Turns automated pipelining feature on/off. If your application does only write operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughput.                                                                                                                                                                                                                       |
+| hazelcast.client.autopipelining.threshold.bytes        | 65536 (64 KB)                       | number          | This is the coalescing threshold for the internal queue used by automated pipelining. Once the total size of operation payloads taken from the queue reaches this value during batch preparation, these operations are written to the socket. Notice that automated pipelining will still send operations if their total size is smaller than the threshold and there are no more operations in the internal queue. |
+| hazelcast.client.heartbeat.interval                    | 5000                                | number          | Frequency of the heartbeat messages sent by the clients to members in milliseconds.                                                                                                                                                                                                                                                                                                                                 |
+| hazelcast.client.heartbeat.timeout                     | 60000                               | number          | Timeout for the heartbeat messages sent by the client to members in milliseconds. If no messages pass between the client and member within the given time via this property, the connection will be closed.                                                                                                                                                                                                         |
+| hazelcast.client.invocation.retry.pause.millis         | 1000                                | number          | Pause time between each retry cycle of an invocation in milliseconds.                                                                                                                                                                                                                                                                                                                                               |
+| hazelcast.client.invocation.timeout.millis             | 120000                              | number          | Period, in milliseconds, to give up the invocation when a member in the member list is not reachable, member throws an exception or client's heartbeat requests are timed out.                                                                                                                                                                                                                                      |
+| hazelcast.client.operation.backup.timeout.millis       | 5000                                | number          | If an operation has backups, this property specifies how long (in milliseconds) the invocation waits for acks from the backup replicas. If acks are not received from some of the backups, there will not be any rollback on the other successful replicas.                                                                                                                                                         |
+| hazelcast.client.operation.fail.on.indeterminate.state | false                               | boolean         | When it is `true`, if an operation has sync backups and acks are not received from backup replicas in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails. However, even if the invocation fails, there will not be any rollback on other successful replicas.                                                                                     |
+| hazelcast.client.shuffle.member.list                   | true                                | boolean         | The client shuffles the given member list to prevent all the clients to connect to the same member when this property is `true`. When it is set to `false`, the client tries to connect to the members in the given order.                                                                                                                                                                                          |
+| hazelcast.client.socket.no.delay                       | true                                | boolean         | The [setNoDelay](https://nodejs.org/api/net.html#net_socket_setnodelay_nodelay) setting for connections.                                                                                                                                                                                                                                                                                                            |
+| hazelcast.client.statistics.enabled                    | false                               | boolean         | If set to `true`, it enables collecting the client statistics and sending them to the cluster. When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center.                                                                                                                                                                                       |
+| hazelcast.client.statistics.period.seconds             | 3                                   | number          | Period in seconds the client statistics are collected and sent to the cluster.                                                                                                                                                                                                                                                                                                                                      |
+| hazelcast.discovery.public.ip.enabled                  | null(detection enabled)             | boolean or null | When set to `true`, the client will assume that it needs to use public IP addresses reported by members. When set to `false`, the client will always use private addresses reported by members. If it is `null`, the client will try to infer how the discovery mechanism should be based on the reachability of the members. This inference is not %100 reliable and may result in false negatives.                |
+| hazelcast.invalidation.max.tolerated.miss.count        | 10                                  | number          | If missed invalidation count is bigger than this value, relevant cached data in a Near Cache will be made unreachable.                                                                                                                                                                                                                                                                                              |
+| hazelcast.invalidation.reconciliation.interval.seconds | 60                                  | number          | Period of the task that scans cluster members to compare generated invalidation events with the received ones from the client Near Cache.                                                                                                                                                                                                                                                                           |
+| hazelcast.logging.level                                | INFO                                | string          | Logging level. Can be one of `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`.                                                                                                                                                                                                                                                                                                                                      |
 
 # 4. Serialization
 
@@ -582,6 +598,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 |-----------------|---------------------------------------|
 | boolean         | Boolean                               |
 | number          | Byte, Short, Integer, Float, Double   |
+| BigInt          | BigInteger                            |
 | string          | String                                |
 | Long            | Long                                  |
 | Buffer          | byte[]                                |
@@ -591,7 +608,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 
 > **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `defaultNumberType` serialization config option. See [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for more information.**
 
-Arrays of the `boolean`, `number`, `string`, and `Long` types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
+Arrays of the `boolean`, `number`, `BigInt`, `string`, and `Long` types can be serialized as `boolean[]`, `BigInteger[]', `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
 
 **Serialization Priority**
 
@@ -1048,12 +1065,7 @@ const cfg = {
 
 Its default value is `true`. This option has no effect for unisocket clients.
 
-You can also fine-tune this feature using entries of the `properties` config option as described below:
-
-- `hazelcast.client.operation.backup.timeout.millis`: Default value is `5000` milliseconds. If an operation has
-backups, this property specifies how long (in milliseconds) the invocation waits for acks from the backup replicas. If acks are not received from some of the backups, there will not be any rollback on the other successful replicas.
-
-- `hazelcast.client.operation.fail.on.indeterminate.state`: Default value is `false`. When it is `true`, if an operation has sync backups and acks are not received from backup replicas in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails. However, even if the invocation fails, there will not be any rollback on other successful replicas.
+You can also fine-tune this feature using `hazelcast.client.operation.backup.timeout.millis` and `hazelcast.client.operation.fail.on.indeterminate.state` [properties](#31-client-properties):
 
 ## 5.8. External Client Public Address Discovery
 
@@ -1066,11 +1078,9 @@ Hazelcast Node.js client has a built-in mechanism to detect such situation. When
 1. Check if private addresses reported by members are the same as defined in the client configuration. If they are the same, no need to use public addresses. If not, then
 2. Check if every member is reachable via public address but not reachable via private address (for the performance reason, only 3 members are checked). If the check succeeds, the client uses public addresses for further communication.
 
-For more details on member-side configuration, refer to the [Discovery SPI section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#discovery-spi) in the Hazelcast IMDG Reference Manual.
+For more details on member-side configuration, refer to the [Discovery SPI section](https://docs.hazelcast.com/imdg/latest/extending-hazelcast/discovery-spi.html) in the Hazelcast IMDG Reference Manual.
 
-You can disable the detection mechanism and specify the client behavior by using the following `properties` config option:
-
-- `hazelcast.discovery.public.ip.enabled`: Default value is `null` (detection enabled). When set to `true`, the client will assume that it needs to use public IP addresses reported by members. When set to `false`, the client will always use private addresses reported by members.
+You can disable the detection mechanism and specify the client behavior by using the `hazelcast.discovery.public.ip.enabled` [property](#31-client-properties).
 
 > **NOTE: The detection mechanism is disabled when the client is configured to use [TLS/SSL encryption](#91-tlsssl). In such setup you should explicitly set the `hazelcast.discovery.public.ip.enabled` property.**
 
@@ -1152,9 +1162,9 @@ Note that, `tryConnect` above tries to connect to any member that the client kno
 
 Hazelcast provides disaster recovery for the client-cluster connections and can use the well-known blue-green mechanism, so that a Node.js client is automatically diverted to another cluster on demand or when the intended cluster becomes unavailable. These features require **Hazelcast IMDG Enterprise** edition.
 
-Using the blue-green system, the clients can connect to another cluster automatically when they are blacklisted from their currently connected cluster. See the [Blue-Green Mechanism section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#blue-green-mechanism) in the Hazelcast IMDG Reference Manual for information on the blue-green deployment support.
+Using the blue-green system, the clients can connect to another cluster automatically when they are blacklisted from their currently connected cluster. See the [Blue-Green Mechanism section](https://docs.hazelcast.com/imdg/latest/clients/java.html#blue-green-mechanism) in the Hazelcast IMDG Reference Manual for information on the blue-green deployment support.
 
-With the disaster recovery, the clients tries to connect to alternative clusters described in the failover config when one of your clusters is gone due to a failure. See the [Disaster Recovery Mechanism section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#disaster-recovery-mechanism) in the Hazelcast IMDG Reference Manual for information on the disaster recovery.
+With the disaster recovery, the clients tries to connect to alternative clusters described in the failover config when one of your clusters is gone due to a failure. See the [Disaster Recovery Mechanism section](https://docs.hazelcast.com/imdg/latest/clients/java.html#disaster-recovery-mechanism) in the Hazelcast IMDG Reference Manual for information on the disaster recovery.
 
 ## 7.1. Configuring Client
 
@@ -1204,7 +1214,7 @@ Most of the functions in the API return Promises. Therefore, you need to be fami
 
 If you are ready to go, let's start to use Hazelcast Node.js client.
 
-The first step is the configuration. See the [Programmatic Configuration section](#311-programmatic-configuration) for details.
+The first step is the configuration. See the [Configuration section](#3-configuration) for details.
 
 The following is an example on how to create a `ClientConfig` object and configure it programmatically:
 
@@ -1267,7 +1277,7 @@ The client executes each operation through the already established connection to
 
 While sending requests to cluster members, the operations may fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for non-read-only operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
-You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.millis` in the `properties` option. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
+You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.millis` in the client [properties](#31-client-properties). The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
 * Member throws an exception.
 * Connection between the client and member is closed.
@@ -1281,7 +1291,7 @@ Most of the distributed data structures available in IMDG are supported by the N
 
 ### 8.4.1. Using Map
 
-Hazelcast Map (`IMap`) is a distributed map. Through the Node.js client, you can perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details, see the [Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map) in the Hazelcast IMDG Reference Manual.
+Hazelcast Map (`IMap`) is a distributed map. Through the Node.js client, you can perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details, see the [Map section](https://docs.hazelcast.com/imdg/latest/data-structures/map.html) in the Hazelcast IMDG Reference Manual.
 
 A Map usage example is shown below.
 
@@ -1296,13 +1306,13 @@ await map.putIfAbsent('somekey', 'somevalue');
 await map.replace('key', 'value', 'newvalue');
 ```
 
-Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#882-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
+Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the [Near Cache section](#892-near-cache) for a detailed explanation of the Near Cache feature and its configuration.
 
 Hazelcast Map uses `MapListener` to listen to the events that occur when the entries are added to, updated/merged in or evicted/removed from the Map. See the [Map Listener section](#8521-map-listener) for information on how to create a map listener object and register it.
 
 ### 8.4.2. Using MultiMap
 
-Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details, see the [MultiMap section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#multimap) in the Hazelcast IMDG Reference Manual.
+Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details, see the [MultiMap section](https://docs.hazelcast.com/imdg/latest/data-structures/multimap.html) in the Hazelcast IMDG Reference Manual.
 
 A MultiMap usage example is shown below.
 
@@ -1326,7 +1336,7 @@ Hazelcast MultiMap uses `EntryListener` to listen to the events that occur when 
 
 ### 8.4.3. Using Replicated Map
 
-Hazelcast `ReplicatedMap` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details, see the [Replicated Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#replicated-map) in the Hazelcast IMDG Reference Manual.
+Hazelcast `ReplicatedMap` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details, see the [Replicated Map section](https://docs.hazelcast.com/imdg/latest/data-structures/replicated-map.html) in the Hazelcast IMDG Reference Manual.
 
 A Replicated Map usage example is shown below.
 
@@ -1347,7 +1357,7 @@ Hazelcast Replicated Map uses `EntryListener` to listen to the events that occur
 
 ### 8.4.4. Using Queue
 
-Hazelcast Queue (`IQueue`) is a distributed queue which enables all cluster members to interact with it. For details, see the [Queue section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#queue) in the Hazelcast IMDG Reference Manual.
+Hazelcast Queue (`IQueue`) is a distributed queue which enables all cluster members to interact with it. For details, see the [Queue section](https://docs.hazelcast.com/imdg/latest/data-structures/queue.html) in the Hazelcast IMDG Reference Manual.
 
 A Queue usage example is shown below.
 
@@ -1371,7 +1381,7 @@ Hazelcast Queue uses `ItemListener` to listen to the events that occur when the 
 
 ### 8.4.5. Using Set
 
-Hazelcast Set (`ISet`) is a distributed set which does not allow duplicate elements. For details, see the [Set section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#set) in the Hazelcast IMDG Reference Manual.
+Hazelcast Set (`ISet`) is a distributed set which does not allow duplicate elements. For details, see the [Set section](https://docs.hazelcast.com/imdg/latest/data-structures/set.html) in the Hazelcast IMDG Reference Manual.
 
 A Set usage example is shown below.
 
@@ -1394,7 +1404,7 @@ Hazelcast Set uses `ItemListener` to listen to the events that occur when the it
 
 ### 8.4.6. Using List
 
-Hazelcast List (`IList`) is a distributed list which allows duplicate elements and preserves the order of elements. For details, see the [List section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#list) in the Hazelcast IMDG Reference Manual.
+Hazelcast List (`IList`) is a distributed list which allows duplicate elements and preserves the order of elements. For details, see the [List section](https://docs.hazelcast.com/imdg/latest/data-structures/list.html) in the Hazelcast IMDG Reference Manual.
 
 A List usage example is shown below.
 
@@ -1418,7 +1428,7 @@ Hazelcast List uses `ItemListener` to listen to the events that occur when the i
 
 ### 8.4.7. Using Ringbuffer
 
-Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that stores its data in a ring-like structure. You can think of it as a circular array with a given capacity. Each Ringbuffer has a tail and a head. The tail is where the items are added and the head is where the items are overwritten or expired. You can reach each element in a Ringbuffer using a sequence ID, which is mapped to the elements between the head and tail (inclusive) of the Ringbuffer. For details, see the [Ringbuffer section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#ringbuffer) in the Hazelcast IMDG Reference Manual.
+Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that stores its data in a ring-like structure. You can think of it as a circular array with a given capacity. Each Ringbuffer has a tail and a head. The tail is where the items are added and the head is where the items are overwritten or expired. You can reach each element in a Ringbuffer using a sequence ID, which is mapped to the elements between the head and tail (inclusive) of the Ringbuffer. For details, see the [Ringbuffer section](https://docs.hazelcast.com/imdg/latest/data-structures/ringbuffer.html) in the Hazelcast IMDG Reference Manual.
 
 A Ringbuffer usage example is shown below.
 
@@ -1439,7 +1449,7 @@ console.log('Next value:', value);
 
 ### 8.4.8. Using Reliable Topic
 
-Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the `Ringbuffer` data structure. For details, see the [Reliable Topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
+Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the `Ringbuffer` data structure. For details, see the [Reliable Topic section](https://docs.hazelcast.com/imdg/latest/data-structures/reliable-topic.html) in the Hazelcast IMDG Reference Manual.
 
 A Reliable Topic usage example is shown below.
 
@@ -1475,13 +1485,13 @@ The following are the descriptions of configuration elements and attributes:
 
 * key (`rt1` in the above example): Name of your Reliable Topic. Hazelcast client supports wildcard configuration for Reliable Topics. Using an asterisk (`*`) character in the name, different instances of topics can be configured by a single configuration.
 * `readBatchSize`: Minimum number of messages that Reliable Topic tries to read in batches. Its default value is `10`.
-* `overloadPolicy`: Policy to handle an overloaded topic. Available values are `DISCARD_OLDEST`, `DISCARD_NEWEST`, `BLOCK` and `ERROR`. Its default value is `BLOCK`. See [Slow Consumers](https://docs.hazelcast.org/docs/latest/manual/html-single/#slow-consumers) for definitions of these policies.
+* `overloadPolicy`: Policy to handle an overloaded topic. Available values are `DISCARD_OLDEST`, `DISCARD_NEWEST`, `BLOCK` and `ERROR`. Its default value is `BLOCK`. See [Slow Consumers](https://docs.hazelcast.com/imdg/latest/data-structures/reliable-topic.html#slow-consumers) for definitions of these policies.
 
 > **NOTE: When you use `default` as the Reliable Topic configuration key, it has a special meaning. Hazelcast client will use that configuration as the default one for all Reliable Topics, unless there is a specific configuration for the topic.**
 
 ### 8.4.9. Using PN Counter
 
-Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
+Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.com/imdg/latest/data-structures/pn-counter.html) in the Hazelcast IMDG Reference Manual.
 
 A PN Counter usage example is shown below.
 
@@ -1507,7 +1517,7 @@ console.log('Decremented counter by one. New value:', value); // 6
 
 ### 8.4.10. Using Flake ID Generator
 
-Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from `0` to `2^63-1` (maximum value for Java's `long` type). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
+Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from `0` to `2^63-1` (maximum value for Java's `long` type). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.com/imdg/latest/data-structures/flake-id-generator.html) in the Hazelcast IMDG Reference Manual.
 
 A Flake ID Generator usage example is shown below.
 
@@ -1549,7 +1559,7 @@ Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the [CAP
 
 All data structures within CP Subsystem are available through `client.getCPSubsystem()` component of the client.
 
-Before using Atomic Long, Lock, and Semaphore, CP Subsystem has to be enabled on cluster-side. Refer to [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) documentation for more information.
+Before using Atomic Long, Lock, and Semaphore, CP Subsystem has to be enabled on cluster-side. Refer to [CP Subsystem](https://docs.hazelcast.com/imdg/latest/cp-subsystem/cp-subsystem.html) documentation for more information.
 
 Data structures in CP Subsystem run in CP groups. Each CP group elects its own Raft leader and runs the Raft consensus algorithm independently. The CP data structures differ from the other Hazelcast data structures in two aspects. First, an internal commit is performed on the METADATA CP group every time you fetch a proxy from this interface. Hence, callers should cache returned proxy objects. Second, if you call `DistributedObject.destroy()` on a CP data structure proxy, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.
 
@@ -1576,7 +1586,7 @@ console.log('CAS operation result:', result);
 // CAS operation result: true
 ```
 
-AtomicLong implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
+AtomicLong implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see `fail-on-indeterminate-operation-state` option in [CP Subsystem server-side configuration](https://docs.hazelcast.com/imdg/latest/cp-subsystem/configuration.html#cp-subsystem-configuration).
 
 #### 8.4.11.2. Using Lock
 
@@ -1597,7 +1607,7 @@ try {
 }
 ```
 
-FencedLock works on top of CP sessions. It keeps a CP session open while the lock is acquired. Please refer to [CP Session](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-sessions) documentation for more information.
+FencedLock works on top of CP sessions. It keeps a CP session open while the lock is acquired. Please refer to [CP Session](https://docs.hazelcast.com/imdg/latest/cp-subsystem/sessions.html) documentation for more information.
 
 Distributed locks are unfortunately *not equivalent* to single-node mutexes because of the complexities in distributed systems, such as uncertain communication patterns, and independent and partial failures. In an asynchronous network, no lock service can guarantee mutual exclusion, because there is no way to distinguish between a slow and a crashed process. Consider the following scenario, where a Hazelcast client acquires a FencedLock, then hits a long GC pause. Since it will not be able to commit session heartbeats while paused, its CP session will be eventually closed. After this moment, another Hazelcast client can acquire this lock. If the first client wakes up again, it may not immediately notice that it has lost ownership of the lock. In this case, multiple clients think they hold the lock. If they attempt to perform an operation on a shared resource, they can break the system. To prevent such situations, you can choose to use an infinite session timeout, but this time probably you are going to deal with liveliness issues. For the scenario above, even if the first client actually crashes, requests sent by 2 clients can be re-ordered in the network and hit the external resource in reverse order.
 
@@ -1678,7 +1688,7 @@ if (success) {
  Semaphore data structure has two variations:
 
  * The default implementation is session-aware. In this one, when a caller makes its very first `acquire()` call, it starts a new CP session with the underlying CP group. Then, liveliness of the caller is tracked via this CP session. When the caller fails, permits acquired by this caller are automatically and safely released. However, the session-aware version comes with a limitation, that is, a Hazelcast client cannot release permits before acquiring them first. In other words, a client can release only the permits it has acquired earlier.
- * The second implementation is sessionless. This one does not perform auto-cleanup of acquired permits on failures. Acquired permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast server or a client fails while holding some permits, they will not be automatically released. You can use the sessionless CP Semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer to [Semaphore configuration](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#semaphore-configuration) documentation for more details.
+ * The second implementation is sessionless. This one does not perform auto-cleanup of acquired permits on failures. Acquired permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast server or a client fails while holding some permits, they will not be automatically released. You can use the sessionless CP Semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer to [Semaphore configuration](https://docs.hazelcast.com/imdg/latest/cp-subsystem/configuration.html#semaphore-configuration) documentation for more details.
 
 #### 8.4.11.4. Using CountDownLatch
 
@@ -1742,7 +1752,7 @@ The following are some considerations you need to know when you use AtomicRefere
 
 > **NOTE: `IFunction`-based methods, like `alter()` or `apply()` are not yet supported by Hazelcast Node.js client.**
 
-AtomicReference does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
+AtomicReference does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see `fail-on-indeterminate-operation-state` option in [CP Subsystem server-side configuration](https://docs.hazelcast.com/imdg/latest/cp-subsystem/configuration.html#cp-subsystem-configuration).
 
 ## 8.5. Distributed Events
 
@@ -2171,7 +2181,7 @@ Now you need to configure the `hazelcast.xml` to add your factory as shown below
 </hazelcast>
 ```
 
-In this example the code that runs on the entries is implemented in Java on the server side. The client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, see the [Entry Processor section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#entry-processor) in the Hazelcast IMDG Reference Manual.
+In this example the code that runs on the entries is implemented in Java on the server side. The client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, see the [Entry Processor section](https://docs.hazelcast.com/imdg/latest/computing/entry-processor.html) in the Hazelcast IMDG Reference Manual.
 
 After the above implementations and configuration are done and you start the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `IMap` functions. See the following example.
 
@@ -2190,12 +2200,42 @@ console.log(value);
 
 ## 8.7. SQL
 
-The SQL service provided by Hazelcast Node.js client allows you to query data stored in `IMap` declaratively.
+The SQL service provided by Hazelcast Node.js client allows you to run SQL queries.
 
-> **WARNING: The SQL feature is currently in beta. The compatibility between versions is not guaranteed. API might change between versions without notice. While in beta, SQL feature is tested against the same version of the IMDG, e.g 4.2.x
-> client is tested against 4.2.x IMDG server.**
+> **WARNING: The SQL feature have become stable in 5.0. In order a client and a server to be fully compatible with each other, their major
+> versions must be the same.**
 
-### Example: How to Query an IMap using SQL
+> **WARNING: A [Unisocket Client](#822-unisocket-client) must connect to a member that is not
+> [lite](https://docs.hazelcast.com/hazelcast/latest/management/cluster-utilities.html#enabling-lite-members) (non-lite members are called data members),
+> otherwise Data Manipulation Language(DML) statements below won't work for that client.**
+
+### 8.7.1 SQL Statements
+
+#### Data Manipulation Language(DML) Statements
+
+- [SELECT:](https://docs.hazelcast.com/hazelcast/latest/sql/select.html) Read data from a table.
+- [SINK INTO/INSERT INTO:](https://docs.hazelcast.com/hazelcast/latest/sql/sink-into.html) Ingest data into a map and/or forward data to other systems.
+- [UPDATE:](https://docs.hazelcast.com/hazelcast/latest/sql/update.html) Overwrite values in map entries.
+- [DELETE:](https://docs.hazelcast.com/hazelcast/latest/sql/delete.html) Delete map entries.
+
+####  Data Definition Language(DDL) Statements
+
+- [CREATE MAPPING:](https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping.html) Map a local or remote data object to a table that Hazelcast can access.
+- [SHOW MAPPINGS:](https://docs.hazelcast.com/hazelcast/latest/sql/show-mappings.html) Get the names of existing mappings.
+- [DROP MAPPING](https://docs.hazelcast.com/hazelcast/latest/sql/drop-mapping.html) Remove a mapping.
+
+#### Job Management Statements
+
+- [CREATE JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/create-job.html) Create a job that is not tied to the client session.
+- [ALTER JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/alter-job.html) Restart, suspend, or resume a job.
+- [SHOW JOBS:](https://docs.hazelcast.com/hazelcast/latest/sql/show-jobs.html) Get the names of all running jobs.
+- [DROP JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/drop-job.html) Cancel a job.
+- [CREATE OR REPLACE SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/latest/sql/create-snapshot.html) Create a snapshot of a running job, so you can stop and restart it at a later date.
+- [DROP SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/latest/sql/drop-snapshot.html) Cancel a running job.
+
+### 8.7.2. Querying IMap
+
+> **WARNING: SQL queries against heterogenous maps is not supported and it may not work as expected.**
 
 This SQL query returns map entries whose values are more than 1:
 
@@ -2205,14 +2245,12 @@ await map.put('key1', 1);
 await map.put('key2', 2);
 await map.put('key3', 3);
 
-const result = client.getSqlService().execute(`SELECT __key, this FROM my-distributed-map WHERE this > 1`);
+const result = client.getSql().execute(`SELECT __key, this FROM my-distributed-map WHERE this > 1`);
 
 for await (const row of result) {
     console.log(row); // {__key: 'key3', this: 3} and {__key: 'key2', this: 2}
 }
 ```
-
-### 8.7.1. Querying IMap
 
 The following subsections describe how you can access Hazelcast map objects and perform queries on them.
 
@@ -2231,8 +2269,7 @@ SELECT * FROM partitioned.employee
 #### Fields
 
 The SQL service resolves fields accessible from the SQL automatically. The service reads the first local entry pair of
-the `IMap` to construct the list of fields. If the `IMap` does not have local entries on the member where the query is
-started, then the list of fields cannot be resolved, and an exception is thrown.
+the `IMap` to construct the list of fields.
 
 Field names are case-sensitive.
 
@@ -2250,7 +2287,6 @@ SELECT __key, this FROM employee
 You may also access the nested fields of a key or value. The list of exposed fields depends on the serialization format, as described below:
 
 * For [IdentifiedDataSerializable](#41-identifieddataserializable-serialization) objects, you can use public field name or getter names.
-  See [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/querying-imap.html#key-and-value-fields) for more information.
 * For [Portable](#42-portable-serialization) objects, the fields written with `PortableWriter` methods are exposed using their exact names.
 
 > **NOTE: You cannot query JSON fields in SQL. If you want to query JSON, see [Querying with JSON Strings](#8814-querying-with-json-strings).**
@@ -2293,7 +2329,7 @@ SELECT __key, this, name, age FROM employee
 
 If both the key and value have fields with the same name, then the field of the value is exposed.
 
-##### "SELECT *" Queries
+#### "SELECT *" Queries
 
 You may use the `SELECT * FROM <table>` syntax to get all the table fields.
 
@@ -2305,57 +2341,34 @@ the following query does not return the `this` field, because the value has nest
 SELECT * FROM employee
 ```
 
-### 8.7.2. Data Types
+### 8.7.3. Data Types
 
-The SQL service supports a set of SQL data types. The
-table below shows SQL datatype, and corresponding Javascript types:
+The SQL service supports a set of SQL data types. The table below shows SQL data types and corresponding JavaScript types:
 
-| Column Type                  | Javascript          |
-|------------------------------|---------------------|
-| **VARCHAR**                  | `string`            |
-| **BOOLEAN**                  | `boolean`           |
-| **TINYINT**                  | `number`            |
-| **SMALLINT**                 | `number`            |
-| **INTEGER**                  | `number`            |
-| **BIGINT**                   | `long`              |
-| **DECIMAL**                  | `string`            |
-| **REAL**                     | `number`            |
-| **DOUBLE**                   | `number`            |
-| **DATE**                     | `string`            |
-| **TIME**                     | `string`            |
-| **TIMESTAMP**                | `string`            |
-| **TIMESTAMP_WITH_TIME_ZONE** | `string`            |
-| **OBJECT**                   | Any class           |
-| **NULL**                     | `null`              |
+| Column Type                  | Javascript           |
+|------------------------------|----------------------|
+| **VARCHAR**                  | `string`             |
+| **BOOLEAN**                  | `boolean`            |
+| **TINYINT**                  | `number`             |
+| **SMALLINT**                 | `number`             |
+| **INTEGER**                  | `number`             |
+| **BIGINT**                   | `long`               |
+| **DECIMAL**                  | `BigDecimal`         |
+| **REAL**                     | `number`             |
+| **DOUBLE**                   | `number`             |
+| **DATE**                     | `LocalDate`        |
+| **TIME**                     | `LocalTime`        |
+| **TIMESTAMP**                | `LocalDateTime`    |
+| **TIMESTAMP_WITH_TIME_ZONE** | `OffsetDateTime`   |
+| **OBJECT**                   | Any class            |
+| **NULL**                     | `null`               |
 
-#### Decimal String Format
+See [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for how you can use
+`BigDecimal`, `LocalDate`, `LocalTime`, `LocalDateTime` and `OffsetDateTime` classes.
 
-SQL `DECIMAL` type is sent and received as strings.
+### 8.7.4. Casting
 
-#### Date String Format
-
-SQL `DATE` type is sent and received as a string with the `yyyy-mm-dd` format.
-
-#### Time String Format
-
-SQL `TIME` type is sent and received as a string with the `HH:mm:ss.SSS` format where `SSS` represents nanoseconds and can
-be at most 9 digits long.
-
-#### Timestamp String Format
-
-SQL `TIMESTAMP` type is sent and received as a string with the `yyyy-mm-dd(T|t)HH:mm:ss.SSS` format which is the combination of
-`DATE` and `TIME` strings. There must be a `T` letter in between which can be in any case.
-
-#### Timestamp with Timezone String Format
-
-SQL `TIMESTAMP WITH TIMEZONE` type is sent and received as a string with the `yyyy-mm-dd(T|t)HH:mm:ss.SSS{timezoneString}` format which is the combination of
-`TIMESTAMP` and timezone strings. The timezone string is can be one of `Z`, `+hh:mm` or `-hh:mm` where `hh` represents hour-in-day, and `mm` represents minutes-in-hour.
-The timezone must be in the range `[-18:00, +18:00]`.
-
-### 8.7.3. Casting
-
-You may need to use casting when sending parameters for certain types. In general, you should try to send a parameter
-that has same data type with the related column.
+In general, you should try to send parameters having same data type with its related column. Otherwise, you need to cast parameters to suitable types.
 
 #### How to Cast
 
@@ -2367,96 +2380,46 @@ Example casting:
 SELECT * FROM someMap WHERE this = CAST(? AS INTEGER)
 ```
 
-#### Casting Between Types
-
-When comparing a column with a parameter, your parameter must be of a compatible type. Since Node.js client uses double
-as default number type, to compare with an integer based column you can use long objects or casting.
-
-The similar thing applies to other data types. You can cast string to every SQL type.
-
-##### Using Long
-
-In the example below, age column is of type `INTEGER`. Since long objects are sent as `BIGINT` and `BIGINT` is comparable with `INTEGER`, the query is valid without an explicit `CAST`.
-
-```javascript
-const result = client.getSqlService().execute(
-    'SELECT * FROM myMap WHERE age > ? AND age < ?',
-    [long.fromNumber(13), long.fromNumber(18)]
-);
-```
-
 #### An Example of Casting
 
-In the example below, age column is of type `INTEGER`. The default number type is `double` in Node.js client. We cast
-doubles as `BIGINT`, and `BIGINT` is comparable with `INTEGER` the query is valid. Note that we can also cast to other types that are
-comparable with `INTEGER`.
+Since Node.js client uses double as default number type, to compare with an integer based column you need to use casting.
+
+In the example below, age column is of type `INTEGER`. Since numbers are sent as `DOUBLE` by default and `DOUBLE` is not comparable with `INTEGER`, the query needs a `CAST`.
+Note that, the cast can fail if the sent number cannot be converted to an integer.
 
 ```javascript
-const result = client.getSqlService().execute(
-    'SELECT * FROM myMap WHERE age > CAST(? AS BIGINT) AND age < CAST(? AS BIGINT)',
+const result = client.getSql().execute('SELECT * FROM myMap WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)',
     [13, 18]
 );
 ```
 
 ##### Important Notes About Comparison and Casting
 
-* Note that default number type in Node.js client is double. This means you need to cast when you are dealing with
-integer based columns. (`TINYINT`, `SMALLINT`, `INTEGER`, `BIGINT`)
-
-* In case of comparison operators (=, <, <>, ...), if one side is `?`, it's assumed to be exactly the other side's type,
-  except that `TINYINT`, `SMALLINT`, `INTEGER` are all converted to `BIGINT`.
+* In case of comparison operators (=, <, <>, ...), if one side is `?`, it's assumed to be exactly the other side's type.
 
 * String parameters can be cast to any type. The cast operation may fail though.
-
-* To send a `DECIMAL` type, use a string with an explicit `CAST`.
-
-* To send date and time related types, use a string with an explicit `CAST`.
-
-* See [SQL data types code samples](code_samples/sql-data-types.js) for example usage of all data types.
-
-### 8.7.4. SELECT
-
-#### Synopsis
-
-```sql
-SELECT [ * | expression [ [ AS ] expression_alias ] [, ...] ]
-FROM table_name [ [ AS ] table_alias ]
-[WHERE condition]
-```
-
-#### Description
-
-The `SELECT` command retrieves rows from a table. A row is a sequence of expressions defined after the `SELECT` keyword. Expressions may have optional aliases.
-
-`table_name` refers to a single `IMap` data structure. A table may have an optional alias.
-
-An optional `WHERE` clause defines a condition, that is any expression that evaluates to a result of type boolean. Any row that doesn’t satisfy the condition is eliminated from the result.
-
-#### Sorting
-
-You can use the standard SQL clauses ORDER BY, LIMIT, and OFFSET to sort and limit the result set. In order to do so, you need server configuration. See [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/select-statement.html#sorting) for more.
-
-#### Unsupported Features
-
-The following features are **not supported** and are planned for future releases:
-
-* `GROUP BY`/`HAVING`
-* `JOIN`
-* set operators (`UNION`, `INTERSECT`, `MINUS`)
-* subqueries (`SELECT … FROM table WHERE x = (SELECT …)`)
 
 ### 8.7.5. Expressions
 
 Hazelcast SQL supports logical predicates, `IS` predicates, comparison operators, mathematical functions and operators, string functions, and special functions.
-Refer to [IMDG docs](https://docs.hazelcast.com/imdg/4.2/sql/expressions.html) for all possible operations.
+Refer to [Hazelcast](https://docs.hazelcast.com/hazelcast/latest/sql/expressions.html) for all possible operations.
 
-### 8.7.6. Lite Members
+### 8.7.6 Source and Sink Connectors
 
-You cannot start SQL queries on lite members. This limitation will be removed in future releases.
+SQL connectors are extensions that allow you to communicate with external systems such as databases, using SQL.
+These connectors are configured to read and write data in the most efficient way for their respective system.
+
+Available connectors:
+
+- Apache Kafka: Read from and write to Kafka topics.
+- File: Read from a local or remote file.
+- IMap: Read from and write to an IMap.
+
+To learn how you can use them, refer to [SQL Connectors section](https://docs.hazelcast.com/hazelcast/latest/sql/connectors.html) in Hazelcast docs.
 
 ### 8.7.7. More Information
 
-Please refer to [IMDG SQL docs](https://docs.hazelcast.com/imdg/4.2/sql/distributed-sql.html) for more information.
+Please refer to [Hazelcast SQL docs](https://docs.hazelcast.com/hazelcast/latest/sql/sql-statements.html) for more information.
 
 For basic usage of SQL, see [this](code_samples/sql-basic-usage.js) code sample.
 
@@ -2787,7 +2750,11 @@ You can configure this using `metadata-policy` element for the map configuration
 
 #### 8.8.1.5. Filtering with Paging Predicates
 
+> **WARNING: Starting from version 4.2, [the SQL querying feature](#87-sql) is introduced.
+> The SQL querying feature is more efficient than paging predicates, and it is recommended to be used instead.**
+
 The Node.js client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
+You can find an example code [here.](code_samples/paging_predicate_sample)
 
 ```javascript
 const map = await client.getMap('students');
@@ -2829,6 +2796,7 @@ The `Aggregators` object provides a wide variety of built-in aggregators. The fu
 - `integerSum`
 - `longAvg`
 - `longSum`
+- `distinct`
 
 You can use these aggregators with the `IMap.aggregate()` and `IMap.aggregateWithPredicate()` functions.
 
@@ -2917,7 +2885,7 @@ await ordersMap.putAll([
 ]);
 ```
 
-For more details, see the [PartitionAware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
+For more details, see the [PartitionAware section](https://docs.hazelcast.com/imdg/latest/performance/data-affinity.html#partitionaware) in the Hazelcast IMDG Reference Manual.
 
 ### 8.9.2. Near Cache
 
@@ -3017,7 +2985,7 @@ The actual expiration is performed when a record is accessed: it is checked if t
 
 #### 8.9.2.5. Near Cache Invalidation
 
-Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original map (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
+Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original map (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.com/imdg/latest/performance/near-cache.html#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
 
 #### 8.9.2.6. Near Cache Eventual Consistency
 
@@ -3025,21 +2993,13 @@ Near Caches are invalidated by invalidation events. Invalidation events can be l
 
 To solve this problem, Hazelcast provides eventually consistent behavior for Map Near Caches by detecting invalidation losses. After detection of an invalidation loss, stale data will be made unreachable and Near Cache’s `get` calls to that data will be directed to underlying Map to fetch the fresh data.
 
-You can configure eventual consistency with entries of the `properties` config option as described below:
-
-- `hazelcast.invalidation.max.tolerated.miss.count`: Default value is `10`. If missed invalidation count is bigger than this value, relevant cached data will be made unreachable.
-
-- `hazelcast.invalidation.reconciliation.interval.seconds`: Default value is `60` seconds. This is a periodic task that scans cluster members periodically to compare generated invalidation events with the received ones from the client Near Cache.
+You can configure eventual consistency with `hazelcast.invalidation.max.tolerated.miss.count` and `hazelcast.invalidation.reconciliation.interval.seconds` [properties](#31-client-properties).
 
 ### 8.9.3. Automated Pipelining
 
 Hazelcast Node.js client performs automated pipelining of operations. It means that the library pushes all operations into an internal queue and tries to send them in batches. This reduces the count of executed `Socket.write()` calls and significantly improves throughtput for read operations.
 
-You can configure automated operation pipelining with entries of the `properties` config option as described below:
-
-- `hazelcast.client.autopipelining.enabled`: Default value is `true`. Turns automated pipelining feature on/off. If your application does only writes operations, like `IMap.set()`, you can try disabling automated pipelining to get a slightly better throughtput.
-
-- `hazelcast.client.autopipelining.threshold.bytes`: Default value is `65536` bytes (64 KB). This is the coalescing threshold for the internal queue used by automated pipelining. Once the total size of operation payloads taken from the queue reaches this value during batch preparation, these operations are written to the socket. Notice that automated pipelining will still send operations if their total size is smaller than the threshold and there are no more operations in the internal queue.
+You can configure automated operation pipelining with `hazelcast.client.autopipelining.enabled` and `hazelcast.client.autopipelining.threshold.bytes` [properties](#31-client-properties).
 
 ## 8.10. Monitoring and Logging
 
@@ -3047,11 +3007,8 @@ You can configure automated operation pipelining with entries of the `properties
 
 You can monitor your clients using Hazelcast Management Center.
 
-As a prerequisite, you need to enable the client statistics in the Node.js client. There are two entries supported by the `properties` config option which are related to client statistics:
-
-- `hazelcast.client.statistics.enabled`: If set to `true`, it enables collecting the client statistics and sending them to the cluster. When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center. Its default value is `false`.
-
-- `hazelcast.client.statistics.period.seconds`: Period in seconds the client statistics are collected and sent to the cluster. Its default value is `3`.
+As a prerequisite, you need to enable the client statistics in the Node.js client.
+You can configure client statistics with `hazelcast.client.statistics.enabled` and `hazelcast.client.statistics.period.seconds` [properties](#31-client-properties).
 
 You can enable client statistics and set a non-default period in seconds as follows:
 
@@ -3064,13 +3021,13 @@ const cfg = {
 };
 ```
 
-After enabling the client statistics, you can monitor your clients using Hazelcast Management Center. Please refer to the [Monitoring Clients section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#monitoring-clients) in the Hazelcast Management Center Reference Manual for more information on the client statistics.
+After enabling the client statistics, you can monitor your clients using Hazelcast Management Center. Please refer to the [Monitoring Clients section](https://docs.hazelcast.com/management-center/latest/monitor-imdg/monitor-clients.html) in the Hazelcast Management Center Reference Manual for more information on the client statistics.
 
 > **NOTE: Statistics sent by Hazelcast Node.js client 4.0 are compatible with Management Center 4.0. Management Center 4.2020.08 and newer versions will be supported in version 4.1 of the client.**
 
 ### 8.10.2. Logging Configuration
 
- By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `hazelcast.logging.level` entry of the `properties` config option.
+By default, Hazelcast Node.js client uses a default logger which logs to the `stdout` with the `INFO` log level. You can change the log level using the `hazelcast.logging.level` [property](#31-client-properties).
 
 Below is an example of the logging configuration with the `OFF` log level which disables logging.
 
@@ -3082,7 +3039,7 @@ const cfg = {
 };
 ```
 
- You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn`, `info`, `debug`, `trace` methods. After implementing it, you can use your custom logger using the `customLogger` config option.
+You can also implement a custom logger depending on your needs. Your custom logger must have `log`, `error`, `warn`, `info`, `debug`, `trace` methods. After implementing it, you can use your custom logger using the `customLogger` config option.
 
 See the following for a custom logger example.
 
@@ -3132,7 +3089,7 @@ const cfg = {
 Through the client labels, you can assign special roles for your clients and use these roles to perform some actions
 specific to those client connections.
 
-You can also group your clients using the client labels. These client groups can be blacklisted in Hazelcast Management Center so that they can be prevented from connecting to a cluster. See the [related section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#changing-cluster-client-filtering) in the Hazelcast Management Center Reference Manual for more information on this topic.
+You can also group your clients using the client labels. These client groups can be blacklisted in Hazelcast Management Center so that they can be prevented from connecting to a cluster. See the [related section](https://docs.hazelcast.com/management-center/latest/monitor-imdg/monitor-clients.html#changing-cluster-client-filtering) in the Hazelcast Management Center Reference Manual for more information on this topic.
 
 You can define the client labels using the `clientLabels` config option. See the below example.
 
@@ -3193,7 +3150,7 @@ You should set `keyStore` and `trustStore` before starting the members. See the 
 
 ### 9.1.1. TLS/SSL for Hazelcast Members
 
-Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see the [TLS/SSL for Hazelcast Members section](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#tls-ssl-for-hazelcast-members).
+Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see the [TLS/SSL for Hazelcast Members section](https://docs.hazelcast.com/imdg/latest/security/tls-ssl.html#tlsssl-for-hazelcast-members).
 
 ### 9.1.2. TLS/SSL for Hazelcast Node.js Clients
 
@@ -3229,7 +3186,7 @@ To enable mutual authentication, firstly, you need to set the following property
 </network>
 ```
 
-You can see the details of setting mutual authentication on the server side in the [Mutual Authentication section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#mutual-authentication) of the Hazelcast IMDG Reference Manual.
+You can see the details of setting mutual authentication on the server side in the [Mutual Authentication section](https://docs.hazelcast.com/imdg/latest/security/tls-ssl.html#mutual-authentication) of the Hazelcast IMDG Reference Manual.
 
 At the Node.js client side, you need to supply an SSL `options` object to pass to [`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js.
 
@@ -3345,7 +3302,7 @@ See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform acc
 
 > **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section](#91-tlsssl).**
 
-Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#security) of Hazelcast IMDG Reference Manual for more information.
+Also, see the [Security section](https://docs.hazelcast.com/imdg/latest/security/security.html) of Hazelcast IMDG Reference Manual for more information.
 
 
 # 10. Development and Testing

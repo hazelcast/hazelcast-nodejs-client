@@ -25,13 +25,28 @@ const { deferredPromise } = require('../../../lib/util/Util');
 const TestUtil = require('../../TestUtil');
 
 describe('HeartbeatFromServerTest', function () {
-
     let cluster;
     let client;
 
     function simulateHeartbeatLost(client, address, timeout) {
         const connection = client.getConnectionManager().getConnectionForAddress(address);
-        connection.lastReadTimeMillis = connection.getLastReadTimeMillis() - timeout;
+        /*
+        Run more than once to avoid the following case:
+
+        As a result of ping requests, lastReadTime of a connection is continuously updated.
+        Let's say we called simulateHeartbeatLost and then
+        before the heartbeatFunction() has a chance to run some
+        data may be received on the socket, which updates the lastReadTime. Then, when heartbeatFunction
+        runs, it won't close the connection because lastReadTime is updated.
+         */
+        for (let i = 0; i < 5; i++) {
+            setTimeout(
+                () => {
+                    connection.lastReadTimeMillis = connection.getLastReadTimeMillis() - timeout;
+                },
+                100 * i
+            );
+        }
     }
 
     async function warmUpConnectionToAddressWithRetry(client, address, retryCount) {
@@ -90,8 +105,6 @@ describe('HeartbeatFromServerTest', function () {
             member2 = m2;
             return memberAddedPromise.promise;
         }).then(() => {
-            simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000);
-        }).then(() => {
             client.getConnectionManager().once('connectionRemoved', (connection) => {
                 const remoteAddress = connection.getRemoteAddress();
                 if (remoteAddress.host === member2.host && remoteAddress.port === member2.port) {
@@ -106,6 +119,7 @@ describe('HeartbeatFromServerTest', function () {
                         + member2.host + ':' + member2.port));
                 }
             });
+            simulateHeartbeatLost(client, new AddressImpl(member2.host, member2.port), 2000);
         }).catch(done);
     });
 

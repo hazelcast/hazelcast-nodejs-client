@@ -22,7 +22,6 @@ const { ItemEventType } = require('../../../../lib/proxy/ItemListener');
 const { deferredPromise } = require('../../../../lib/util/Util');
 
 describe('ListProxyTest', function () {
-
     let cluster;
     let client;
     let list;

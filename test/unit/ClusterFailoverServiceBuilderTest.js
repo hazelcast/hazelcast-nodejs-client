@@ -30,7 +30,6 @@ const { HazelcastCloudAddressProvider } = require('../../lib/discovery/Hazelcast
 const { IllegalStateError } = require('../../');
 
 describe('ClusterFailoverServiceBuilderTest', function () {
-
     let lifecycleServiceStub;
     let loggingServiceStub;
 

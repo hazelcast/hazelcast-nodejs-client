@@ -21,6 +21,8 @@ chai.should();
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { Client } = require('../../../../');
+const fs = require('fs');
+const path = require('path');
 
 describe('SqlRowTest', function () {
     let client;
@@ -29,9 +31,14 @@ describe('SqlRowTest', function () {
     let mapName;
     let result;
 
+    const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
+
     before(async function () {
+        const serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
+        const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
+
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await RC.createCluster(null, null);
+        cluster = await RC.createCluster(null, CLUSTER_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id
@@ -45,8 +52,10 @@ describe('SqlRowTest', function () {
         await someMap.put(0, '1');
         await someMap.put(1, '2');
         await someMap.put(2, '3');
+        await TestUtil.createMapping(true, client, 'double', 'varchar', mapName);
 
-        result = client.getSqlService().execute(`SELECT * FROM ${mapName} WHERE __key > ?`, [0], {
+        const sqlService = TestUtil.getSql(client);
+        result = sqlService.execute(`SELECT * FROM ${mapName} WHERE __key > ?`, [0], {
             returnRawResult: true
         });
     });
@@ -93,5 +102,4 @@ describe('SqlRowTest', function () {
             row.getMetadata().should.be.eq(rowMetadata);
         }
     });
-
 });

@@ -27,7 +27,6 @@ const { Client, IllegalStateError } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('ClientSSLAuthenticationTest', function () {
-
     let cluster;
 
     const maRequiredXML = __dirname + '/hazelcast-ma-required.xml';
@@ -103,7 +102,6 @@ describe('ClientSSLAuthenticationTest', function () {
         }
 
         describe(title, function () {
-
             afterEach(async function () {
                 await RC.terminateCluster(cluster.id);
             });

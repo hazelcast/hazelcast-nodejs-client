@@ -22,7 +22,6 @@ const { deferredPromise } = require('../../../lib/util/Util');
 const TestUtil = require('../../TestUtil');
 
 class ManagedObjects {
-
     constructor() {
         this.managedObjects = [];
     }
@@ -53,7 +52,6 @@ class ManagedObjects {
         });
         return deferred.promise;
     }
-
 }
 
 const dummyConfig = {
@@ -75,35 +73,38 @@ const configParams = [
 
 configParams.forEach((cfg) => {
     describe('HazelcastClientTest[smart=' + cfg.network.smartRouting + ']', function () {
-
         let cluster;
         let client;
         let managed;
 
-        before(async function () {
+        const filterInternalMaps = (distributedObjects) => {
+            return distributedObjects.filter(distObj => !distObj.getName().startsWith('__'));
+        };
+
+        beforeEach(async function () {
             cluster = await RC.createCluster(null, null);
             await RC.startMember(cluster.id);
             cfg.clusterName = cluster.id;
             client = await Client.newHazelcastClient(cfg);
-        });
-
-        beforeEach(function () {
             managed = new ManagedObjects();
         });
 
         afterEach(async function () {
             await managed.destroyAll();
-        });
-
-        after(async function () {
             await client.shutdown();
             await RC.terminateCluster(cluster.id);
         });
 
         it('getDistributedObject returns empty array when there is no distributed object', async function () {
-            const distributedObjects = await client.getDistributedObjects();
+            const distributedObjects = filterInternalMaps(await client.getDistributedObjects());
             expect(distributedObjects).to.be.an('array');
             expect(distributedObjects).to.be.empty;
+        });
+
+        it('more than one call to shutdown returns same promise', async function () {
+            const promise1 = client.shutdown();
+            const promise2 = client.shutdown();
+            expect(promise1).to.be.eq(promise2);
         });
 
         it('getLocalEndpoint returns correct info', function () {
@@ -120,7 +121,7 @@ configParams.forEach((cfg) => {
             managed.getObject(client.getMap.bind(client, 'map'));
             managed.getObject(client.getSet.bind(client, 'set'));
             return TestUtil.assertTrueEventually(async () => {
-                const distObjects = await client.getDistributedObjects();
+                const distObjects = filterInternalMaps(await client.getDistributedObjects());
                 const names = distObjects.map((o) => {
                     return o.getName();
                 });
@@ -135,7 +136,7 @@ configParams.forEach((cfg) => {
 
             return TestUtil.assertTrueEventually(async () => {
                 await managed.destroy('map1');
-                const distObjects = await client.getDistributedObjects();
+                const distObjects = filterInternalMaps(await client.getDistributedObjects());
                 const names = distObjects.map(o => {
                     return o.getName();
                 });

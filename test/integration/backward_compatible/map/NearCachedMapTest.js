@@ -22,10 +22,8 @@ const { Client } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('NearCachedMapTest', function () {
-
     [true, false].forEach((invalidateOnChange) => {
         describe('invalidate on change=' + invalidateOnChange, function () {
-
             let cluster;
             let client1;
             let client2;

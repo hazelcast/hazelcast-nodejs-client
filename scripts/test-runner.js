@@ -3,6 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const net = require('net');
 const {spawnSync, spawn} = require('child_process');
+const codeSampleChecker = require('./code-sample-checker');
 
 const {
     HAZELCAST_RC_VERSION,
@@ -13,9 +14,20 @@ const {
     downloadRC
 } = require('./download-rc.js');
 
+const DEV_CLUSTER_CONFIG = `
+    <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.hazelcast.com/schema/config
+        http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+        <cluster-name>dev</cluster-name>
+        <jet enabled="true"></jet>
+    </hazelcast>
+`;
 const ON_WINDOWS = os.platform() === 'win32';
 const HAZELCAST_ENTERPRISE_KEY = process.env.HAZELCAST_ENTERPRISE_KEY ? process.env.HAZELCAST_ENTERPRISE_KEY : '';
 const PATH_SEPARATOR = ON_WINDOWS ? ';' : ':';
+
+let cluster; // We create a cluster for checking code samples
 
 let testCommand;
 let testType;
@@ -24,6 +36,7 @@ let testProcess;
 let runTests = true;
 let CLASSPATH = `hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar${PATH_SEPARATOR}`
               + `hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
+              + `hazelcast-sql-${HAZELCAST_VERSION}.jar${PATH_SEPARATOR}`
               + 'test/javaclasses';
 
 if (HAZELCAST_ENTERPRISE_KEY) {
@@ -49,6 +62,11 @@ const isAddressReachable = (host, port, timeoutMs) => {
             resolve(true);
         });
     });
+};
+
+// Import lazily to defer side affect of the import (connection attempt to 9701)
+const getRC = () => {
+    return require('../test/integration/RC');
 };
 
 const startRC = async () => {
@@ -110,9 +128,22 @@ const startRC = async () => {
     throw `Could not reach to Hazelcast Remote Controller (127.0.0.1:9701) after trying ${retryCount} times.`;
 };
 
-const shutdownProcesses = () => {
-    console.log('Stopping remote controller and test processes...');
-    shutdownRC();
+const shutdown = async () => {
+    if (testProcess && testProcess.exitCode === null) {
+        stopTestProcess();
+    }
+
+    if (rcProcess && rcProcess.exitCode === null) {
+        await stopRC();
+    }
+
+    if (testProcess && testProcess.exitCode !== null) {
+        process.exit(testProcess.exitCode);
+    }
+};
+
+const stopTestProcess = () => {
+    console.log('Stopping test process');
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', testProcess.pid, '/f', '/t']); // simple sigkill not enough on windows
     } else {
@@ -122,7 +153,12 @@ const shutdownProcesses = () => {
     }
 };
 
-const shutdownRC = () => {
+const stopRC = async () => {
+    console.log('Stopping cluster and remote controller');
+    if (cluster) {
+        const RC = getRC();
+        await RC.terminateCluster(cluster.id);
+    }
     if (ON_WINDOWS) {
         spawnSync('taskkill', ['/pid', rcProcess.pid, '/f', '/t']);
     } else {
@@ -160,8 +196,11 @@ if (process.argv.length === 3 || process.argv.length === 4) {
     } else if (process.argv[2] === 'coverage') {
         testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha "test/**/*.js"';
         testType = 'coverage';
+    } else if (process.argv[2] === 'check-code-samples') {
+        runTests = false;
+        testType = 'check-code-samples';
     } else {
-        throw 'Operation type can be one of "unit", "integration", "all", "startrc"';
+        throw 'Operation type can be one of "unit", "integration", "all", "startrc", "check-code-samples"';
     }
 } else {
     throw 'Usage: node <script-file> <operation-type> [test regex].\n'
@@ -181,11 +220,11 @@ if (!fs.existsSync('./lib')) {
 // If running unit test, no need to start rc.
 if (testType === 'unit') {
     console.log(`Running unit tests... Test command: ${testCommand}`);
-    spawnSync(testCommand, [], {
+    const subprocess = spawnSync(testCommand, [], {
         stdio: ['ignore', 'inherit', 'inherit'],
         shell: true
     });
-    process.exit(0);
+    process.exit(subprocess.status);
 }
 
 // For other tests, download rc files if needed.
@@ -196,19 +235,33 @@ try {
     throw err;
 }
 
-process.on('SIGINT', shutdownProcesses);
-process.on('SIGTERM', shutdownProcesses);
-process.on('SIGHUP', shutdownProcesses);
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+process.on('SIGHUP', shutdown);
 
-startRC().then(() => {
+startRC().then(async () => {
     console.log('Hazelcast Remote Controller is started!');
     if (runTests) {
-        console.log(`Running tests... Test type: ${testType}, Test command: ${testCommand}`);
+        console.log(`Running ${testType}, Command: ${testCommand}`);
         testProcess = spawn(testCommand, [], {
             stdio: ['ignore', 'inherit', 'inherit'],
             shell: true
         });
-        testProcess.on('exit', shutdownRC);
+        testProcess.on('exit', shutdown);
+    } else if (testType === 'check-code-samples') {
+        const RC = getRC();
+        cluster = await RC.createClusterKeepClusterName(null, DEV_CLUSTER_CONFIG);
+        let exitCode = 0;
+        try {
+            await codeSampleChecker.main(cluster);
+        } catch (e) {
+            console.error(e);
+            exitCode = 1;
+        } finally {
+            await shutdown();
+            // testProcess is undefined `shutdown` won't exit the process, so we exit with non-zero error code
+            process.exit(exitCode);
+        }
     }
 }).catch(err => {
     console.log('Could not start Hazelcast Remote Controller due to an error:');

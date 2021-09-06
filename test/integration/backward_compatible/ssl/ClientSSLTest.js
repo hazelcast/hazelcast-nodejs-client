@@ -25,7 +25,6 @@ const { Client, IllegalStateError } = require('../../../../');
 const TestUtil = require('../../../TestUtil');
 
 describe('ClientSSLTest', function () {
-
     let cluster;
     let client;
     let serverConfig;

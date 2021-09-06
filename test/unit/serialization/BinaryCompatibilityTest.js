@@ -30,7 +30,6 @@ const { CustomStreamSerializable } = require('./CustomSerializable');
 const { expectAlmostEqual } = require('../../TestUtil');
 
 describe('BinaryCompatibilityTest', function () {
-
     const NULL_LENGTH = -1;
     const versions = [1];
     const objects = ReferenceObjects.testObjects;
@@ -131,8 +130,7 @@ describe('BinaryCompatibilityTest', function () {
         });
     });
 
-    for (const vn in objects) {
-        const varName = vn;
+    for (const varName in objects) {
         const object = objects[varName];
         if (Object.prototype.hasOwnProperty.call(objects, varName)) {
             versions.forEach((version) => {

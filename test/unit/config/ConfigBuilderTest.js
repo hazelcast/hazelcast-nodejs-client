@@ -34,7 +34,6 @@ const {
 const { ReconnectMode } = require('../../../lib/config/ConnectionStrategyConfig');
 
 describe('ConfigBuilderTest', function () {
-
     let fullConfig;
     const lifecycleListener = () => {};
     const membershipListener = {
@@ -243,7 +242,7 @@ describe('ConfigBuilderTest', function () {
     });
 });
 
-describe('ConfigBuilderRangeValidationTest', function () {
+describe('ConfigBuilderValidationTest', function () {
     describe('connectionRetryConfig', function () {
         it('should validate initial backoff', function () {
             const invalidValues = [-1, undefined, null, -0.1, [], {}];
@@ -267,6 +266,7 @@ describe('ConfigBuilderRangeValidationTest', function () {
                 }).build()).not.to.throw();
             }
         });
+
         it('should validate max backoff', function () {
             const invalidValues = [-1, undefined, null, -0.1, [], {}];
             const validValues = [0.1, 1, 12, 123123, 12.2131];
@@ -289,6 +289,7 @@ describe('ConfigBuilderRangeValidationTest', function () {
                 }).build()).not.to.throw();
             }
         });
+
         it('should validate multiplier', function () {
             const invalidValues = [-1, undefined, null, -0.1, [], {}, 0.99, 0.21];
             const validValues = [1, 12, 123123, 12.2131];
@@ -311,6 +312,7 @@ describe('ConfigBuilderRangeValidationTest', function () {
                 }).build()).not.to.throw();
             }
         });
+
         it('should validate cluster connect timeout', function () {
             const invalidValues = [-2, undefined, null, -0.1, [], {}, -13];
             const validValues = [-1, 0.1, 1, 12, 123123, 12.2131, 0];
@@ -333,6 +335,7 @@ describe('ConfigBuilderRangeValidationTest', function () {
                 }).build()).not.to.throw();
             }
         });
+
         it('should validate jitter', function () {
             const invalidValues = [-1, undefined, null, -0.1, [], {}, 1.01, 123];
             const validValues = [0.1, 0, 0.3, 0.99, 1];
@@ -355,5 +358,151 @@ describe('ConfigBuilderRangeValidationTest', function () {
                 }).build()).not.to.throw();
             }
         });
+    });
+
+    describe('properties', function () {
+        const propsAcceptingNumber = [
+            'hazelcast.client.heartbeat.interval',
+            'hazelcast.client.heartbeat.timeout',
+            'hazelcast.client.invocation.retry.pause.millis',
+            'hazelcast.client.invocation.timeout.millis',
+            'hazelcast.client.internal.clean.resources.millis',
+            'hazelcast.client.statistics.period.seconds',
+            'hazelcast.invalidation.reconciliation.interval.seconds',
+            'hazelcast.invalidation.max.tolerated.miss.count',
+            'hazelcast.invalidation.min.reconciliation.interval.seconds',
+            'hazelcast.client.autopipelining.threshold.bytes',
+            'hazelcast.client.operation.backup.timeout.millis',
+        ];
+
+        const propsAcceptingBoolean = [
+            'hazelcast.client.statistics.enabled',
+            'hazelcast.client.autopipelining.enabled',
+            'hazelcast.client.socket.no.delay',
+            'hazelcast.client.shuffle.member.list',
+            'hazelcast.client.operation.fail.on.indeterminate.state',
+        ];
+
+        const params = [
+            ...propsAcceptingNumber.map(p => {
+                return {
+                    property: p,
+                    validValues: [1, 2, 22.2, 122323123, Number.MAX_SAFE_INTEGER],
+                    invalidValues: [null, undefined, '1', '2', [], {}]
+                };
+            }),
+            ...propsAcceptingBoolean.map(p => {
+                return {
+                    property: p,
+                    validValues: [true, false],
+                    invalidValues: [1, 1.11, null, undefined, '1', '2', [], {}]
+                };
+            }),
+            {
+                property: 'hazelcast.client.cloud.url',
+                validValues: ['1', 'https://example.org'],
+                invalidValues: [1, 1.11, null, undefined, [], {}, true]
+            },
+            {
+                property: 'hazelcast.logging.level',
+                validValues: ['OFF', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'],
+                invalidValues: [1, 1.11, null, undefined, [], {}, true, 'someOtherString']
+            },
+            {
+                property: 'hazelcast.discovery.public.ip.enabled',
+                validValues: [true, false, null],
+                invalidValues: [1, 1.11, 'OFF', undefined, '1', '2', [], {}]
+            }
+        ];
+
+        for (const param of params) {
+            it(`should validate "${param.property}"`, function () {
+                for (const invalidValue of param.invalidValues) {
+                    expect(() => new ConfigBuilder({
+                        properties: {
+                            [param.property]: invalidValue
+                        }
+                    }).build()).to.throw(InvalidConfigurationError);
+                }
+
+                for (const validValue of param.validValues) {
+                    expect(() => new ConfigBuilder({
+                        properties: {
+                            [param.property]: validValue
+                        }
+                    }).build()).not.to.throw;
+                }
+            });
+        }
+    });
+
+    it('should throw InvalidConfigurationError when invalid top level config key is passed', function () {
+        expect(() => new ConfigBuilder({
+            a: 1
+        }).build()).to.throw(InvalidConfigurationError);
+    });
+
+    it('should throw InvalidConfigurationError when invalid network config key is passed', function () {
+        expect(() => new ConfigBuilder({
+            network: {
+                a: 1
+            }
+        }).build()).to.throw(InvalidConfigurationError);
+    });
+
+    it('should throw InvalidConfigurationError when invalid connectionStrategy config key is passed', function () {
+        expect(() => new ConfigBuilder({
+            connectionStrategy: {
+                a: 1
+            }
+        }).build()).to.throw(InvalidConfigurationError);
+    });
+
+    it('should throw InvalidConfigurationError when invalid loadBalancer config key is passed', function () {
+        expect(() => new ConfigBuilder({
+            loadBalancer: {
+                a: 1
+            }
+        }).build()).to.throw(InvalidConfigurationError);
+    });
+
+    it('should throw InvalidConfigurationError when invalid serialization config key is passed', function () {
+        expect(() => new ConfigBuilder({
+            serialization: {
+                a: 1
+            }
+        }).build()).to.throw(InvalidConfigurationError);
+    });
+
+    it('should throw InvalidConfigurationError when invalid distributed objects config key is passed', function () {
+        expect(() => new ConfigBuilder({
+            nearCaches: [
+                {
+                    nearCache1: {
+                        a: 1
+                    }
+                }
+            ]
+        }).build()).to.throw(InvalidConfigurationError);
+
+        expect(() => new ConfigBuilder({
+            reliableTopics: [
+                {
+                    reliableTopic1: {
+                        a: 1
+                    }
+                }
+            ]
+        }).build()).to.throw(InvalidConfigurationError);
+
+        expect(() => new ConfigBuilder({
+            flakeIdGenerators: [
+                {
+                    flakeIdGenerator1: {
+                        a: 1
+                    }
+                }
+            ]
+        }).build()).to.throw(InvalidConfigurationError);
     });
 });

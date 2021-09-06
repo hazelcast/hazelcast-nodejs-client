@@ -20,7 +20,6 @@ const RC = require('../../RC');
 const { Client } = require('../../../../');
 
 describe('PNCounterBasicTest', function () {
-
     let cluster;
     let client;
     let pnCounter;

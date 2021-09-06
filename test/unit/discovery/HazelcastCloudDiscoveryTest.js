@@ -25,7 +25,6 @@ const { AddressImpl } = require('../../../lib/core/Address');
 const { HazelcastCloudDiscovery } = require('../../../lib/discovery/HazelcastCloudDiscovery');
 
 describe('HazelcastCloudDiscoveryTest', function () {
-
     let server;
 
     async function startUnresponsiveServer(port) {
