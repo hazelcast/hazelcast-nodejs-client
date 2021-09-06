@@ -58,7 +58,7 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
     }
 
     await(timeout: number): Promise<boolean> {
-        assertNumber(timeout, true);
+        assertNumber(timeout);
         timeout = Math.max(0, timeout);
         const invocationUid = UuidUtil.generate();
         return this.encodeInvokeOnRandomTarget(
@@ -114,7 +114,7 @@ export class CountDownLatchProxy extends BaseCPProxy implements ICountDownLatch 
     }
 
     trySetCount(count: number): Promise<boolean> {
-        assertPositiveNumber(count, undefined, true);
+        assertPositiveNumber(count);
         return this.encodeInvokeOnRandomTarget(
             CountDownLatchTrySetCountCodec,
             this.groupId,

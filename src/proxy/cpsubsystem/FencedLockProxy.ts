@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import { assert } from '../../util/Util';
+import { assert, assertNonNegativeNumber } from '../../util/Util';
 import * as Long from 'long';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {FencedLock} from '../FencedLock';
@@ -29,7 +29,6 @@ import {
     FencedLockGetLockOwnershipCodec,
     FencedLockGetLockOwnershipResponseParams
 } from '../../codec/FencedLockGetLockOwnershipCodec';
-import {assertNonNegativeNumber} from '../../util/Util';
 import {UuidUtil} from '../../util/UuidUtil';
 import {
     IllegalMonitorStateError,
@@ -97,7 +96,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
                 return this.requestLock(sessionId, Long.fromNumber(threadId), invocationUid);
             })
             .then((fence: Fence) => {
-                assert(isValidFence(fence), 'FencedLock somehow hit reentrant lock limit', true);
+                assert(isValidFence(fence), 'FencedLock somehow hit reentrant lock limit');
                 this.lockedSessionIds.set(threadId, sessionId);
                 fence[fenceThreadIdSymbol] = threadId;
                 return fence;
@@ -117,7 +116,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
     }
 
     tryLock(timeout = 0): Promise<Fence | undefined> {
-        assertNonNegativeNumber(timeout, undefined, true);
+        assertNonNegativeNumber(timeout);
 
         const threadId = this.nextThreadId();
         const invocationUid = UuidUtil.generate();

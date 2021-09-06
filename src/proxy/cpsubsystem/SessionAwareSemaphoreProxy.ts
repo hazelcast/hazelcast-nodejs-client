@@ -73,13 +73,13 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     init(permits: number): Promise<boolean> {
-        assertNonNegativeNumber(permits, undefined, true);
+        assertNonNegativeNumber(permits,);
         return this.encodeInvokeOnRandomTarget(SemaphoreInitCodec, this.groupId, this.objectName, permits)
             .then(SemaphoreInitCodec.decodeResponse);
     }
 
     acquire(permits = 1): Promise<void> {
-        assertPositiveNumber(permits, undefined, true);
+        assertPositiveNumber(permits);
 
         const invocationUid = UuidUtil.generate();
         return this.doAcquire(permits, invocationUid);
@@ -109,8 +109,8 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     tryAcquire(permits = 1, timeout = 0): Promise<boolean> {
-        assertPositiveNumber(permits, undefined, true);
-        assertNonNegativeNumber(timeout, undefined, true);
+        assertPositiveNumber(permits);
+        assertNonNegativeNumber(timeout,);
 
         const invocationUid = UuidUtil.generate();
         return this.doTryAcquire(permits, timeout, invocationUid);
@@ -150,7 +150,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     release(permits = 1): Promise<void> {
-        assertPositiveNumber(permits, undefined, true);
+        assertPositiveNumber(permits);
 
         const sessionId = this.getSessionId();
         if (NO_SESSION_ID.equals(sessionId)) {
@@ -205,7 +205,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     reducePermits(reduction: number): Promise<void> {
-        assertNonNegativeNumber(reduction, undefined, true);
+        assertNonNegativeNumber(reduction,);
         if (reduction === 0) {
             return Promise.resolve();
         }
@@ -213,7 +213,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     increasePermits(increase: number): Promise<void> {
-        assertNonNegativeNumber(increase, undefined, true);
+        assertNonNegativeNumber(increase,);
         if (increase === 0) {
             return Promise.resolve();
         }

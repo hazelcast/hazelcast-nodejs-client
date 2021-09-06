@@ -25,54 +25,91 @@ import {BuildInfo} from '../BuildInfo';
 // Used to assert only in development mode
 const IS_DEVELOPMENT_MODE = process.env.HZ_NODEJS_ENV === 'development';
 
+
 /**
- * Used to only turn on asserts in development mode
+ * Asserts conditionally depending on the environment
  * @internal
  */
-export function assert(value: any, message?: string | Error, alwaysAssert?: boolean): asserts value {
-    if (IS_DEVELOPMENT_MODE || alwaysAssert) {
-        _assert(value, message);
-    }
-}
+export const assert : (value: any, message?: string | Error) => void = _assert;
+
+/**
+ * Asserts conditionally depending on the environment
+ * @internal
+ */
+export const assertCond : (value: any, message?: string | Error) => void = IS_DEVELOPMENT_MODE ? _assert : () => {};
 
 /**
  * Asserts a value is not null.
  *
  * @param v value to assert.
- * @param alwaysAssert whether assertion should be run no matter we are in development mode or not.
  * @internal
  */
-export function assertNotNull(v: any, alwaysAssert?: boolean): void {
-    if (IS_DEVELOPMENT_MODE || alwaysAssert) {
-        _assert.notStrictEqual(v, null, 'Non null value expected.');
-    }
+export const assertNotNullCond = IS_DEVELOPMENT_MODE ? (v: any): void => {
+    exports.assertNotNull(v);
+} : () => {};
+
+/**
+ * Asserts a value is not null.
+ *
+ * @param v value to assert.
+ * @internal
+ */
+export function assertNotNull(v: any): void {
+    _assert.notStrictEqual(v, null, 'Non null value expected.');
 }
 
 /** @internal */
-export function assertArray(x: any, alwaysAssert?: boolean): void {
-    exports.assert(Array.isArray(x), 'Should be array.', alwaysAssert);
+export function assertArray(x: any): void {
+    _assert(Array.isArray(x), 'Should be array.');
 }
 
 /** @internal */
-export function assertString(v: any, alwaysAssert?: boolean): void {
-    exports.assert(typeof v === 'string', 'String value expected.', alwaysAssert);
+export function assertArrayCond(x: any): void {
+    exports.assertCond(Array.isArray(x), 'Should be array.');
 }
 
 /** @internal */
-export function assertNumber(v: any, alwaysAssert?: boolean): void {
-    exports.assert(typeof v === 'number', 'Number value expected.', alwaysAssert);
+export function assertString(v: any): void {
+    _assert(typeof v === 'string', 'String value expected.');
 }
 
 /** @internal */
-export function assertNonNegativeNumber(v: any, m?: string, alwaysAssert?: boolean): void {
-    exports.assert(typeof v === 'number', m || 'Number value expected.', alwaysAssert);
-    exports.assert(v >= 0, m || 'Non-negative value expected.', alwaysAssert);
+export function assertStringCond(v: any): void {
+    exports.assertCond(typeof v === 'string', 'String value expected.');
 }
 
 /** @internal */
-export function assertPositiveNumber(v: any, m?: string, alwaysAssert?: boolean): void {
-    exports.assert(typeof v === 'number', m || 'Number value expected.', alwaysAssert);
-    exports.assert(v > 0, m || 'Positive value expected.', alwaysAssert);
+export function assertNumber(v: any): void {
+    _assert(typeof v === 'number', 'Number value expected.');
+}
+
+/** @internal */
+export function assertNumberCond(v: any): void {
+    exports.assertCond(typeof v === 'number', 'Number value expected.');
+}
+
+/** @internal */
+export function assertNonNegativeNumber(v: any, m?: string): void {
+    _assert(typeof v === 'number', m || 'Number value expected.');
+    _assert(v >= 0, m || 'Non-negative value expected.');
+}
+
+/** @internal */
+export function assertNonNegativeNumberCond(v: any, m?: string): void {
+    exports.assertCond(typeof v === 'number', m || 'Number value expected.');
+    exports.assertCond(v >= 0, m || 'Non-negative value expected.');
+}
+
+/** @internal */
+export function assertPositiveNumber(v: any, m?: string): void {
+    _assert(typeof v === 'number', m || 'Number value expected.');
+    _assert(v > 0, m || 'Positive value expected.');
+}
+
+/** @internal */
+export function assertPositiveNumberCond(v: any, m?: string): void {
+    exports.assertCond(typeof v === 'number', m || 'Number value expected.');
+    exports.assertCond(v > 0, m || 'Positive value expected.');
 }
 
 /** @internal */
@@ -89,9 +126,7 @@ export function shuffleArray<T>(array: T[]): void {
 
 /** @internal */
 export function getType(obj: any): string {
-    if (IS_DEVELOPMENT_MODE) {
-        assertNotNull(obj);
-    }
+    assertNotNullCond(obj);
     if (Long.isLong(obj)) {
         return 'long';
     } else if (Buffer.isBuffer(obj)) {

@@ -20,6 +20,7 @@ import {ClientConfig, ClientConfigImpl} from '../config/Config';
 import {MemberSelector} from '../core/MemberSelector';
 import {
     assertNotNull,
+    assertNotNullCond,
     deferredPromise,
     timedPromise
 } from '../util/Util';
@@ -78,7 +79,7 @@ export class ClusterService implements Cluster {
      * @return The member that was found, or undefined if not found.
      */
     getMember(uuid: string): MemberImpl | undefined {
-        assertNotNull(uuid);
+        assertNotNullCond(uuid);
         return this.memberListSnapshot.members.get(uuid);
     }
 
@@ -107,7 +108,7 @@ export class ClusterService implements Cluster {
     }
 
     addMembershipListener(listener: MembershipListener): string {
-        assertNotNull(listener, true);
+        assertNotNull(listener);
 
         const registrationId = UuidUtil.generate().toString();
         this.listeners.set(registrationId, listener);
@@ -125,7 +126,7 @@ export class ClusterService implements Cluster {
     }
 
     removeMembershipListener(listenerId: string): boolean {
-        assertNotNull(listenerId, true);
+        assertNotNull(listenerId);
         return this.listeners.delete(listenerId);
     }
 

@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import { assert } from '../util/Util';
+import { assertCond } from '../util/Util';
 import * as Long from 'long';
 import {BitsUtil} from '../util/BitsUtil';
 import {Data, DataInput, DataOutput, PositionalDataOutput} from './Data';
@@ -561,8 +561,8 @@ export class ObjectDataInput implements DataInput {
     }
 
     private assertAvailable(numOfBytes: number, pos: number = this.pos): void {
-        assert(pos >= 0);
-        assert(pos + numOfBytes <= this.buffer.length);
+        assertCond(pos >= 0);
+        assertCond(pos + numOfBytes <= this.buffer.length);
     }
 
     private addOrUndefined(base: number, adder: number): number {

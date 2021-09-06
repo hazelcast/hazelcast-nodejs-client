@@ -58,8 +58,8 @@ type EntryEventHander = (key: Data, value: Data, oldValue: Data, mergingValue: D
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements ReplicatedMap<K, V> {
 
     put(key: K, value: V, ttl: Long | number = 0): Promise<V> {
-        assertNotNull(key, true);
-        assertNotNull(value, true);
+        assertNotNull(key);
+        assertNotNull(value);
 
         const valueData: Data = this.toData(value);
         const keyData: Data = this.toData(key);
@@ -75,7 +75,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     }
 
     get(key: K): Promise<V> {
-        assertNotNull(key, true);
+        assertNotNull(key);
 
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(ReplicatedMapGetCodec, keyData, keyData)
@@ -86,7 +86,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     }
 
     containsKey(key: K): Promise<boolean> {
-        assertNotNull(key, true);
+        assertNotNull(key);
 
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(ReplicatedMapContainsKeyCodec, keyData, keyData)
@@ -94,7 +94,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     }
 
     containsValue(value: V): Promise<boolean> {
-        assertNotNull(value, true);
+        assertNotNull(value);
 
         const valueData = this.toData(value);
         return this.encodeInvoke(ReplicatedMapContainsValueCodec, valueData)
@@ -112,7 +112,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     }
 
     remove(key: K): Promise<V> {
-        assertNotNull(key, true);
+        assertNotNull(key);
 
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(ReplicatedMapRemoveCodec, keyData, keyData)

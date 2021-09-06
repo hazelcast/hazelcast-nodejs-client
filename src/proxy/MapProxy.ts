@@ -99,7 +99,7 @@ type EntryEventHander = (key: Data, value: Data, oldValue: Data, mergingValue: D
 /** @internal */
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     aggregate<R>(aggregator: Aggregator<R>): Promise<R> {
-        assertNotNull(aggregator, true);
+        assertNotNull(aggregator);
         const aggregatorData = this.toData(aggregator);
         return this.encodeInvokeOnRandomTarget(MapAggregateCodec, aggregatorData)
             .then((clientMessage) => {
@@ -109,8 +109,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     aggregateWithPredicate<R>(aggregator: Aggregator<R>, predicate: Predicate): Promise<R> {
-        assertNotNull(aggregator, true);
-        assertNotNull(predicate, true);
+        assertNotNull(aggregator);
+        assertNotNull(predicate);
         this.checkNotPagingPredicate(predicate);
         const aggregatorData = this.toData(aggregator);
         const predicateData = this.toData(predicate);
@@ -122,8 +122,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable | Portable): Promise<any[]> {
-        assertNotNull(keys, true);
-        assertArray(keys, true);
+        assertNotNull(keys);
+        assertArray(keys);
         if (keys.length === 0) {
             return Promise.resolve([]);
         } else {
@@ -139,8 +139,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     executeOnKey(key: K, entryProcessor: IdentifiedDataSerializable | Portable): Promise<V> {
-        assertNotNull(key, true);
-        assertNotNull(entryProcessor, true);
+        assertNotNull(key);
+        assertNotNull(entryProcessor);
         const keyData = this.toData(key);
         const proData = this.toData(entryProcessor);
 
@@ -148,7 +148,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     executeOnEntries(entryProcessor: IdentifiedDataSerializable | Portable, predicate: Predicate = null): Promise<Array<[K, V]>> {
-        assertNotNull(entryProcessor, true);
+        assertNotNull(entryProcessor);
         const proData = this.toData(entryProcessor);
         const toObject = this.toObject.bind(this);
         if (predicate == null) {
@@ -169,7 +169,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     entrySetWithPredicate(predicate: Predicate): Promise<any[]> {
-        assertNotNull(predicate, true);
+        assertNotNull(predicate);
 
         const toObject = this.toObject.bind(this);
         if (predicate instanceof PagingPredicateImpl) {
@@ -193,7 +193,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     keySetWithPredicate(predicate: Predicate): Promise<K[]> {
-        assertNotNull(predicate, true);
+        assertNotNull(predicate);
 
         const toObject = this.toObject.bind(this);
         if (predicate instanceof PagingPredicateImpl) {
@@ -217,7 +217,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     valuesWithPredicate(predicate: Predicate): Promise<ReadOnlyLazyList<V>> {
-        assertNotNull(predicate, true);
+        assertNotNull(predicate);
         if (predicate instanceof PagingPredicateImpl) {
             predicate.setIterationType(IterationType.VALUE);
             const serializationService = this.serializationService;
@@ -244,21 +244,21 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     containsKey(key: K): Promise<boolean> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.containsKeyInternal(keyData);
     }
 
     containsValue(value: V): Promise<boolean> {
-        assertNotNull(value, true);
+        assertNotNull(value);
         const valueData = this.toData(value);
         return this.encodeInvokeOnRandomTarget(MapContainsValueCodec, valueData)
             .then(MapContainsValueCodec.decodeResponse);
     }
 
     put(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V> {
-        assertNotNull(key, true);
-        assertNotNull(value, true);
+        assertNotNull(key);
+        assertNotNull(value);
         const keyData: Data = this.toData(key);
         const valueData: Data = this.toData(value);
         return this.putInternal(keyData, valueData, ttl, maxIdle);
@@ -273,13 +273,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     get(key: K): Promise<V> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.getInternal(keyData);
     }
 
     remove(key: K, value: V = null): Promise<V | boolean> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.removeInternal(keyData, value);
     }
@@ -299,8 +299,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     getAll(keys: K[]): Promise<any[]> {
-        assertNotNull(keys, true);
-        assertArray(keys, true);
+        assertNotNull(keys);
+        assertArray(keys);
         const partitionService = this.partitionService;
         const partitionsToKeys: { [id: string]: Data[] } = {};
         let key: K;
@@ -318,7 +318,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     delete(key: K): Promise<void> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.deleteInternal(keyData);
     }
@@ -332,7 +332,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     evict(key: K): Promise<boolean> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.evictInternal(keyData);
     }
@@ -346,7 +346,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     lock(key: K, leaseTime = -1): Promise<void> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKeyWithTimeout(
             Number.MAX_SAFE_INTEGER, MapLockCodec, keyData, keyData, 0, leaseTime, 0
@@ -354,20 +354,20 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     isLocked(key: K): Promise<boolean> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MapIsLockedCodec, keyData, keyData)
             .then(MapIsLockedCodec.decodeResponse);
     }
 
     unlock(key: K): Promise<void> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MapUnlockCodec, keyData, keyData, 0, 0).then(() => {});
     }
 
     forceUnlock(key: K): Promise<void> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MapForceUnlockCodec, keyData, keyData, 0).then(() => {});
     }
@@ -393,33 +393,33 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     putIfAbsent(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V> {
-        assertNotNull(key, true);
-        assertNotNull(value, true);
+        assertNotNull(key);
+        assertNotNull(value);
         const keyData = this.toData(key);
         const valueData = this.toData(value);
         return this.putIfAbsentInternal(keyData, valueData, ttl, maxIdle);
     }
 
     putTransient(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void> {
-        assertNotNull(key, true);
-        assertNotNull(value, true);
+        assertNotNull(key);
+        assertNotNull(value);
         const keyData = this.toData(key);
         const valueData = this.toData(value);
         return this.putTransientInternal(keyData, valueData, ttl, maxIdle);
     }
 
     replace(key: K, newValue: V): Promise<V> {
-        assertNotNull(key, true);
-        assertNotNull(newValue, true);
+        assertNotNull(key);
+        assertNotNull(newValue);
         const keyData = this.toData(key);
         const newValueData = this.toData(newValue);
         return this.replaceInternal(keyData, newValueData);
     }
 
     replaceIfSame(key: K, oldValue: V, newValue: V): Promise<boolean> {
-        assertNotNull(key, true);
-        assertNotNull(oldValue, true);
-        assertNotNull(newValue, true);
+        assertNotNull(key);
+        assertNotNull(oldValue);
+        assertNotNull(newValue);
         const keyData = this.toData(key);
         const newValueData = this.toData(newValue);
         const oldValueData = this.toData(oldValue);
@@ -427,8 +427,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     set(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void> {
-        assertNotNull(key, true);
-        assertNotNull(value, true);
+        assertNotNull(key);
+        assertNotNull(value);
         const keyData = this.toData(key);
         const valueData = this.toData(value);
         return this.setInternal(keyData, valueData, ttl, maxIdle);
@@ -443,7 +443,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     getEntryView(key: K): Promise<SimpleEntryView<K, V>> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKey(MapGetEntryViewCodec, keyData, keyData, 0)
             .then((clientMessage) => {
@@ -461,13 +461,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     addIndex(indexConfig: IndexConfig): Promise<void> {
-        assertNotNull(indexConfig, true);
+        assertNotNull(indexConfig);
         const normalizedConfig = IndexUtil.validateAndNormalize(this.name, indexConfig);
         return this.encodeInvokeOnRandomTarget(MapAddIndexCodec, normalizedConfig).then(() => {});
     }
 
     tryLock(key: K, timeout = 0, leaseTime = -1): Promise<boolean> {
-        assertNotNull(key, true);
+        assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKeyWithTimeout(
             Number.MAX_SAFE_INTEGER, MapTryLockCodec, keyData, keyData, 0, leaseTime, timeout, 0
@@ -475,17 +475,17 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     tryPut(key: K, value: V, timeout: number): Promise<boolean> {
-        assertNotNull(key, true);
-        assertNotNull(value, true);
-        assertNotNull(timeout, true);
+        assertNotNull(key);
+        assertNotNull(value);
+        assertNotNull(timeout);
         const keyData = this.toData(key);
         const valueData = this.toData(value);
         return this.tryPutInternal(keyData, valueData, timeout);
     }
 
     tryRemove(key: K, timeout: number): Promise<boolean> {
-        assertNotNull(key, true);
-        assertNotNull(timeout, true);
+        assertNotNull(key);
+        assertNotNull(timeout);
         const keyData = this.toData(key);
         return this.tryRemoveInternal(keyData, timeout);
     }
@@ -499,8 +499,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     setTtl(key: K, ttl: number): Promise<boolean> {
-        assertNotNull(key, true);
-        assertNotNull(ttl, true);
+        assertNotNull(key);
+        assertNotNull(ttl);
         const keyData = this.toData(key);
         return this.setTtlInternal(keyData, ttl);
     }

@@ -39,7 +39,7 @@ import {
     Task,
     deferredPromise,
     DeferredPromise,
-    assert
+    assertCond
 } from '../util/Util';
 import {ClientConfig} from '../config';
 import {ListenerService} from '../listener/ListenerService';
@@ -172,7 +172,7 @@ export class Invocation {
     }
 
     notify(clientMessage: ClientMessage): void {
-        assert(clientMessage != null, 'Response can not be null');
+        assertCond(clientMessage != null, 'Response can not be null');
         const expectedBackups = clientMessage.getNumberOfBackupAcks();
         if (expectedBackups > this.backupsAcksReceived) {
             this.pendingResponseReceivedMillis = Date.now();
@@ -529,7 +529,7 @@ export class InvocationService {
     }
 
     private send(invocation: Invocation, connection: Connection): Promise<void> {
-        assert(connection != null);
+        assertCond(connection != null);
         if (this.isShutdown) {
             return Promise.reject(new ClientNotActiveError('Client is shutting down.'));
         }
