@@ -21,96 +21,105 @@ import * as Path from 'path';
 import {BigDecimal, IllegalStateError, LocalDate, LocalDateTime, LocalTime, MemberImpl, OffsetDateTime, UUID} from '../core';
 import {MemberVersion} from '../core/MemberVersion';
 import {BuildInfo} from '../BuildInfo';
+import {AssertionError} from 'assert';
 
 // Used to assert only in development mode
 const IS_DEVELOPMENT_MODE = process.env.HZ_NODEJS_ENV === 'development';
 
-
-/**
- * Asserts conditionally depending on the environment
- * @internal
- */
+/** @internal */
 export const assert : (value: any, message?: string | Error) => void = _assert;
 
-/**
- * Asserts conditionally depending on the environment
- * @internal
- */
+/** @internal */
 export const assertCond : (value: any, message?: string | Error) => void = IS_DEVELOPMENT_MODE ? _assert : () => {};
 
-/**
- * Asserts a value is not null.
- *
- * @param v value to assert.
- * @internal
- */
-export const assertNotNullCond = IS_DEVELOPMENT_MODE ? (v: any): void => {
-    exports.assertNotNull(v);
-} : () => {};
+/** @internal */
+export const assertNotNullCond : (v: any) => void = IS_DEVELOPMENT_MODE ? assertNotNull : () => {};
 
-/**
- * Asserts a value is not null.
- *
- * @param v value to assert.
- * @internal
- */
+/** @internal */
 export function assertNotNull(v: any): void {
-    _assert.notStrictEqual(v, null, 'Non null value expected.');
+    if (v === null) {
+        throw new AssertionError({
+            message: 'Non null value expected.',
+            expected: null,
+            actual: v
+        });
+    }
 }
 
 /** @internal */
 export function assertArray(x: any): void {
-    _assert(Array.isArray(x), 'Should be array.');
+    const isArray = Array.isArray(x);
+    if (!isArray) {
+        throw new AssertionError({
+            message: 'Should be array.',
+            actual: isArray,
+            expected: true
+        });
+    }
 }
 
 /** @internal */
-export function assertArrayCond(x: any): void {
-    exports.assertCond(Array.isArray(x), 'Should be array.');
-}
+export const assertArrayCond : (x: any) => void = IS_DEVELOPMENT_MODE ? assertArray : () => {};
 
 /** @internal */
 export function assertString(v: any): void {
-    _assert(typeof v === 'string', 'String value expected.');
+    const isString = typeof v === 'string';
+    if (!isString) {
+        throw new AssertionError({
+            message: 'String value expected.',
+            actual: isString,
+            expected: true
+        });
+    }
 }
 
 /** @internal */
-export function assertStringCond(v: any): void {
-    exports.assertCond(typeof v === 'string', 'String value expected.');
-}
+export const assertStringCond : (v: any) => void = IS_DEVELOPMENT_MODE ? assertString : () => {};
 
 /** @internal */
 export function assertNumber(v: any): void {
-    _assert(typeof v === 'number', 'Number value expected.');
+    const isNumber = typeof v === 'number';
+    if (!isNumber) {
+        throw new AssertionError({
+            message: 'Number value expected.',
+            actual: isNumber,
+            expected: true
+        });
+    }
 }
 
 /** @internal */
-export function assertNumberCond(v: any): void {
-    exports.assertCond(typeof v === 'number', 'Number value expected.');
-}
+export const assertNumberCond : (v: any) => void = IS_DEVELOPMENT_MODE ? assertNumber : () => {};
 
 /** @internal */
 export function assertNonNegativeNumber(v: any, m?: string): void {
-    _assert(typeof v === 'number', m || 'Number value expected.');
-    _assert(v >= 0, m || 'Non-negative value expected.');
+    const isNonNegativeNumber = typeof v === 'number' && v >= 0;
+    if (!isNonNegativeNumber) {
+        throw new AssertionError({
+            message: 'Non-negative number expected.',
+            actual: isNonNegativeNumber,
+            expected: true
+        });
+    }
 }
 
 /** @internal */
-export function assertNonNegativeNumberCond(v: any, m?: string): void {
-    exports.assertCond(typeof v === 'number', m || 'Number value expected.');
-    exports.assertCond(v >= 0, m || 'Non-negative value expected.');
-}
+export const assertNonNegativeNumberCond : (v: any) => void = IS_DEVELOPMENT_MODE ? assertNonNegativeNumber : () => {};
 
 /** @internal */
 export function assertPositiveNumber(v: any, m?: string): void {
-    _assert(typeof v === 'number', m || 'Number value expected.');
-    _assert(v > 0, m || 'Positive value expected.');
+    const isPositiveNumber = typeof v === 'number' && v > 0;
+    if (!isPositiveNumber) {
+        throw new AssertionError({
+            message: 'Positive number expected.',
+            actual: isPositiveNumber,
+            expected: true
+        });
+    }
 }
 
 /** @internal */
-export function assertPositiveNumberCond(v: any, m?: string): void {
-    exports.assertCond(typeof v === 'number', m || 'Number value expected.');
-    exports.assertCond(v > 0, m || 'Positive value expected.');
-}
+export const assertPositiveNumberCond : (v: any) => void = IS_DEVELOPMENT_MODE ? assertPositiveNumber : () => {};
 
 /** @internal */
 export function shuffleArray<T>(array: T[]): void {
