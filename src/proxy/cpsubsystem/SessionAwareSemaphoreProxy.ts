@@ -73,7 +73,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     init(permits: number): Promise<boolean> {
-        assertNonNegativeNumber(permits,);
+        assertNonNegativeNumber(permits);
         return this.encodeInvokeOnRandomTarget(SemaphoreInitCodec, this.groupId, this.objectName, permits)
             .then(SemaphoreInitCodec.decodeResponse);
     }
@@ -110,7 +110,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
 
     tryAcquire(permits = 1, timeout = 0): Promise<boolean> {
         assertPositiveNumber(permits);
-        assertNonNegativeNumber(timeout,);
+        assertNonNegativeNumber(timeout);
 
         const invocationUid = UuidUtil.generate();
         return this.doTryAcquire(permits, timeout, invocationUid);
@@ -205,7 +205,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     reducePermits(reduction: number): Promise<void> {
-        assertNonNegativeNumber(reduction,);
+        assertNonNegativeNumber(reduction);
         if (reduction === 0) {
             return Promise.resolve();
         }
@@ -213,7 +213,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     increasePermits(increase: number): Promise<void> {
-        assertNonNegativeNumber(increase,);
+        assertNonNegativeNumber(increase);
         if (increase === 0) {
             return Promise.resolve();
         }

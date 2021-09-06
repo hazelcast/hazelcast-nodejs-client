@@ -93,7 +93,7 @@ export class RepairingTask {
     }
 
     start(): void {
-        assert(this.reconcilliationInterval > 0, undefined);
+        assert(this.reconcilliationInterval > 0);
         this.antientropyTaskHandle = setInterval(this.antiEntropyTask.bind(this), this.reconcilliationInterval);
     }
 
