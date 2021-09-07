@@ -11,7 +11,8 @@ There are multiple ways to contribute:
 Note that you don't need to be a developer to help us.
 Contributions that improve the documentation are always appreciated.
 
-If you feel yourself in need of assistance, please reach us directly via [Slack](https://slack.hazelcast.com/). We have a separate [channel](https://hazelcastcommunity.slack.com/archives/C01PP55A667) for the Node.js client.
+If you feel yourself in need of assistance, please reach us directly via [Slack](https://slack.hazelcast.com/).
+We have a separate [channel](https://hazelcastcommunity.slack.com/archives/C01PP55A667) for the Node.js client.
 
 ## Issue Reports
 
@@ -43,18 +44,19 @@ either fix typos or improve the documentation as a whole
 
 All PRs follow the same process:
 
-1.	Contributions are submitted, reviewed, and accepted using the PR system on GitHub.
-2.	For first time contributors, our bot will automatically ask you to sign the Hazelcast Contributor Agreement on the PR.
-3.	The latest changes are in the `master` branch.
-4.	Make sure to design clean commits that are easily readable.
+1. Contributions are submitted, reviewed, and accepted using the PR system on GitHub.
+2. For first time contributors, our bot will automatically ask you to sign the Hazelcast Contributor Agreement on the PR.
+3. The latest changes are in the `master` branch.
+4. Make sure to design clean commits that are easily readable.
 That includes descriptive commit messages.
-5.	Please keep your PRs as small as possible, _i.e._ if you plan to perform a huge change, do not submit a single and large PR for it.
-For an enhancement or larger feature, you can create a GitHub issue first to discuss.
-6.	Before you push, run these commands in your terminal to check if there are any errors:
+5. Please keep your PRs as small as possible, _i.e._ if you plan to perform a huge change,
+do not submit a single and large PR for it. For an enhancement or larger feature, you can create a GitHub issue first to discuss.
+6. Before you push, run these commands in your terminal to check if there are any errors:
     * `npm install`: Installs dependencies
     * `npm run compile`: Compiles TypeScript into JavaScript, checking for any errors along the way
     * `npm run lint`: Runs linting to find stylistic/structural errors in the code
     * `npm run validate-user-code`: Checks the validity of generated TypeScript type declaration files
     * `npm run test`: Runs unit and integration tests against the generated JavaScript code(the generated code is in `lib/` folder)
 Push your PR once it is free of errors.
-7.	If you submit a PR as the solution to a specific issue, please mention the issue number either in the PR description or commit message.
+7. If you submit a PR as the solution to a specific issue, please mention the issue number either in the PR description
+or commit message.
