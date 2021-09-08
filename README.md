@@ -6,9 +6,16 @@
 </p>
 
 <p align="center">
-    <a href="https://www.npmjs.com/package/hazelcast-client"><img src="https://img.shields.io/npm/v/hazelcast-client" alt="NPM version"></a>
-    <a href="https://slack.hazelcast.com"><img src="https://img.shields.io/badge/slack-chat-green.svg" alt="Chat on Slack"></a>
-    <a href="https://twitter.com/Hazelcast"><img src="https://img.shields.io/twitter/follow/Hazelcast.svg?style=flat-square&colorA=1da1f2&colorB=&label=Follow%20on%20Twitter" alt="Follow on Twitter"></a>
+    <a href="https://www.npmjs.com/package/hazelcast-client">
+        <img src="https://img.shields.io/npm/v/hazelcast-client" alt="NPM version">
+    </a>
+    <a href="https://slack.hazelcast.com">
+        <img src="https://img.shields.io/badge/slack-chat-green.svg" alt="Chat on Slack">
+    </a>
+    <a href="https://twitter.com/Hazelcast">
+        <!-- markdownlint-disable-next-line MD013 -->
+        <img src="https://img.shields.io/twitter/follow/Hazelcast.svg?style=flat-square&colorA=1da1f2&colorB=&label=Follow%20on%20Twitter" alt="Follow on Twitter">
+    </a>
 </p>
 
 ---
@@ -73,7 +80,9 @@ console.log(value); // Outputs 'value'
 await client.shutdown();
 ```
 
-> **NOTE: For the sake of brevity we are going to omit boilerplate parts in the above code snippet. Refer to the [Code Samples section](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) to see samples with the complete code.**
+> **NOTE: For the sake of brevity we are going to omit boilerplate parts in the above code snippet.
+> Refer to the [Code Samples section](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples)
+> to see samples with the complete code.**
 
 If you are using Hazelcast IMDG and the Node.js client on the same machine, the default configuration should work
 out-of-the-box. However, you may need to configure the client to connect to cluster nodes that are running on
@@ -139,7 +148,8 @@ We encourage any type of contribution in the form of issue reports or pull reque
 For issue reports, please share the following information with us to quickly resolve the problems.
 
 * Hazelcast IMDG and the client version that you use
-* General information about the environment and the architecture you use like Node.js version, cluster size, number of clients, Java version, JVM parameters, operating system etc.
+* General information about the environment and the architecture you use like Node.js version, cluster size,
+number of clients, Java version, JVM parameters, operating system etc.
 * Logs and stack traces, if any.
 * Detailed description of the steps to reproduce the issue.
 
@@ -154,7 +164,8 @@ feature, create a GitHub issue first to discuss.
 2. Run `npm install` to automatically download and install all the required modules.
 3. Do the work.
 4. Hazelcast Node.js client developed using TypeScript. Run `npm run compile` to compile TypeScript files to JavaScript.
-5. To have a consistent code style across the code base, Hazelcast Node.js client uses a style checker. Run `npm run lint` and fix the reported issues, if any.
+5. To have a consistent code style across the code base, Hazelcast Node.js client uses a style checker.
+Run `npm run lint` and fix the reported issues, if any.
 
 #### Testing
 
