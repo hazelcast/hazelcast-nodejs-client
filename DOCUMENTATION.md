@@ -602,7 +602,7 @@ const client = await Client.newHazelcastClient(cfg);
 
 In the following chapters you will learn the description of all options supported by Hazelcast Node.js client.
 
-# 3.1 Client Properties
+## 3.1 Client Properties
 
 The following is the list of all client properties in alphabetical order.
 
