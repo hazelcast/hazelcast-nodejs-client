@@ -138,6 +138,5 @@
                 "ecmaVersion": 11
             }
         }
-    ],
-    "ignorePatterns": ["ts.eslintrc.js"]
+    ]
 }
