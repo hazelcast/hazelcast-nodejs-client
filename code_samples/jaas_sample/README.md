@@ -25,7 +25,7 @@ within the `readerGroup` do.
 
 You should see an output similar to below for the `admin_client.js`.
 
-```
+```text
 Admin client connected
 Admin can create a map
 Admin can read from map: null
@@ -35,7 +35,7 @@ Value for the "anotherKey" is anotherValue
 
 And, for the `reader_client.js` you should see an output similar to below.
 
-```
+```text
 Reader client connected
 Reader can create a map
 Reader can read from map: null

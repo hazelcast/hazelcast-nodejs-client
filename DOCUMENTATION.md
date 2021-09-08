@@ -130,7 +130,7 @@ This document provides information about the Node.js client for [Hazelcast](http
 [Open Client Protocol](https://github.com/hazelcast/hazelcast-client-protocol) and works with Hazelcast IMDG 4.0 and
 higher versions.
 
-### Resources
+## Resources
 
 See the following for more information on Node.js and Hazelcast IMDG:
 
@@ -138,7 +138,7 @@ See the following for more information on Node.js and Hazelcast IMDG:
 * Hazelcast IMDG [Reference Manual](https://docs.hazelcast.com/imdg/latest/)
 * About [Node.js](https://nodejs.org/en/about/)
 
-### Release Notes
+## Release Notes
 
 See the [Releases](https://github.com/hazelcast/hazelcast-nodejs-client/releases) page of this repository.
 
@@ -194,7 +194,7 @@ Hazelcast IMDG logs in the terminal.
 
 You should see a log similar to the following, which means that your 1-member cluster is ready to be used:
 
-```
+```text
 INFO: [192.168.1.10]:5701 [dev] [4.0.1] [192.168.1.10]:5701 is STARTING
 May 22, 2020 2:59:11 PM com.hazelcast.internal.cluster.ClusterService
 INFO: [192.168.1.10]:5701 [dev] [4.0.1]
@@ -245,7 +245,7 @@ setting up the clusters.
 Hazelcast Node.js client is on [NPM](https://www.npmjs.com/package/hazelcast-client). Just add `hazelcast-client` as a dependency
 to your Node.js project, and you are good to go.
 
-```
+```sh
 npm install hazelcast-client --save
 ```
 
@@ -421,7 +421,7 @@ const { Client } = require('hazelcast-client');
 This should print logs about the cluster members and information about the client itself such as the client type, UUID and
 address.
 
-```
+```text
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTING
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTED
 [DefaultLogger] INFO at ConnectionManager: Trying to connect to localhost:5701
@@ -477,7 +477,7 @@ allPersonnel.forEach(function (person) {
 
 **Output**
 
-```
+```text
 Added IT personnel. Logging all known personnel
 Alice is in IT department
 Clark is in IT department
@@ -507,7 +507,7 @@ allPersonnel.forEach(function (person) {
 
 **Output**
 
-```
+```text
 Added Sales personnel. Logging all known personnel
 Denise is in Sales department
 Erwing is in Sales department
@@ -2155,7 +2155,7 @@ await client.shutdown();
 
 **Output:**
 
-```
+```text
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTING
 Lifecycle Event >>> STARTING
 [DefaultLogger] INFO at LifecycleService: HazelcastClient is STARTED
@@ -3798,21 +3798,21 @@ At this point you have all the runnable code (`.js`) and type declarations (`.d.
 link to this module so that your local applications can depend on your local copy of Hazelcast Node.js client. In order to create
 a link, run the below command:
 
-```
+```sh
 npm link
 ```
 
 This will create a global link to this module in your machine. Whenever you need to depend on this module from another
 local project, run the below command:
 
-```
+```sh
 npm link hazelcast-client
 ```
 
 If you are planning to contribute, please run the style checker, as shown below, and fix the reported issues before sending a
 pull request:
 
-```
+```sh
 npm run lint
 ```
 
@@ -3825,7 +3825,7 @@ In order to test Hazelcast Node.js client locally, you will need the following:
 
 Following command starts the tests:
 
-```
+```sh
 npm test
 ```
 
