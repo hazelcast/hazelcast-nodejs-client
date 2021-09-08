@@ -18,6 +18,8 @@
 const { expect } = require('chai');
 const { BuildInfo } = require('../lib/BuildInfo');
 const { Lang } = require('./integration/remote_controller/remote-controller_types');
+const { Client } = require('..');
+const RC = require('./integration/RC');
 
 exports.promiseLater = function (time, func) {
     if (func === undefined) {
@@ -39,7 +41,7 @@ exports.getRejectionReasonOrThrow = async function (asyncFn) {
     } catch (e) {
         return e;
     }
-    throw new Error('Expected the call the throw, but it didn\'t.');
+    throw new Error('Expected the call to throw, but it didn\'t.');
 };
 
 /**
@@ -51,7 +53,7 @@ exports.getThrownErrorOrThrow = function (fn) {
     } catch (e) {
         return e;
     }
-    throw new Error('Expected the call the throw, but it didn\'t.');
+    throw new Error('Expected the call to throw, but it didn\'t.');
 };
 
 exports.promiseWaitMilliseconds = function (milliseconds) {
@@ -349,4 +351,149 @@ exports.createMapping = async (serverVersionNewerThanFive, client, keyFormat, va
     const result = exports.getSql(client).execute(createMappingQuery);
     // Wait for execution to end.
     await result.getUpdateCount();
+};
+
+exports.TestFactory = class TestFactory {
+    constructor() {
+        this.defaultConfig = `
+            <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+                <network>
+                    <port>0</port>
+                </network>
+            </hazelcast>
+        `;
+        this.clusterIds = new Set();
+        this.clients = new Set();
+        TestFactory.prototype.defaultClusterTimeoutMillis = 20000;
+    }
+
+    // Creates a new hazelcast client for a serial test with given config and registers it to clients set
+    async newHazelcastClientForSerialTest(clientConfig) {
+        return await this._createClient(clientConfig);
+    }
+
+    // Creates a new hazelcast client for a parallel test with given config and registers it to clients set
+    async newHazelcastClientForParallelTest(clientConfig, memberOrMemberList) {
+        // Add cluster member config for parallel tests.
+        TestFactory.addClusterMembersToConfig(clientConfig, memberOrMemberList);
+        return await this._createClient(clientConfig);
+    }
+
+    async _createClient(clientConfig) {
+        // Override default infinite timeout to avoid tests from running forever.
+        TestFactory.assignClusterConnectTimeoutToConfig(clientConfig);
+        const client = await Client.newHazelcastClient(clientConfig);
+        this.clients.add(client);
+        return client;
+    }
+
+    static addClusterMembersToConfig(clientConfig, memberOrMemberList) {
+        if (memberOrMemberList === undefined) {
+            return;
+        }
+        const clusterMembers = Array.isArray(memberOrMemberList) ? memberOrMemberList.map(m => `127.0.0.1:${m.port}`)
+            : [`127.0.0.1:${memberOrMemberList.port}`];
+
+        if (clientConfig.network === undefined) {
+            clientConfig.network = {
+                clusterMembers: clusterMembers
+            };
+        } else if (clientConfig.network.clusterMembers === undefined) {
+            clientConfig.network.clusterMembers = clusterMembers;
+        }
+    }
+
+    static assignClusterConnectTimeoutToConfig(clientConfig) {
+        if (clientConfig.connectionStrategy === undefined) {
+            clientConfig.connectionStrategy = {
+                connectionRetry: {
+                    clusterConnectTimeoutMillis: TestFactory.prototype.defaultClusterTimeoutMillis
+                }
+            };
+        } else if (clientConfig.connectionStrategy.connectionRetry === undefined) {
+            clientConfig.connectionStrategy.connectionRetry = {
+                    clusterConnectTimeoutMillis: TestFactory.prototype.defaultClusterTimeoutMillis
+            };
+        } else if (clientConfig.connectionStrategy.connectionRetry.clusterConnectTimeoutMillis === undefined) {
+            clientConfig.connectionStrategy.connectionRetry.clusterConnectTimeoutMillis =
+                TestFactory.prototype.defaultClusterTimeoutMillis;
+        }
+    }
+
+    // Creates a new hazelcast failover client for parallel tests with given config and registers it to clients set
+    async newHazelcastFailoverClientForParallelTest(clientFailoverConfig, memberOrMemberList) {
+        if (Array.isArray(clientFailoverConfig.clientConfigs)) {
+            // Add cluster member config for parallel tests.
+            clientFailoverConfig.clientConfigs.forEach(clientConfig => {
+                TestFactory.addClusterMembersToConfig(clientConfig, memberOrMemberList);
+            });
+        }
+
+        return await this._createFailoverClient(clientFailoverConfig);
+    }
+
+    // Creates a new hazelcast failover client for serial tests with given config and registers it to clients set
+    async newHazelcastFailoverClientForSerialTest(clientFailoverConfig) {
+        return await this._createFailoverClient(clientFailoverConfig);
+    }
+
+    async _createFailoverClient(clientFailoverConfig) {
+        if (Array.isArray(clientFailoverConfig.clientConfigs)) {
+            // Override default infinite timeout to avoid tests from running forever.
+            clientFailoverConfig.clientConfigs.forEach(TestFactory.assignClusterConnectTimeoutToConfig);
+        }
+        const client = await Client.newHazelcastFailoverClient(clientFailoverConfig);
+        this.clients.add(client);
+        return client;
+    }
+
+    async _createCluster(hzVersion, clusterConfig) {
+        const cluster = await RC.createCluster(hzVersion, clusterConfig);
+        this.clusterIds.add(cluster.id);
+        return cluster;
+    }
+
+    // Creates a new hazelcast cluster for a serial test and registers it to clusters set
+    async createClusterForSerialTest(hzVersion = null, clusterConfig = null) {
+        return await this._createCluster(hzVersion, clusterConfig);
+    }
+
+    // Creates a new hazelcast cluster for a parallel test and registers it to clusters set
+    async createClusterForParallelTest(hzVersion = null, clusterConfig = this.defaultConfig) {
+        return await this._createCluster(hzVersion, clusterConfig);
+    }
+
+    // Creates a new hazelcast for serial test cluster keeping its name and registers it to clusters set
+    async createClusterKeepClusterNameForSerialTest(hzVersion = null, clusterConfig = null) {
+        return await this._createClusterKeepClusterName(hzVersion, clusterConfig);
+    }
+
+    // Creates a new hazelcast cluster for parallel test keeping its name and registers it to clusters set
+    async createClusterKeepClusterNameForParallelTest(hzVersion = null, clusterConfig = this.defaultConfig) {
+        return await this._createClusterKeepClusterName(hzVersion, clusterConfig);
+    }
+
+    // Creates a new hazelcast cluster keeping its name and registers it to clusters set
+    async _createClusterKeepClusterName(hzVersion, clusterConfig) {
+        const cluster = await RC.createClusterKeepClusterName(hzVersion, clusterConfig);
+        this.clusterIds.add(cluster.id);
+        return cluster;
+    }
+
+    // Shutdowns all clients and clusters
+    async cleanUp() {
+        for (const client of this.clients) {
+            await client.shutdown();
+        }
+
+        for (const clusterId of this.clusterIds) {
+            await RC.shutdownCluster(clusterId);
+        }
+
+        this.clients.clear();
+        this.clusterIds.clear();
+    }
 };
