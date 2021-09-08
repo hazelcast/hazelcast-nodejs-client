@@ -6,12 +6,12 @@ Then, put your Hazelcast IMDG Enterprise license key into the [hazelcast.xml](sr
 
 Compile the Java files with the following command:
 
-```
+```sh
 javac -cp /path/to/enterprise/hazelcast-enterprise.jar src/main/java/com/company/security/*.java src/main/java/com/company/Bootstrap.java
 ```
 
 Finally, run the `Bootstrap` with the following command:
 
-```
+```sh
 java -cp /path/to/enterprise/hazelcast-enterprise.jar:src/main/resources:src/main/java com.company.Bootstrap
 ```
