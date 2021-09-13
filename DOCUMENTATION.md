@@ -1421,6 +1421,23 @@ In the unisocket client mode, the client will only connect to one of the configu
 as a gateway to the other members. For any operation requested from the client, it will redirect the request to the relevant
 member and return the response back to the client connected to this member.
 
+FaaS(Function as a Service) is an example use case of a unisocket client. Let's say you deployed a function in which a Hazelcast
+Node.js Client starts each time the function runs. In this case, using a unisocket client will run faster than a smart client,
+because a unisocket client will connect to just one member, whereas a smart client will connect to all cluster members.
+
+An example configuration for unisocket client is given below.
+
+```js
+const client = await Client.newHazelcastClient({
+    clusterName: 'dev',
+    network: {
+        clusterMembers: ['127.0.0.1:5701', '127.0.0.1:5702'],
+        smartRouting: false
+    }
+});
+// Some operations
+```
+
 ## 8.3. Handling Failures
 
 There are two main failure cases you should be aware of. Below sections explain these, and the configuration options you can
