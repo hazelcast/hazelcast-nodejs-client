@@ -10,6 +10,5 @@
         "junit_report_name=Node.js Client Tests",
         "junit_report_path=report.xml",
         "junit_report_stack=1"
-    ],
-    "slow": 30000
+    ]
 }
