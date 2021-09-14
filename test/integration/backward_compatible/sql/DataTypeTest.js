@@ -482,7 +482,7 @@ describe('Data type test', function () {
             `
             var map = instance_0.getMap("${mapName}");
             for (var key = 1; key < 12; key++) {
-                map.set(new java.lang.Integer(key), java.time.LocalDate.of(key+50002,key+1,key));
+                map.set(new java.lang.Integer(key), java.time.LocalDate.of(key+5002,key+1,key));
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
@@ -492,12 +492,12 @@ describe('Data type test', function () {
             const LocalDate = TestUtil.getLocalDate();
             result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-                [new LocalDate(50001, 1, 1), new LocalDate(50005, 5, 5)]
+                [new LocalDate(5001, 1, 1), new LocalDate(5005, 5, 5)]
             );
         } else {
             result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST(? AS DATE) ORDER BY __key ASC`,
-                ['+50001-01-01', '+50005-05-05']
+                ['5001-01-01', '5005-05-05']
             );
         }
         const rowMetadata = await result.getRowMetadata();
@@ -511,7 +511,7 @@ describe('Data type test', function () {
 
         const expectedKeys = [1, 2, 3];
         const expectedBaseValues = {
-            year: 50003,
+            year: 5003,
             month: 2,
             date: 1
         };
