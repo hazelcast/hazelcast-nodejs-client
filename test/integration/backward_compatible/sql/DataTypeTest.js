@@ -497,7 +497,7 @@ describe('Data type test', function () {
         } else {
             result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST(? AS DATE) ORDER BY __key ASC`,
-                ['50001-01-01', '50005-05-05']
+                ['+50001-01-01', '+50005-05-05']
             );
         }
         const rowMetadata = await result.getRowMetadata();
