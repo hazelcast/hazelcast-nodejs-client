@@ -54,15 +54,14 @@ const varcharExample = async (client) => {
                 'valueFormat' = 'varchar'
             )
         `;
-    // executions are async, await on update count to wait for execution.
-    await client.getSql().execute(createMappingQuery).getUpdateCount();
+    await client.getSql().execute(createMappingQuery);
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, key.toString());
     }
 
     try {
-        const result = client.getSql().execute('SELECT * FROM varcharMap WHERE this = ? OR this = ?', ['7', '2']);
+        const result = await client.getSql().execute('SELECT * FROM varcharMap WHERE this = ? OR this = ?', ['7', '2']);
         const rowMetadata = await result.getRowMetadata();
         const columnIndex = rowMetadata.findColumn('this');
         const columnMetadata = rowMetadata.getColumn(columnIndex);
@@ -102,15 +101,14 @@ const integersExample = async (client) => {
                 'valueFormat' = 'bigint'
             )
         `;
-    // executions are async, await on update count to wait for execution.
-    await client.getSql().execute(createMappingQuery).getUpdateCount();
+    await client.getSql().execute(createMappingQuery);
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, long.fromNumber(key * 2));
     }
 
     try {
-        const result = client.getSql().execute(
+        const result = await client.getSql().execute(
             'SELECT * FROM bigintMap WHERE this > ? AND this < ?',
             [long.fromNumber(10), long.fromNumber(18)]
         );
@@ -134,7 +132,7 @@ const integersExample = async (client) => {
 
     try {
         // Casting example. Casting to other integer types is also possible.
-        const result = client.getSql().execute(
+        const result = await client.getSql().execute(
             'SELECT * FROM bigintMap WHERE this > CAST(? AS BIGINT) AND this < CAST(? AS BIGINT)',
             [10, 18]
         );
@@ -173,8 +171,7 @@ const objectExample = async (client, classId, factoryId) => {
                 'valuePortableClassId' = '${classId}'
             )
         `;
-    // executions are async, await on update count to wait for execution.
-    await client.getSql().execute(createMappingQuery).getUpdateCount();
+    await client.getSql().execute(createMappingQuery);
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, new Student(long.fromNumber(key), 1.1));
@@ -184,7 +181,7 @@ const objectExample = async (client, classId, factoryId) => {
         // Note: If you do not specify `this` and use *, by default, `age` and `height` columns will be fetched
         // instead of `this`.
         // This is true only for complex custom objects like portable and identified serializable.
-        const result = client.getSql().execute(
+        const result = await client.getSql().execute(
             'SELECT __key, this FROM studentMap WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)',
             [3, 8]
         );

@@ -35,8 +35,7 @@ const { Client, SqlColumnType, HazelcastSqlException } = require('hazelcast-clie
                 'valueFormat' = 'double'
             )
         `;
-        // executions are async, await on update count to wait for execution.
-        await client.getSql().execute(createMappingQuery).getUpdateCount();
+        await client.getSql().execute(createMappingQuery);
 
         await map.put('key1', 1);
         await map.put('key2', 2);
@@ -44,7 +43,7 @@ const { Client, SqlColumnType, HazelcastSqlException } = require('hazelcast-clie
 
         let result;
         try {
-            result = client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1]);
+            result = await client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1]);
             const rowMetadata = await result.getRowMetadata();
             const columns = await rowMetadata.getColumns();
 
@@ -70,7 +69,7 @@ const { Client, SqlColumnType, HazelcastSqlException } = require('hazelcast-clie
 
         try {
             // You can set returnRawResult to true to get rows as `SqlRow` objects
-            result = client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1], {
+            result = await client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1], {
                 returnRawResult: true
             });
 
