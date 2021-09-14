@@ -346,7 +346,7 @@ exports.createMapping = async (serverVersionNewerThanFive, client, keyFormat, va
             )
         `;
 
-    const result = exports.getSql(client).execute(createMappingQuery);
+    const result = await exports.getSql(client).execute(createMappingQuery);
     // Wait for execution to end.
     await result.getUpdateCount();
 };

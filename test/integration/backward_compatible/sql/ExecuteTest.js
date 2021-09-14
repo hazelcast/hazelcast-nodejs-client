@@ -536,13 +536,13 @@ describe('SqlExecuteTest', function () {
             someMap = await client.getMap(mapName);
 
             const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
-                const result = TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`);
+                const result = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`);
                 await result.getRowMetadata();
             });
             error1.should.be.instanceof(getHazelcastSqlException());
 
             const error2 = await TestUtil.getRejectionReasonOrThrow(async () => {
-                const result = TestUtil.getSql(client).executeStatement({
+                const result = await TestUtil.getSql(client).executeStatement({
                     sql: `SELECT * FROM ${mapName}`,
                     params: [],
                     options: {}
@@ -564,10 +564,8 @@ describe('SqlExecuteTest', function () {
 
             await RC.terminateMember(cluster.id, member.uuid);
 
-            const result1 = TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`);
-
             const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
-                await result1.next();
+                await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`);
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
@@ -593,14 +591,12 @@ describe('SqlExecuteTest', function () {
 
             await RC.terminateMember(cluster.id, member.uuid);
 
-            const result1 = TestUtil.getSql(client).executeStatement({
-                sql: `SELECT * FROM ${mapName}`,
-                params: [],
-                options: {}
-            });
-
             const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
-                await result1.next();
+                await TestUtil.getSql(client).executeStatement({
+                    sql: `SELECT * FROM ${mapName}`,
+                    params: [],
+                    options: {}
+                });
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
@@ -624,7 +620,7 @@ describe('SqlExecuteTest', function () {
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
 
-            const result1 = TestUtil.getSql(client).execute('asdasd');
+            const result1 = await TestUtil.getSql(client).execute('asdasd');
 
             const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
                 await result1.next();
@@ -633,7 +629,7 @@ describe('SqlExecuteTest', function () {
             error1.code.should.be.eq(getSqlErrorCode().PARSING);
             error1.originatingMemberId.toString().should.be.eq(member.uuid);
 
-            const result2 = TestUtil.getSql(client).executeStatement({
+            const result2 = await TestUtil.getSql(client).executeStatement({
                 sql: `--SELECT * FROM ${mapName}`,
                 params: [],
                 options: {}

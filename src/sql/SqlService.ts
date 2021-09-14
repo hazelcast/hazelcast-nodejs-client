@@ -128,7 +128,7 @@ import {SqlPage} from './SqlPage';
  */
 export interface SqlService {
     /**
-     * Executes SQL and returns an SqlResult.
+     * Executes SQL and returns an {@link SqlResult}.
      * Converts passed SQL string and parameter values into an {@link SqlStatement} object and invokes {@link executeStatement}.
      *
      * @param sql SQL string. SQL string placeholder character is question mark(`?`)
@@ -136,18 +136,16 @@ export interface SqlService {
      * @param options Options that are affecting how the query is executed
      * @throws {@link IllegalArgumentError} if arguments are not valid
      * @throws {@link HazelcastSqlException} in case of an execution error
-     * @returns {@link SqlResult}
      */
-    execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
+    execute(sql: string, params?: any[], options?: SqlStatementOptions): Promise<SqlResult>;
 
     /**
-     * Executes SQL and returns an SqlResult.
+     * Executes SQL and returns an {@link SqlResult}.
      * @param sql SQL statement object
      * @throws {@link IllegalArgumentError} if arguments are not valid
      * @throws {@link HazelcastSqlException} in case of an execution error
-     * @returns {@link SqlResult}
      */
-    executeStatement(sql: SqlStatement): SqlResult;
+    executeStatement(sql: SqlStatement): Promise<SqlResult>;
 }
 
 /** @internal */
@@ -284,7 +282,7 @@ export class SqlServiceImpl implements SqlService {
         );
     }
 
-    executeStatement(sqlStatement: SqlStatement): SqlResult {
+    executeStatement(sqlStatement: SqlStatement): Promise<SqlResult> {
         try {
             SqlServiceImpl.validateSqlStatement(sqlStatement);
         } catch (error) {
@@ -359,21 +357,20 @@ export class SqlServiceImpl implements SqlService {
                 this.connectionManager.getClientUuid()
             );
 
-            this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
+            return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
                 SqlServiceImpl.handleExecuteResponse(clientMessage, res);
+                return res;
             }).catch(err => {
-                res.onExecuteError(
-                    this.rethrow(err, connection)
-                );
+                const error = this.rethrow(err, connection);
+                res.onExecuteError(error);
+                throw error;
             });
-
-            return res;
         } catch (error) {
             throw this.rethrow(error, connection);
         }
     }
 
-    execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult {
+    execute(sql: string, params?: any[], options?: SqlStatementOptions): Promise<SqlResult> {
         const sqlStatement: SqlStatement = {
             sql: sql
         };
