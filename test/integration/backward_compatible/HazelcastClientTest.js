@@ -102,6 +102,7 @@ configParams.forEach((cfg) => {
         });
 
         it('more than one call to shutdown returns same promise', async function () {
+            TestUtil.markClientVersionAtLeast(this, '5.0');
             const promise1 = client.shutdown();
             const promise2 = client.shutdown();
             expect(promise1).to.be.eq(promise2);
