@@ -18,7 +18,7 @@
 const { expect } = require('chai');
 const RC = require('../RC');
 const { Client } = require('../../../');
-const { markClientVersionAtLeast, isClientVersionAtLeast, assertTrueEventually } = require('../../TestUtil');
+const { isClientVersionAtLeast, assertTrueEventually } = require('../../TestUtil');
 
 /**
  * Basic tests for reconnection to cluster scenarios.
