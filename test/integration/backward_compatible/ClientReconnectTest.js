@@ -33,8 +33,6 @@ describe('ClientReconnectTest', function () {
      * or getMap invocation started. In that case, the connection will be closed with TargetDisconnectedError.
      * Because these client messages are not retryable, the invocation will be rejected with an error, leading
      * to flaky tests. To avoid that, this function will wait for the connections count to be zero.
-     * @param client
-     * @return {Promise<void>}
      */
     const waitForDisconnection = async (client) => {
         let getConnectionsFn;
