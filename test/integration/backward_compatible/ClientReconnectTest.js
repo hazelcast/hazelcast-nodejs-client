@@ -27,6 +27,12 @@ describe('ClientReconnectTest', function () {
     let cluster;
     let client;
 
+    before(function () {
+        // Before https://github.com/hazelcast/hazelcast-nodejs-client/pull/704, these tests are flaky.
+        // https://github.com/hazelcast/hazelcast-nodejs-client/issues/658#issuecomment-868970776
+        markClientVersionAtLeast(this, '4.0.2');
+    });
+
     beforeEach(function () {
        client = undefined;
        cluster = undefined;
@@ -89,9 +95,6 @@ describe('ClientReconnectTest', function () {
     });
 
     it('create proxy while member is down, member comes back', async function () {
-        // Before https://github.com/hazelcast/hazelcast-nodejs-client/pull/704, this test is flaky.
-        // https://github.com/hazelcast/hazelcast-nodejs-client/issues/658#issuecomment-868970776
-        markClientVersionAtLeast(this, '4.0.2');
         cluster = await RC.createCluster(null, null);
         const member = await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
