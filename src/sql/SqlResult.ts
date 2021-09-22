@@ -98,38 +98,36 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
      * Returns row metadata of the result.
      * @returns SQL row metadata if rows exist in the result; otherwise null.
      */
-    getRowMetadata(): Promise<SqlRowMetadata | null>;
+    getRowMetadata(): SqlRowMetadata | null;
 
     /**
      * Return whether this result has rows to iterate. False if update count is returned, true if rows are returned.
      * @returns whether this result is a row set
      */
-    isRowSet(): Promise<boolean>;
+    isRowSet(): boolean;
 
     /**
      * Returns the number of rows updated by the statement or `-1` if this result is a row set.
      * @returns update count
      */
-    getUpdateCount(): Promise<Long>;
+    getUpdateCount(): Long;
 }
 
 /** @internal */
 export class SqlResultImpl implements SqlResult {
     /** Update count received as a result of SQL execution. See {@link SqlExpectedResultType} */
     private updateCount: Long;
+
     private currentPage: SqlPage | null;
+
     /* The number of rows in current page */
     private currentRowCount: number;
+
     /* Current row position in current page */
     private currentPosition: number;
+
     /* Set to true when the last page is received */
     private last: boolean;
-
-    /**
-     * Deferred promise that resolves to true when an execute response is received. If an error is occurred during execution,
-     * this promise is rejected with the error.
-     */
-    private readonly executeDeferred: DeferredPromise<boolean>;
 
     /**
      * Deferred promise that resolves to an SqlPage when current fetch request is completed.
@@ -146,11 +144,6 @@ export class SqlResultImpl implements SqlResult {
      * When true, there is no need to send the `cancel` request to the server.
      */
     private closed: boolean;
-
-    /**
-     * Whether a response is received or not from server. The response can be an error message or a success message.
-     */
-    private responseReceived: boolean;
 
     /**
      * Row metadata of the result. Initially null.
@@ -170,12 +163,8 @@ export class SqlResultImpl implements SqlResult {
     ) {
         this.closed = false;
         this.last = false;
-        this.responseReceived = false;
         this.rowMetadata = null;
         this.currentPage = null;
-        this.executeDeferred = deferredPromise<boolean>();
-        this.executeDeferred.promise.catch(() => {
-        });
     }
 
     /** This symbol is needed to be included to be an async iterable */
@@ -203,22 +192,16 @@ export class SqlResultImpl implements SqlResult {
             returnRawResult, clientUUID);
     }
 
-    getUpdateCount(): Promise<Long> {
-        return this.executeDeferred.promise.then(() => {
-            return this.updateCount;
-        });
+    getUpdateCount(): Long {
+        return this.updateCount;
     }
 
-    isRowSet(): Promise<boolean> {
-        return this.executeDeferred.promise.then(() => {
-            return this.rowMetadata !== null;
-        });
+    isRowSet(): boolean {
+        return this.rowMetadata !== null;
     }
 
-    getRowMetadata(): Promise<SqlRowMetadata | null> {
-        return this.executeDeferred.promise.then(() => {
-            return this.rowMetadata;
-        });
+    getRowMetadata(): SqlRowMetadata | null {
+        return this.rowMetadata;
     }
 
     close(): Promise<void> {
@@ -235,10 +218,6 @@ export class SqlResultImpl implements SqlResult {
 
         const error = new HazelcastSqlException(this.clientUUID, SqlErrorCode.CANCELLED_BY_USER,
             'Query was cancelled by user');
-        // Reject execution with user cancellation error if the cancellation is initiated before a response is received.
-        if (!this.responseReceived) {
-            this.onExecuteError(error);
-        }
         // Prevent ongoing/future fetch requests
         if (!this.fetchDeferred) {
             this.fetchDeferred = deferredPromise<SqlPage>();
@@ -280,10 +259,8 @@ export class SqlResultImpl implements SqlResult {
         if (this.closed) {
             return;
         }
-        this.responseReceived = true;
         this.updateCount = Long.fromInt(-1);
         this.rowMetadata = null;
-        this.executeDeferred.reject(error);
     }
 
     /**
@@ -330,8 +307,6 @@ export class SqlResultImpl implements SqlResult {
             this.updateCount = updateCount;
             this.closed = true;
         }
-        this.responseReceived = true;
-        this.executeDeferred.resolve(true);
     }
 
     /**
@@ -385,12 +360,10 @@ export class SqlResultImpl implements SqlResult {
      * @returns if there are rows to be iterated.
      */
     private hasNext(): Promise<boolean> {
-        return this.executeDeferred.promise.then(() => {
-            if (this.rowMetadata === null) {
-                return Promise.reject(new IllegalStateError('This result contains only update count'));
-            }
-            return this.checkHasNext();
-        });
+        if (this.rowMetadata === null) {
+            return Promise.reject(new IllegalStateError('This result contains only update count'));
+        }
+        return this.checkHasNext();
     }
 
     next(): Promise<IteratorResult<SqlRowType, SqlRowType | undefined>> {
