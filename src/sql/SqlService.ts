@@ -184,6 +184,7 @@ export class SqlServiceImpl implements SqlService {
                     response.error.originatingMemberId, response.error.code, response.error.message
                 )
             );
+            throw response.error;
         } else {
             res.onExecuteResponse(
                 response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
