@@ -462,7 +462,6 @@ describe('SqlServiceTest', function () {
             (() => SqlServiceImpl.handleExecuteResponse(fakeClientMessage, fakeResult)).should.throw(HazelcastSqlException);
 
             fake.calledOnceWithExactly(fakeClientMessage).should.be.true;
-            fakeResult.onExecuteError.calledWithMatch(fakeResponse.error).should.be.true;
             fakeResult.onExecuteResponse.called.should.be.false;
         });
 
