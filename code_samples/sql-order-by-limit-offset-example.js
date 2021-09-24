@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const { Client, HazelcastSqlException } = require('hazelcast-client');
+const { Client } = require('hazelcast-client');
 
 (async () => {
     try {
@@ -34,8 +34,7 @@ const { Client, HazelcastSqlException } = require('hazelcast-client');
                 'valueFormat' = 'double'
             )
         `;
-        // executions are async, await on update count to wait for execution.
-        await client.getSql().execute(createMappingQuery).getUpdateCount();
+        await client.getSql().execute(createMappingQuery);
 
         // populate map
         await map.put('key1', 1);
@@ -44,21 +43,11 @@ const { Client, HazelcastSqlException } = require('hazelcast-client');
         await map.put('key4', 4);
         await map.put('key5', 5);
 
-        try {
-            const result = client.getSql().execute('SELECT * FROM myMap');
+        const result = await client.getSql().execute('SELECT * FROM myMap');
 
-            console.log('Rows from unsorted query:');
-            for await (const row of result) {
-                console.log(`${row['__key']}: ${row['this']}`);
-            }
-        } catch (e) {
-            if (e instanceof HazelcastSqlException) {
-                // HazelcastSqlException is thrown if an error occurs during SQL execution.
-                console.log(`An SQL error occurred while running SQL: ${e}`);
-            } else {
-                // for all other errors
-                console.log(`An error occurred while running SQL: ${e}`);
-            }
+        console.log('Rows from unsorted query:');
+        for await (const row of result) {
+            console.log(`${row['__key']}: ${row['this']}`);
         }
 
         // In order to add an index clear the map.
@@ -77,22 +66,12 @@ const { Client, HazelcastSqlException } = require('hazelcast-client');
         await map.put('key4', 4);
         await map.put('key5', 5);
 
-        try {
-            // Expected to see 2 3 4
-            const result = client.getSql().execute('SELECT * FROM myMap ORDER BY this ASC LIMIT 3 OFFSET 1');
+        // Expected to see 2 3 4
+        const result2 = await client.getSql().execute('SELECT * FROM myMap ORDER BY this ASC LIMIT 3 OFFSET 1');
 
-            console.log('Rows from sorted query with limit 3 and offset 1:');
-            for await (const row of result) {
-                console.log(`${row['__key']}: ${row['this']}`);
-            }
-        } catch (e) {
-            if (e instanceof HazelcastSqlException) {
-                // HazelcastSqlException is thrown if an error occurs during SQL execution.
-                console.log(`An SQL error occurred while running SQL: ${e}`);
-            } else {
-                // for all other errors
-                console.log(`An error occurred while running SQL: ${e}`);
-            }
+        console.log('Rows from sorted query with limit 3 and offset 1:');
+        for await (const row of result2) {
+            console.log(`${row['__key']}: ${row['this']}`);
         }
 
         await client.shutdown();

@@ -2,3 +2,4 @@ src/codec/*.ts
 src/codec/custom/*.ts
 src/.eslintrc.js
 lib/**
+docs/**

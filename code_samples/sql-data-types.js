@@ -54,16 +54,15 @@ const varcharExample = async (client) => {
                 'valueFormat' = 'varchar'
             )
         `;
-    // executions are async, await on update count to wait for execution.
-    await client.getSql().execute(createMappingQuery).getUpdateCount();
+    await client.getSql().execute(createMappingQuery);
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, key.toString());
     }
 
     try {
-        const result = client.getSql().execute('SELECT * FROM varcharMap WHERE this = ? OR this = ?', ['7', '2']);
-        const rowMetadata = await result.getRowMetadata();
+        const result = await client.getSql().execute('SELECT * FROM varcharMap WHERE this = ? OR this = ?', ['7', '2']);
+        const rowMetadata = result.rowMetadata;
         const columnIndex = rowMetadata.findColumn('this');
         const columnMetadata = rowMetadata.getColumn(columnIndex);
         console.log(SqlColumnType[columnMetadata.type]); // VARCHAR
@@ -102,54 +101,33 @@ const integersExample = async (client) => {
                 'valueFormat' = 'bigint'
             )
         `;
-    // executions are async, await on update count to wait for execution.
-    await client.getSql().execute(createMappingQuery).getUpdateCount();
+    await client.getSql().execute(createMappingQuery);
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, long.fromNumber(key * 2));
     }
 
-    try {
-        const result = client.getSql().execute(
-            'SELECT * FROM bigintMap WHERE this > ? AND this < ?',
-            [long.fromNumber(10), long.fromNumber(18)]
-        );
-        const rowMetadata = await result.getRowMetadata();
-        const columnIndex = rowMetadata.findColumn('this');
-        const columnMetadata = rowMetadata.getColumn(columnIndex);
-        console.log(SqlColumnType[columnMetadata.type]); // BIGINT
+    const result = await client.getSql().execute(
+        'SELECT * FROM bigintMap WHERE this > ? AND this < ?',
+        [long.fromNumber(10), long.fromNumber(18)]
+    );
+    const rowMetadata = result.rowMetadata;
+    const columnIndex = rowMetadata.findColumn('this');
+    const columnMetadata = rowMetadata.getColumn(columnIndex);
+    console.log(SqlColumnType[columnMetadata.type]); // BIGINT
 
-        for await (const row of result) {
-            console.log(row);
-        }
-    } catch (e) {
-        if (e instanceof HazelcastSqlException) {
-            // HazelcastSqlException is thrown if an error occurs during SQL execution.
-            console.log(`An SQL error occurred while running SQL: ${e}`);
-        } else {
-            // for all other errors
-            console.log(`An error occurred while running SQL: ${e}`);
-        }
+    for await (const row of result) {
+        console.log(row);
     }
 
-    try {
-        // Casting example. Casting to other integer types is also possible.
-        const result = client.getSql().execute(
-            'SELECT * FROM bigintMap WHERE this > CAST(? AS BIGINT) AND this < CAST(? AS BIGINT)',
-            [10, 18]
-        );
+    // Casting example. Casting to other integer types is also possible.
+    const result2 = await client.getSql().execute(
+        'SELECT * FROM bigintMap WHERE this > CAST(? AS BIGINT) AND this < CAST(? AS BIGINT)',
+        [10, 18]
+    );
 
-        for await (const row of result) {
-            console.log(row);
-        }
-    } catch (e) {
-        if (e instanceof HazelcastSqlException) {
-            // HazelcastSqlException is thrown if an error occurs during SQL execution.
-            console.log(`An SQL error occurred while running SQL: ${e}`);
-        } else {
-            // for all other errors
-            console.log(`An error occurred while running SQL: ${e}`);
-        }
+    for await (const row of result2) {
+        console.log(row);
     }
 };
 
@@ -173,39 +151,28 @@ const objectExample = async (client, classId, factoryId) => {
                 'valuePortableClassId' = '${classId}'
             )
         `;
-    // executions are async, await on update count to wait for execution.
-    await client.getSql().execute(createMappingQuery).getUpdateCount();
+    await client.getSql().execute(createMappingQuery);
 
     for (let key = 0; key < 10; key++) {
         await someMap.set(key, new Student(long.fromNumber(key), 1.1));
     }
 
-    try {
-        // Note: If you do not specify `this` and use *, by default, `age` and `height` columns will be fetched
-        // instead of `this`.
-        // This is true only for complex custom objects like portable and identified serializable.
-        const result = client.getSql().execute(
-            'SELECT __key, this FROM studentMap WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)',
-            [3, 8]
-        );
+    // Note: If you do not specify `this` and use *, by default, `age` and `height` columns will be fetched
+    // instead of `this`.
+    // This is true only for complex custom objects like portable and identified serializable.
+    const result = await client.getSql().execute(
+        'SELECT __key, this FROM studentMap WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)',
+        [3, 8]
+    );
 
-        const rowMetadata = await result.getRowMetadata();
-        const columnIndex = rowMetadata.findColumn('this');
-        const columnMetadata = rowMetadata.getColumn(columnIndex);
-        console.log(SqlColumnType[columnMetadata.type]); // OBJECT
+    const rowMetadata = result.rowMetadata;
+    const columnIndex = rowMetadata.findColumn('this');
+    const columnMetadata = rowMetadata.getColumn(columnIndex);
+    console.log(SqlColumnType[columnMetadata.type]); // OBJECT
 
-        for await (const row of result) {
-            const student = row['this'];
-            console.log(student);
-        }
-    } catch (e) {
-        if (e instanceof HazelcastSqlException) {
-            // HazelcastSqlException is thrown if an error occurs during SQL execution.
-            console.log(`An SQL error occurred while running SQL: ${e}`);
-        } else {
-            // for all other errors
-            console.log(`An error occurred while running SQL: ${e}`);
-        }
+    for await (const row of result) {
+        const student = row['this'];
+        console.log(student);
     }
 };
 

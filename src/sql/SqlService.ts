@@ -117,7 +117,7 @@ import {SqlPage} from './SqlPage';
  *
  * ```
  * const client = await Client.newHazelcastClient();
- * let result = client.getSqlService().execute('SELECT * FROM person');
+ * const result = await client.getSqlService().execute('SELECT * FROM person');
  * for await (const row of result) {
  *    console.log(row.personId);
  *    console.log(row.name);
@@ -128,7 +128,7 @@ import {SqlPage} from './SqlPage';
  */
 export interface SqlService {
     /**
-     * Executes SQL and returns an SqlResult.
+     * Executes SQL and returns an {@link SqlResult}.
      * Converts passed SQL string and parameter values into an {@link SqlStatement} object and invokes {@link executeStatement}.
      *
      * @param sql SQL string. SQL string placeholder character is question mark(`?`)
@@ -136,18 +136,16 @@ export interface SqlService {
      * @param options Options that are affecting how the query is executed
      * @throws {@link IllegalArgumentError} if arguments are not valid
      * @throws {@link HazelcastSqlException} in case of an execution error
-     * @returns {@link SqlResult}
      */
-    execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
+    execute(sql: string, params?: any[], options?: SqlStatementOptions): Promise<SqlResult>;
 
     /**
-     * Executes SQL and returns an SqlResult.
+     * Executes SQL and returns an {@link SqlResult}.
      * @param sql SQL statement object
      * @throws {@link IllegalArgumentError} if arguments are not valid
      * @throws {@link HazelcastSqlException} in case of an execution error
-     * @returns {@link SqlResult}
      */
-    executeStatement(sql: SqlStatement): SqlResult;
+    executeStatement(sql: SqlStatement): Promise<SqlResult>;
 }
 
 /** @internal */
@@ -180,12 +178,9 @@ export class SqlServiceImpl implements SqlService {
      */
     private static handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
-        if (response.error !== null) {
-            res.onExecuteError(
-                new HazelcastSqlException(
-                    response.error.originatingMemberId, response.error.code, response.error.message
-                )
-            );
+        const sqlError = response.error;
+        if (sqlError !== null) {
+            throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code, sqlError.message);
         } else {
             res.onExecuteResponse(
                 response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
@@ -256,6 +251,10 @@ export class SqlServiceImpl implements SqlService {
      * @returns {@link HazelcastSqlException}
      */
     rethrow(err: any, connection: Connection): HazelcastSqlException {
+        if (err instanceof HazelcastSqlException) {
+            return err;
+        }
+
         if (!connection.isAlive()) {
             return new HazelcastSqlException(
                 this.connectionManager.getClientUuid(),
@@ -270,9 +269,6 @@ export class SqlServiceImpl implements SqlService {
     }
 
     toHazelcastSqlException(err: any): HazelcastSqlException {
-        if (err instanceof HazelcastSqlException) {
-            return err;
-        }
         let originatingMemberId;
         if (err.hasOwnProperty('originatingMemberId')) {
             originatingMemberId = err.originatingMemberId;
@@ -284,7 +280,7 @@ export class SqlServiceImpl implements SqlService {
         );
     }
 
-    executeStatement(sqlStatement: SqlStatement): SqlResult {
+    executeStatement(sqlStatement: SqlStatement): Promise<SqlResult> {
         try {
             SqlServiceImpl.validateSqlStatement(sqlStatement);
         } catch (error) {
@@ -311,7 +307,7 @@ export class SqlServiceImpl implements SqlService {
         const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
 
         const expectedResultType: SqlExpectedResultType = sqlStatement.options?.hasOwnProperty('expectedResultType') ?
-                SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
+            SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
         let timeoutMillis: Long;
         if (sqlStatement.options?.hasOwnProperty('timeoutMillis')) {
@@ -359,21 +355,20 @@ export class SqlServiceImpl implements SqlService {
                 this.connectionManager.getClientUuid()
             );
 
-            this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
+            return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
                 SqlServiceImpl.handleExecuteResponse(clientMessage, res);
+                return res;
             }).catch(err => {
-                res.onExecuteError(
-                    this.rethrow(err, connection)
-                );
+                const error = this.rethrow(err, connection);
+                res.onExecuteError(error);
+                throw error;
             });
-
-            return res;
         } catch (error) {
             throw this.rethrow(error, connection);
         }
     }
 
-    execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult {
+    execute(sql: string, params?: any[], options?: SqlStatementOptions): Promise<SqlResult> {
         const sqlStatement: SqlStatement = {
             sql: sql
         };

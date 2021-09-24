@@ -77,8 +77,7 @@ function portableFactory(classId) {
                 'valueFormat' = 'timestamp with time zone'
             )
         `;
-        // executions are async, await on update count to wait for execution.
-        await client.getSql().execute(createMappingQuery).getUpdateCount();
+        await client.getSql().execute(createMappingQuery);
 
         // You can use datetime classes for any operation
         // Let's add some timestamp with timezones using `OffsetDatetime`:
@@ -105,7 +104,7 @@ function portableFactory(classId) {
 
         // You can run an SQL query:
 
-        const result = client.getSql().execute('SELECT * FROM timestampWithTimezoneMap WHERE this > ?', [
+        const result = await client.getSql().execute('SELECT * FROM timestampWithTimezoneMap WHERE this > ?', [
             OffsetDateTime.from(2020, 3, 1, 5, 6, 7, 123456789, 3600)
         ]);
 
