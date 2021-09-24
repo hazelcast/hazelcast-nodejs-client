@@ -180,7 +180,7 @@ export class SqlServiceImpl implements SqlService {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
         const sqlError = response.error;
         if (sqlError !== null) {
-            throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code, sqlError.message);
+            throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code, sqlError.message, sqlError.suggestion);
         } else {
             res.onExecuteResponse(
                 response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
@@ -342,7 +342,8 @@ export class SqlServiceImpl implements SqlService {
                 cursorBufferSize,
                 schema,
                 expectedResultType,
-                queryId
+                queryId,
+                false // Used to skip updating statistics from MC client, should be false in other clients
             );
 
             const res = SqlResultImpl.newResult(
