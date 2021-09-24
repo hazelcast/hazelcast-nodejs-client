@@ -117,7 +117,7 @@ import {SqlPage} from './SqlPage';
  *
  * ```
  * const client = await Client.newHazelcastClient();
- * let result = client.getSqlService().execute('SELECT * FROM person');
+ * const result = await client.getSqlService().execute('SELECT * FROM person');
  * for await (const row of result) {
  *    console.log(row.personId);
  *    console.log(row.name);
@@ -179,12 +179,10 @@ export class SqlServiceImpl implements SqlService {
     private static handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
         if (response.error !== null) {
-            res.onExecuteError(
-                new HazelcastSqlException(
-                    response.error.originatingMemberId, response.error.code, response.error.message
-                )
-            );
-            throw response.error;
+            const sqlError =
+                new HazelcastSqlException(response.error.originatingMemberId, response.error.code, response.error.message);
+            res.onExecuteError(sqlError);
+            throw sqlError;
         } else {
             res.onExecuteResponse(
                 response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
@@ -310,7 +308,7 @@ export class SqlServiceImpl implements SqlService {
         const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
 
         const expectedResultType: SqlExpectedResultType = sqlStatement.options?.hasOwnProperty('expectedResultType') ?
-                SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
+            SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
         let timeoutMillis: Long;
         if (sqlStatement.options?.hasOwnProperty('timeoutMillis')) {

@@ -106,14 +106,14 @@ describe('SqlResultTest', function () {
 
     it('getters should work', async function () {
         result = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName} WHERE this > ?`, [1]);
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.should.be.instanceof(getSqlRowMetadataImpl());
         rowMetadata.getColumnCount().should.be.eq(2);
 
         const isRowSet = await result.isRowSet();
         isRowSet.should.be.true;
 
-        const updateCount = await result.getUpdateCount();
+        const updateCount = await TestUtil.getUpdateCount(result);
         updateCount.eq(long.fromNumber(-1)).should.be.true;
     });
 });

@@ -62,7 +62,7 @@ const varcharExample = async (client) => {
 
     try {
         const result = await client.getSql().execute('SELECT * FROM varcharMap WHERE this = ? OR this = ?', ['7', '2']);
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = result.getRowMetadata();
         const columnIndex = rowMetadata.findColumn('this');
         const columnMetadata = rowMetadata.getColumn(columnIndex);
         console.log(SqlColumnType[columnMetadata.type]); // VARCHAR
@@ -112,7 +112,7 @@ const integersExample = async (client) => {
             'SELECT * FROM bigintMap WHERE this > ? AND this < ?',
             [long.fromNumber(10), long.fromNumber(18)]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = result.getRowMetadata();
         const columnIndex = rowMetadata.findColumn('this');
         const columnMetadata = rowMetadata.getColumn(columnIndex);
         console.log(SqlColumnType[columnMetadata.type]); // BIGINT
@@ -186,7 +186,7 @@ const objectExample = async (client, classId, factoryId) => {
             [3, 8]
         );
 
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = result.getRowMetadata();
         const columnIndex = rowMetadata.findColumn('this');
         const columnMetadata = rowMetadata.getColumn(columnIndex);
         console.log(SqlColumnType[columnMetadata.type]); // OBJECT

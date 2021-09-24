@@ -44,8 +44,8 @@ const { Client, SqlColumnType, HazelcastSqlException } = require('hazelcast-clie
         let result;
         try {
             result = await client.getSql().execute('SELECT __key, this FROM myMap WHERE this > ?', [1]);
-            const rowMetadata = await result.getRowMetadata();
-            const columns = await rowMetadata.getColumns();
+            const rowMetadata = result.getRowMetadata();
+            const columns = rowMetadata.getColumns();
 
             console.log('Columns:');
             for (const column of columns) {

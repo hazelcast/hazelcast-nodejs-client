@@ -158,7 +158,7 @@ describe('Data type test', function () {
         const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this = ? OR this = ? ORDER BY __key ASC`, ['7', '2']
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.VARCHAR);
 
         const rows = [];
@@ -186,7 +186,7 @@ describe('Data type test', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = await TestUtil.getSql(client)
             .execute(`SELECT * FROM ${mapName} WHERE this = ? ORDER BY __key ASC`, [true]);
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BOOLEAN);
 
         const rows = [];
@@ -216,7 +216,7 @@ describe('Data type test', function () {
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS TINYINT) AND this < CAST(? AS TINYINT) ORDER BY __key ASC`,
             [10, 16]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TINYINT);
 
         const rows = [];
@@ -246,7 +246,7 @@ describe('Data type test', function () {
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS SMALLINT) AND this < CAST(? AS SMALLINT) ORDER BY __key ASC`,
             [8, 16]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.SMALLINT);
 
         const rows = [];
@@ -276,7 +276,7 @@ describe('Data type test', function () {
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS INTEGER) AND this < CAST(? AS INTEGER) ORDER BY __key ASC`,
             [10, 20]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.INTEGER);
 
         const rows = [];
@@ -306,7 +306,7 @@ describe('Data type test', function () {
             `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(10), long.fromNumber(18)]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
 
         const rows = [];
@@ -364,7 +364,7 @@ describe('Data type test', function () {
             );
         }
 
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DECIMAL);
 
         const rows = [];
@@ -410,7 +410,7 @@ describe('Data type test', function () {
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS REAL) AND this < CAST(? AS REAL) ORDER BY __key ASC`,
             [-0.5, 0.5]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.REAL);
 
         const rows = [];
@@ -446,7 +446,7 @@ describe('Data type test', function () {
             `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [-0.7, 0.7]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DOUBLE);
 
         const rows = [];
@@ -500,7 +500,7 @@ describe('Data type test', function () {
                 ['5001-01-01', '5005-05-05']
             );
         }
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DATE);
 
         const rows = [];
@@ -564,7 +564,7 @@ describe('Data type test', function () {
             );
         }
 
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIME);
 
         const rows = [];
@@ -643,7 +643,7 @@ describe('Data type test', function () {
                 ]
             );
         }
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIMESTAMP);
 
         const rows = [];
@@ -741,7 +741,7 @@ describe('Data type test', function () {
                 ]
             );
         }
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIMESTAMP_WITH_TIME_ZONE);
 
         const rows = [];
@@ -818,7 +818,7 @@ describe('Data type test', function () {
             [long.fromNumber(13), long.fromNumber(18)]
         );
 
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
         rowMetadata.getColumn(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
 

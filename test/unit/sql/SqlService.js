@@ -459,7 +459,7 @@ describe('SqlServiceTest', function () {
 
             const fake = sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns(fakeResponse));
 
-            SqlServiceImpl.handleExecuteResponse(fakeClientMessage, fakeResult);
+            (() => SqlServiceImpl.handleExecuteResponse(fakeClientMessage, fakeResult)).should.throw(HazelcastSqlException);
 
             fake.calledOnceWithExactly(fakeClientMessage).should.be.true;
             fakeResult.onExecuteError.calledWithMatch(fakeResponse.error).should.be.true;

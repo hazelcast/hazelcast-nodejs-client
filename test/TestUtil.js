@@ -348,5 +348,23 @@ exports.createMapping = async (serverVersionNewerThanFive, client, keyFormat, va
 
     const result = await exports.getSql(client).execute(createMappingQuery);
     // Wait for execution to end.
-    await result.getUpdateCount();
+    if (!exports.isClientVersionAtLeast('5.0')) {
+        await result.getUpdateCount();
+    }
+};
+
+exports.getRowMetadata = async (result) => {
+    if (exports.isClientVersionAtLeast('5.0')) {
+        return result.rowMetadata;
+    } else {
+        return await result.getRowMetadata();
+    }
+};
+
+exports.getUpdateCount = async (result) => {
+    if (exports.isClientVersionAtLeast('5.0')) {
+        return result.updateCount;
+    } else {
+        return await result.getUpdateCount();
+    }
 };

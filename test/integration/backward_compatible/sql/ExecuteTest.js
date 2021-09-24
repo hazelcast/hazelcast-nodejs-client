@@ -28,6 +28,7 @@ const RC = require('../../RC');
 const {Lang} = require('../../remote_controller/remote-controller_types');
 const fs = require('fs');
 const path = require('path');
+const { isClientVersionAtLeast } = require('../../../TestUtil');
 
 const getHazelcastSqlException = () => {
     const { HazelcastSqlException } = require('../../../../lib/core/HazelcastError');
@@ -203,13 +204,22 @@ describe('SqlExecuteTest', function () {
             await populateMap(1);
             for (const testCase of testCases) {
                 for (const invalidParams of testCase.invalidParamsArray) {
-                    const result1 = await TestUtil.getSql(client).execute(testCase.sql, invalidParams);
-                    const result2 = await TestUtil.getSql(client).executeStatement({
-                        sql: testCase.sql,
-                        params: invalidParams
-                    });
-                    for (const result of [result1, result2]) {
-                        await result.next().should.eventually.be.rejectedWith(getHazelcastSqlException(), 'parameter count');
+                    if (isClientVersionAtLeast('5.0')) {
+                        await TestUtil.getSql(client).execute(testCase.sql, invalidParams)
+                            .should.eventually.be.rejectedWith(getHazelcastSqlException(), 'parameter count');
+                        await TestUtil.getSql(client).executeStatement({
+                            sql: testCase.sql,
+                            params: invalidParams
+                        }).should.eventually.be.rejectedWith(getHazelcastSqlException(), 'parameter count');
+                    } else {
+                        const result1 = TestUtil.getSql(client).execute(testCase.sql, invalidParams);
+                        const result2 = TestUtil.getSql(client).executeStatement({
+                            sql: testCase.sql,
+                            params: invalidParams
+                        });
+                        for (const result of [result1, result2]) {
+                            await result.next().should.eventually.be.rejectedWith(getHazelcastSqlException(), 'parameter count');
+                        }
                     }
                 }
             }
@@ -413,7 +423,7 @@ describe('SqlExecuteTest', function () {
 
             for (const result of [result1, result2]) {
                 (await result.isRowSet()).should.be.true;
-                (await result.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
+                (await TestUtil.getUpdateCount(result)).eq(long.fromNumber(-1)).should.be.true;
             }
         });
         it('should return rows when expected result type is any and select is used', async function () {
@@ -433,28 +443,31 @@ describe('SqlExecuteTest', function () {
             });
             for (const result of [result1, result2]) {
                 (await result.isRowSet()).should.be.true;
-                (await result.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
+                (await TestUtil.getUpdateCount(result)).eq(long.fromNumber(-1)).should.be.true;
             }
         });
         it('should reject with error, if select is used and update count is expected', async function () {
             const entryCount = 1;
             await populateMap(entryCount);
 
-            const result1 = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`, undefined, {
-                expectedResultType: 'UPDATE_COUNT'
-            });
-
-            const result2 = await TestUtil.getSql(client).executeStatement({
-                sql: `SELECT * FROM ${mapName}`,
-                options: {
+            const rejectionReason1 = await TestUtil.getRejectionReasonOrThrow(async () => {
+                const result = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`, undefined, {
                     expectedResultType: 'UPDATE_COUNT'
-                }
+                });
+                await result.next();
             });
 
-            for (const result of [result2, result1]) {
-                const rejectionReason = await TestUtil.getRejectionReasonOrThrow(async () => {
-                    await result.next();
+            const rejectionReason2 = await TestUtil.getRejectionReasonOrThrow(async () => {
+                const result = await TestUtil.getSql(client).executeStatement({
+                    sql: `SELECT * FROM ${mapName}`,
+                    options: {
+                        expectedResultType: 'UPDATE_COUNT'
+                    }
                 });
+                await result.next();
+            });
+
+            for (const rejectionReason of [rejectionReason1, rejectionReason2]) {
                 rejectionReason.should.be.instanceof(getHazelcastSqlException());
                 rejectionReason.message.should.include('update count');
             }
@@ -537,7 +550,7 @@ describe('SqlExecuteTest', function () {
 
             const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
                 const result = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`);
-                await result.getRowMetadata();
+                await TestUtil.getRowMetadata(result);
             });
             error1.should.be.instanceof(getHazelcastSqlException());
 
@@ -547,7 +560,7 @@ describe('SqlExecuteTest', function () {
                     params: [],
                     options: {}
                 });
-                await result.getRowMetadata();
+                await TestUtil.getRowMetadata(result);
             });
             error2.should.be.instanceof(getHazelcastSqlException());
         });
@@ -620,23 +633,21 @@ describe('SqlExecuteTest', function () {
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
 
-            const result1 = await TestUtil.getSql(client).execute('asdasd');
-
             const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
+                const result1 = await TestUtil.getSql(client).execute('asdasd');
                 await result1.next();
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().PARSING);
             error1.originatingMemberId.toString().should.be.eq(member.uuid);
 
-            const result2 = await TestUtil.getSql(client).executeStatement({
-                sql: `--SELECT * FROM ${mapName}`,
-                params: [],
-                options: {}
-            });
-
             const error2 = await TestUtil.getRejectionReasonOrThrow(async () => {
-                await result2.next();
+                const result = await TestUtil.getSql(client).executeStatement({
+                    sql: `--SELECT * FROM ${mapName}`,
+                    params: [],
+                    options: {}
+                });
+                await result.next();
             });
             error2.should.be.instanceof(getHazelcastSqlException());
             error2.code.should.be.eq(getSqlErrorCode().PARSING);

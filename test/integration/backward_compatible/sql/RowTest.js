@@ -96,7 +96,7 @@ describe('SqlRowTest', function () {
     });
 
     it('getMetadata should return same metadata with result', async function () {
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
 
         for await (const row of result) {
             row.getMetadata().should.be.eq(rowMetadata);

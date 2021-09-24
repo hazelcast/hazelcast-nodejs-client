@@ -154,7 +154,7 @@ describe('Jet Test', function () {
 
         const result = await client.getSql().execute(`SELECT COUNT(*) FROM ${mapName}`);
 
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         const columnName = rowMetadata.getColumn(0).name;
         for await (const row of result) {
             row[columnName].toNumber().should.be.eq(3); // count always returns BIGINT
@@ -162,7 +162,7 @@ describe('Jet Test', function () {
 
         const result2 = await client.getSql().execute(`SELECT SUM(this) FROM ${mapName}`);
 
-        const rowMetadata2 = await result2.getRowMetadata();
+        const rowMetadata2 = await TestUtil.getRowMetadata(result2);
         const columnName2 = rowMetadata2.getColumn(0).name;
         for await (const row of result2) {
             row[columnName2].should.be.eq(9); // doubles added, so sum returns DOUBLE
@@ -170,7 +170,7 @@ describe('Jet Test', function () {
 
         const result3 = await client.getSql().execute(`SELECT MAX(this) FROM ${mapName}`);
 
-        const rowMetadata3 = await result3.getRowMetadata();
+        const rowMetadata3 = await TestUtil.getRowMetadata(result3);
         const columnName3 = rowMetadata3.getColumn(0).name;
         for await (const row of result3) {
             row[columnName3].should.be.eq(4); // doubles added, so max returns DOUBLE

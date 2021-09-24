@@ -68,7 +68,7 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  *
  * ### Usage for update count
  * ```js
- * const updateCount = await result.getUpdateCount();
+ * const updateCount = result.getUpdateCount();
  * ```
  *
  * You don't need to call {@link close} in this case.
@@ -95,10 +95,10 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
     close(): Promise<void>;
 
     /**
-     * Returns row metadata of the result.
+     * SQL row metadata if rows exist in the result; otherwise null.
      * @returns SQL row metadata if rows exist in the result; otherwise null.
      */
-    getRowMetadata(): SqlRowMetadata | null;
+    readonly rowMetadata: SqlRowMetadata | null;
 
     /**
      * Return whether this result has rows to iterate. False if update count is returned, true if rows are returned.
@@ -107,16 +107,15 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
     isRowSet(): boolean;
 
     /**
-     * Returns the number of rows updated by the statement or `-1` if this result is a row set.
-     * @returns update count
+     * The number of rows updated by the statement or `-1` if this result is a row set.
      */
-    getUpdateCount(): Long;
+    readonly updateCount: Long;
 }
 
 /** @internal */
 export class SqlResultImpl implements SqlResult {
     /** Update count received as a result of SQL execution. See {@link SqlExpectedResultType} */
-    private updateCount: Long;
+    updateCount: Long;
 
     private currentPage: SqlPage | null;
 
@@ -148,7 +147,7 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Row metadata of the result. Initially null.
      */
-    private rowMetadata: SqlRowMetadata | null;
+    rowMetadata: SqlRowMetadata | null;
 
     constructor(
         private readonly sqlService: SqlServiceImpl,
@@ -192,16 +191,8 @@ export class SqlResultImpl implements SqlResult {
             returnRawResult, clientUUID);
     }
 
-    getUpdateCount(): Long {
-        return this.updateCount;
-    }
-
     isRowSet(): boolean {
         return this.rowMetadata !== null;
-    }
-
-    getRowMetadata(): SqlRowMetadata | null {
-        return this.rowMetadata;
     }
 
     close(): Promise<void> {
@@ -255,10 +246,6 @@ export class SqlResultImpl implements SqlResult {
      * @param error The wrapped error that can be propagated to the user through executeDeferred.
      */
     onExecuteError(error: HazelcastSqlException): void {
-        // Ignore the error if SQL result is closed.
-        if (this.closed) {
-            return;
-        }
         this.updateCount = Long.fromInt(-1);
         this.rowMetadata = null;
     }
@@ -294,11 +281,6 @@ export class SqlResultImpl implements SqlResult {
      * @param updateCount The update count.
      */
     onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage | null, updateCount: Long) {
-        // Ignore the response if the SQL result is closed.
-        if (this.closed) {
-            return;
-        }
-
         if (rowMetadata !== null) { // Result that includes rows
             this.rowMetadata = rowMetadata;
             this.onNextPage(rowPage);
