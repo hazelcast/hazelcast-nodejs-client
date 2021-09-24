@@ -2599,7 +2599,7 @@ await map.put('key1', 1);
 await map.put('key2', 2);
 await map.put('key3', 3);
 
-const result = client.getSql().execute(`SELECT __key, this FROM my-distributed-map WHERE this > 1`);
+const result = await client.getSql().execute(`SELECT __key, this FROM my-distributed-map WHERE this > 1`);
 
 for await (const row of result) {
     console.log(row); // {__key: 'key3', this: 3} and {__key: 'key2', this: 2}
@@ -2749,7 +2749,7 @@ comparable with `INTEGER`, the query needs a `CAST`. Note that, the cast can fai
 an integer.
 
 ```javascript
-const result = client.getSql().execute('SELECT * FROM myMap WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)',
+const result = await client.getSql().execute('SELECT * FROM myMap WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)',
     [13, 18]
 );
 ```
