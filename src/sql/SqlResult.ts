@@ -96,7 +96,6 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
 
     /**
      * SQL row metadata if rows exist in the result; otherwise null.
-     * @returns SQL row metadata if rows exist in the result; otherwise null.
      */
     readonly rowMetadata: SqlRowMetadata | null;
 

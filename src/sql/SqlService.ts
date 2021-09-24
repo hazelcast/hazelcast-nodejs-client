@@ -178,11 +178,9 @@ export class SqlServiceImpl implements SqlService {
      */
     private static handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
-        if (response.error !== null) {
-            const sqlError =
-                new HazelcastSqlException(response.error.originatingMemberId, response.error.code, response.error.message);
-            res.onExecuteError(sqlError);
-            throw sqlError;
+        const sqlError = response.error;
+        if (sqlError !== null) {
+            throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code, sqlError.message);
         } else {
             res.onExecuteResponse(
                 response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
@@ -253,6 +251,10 @@ export class SqlServiceImpl implements SqlService {
      * @returns {@link HazelcastSqlException}
      */
     rethrow(err: any, connection: Connection): HazelcastSqlException {
+        if (err instanceof HazelcastSqlException) {
+            return err;
+        }
+
         if (!connection.isAlive()) {
             return new HazelcastSqlException(
                 this.connectionManager.getClientUuid(),
@@ -267,9 +269,6 @@ export class SqlServiceImpl implements SqlService {
     }
 
     toHazelcastSqlException(err: any): HazelcastSqlException {
-        if (err instanceof HazelcastSqlException) {
-            return err;
-        }
         let originatingMemberId;
         if (err.hasOwnProperty('originatingMemberId')) {
             originatingMemberId = err.originatingMemberId;
