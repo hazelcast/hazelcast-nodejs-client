@@ -63,7 +63,7 @@ import {SqlError} from './SqlError';
  *
  * ## Usage
  *
- * Before you can access any object using SQL, a *mapping* has to be created. See the documentation for the `CREATE MAPPING`
+ * Before you can access any object using SQL, a _mapping_ has to be created. See the documentation for the `CREATE MAPPING`
  * command.
  *
  * When a query is executed, an {@link SqlResult} is returned. The returned result is an async iterable of {@link SqlRowType}.
