@@ -210,8 +210,8 @@ describe('SqlResultTest', function () {
 
         beforeEach(function () {
             fakeSqlService = {
-                toHazelcastSqlException: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', err)),
-                rethrow: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', err)),
+                toHazelcastSqlException: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', undefined, err)),
+                rethrow: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', undefined, err)),
                 close: sandbox.fake.resolves(undefined),
                 fetch: sandbox.fake(() => {
                     return delayedPromise(500);
@@ -346,8 +346,8 @@ describe('SqlResultTest', function () {
 
         beforeEach(function () {
             fakeSqlService = {
-                toHazelcastSqlException: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', err)),
-                rethrow: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', err)),
+                toHazelcastSqlException: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', undefined, err)),
+                rethrow: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', undefined, err)),
                 fetch: sandbox.fake.resolves(fakeSqlPage),
                 close: sandbox.fake.resolves()
             };

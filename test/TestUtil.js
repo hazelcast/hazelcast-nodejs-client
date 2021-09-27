@@ -363,7 +363,9 @@ exports.createMapping = async (serverVersionNewerThanFive, client, keyFormat, va
  * @param mapName Map name
  * @param serverVersionNewerThanFive true if server version >= 5.0
  */
-exports.createMappingForPortable = async (keyFormat, factoryId, classId, columns, client, mapName, serverVersionNewerThanFive) => {
+exports.createMappingForPortable = async (
+    keyFormat, factoryId, classId, columns, client, mapName, serverVersionNewerThanFive
+) => {
     if (!serverVersionNewerThanFive) {
         // Before 5.0, mappings are created implicitly, thus we don't need to create explicitly.
         return;
