@@ -82,38 +82,6 @@ describe('Data type test', function () {
         await RC.startMember(cluster.id);
     });
 
-    /**
-     * Creates portable mapping for SQL queries. In 5.0, users started to write explicit mapping for SQL queries against maps.
-     * @param keyFormat Key format
-     * @param factoryId Portable's factory id
-     * @param classId Portable's class id
-     * @param columns Columns as a dict where keys are column names, and values are case insensitive value formats.
-     */
-    const createMappingForPortable = async (keyFormat, factoryId, classId, columns) => {
-        if (!serverVersionNewerThanFive) {
-            // Before 5.0, mappings are created implicitly, thus we don't need to create explicitly.
-            return;
-        }
-
-        const columnsString = Object.entries(columns).map(column => `${column[0]} ${column[1].toUpperCase()}`).join(',\n');
-
-        const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
-                __key ${keyFormat},
-                ${columnsString}
-            )
-            TYPE IMaP
-            OPTIONS (
-                'keyFormat' = 'double',
-                'valueFormat' = 'portable',
-                'valuePortableFactoryId' = '${factoryId}',
-                'valuePortableClassId' = '${classId}'
-            )
-        `;
-
-        await TestUtil.getSql(client).execute(createMappingQuery);
-    };
-
     const basicSetup = async (testFn) => {
         client = await Client.newHazelcastClient({
             clusterName: cluster.id
@@ -804,7 +772,15 @@ describe('Data type test', function () {
             type: 'SORTED',
             attributes: ['age']
         });
-        await createMappingForPortable('double', 666, 1, {age: 'bigint', height: 'real'});
+        await TestUtil.createMappingForPortable(
+            'double',
+            666,
+            1,
+            {age: 'bigint', height: 'real'},
+            client,
+            mapName,
+            serverVersionNewerThanFive
+        );
 
         const student1 = new Student(long.fromNumber(12), 123.23);
         const student2 = new Student(long.fromNumber(15), null);

@@ -36,6 +36,7 @@ import {
     tryGetString
 } from '../util/Util';
 import {SqlPage} from './SqlPage';
+import {Data} from '../serialization';
 import {SqlError} from './SqlError';
 
 /**
@@ -270,7 +271,7 @@ export class SqlServiceImpl implements SqlService {
         }
     }
 
-    toHazelcastSqlException(err: Error): HazelcastSqlException {
+    toHazelcastSqlException(err: Error, message: string = err.message): HazelcastSqlException {
         let originatingMemberId;
         if (err instanceof SqlError) {
             originatingMemberId = err.originatingMemberId;
@@ -278,7 +279,7 @@ export class SqlServiceImpl implements SqlService {
             originatingMemberId = this.connectionManager.getClientUuid();
         }
         return new HazelcastSqlException(
-            originatingMemberId, SqlErrorCode.GENERIC, err.message, undefined, err
+            originatingMemberId, SqlErrorCode.GENERIC, message, undefined, err
         );
     }
 
@@ -350,7 +351,7 @@ export class SqlServiceImpl implements SqlService {
 
             const res = SqlResultImpl.newResult(
                 this,
-                this.serializationService,
+                this.deserializeRowValue.bind(this),
                 connection,
                 queryId,
                 cursorBufferSize,
@@ -415,5 +416,25 @@ export class SqlServiceImpl implements SqlService {
             }
             return response.rowPage;
         });
+    }
+
+    /**
+     * Used for lazy deserialization of row values.
+     * @param data The data to be deserialized.
+     * @param isRaw `true` if the row is raw, i.e an {@link SqlRowImpl}; `false` otherwise, i.e a regular JSON object. Used to log
+     * more information about lazy deserialization if row is a regular JSON object.
+     */
+    private deserializeRowValue(data: Data, isRaw: boolean) : any {
+        try {
+            return this.serializationService.toObject(data);
+        } catch (e) {
+            let message = 'Failed to deserialize query result value.';
+            if (!isRaw) {
+                message += ' In order to partially deserialize SQL rows you can set `returnRawResult` option to `true`. Check '
+                        + 'out the "Lazy SQL Row Deserialization" section in the client\'s reference manual.';
+            }
+            message += ` Error: ${e.message}`;
+            throw this.toHazelcastSqlException(e, message);
+        }
     }
 }
