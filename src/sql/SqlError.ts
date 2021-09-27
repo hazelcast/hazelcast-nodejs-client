@@ -28,11 +28,11 @@ export class SqlError {
         readonly code: number,
         /** The error message. */
         readonly message: string,
-        /** UUID of the member that caused or initiated an error condition. */
+        /** UUID of the member or client that caused or initiated an error condition. */
         readonly originatingMemberId: UUID,
         _ : boolean,
         /** Suggested SQL statement to remediate experienced error. */
-        readonly suggestion: string
+        readonly suggestion: string | null
     ) {
     }
 }
