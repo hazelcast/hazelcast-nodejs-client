@@ -36,6 +36,7 @@ import {
     tryGetString
 } from '../util/Util';
 import {SqlPage} from './SqlPage';
+import {SqlError} from './SqlError';
 
 /**
  * SQL Service of the client. You can use this service to execute SQL queries.
@@ -250,7 +251,7 @@ export class SqlServiceImpl implements SqlService {
      * @param connection
      * @returns {@link HazelcastSqlException}
      */
-    rethrow(err: any, connection: Connection): HazelcastSqlException {
+    rethrow(err: Error, connection: Connection): HazelcastSqlException {
         if (err instanceof HazelcastSqlException) {
             return err;
         }
@@ -269,9 +270,9 @@ export class SqlServiceImpl implements SqlService {
         }
     }
 
-    toHazelcastSqlException(err: any): HazelcastSqlException {
+    toHazelcastSqlException(err: Error): HazelcastSqlException {
         let originatingMemberId;
-        if (err.hasOwnProperty('originatingMemberId')) {
+        if (err instanceof SqlError) {
             originatingMemberId = err.originatingMemberId;
         } else {
             originatingMemberId = this.connectionManager.getClientUuid();
