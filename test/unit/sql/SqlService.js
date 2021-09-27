@@ -114,7 +114,8 @@ describe('SqlServiceTest', function () {
                 SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE,
                 SqlServiceImpl.DEFAULT_SCHEMA,
                 SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE,
-                fakeQueryId
+                fakeQueryId,
+                false
             ).should.be.true;
 
             await sqlService.execute('s', params, {
@@ -131,7 +132,8 @@ describe('SqlServiceTest', function () {
                 1,
                 'sd',
                 SqlExpectedResultType.ANY,
-                fakeQueryId
+                fakeQueryId,
+                false
             ).should.be.true;
         });
 
@@ -149,6 +151,23 @@ describe('SqlServiceTest', function () {
                 await sqlService.execute('s', [], {});
             });
             error.should.be.instanceof(HazelcastSqlException).that.has.ownProperty('code', SqlErrorCode.CONNECTION_PROBLEM);
+        });
+
+        it('should throw HazelcastSqlException that has proper cause if invocation fails', async function () {
+            const err = new Error('Invocation failed');
+            fakeInvocationService.invokeOnConnection = sandbox.fake.rejects(err);
+            sqlService = new SqlServiceImpl(
+                fakeConnectionRegistry,
+                fakeSerializationService,
+                fakeInvocationService,
+                fakeConnectionManager
+            );
+            const error = await getRejectionReasonOrThrow(async () => {
+                await sqlService.execute('SELECT * FROM map', [], {});
+            });
+            error.should.be.instanceof(HazelcastSqlException);
+            error.should.have.ownProperty('cause', err);
+            error.should.have.ownProperty('code', SqlErrorCode.GENERIC);
         });
 
         it('should construct a SqlResultImpl with default result type if it\'s not specified', async function () {
@@ -215,29 +234,6 @@ describe('SqlServiceTest', function () {
         it('should use connection member id to build a sql query id', async function () {
             await sqlService.execute('s', [], {});
             fakeFromMemberId.calledOnceWithExactly(fakeRemoteUUID).should.be.true;
-        });
-
-        it('should call result\'s onExecuteError method on invoke error', async function () {
-            const fakeError = new Error();
-            const fakeResult = { onExecuteError: sandbox.fake() };
-
-            sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake.returns(fakeResult));
-            fakeInvocationService = { invokeOnConnection: sandbox.fake.rejects(fakeError) };
-            sqlService = new SqlServiceImpl(
-                fakeConnectionRegistry,
-                fakeSerializationService,
-                fakeInvocationService,
-                fakeConnectionManager
-            );
-            try {
-                await sqlService.execute('s', [], {});
-            } catch (e) {
-                // no-op
-            }
-            fakeResult.onExecuteError.calledOnceWithExactly(
-                sinon.match.instanceOf(HazelcastSqlException)
-                    .and(sinon.match.hasOwn('cause', fakeError))
-            ).should.be.true;
         });
 
         it('should throw HazelcastSqlException any of the parameters are invalid', async function () {
@@ -450,7 +446,8 @@ describe('SqlServiceTest', function () {
                 error: {
                     originatingMemberId: 1,
                     code: 1,
-                    message: 'Execute error response'
+                    message: 'Execute error response',
+                    suggestion: null
                 },
                 rowMetadata: [],
                 rowPage: {},
@@ -551,7 +548,8 @@ describe('SqlServiceTest', function () {
             const theError = {
                 originatingMemberId: 1,
                 code: 1,
-                message: 'oops'
+                message: 'oops',
+                suggestion: null
             };
             sandbox.replace(SqlFetchCodec, 'decodeResponse', sandbox.fake.returns({
                 error: theError, rowPage: []

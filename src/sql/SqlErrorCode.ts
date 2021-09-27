@@ -30,14 +30,14 @@ export enum SqlErrorCode {
     TIMEOUT = 1004,
     /** A problem with partition distribution. */
     PARTITION_DISTRIBUTION = 1005,
-    /** An error caused by a concurrent destroy of a map. */
-    MAP_DESTROYED = 1006,
     /** Map loading is not finished yet. */
     MAP_LOADING_IN_PROGRESS = 1007,
     /** Generic parsing error. */
     PARSING = 1008,
     /** An error caused by an attempt to query an index that is not valid. */
     INDEX_INVALID = 1009,
+    /** Object (mapping/table) not found. */
+    OBJECT_NOT_FOUND = 1010,
     /** An error with data conversion or transformation. */
     DATA_EXCEPTION = 2000
 }
