@@ -421,8 +421,8 @@ export class SqlServiceImpl implements SqlService {
     /**
      * Used for lazy deserialization of row values.
      * @param data The data to be deserialized.
-     * @param isRaw True if the row is raw, i.e an {@link SqlRowImpl}; false otherwise, i.e a regular json object. Used to log
-     * more information about lazy deserialization if row is a regular json object.
+     * @param isRaw `true` if the row is raw, i.e an {@link SqlRowImpl}; `false` otherwise, i.e a regular JSON object. Used to log
+     * more information about lazy deserialization if row is a regular JSON object.
      */
     private deserializeRowValue(data: Data, isRaw: boolean) : any {
         try {
