@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @ignore *//** */
 
 import {UUID} from '../core';
 import {UuidUtil} from '../util/UuidUtil';
 import * as Long from 'long';
-/** @ignore *//** */
+
 
 /**
  * @internal

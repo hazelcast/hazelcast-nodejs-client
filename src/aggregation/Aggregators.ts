@@ -163,9 +163,9 @@ export function longSum(attributePath?: string): Aggregator<Long> {
 }
 
 /**
- * @param attributePath extracts values from this path if given
+ * @param attributePath extracts values from this path if given.
  * @param <R> type of the return object.
- * @return  an aggregator that calculates the distinct set of input values.
+ * @return an aggregator that calculates the distinct set of input values.
  * Accepts null input values.
  * Aggregation result type is a Set of R.
  */
