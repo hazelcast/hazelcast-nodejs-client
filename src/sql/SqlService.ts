@@ -41,84 +41,38 @@ import {SqlError} from './SqlError';
 /**
  * SQL Service of the client. You can use this service to execute SQL queries.
  *
- * The service is in beta state. Behavior and API might change in future releases.
+ * ## Enabling SQL Service
  *
- * ### Overview
- * Hazelcast is able to execute distributed SQL queries over the following entities:
- * * IMap
+ * To use this service, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the classpath
+ * of the members. If you are using the CLI, Docker image, or distributions to start Hazelcast members, then you don't need to
+ * do anything, as the above preconditions are already satisfied for such members.
  *
- * ##### Querying an IMap
+ * However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that
+ * `The Jet engine is disabled` or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while
+ * executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the
+ * `hazelcast-sql` module to your member's classpath.
  *
- * Every IMap instance is exposed as a table with the same name in the `partitioned` schema. The `partitioned`
- * schema is included into a default search path, therefore an IMap could be referenced in an SQL statement with or without the
- * schema name.
+ * ## Overview
  *
- * ###### Column Resolution
+ * Hazelcast is currently able to execute distributed SQL queries using the following connectors:
+ * * {@link IMap}
+ * * Kafka
+ * * Files
  *
- * Every table backed by an IMap has a set of columns that are resolved automatically. Column resolution uses IMap entries
- * located on the member that initiates the query. The engine extracts columns from a key and a value and then merges them
- * into a single column set. In case the key and the value have columns with the same name, the key takes precedence.
+ * SQL statements are not atomic. _INSERT_/_SINK_ can fail and commit part of the data.
  *
- * Columns are extracted from objects as follows(which happens on the server-side):
- * * For non-Portable objects, public getters and fields are used to populate the column list. For getters, the first
- *   letter is converted to lower case. A getter takes precedence over a field in case of naming conflict.
- * * For Portable objects, field names used in the {@link PortableWriter.writePortable} method are used to populate the column
- *   list
+ * ## Usage
  *
- * The whole key and value objects could be accessed through a special fields `__key` and `this`, respectively. If
- * key (value) object has fields, then the whole key (value) field is exposed as a normal field. Otherwise the field is hidden.
- * Hidden fields can be accessed directly, but are not returned by `SELECT * FROM ...` queries.
+ * Before you can access any object using SQL, a *mapping* has to be created. See the documentation for the `CREATE MAPPING`
+ * command.
  *
- * If the member that initiates a query doesn't have local entries for the given IMap, the query fails.
- *
- * Consider the following key/value model using Portable classes:
- *
- * ```js
- * class PersonKey {
- *     constructor(personId, deptId) {
- *         this.personId = personId;
- *         this.deptId = deptId;
- *     }
- *
- *     writePortable(writer) {
- *         writer.writeLong('personId', this.personId);
- *         writer.writeLong('deptId', this.deptId);
- *     }
- * }
- *
- * class Person {
- *     constructor(name) {
- *         this.name = name;
- *     }
- *
- *     writePortable(writer) {
- *         writer.writeString('name', this.name);
- *     }
- * }
- * ```
- * This model will be resolved to the following table columns:
- * * personId BIGINT
- * * deptId BIGINT
- * * name VARCHAR
- * * __key OBJECT (hidden)
- * * this OBJECT (hidden)
- *
- * ##### Consistency
- *
- * Results returned from IMap query are weakly consistent:
- * * If an entry was not updated during iteration, it is guaranteed to be returned exactly once.
- * * If an entry was modified during iteration, it might be returned zero, one or several times.
- *
- * #### Usage
- *
- * When a query is executed, an {@link SqlResult} is returned. The returned result is an async iterable. It can also be
- * iterated using {@link SqlResult.next} method. The result should be closed at the end to release server resources.
- * Fetching the last page closes the result.
- * The code snippet below demonstrates a typical usage pattern:
+ * When a query is executed, an {@link SqlResult} is returned. The returned result is an async iterable of {@link SqlRowType}.
+ * It can also be iterated using {@link SqlResult.next} method. The result should be closed at the end to release server
+ * resources. Fetching the last page closes the result. The code snippet below demonstrates a typical usage pattern:
  *
  * ```
  * const client = await Client.newHazelcastClient();
- * const result = await client.getSqlService().execute('SELECT * FROM person');
+ * const result = await client.getSql().execute('SELECT * FROM persons');
  * for await (const row of result) {
  *    console.log(row.personId);
  *    console.log(row.name);
