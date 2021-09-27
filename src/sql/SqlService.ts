@@ -261,6 +261,7 @@ export class SqlServiceImpl implements SqlService {
                 SqlErrorCode.CONNECTION_PROBLEM,
                 'Cluster topology changed while a query was executed:' +
                 `Member cannot be reached: ${connection.getRemoteAddress()}`,
+                undefined,
                 err
             )
         } else {
@@ -276,7 +277,7 @@ export class SqlServiceImpl implements SqlService {
             originatingMemberId = this.connectionManager.getClientUuid();
         }
         return new HazelcastSqlException(
-            originatingMemberId, SqlErrorCode.GENERIC, err.message, err
+            originatingMemberId, SqlErrorCode.GENERIC, err.message, undefined, err
         );
     }
 
