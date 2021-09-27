@@ -36,6 +36,7 @@ import {
     tryGetString
 } from '../util/Util';
 import {SqlPage} from './SqlPage';
+import {SqlError} from './SqlError';
 
 /**
  * SQL Service of the client. You can use this service to execute SQL queries.
@@ -180,7 +181,7 @@ export class SqlServiceImpl implements SqlService {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
         const sqlError = response.error;
         if (sqlError !== null) {
-            throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code, sqlError.message);
+            throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code, sqlError.message, sqlError.suggestion);
         } else {
             res.onExecuteResponse(
                 response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
@@ -250,7 +251,7 @@ export class SqlServiceImpl implements SqlService {
      * @param connection
      * @returns {@link HazelcastSqlException}
      */
-    rethrow(err: any, connection: Connection): HazelcastSqlException {
+    rethrow(err: Error, connection: Connection): HazelcastSqlException {
         if (err instanceof HazelcastSqlException) {
             return err;
         }
@@ -261,6 +262,7 @@ export class SqlServiceImpl implements SqlService {
                 SqlErrorCode.CONNECTION_PROBLEM,
                 'Cluster topology changed while a query was executed:' +
                 `Member cannot be reached: ${connection.getRemoteAddress()}`,
+                undefined,
                 err
             )
         } else {
@@ -268,15 +270,15 @@ export class SqlServiceImpl implements SqlService {
         }
     }
 
-    toHazelcastSqlException(err: any): HazelcastSqlException {
+    toHazelcastSqlException(err: Error): HazelcastSqlException {
         let originatingMemberId;
-        if (err.hasOwnProperty('originatingMemberId')) {
+        if (err instanceof SqlError) {
             originatingMemberId = err.originatingMemberId;
         } else {
             originatingMemberId = this.connectionManager.getClientUuid();
         }
         return new HazelcastSqlException(
-            originatingMemberId, SqlErrorCode.GENERIC, err.message, err
+            originatingMemberId, SqlErrorCode.GENERIC, err.message, undefined, err
         );
     }
 
@@ -342,7 +344,8 @@ export class SqlServiceImpl implements SqlService {
                 cursorBufferSize,
                 schema,
                 expectedResultType,
-                queryId
+                queryId,
+                false // Used to skip updating statistics from MC client, should be false in other clients
             );
 
             const res = SqlResultImpl.newResult(

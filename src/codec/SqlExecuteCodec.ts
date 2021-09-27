@@ -41,7 +41,8 @@ const REQUEST_MESSAGE_TYPE = 2163712;
 const REQUEST_TIMEOUT_MILLIS_OFFSET = PARTITION_ID_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
 const REQUEST_CURSOR_BUFFER_SIZE_OFFSET = REQUEST_TIMEOUT_MILLIS_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 const REQUEST_EXPECTED_RESULT_TYPE_OFFSET = REQUEST_CURSOR_BUFFER_SIZE_OFFSET + BitsUtil.INT_SIZE_IN_BYTES;
-const REQUEST_INITIAL_FRAME_SIZE = REQUEST_EXPECTED_RESULT_TYPE_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const REQUEST_SKIP_UPDATE_STATISTICS_OFFSET = REQUEST_EXPECTED_RESULT_TYPE_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const REQUEST_INITIAL_FRAME_SIZE = REQUEST_SKIP_UPDATE_STATISTICS_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 const RESPONSE_UPDATE_COUNT_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 
 /** @internal */
@@ -54,7 +55,7 @@ export interface SqlExecuteResponseParams {
 
 /** @internal */
 export class SqlExecuteCodec {
-    static encodeRequest(sql: string, parameters: Data[], timeoutMillis: Long, cursorBufferSize: number, schema: string, expectedResultType: number, queryId: SqlQueryId): ClientMessage {
+    static encodeRequest(sql: string, parameters: Data[], timeoutMillis: Long, cursorBufferSize: number, schema: string, expectedResultType: number, queryId: SqlQueryId, skipUpdateStatistics: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
 
@@ -62,6 +63,7 @@ export class SqlExecuteCodec {
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_TIMEOUT_MILLIS_OFFSET, timeoutMillis);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_CURSOR_BUFFER_SIZE_OFFSET, cursorBufferSize);
         FixSizedTypesCodec.encodeByte(initialFrame.content, REQUEST_EXPECTED_RESULT_TYPE_OFFSET, expectedResultType);
+        FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_SKIP_UPDATE_STATISTICS_OFFSET, skipUpdateStatistics);
         clientMessage.addFrame(initialFrame);
         clientMessage.setMessageType(REQUEST_MESSAGE_TYPE);
         clientMessage.setPartitionId(-1);

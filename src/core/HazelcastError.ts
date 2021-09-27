@@ -412,6 +412,8 @@ export class UndefinedErrorCodeError extends HazelcastError {
  */
 export class HazelcastSqlException extends HazelcastError {
     private readonly code: number;
+    /** Suggested SQL statement to remediate experienced error. */
+    readonly suggestion : string | null;
     /**
      * ID of the member that caused or initiated an error condition.
      * This can be the client's UUID if error is due to the client.
@@ -422,11 +424,13 @@ export class HazelcastSqlException extends HazelcastError {
         originatingMemberId: UUID,
         code: number,
         msg: string,
+        suggestion : string | null = null,
         cause?: Error,
-        serverStackTrace?: ServerErrorStackElement[]
+        serverStackTrace?: ServerErrorStackElement[],
     ) {
         super(msg, cause, serverStackTrace);
         this.code = code;
         this.originatingMemberId = originatingMemberId;
+        this.suggestion = suggestion;
     }
 }

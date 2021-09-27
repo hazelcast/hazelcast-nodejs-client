@@ -22,7 +22,7 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 chai.should();
 
-const { Client } = require('../../../../lib');
+const { Client, HazelcastSqlException } = require('../../../../lib');
 const TestUtil = require('../../../TestUtil');
 const RC = require('../../RC');
 const {Lang} = require('../../remote_controller/remote-controller_types');
@@ -238,7 +238,6 @@ describe('SqlExecuteTest', function () {
         beforeEach(async function () {
             mapName = TestUtil.randomString(10);
             someMap = await client.getMap(mapName);
-            await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
         });
 
         after(async function () {
@@ -251,6 +250,7 @@ describe('SqlExecuteTest', function () {
         });
 
         it('should execute without params', async function () {
+            await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
             for (const _mapName of [mapName, 'public.' + mapName]) {
                 const entryCount = 10;
                 await populateMap(entryCount);
@@ -277,7 +277,37 @@ describe('SqlExecuteTest', function () {
         });
 
         it('should execute with params', async function () {
+            await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
             await runSQLQueryWithParams();
+        });
+
+        it('should execute provided suggestions', async function () {
+            TestUtil.markClientVersionAtLeast(this, '5.0');
+            if (!serverVersionNewerThanFive) {
+                this.skip();
+            }
+            // We don't create a mapping intentionally to get suggestions
+            await someMap.put(1, 'value-1');
+            const selectAllQuery = `SELECT * FROM "${mapName}"`;
+            const err = await TestUtil.getRejectionReasonOrThrow(
+                async () => await client.getSql().execute(selectAllQuery)
+            );
+            err.should.be.instanceof(HazelcastSqlException);
+
+            await client.getSql().execute(err.suggestion);
+
+            const result = await client.getSql().execute(selectAllQuery);
+
+            const rows = [];
+
+            for await (const row of result) {
+                rows.push(row);
+            }
+
+            rows.should.be.deep.eq([{
+                this: 'value-1',
+                __key: 1
+            }]);
         });
     });
     describe('mixed cluster of lite and data members', function () {
