@@ -26,7 +26,16 @@ import {HazelcastSqlException, IllegalStateError, UUID} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
 import {Data} from '../serialization';
 
+/**
+ * An {@link SqlResult} iterates over this type if {@link SqlStatementOptions.returnRawResult} is set to `false`
+ * (by default `false`) while {@link SqlService.execute | executing} an SQL query.
+ *
+ * Keys are column names and values are values in the SQL row.
+ */
 export type SqlRowAsObject = { [key: string]: any };
+/**
+ * Represents one of {@link SqlRow} and {@link SqlRowAsObject}.
+ */
 export type SqlRowType = SqlRow | SqlRowAsObject;
 
 /**
@@ -34,7 +43,7 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  *
  * ### Iteration
  *
- * The SqlResult is an async iterable of {@link SqlRowType} which is either an {@link SqlRow} or regular objects.
+ * An `SqlResult` is an async iterable of {@link SqlRowType} which is either an {@link SqlRow} or regular JavaScript objects.
  * By default it returns regular JavaScript objects, containing key and values. Keys represent column names, whereas
  * values represent row values. The default object returning behavior can be changed via the option
  * {@link SqlStatementOptions.returnRawResult}. If it is true, {@link SqlRow} objects are returned instead of regular objects.
@@ -43,6 +52,8 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  * cannot be deserialized.
  *
  * Use {@link close} to release the resources associated with the result.
+ *
+ * An `SqlResult` can be iterated only once.
  *
  * #### for-await... of
  *
@@ -57,9 +68,10 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  *
  * #### next()
  *
- * Another approach to iterating rows is using {@link next}. Next returns an object with `done` and `value` properties.
- * `done` is false when there are more rows to iterate, false otherwise. `value` holds the current row value. Refer to
- * [iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators) for more information.
+ * Another approach of iterating rows is using the {@link next} method. Every call to `next` returns an object with `done` and
+ * `value` properties. `done` is `false` when there are more rows to iterate, `true` otherwise. `value` holds the current row
+ * value. Refer to [iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators) for more
+ * information about iteration in JavaScript.
  *
  * ```js
  * let row = await result.next();
@@ -71,7 +83,7 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  *
  * ### Usage for update count
  * ```js
- * const updateCount = result.getUpdateCount();
+ * const updateCount = result.updateCount; // A Long object
  * ```
  *
  * You don't need to call {@link close} in this case.
