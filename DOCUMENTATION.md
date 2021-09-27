@@ -2700,6 +2700,20 @@ The `__key` and `this` fields are returned by the `SELECT *` queries if they do 
 SELECT * FROM employee
 ```
 
+#### Lazy SQL Row Deserialization
+
+Rows in an `SqlResult` are deserialized lazily to allow you to access part of it if there is a value that can't be deserialized.
+
+While executing a query, if you set `SqlStatementOptions.returnRawResult` to `true`, `SqlRow` objects will be returned while
+iterating the `SqlResult`. Then, with `SqlRow.getObject` you can access values in a `SqlRow`. Each call to this method might
+result in deserialization if the column type for this object is `OBJECT`. It is advised to assign the result of this method
+call to some variable and reuse it.
+
+If you set `SqlStatementOptions.returnRawResult` to `false`, you will get regular JavaScript objects where keys are column names
+and values are values in the SQL row. If there is a field with `OBJECT` column type in the result that can't be deserialized,
+you will get an error. In this case, it is advised to set `SqlStatementOptions.returnRawResult` to `true` if you want partial
+deserialization.
+
 ### 8.7.3. Data Types
 
 The SQL service supports a set of SQL data types. The table below shows SQL data types and corresponding JavaScript types:
