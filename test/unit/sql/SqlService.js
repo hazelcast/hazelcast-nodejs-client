@@ -70,7 +70,7 @@ describe('SqlServiceTest', function () {
             fakeConnectionRegistry = {
                 getConnectionForSql: sandbox.fake.returns(fakeConnection)
             };
-            fakeSerializationService = { toData: sandbox.fake(v => v), toObject: v => v };
+            fakeSerializationService = { toData: sandbox.fake(v => v)};
             fakeInvocationService = { invokeOnConnection: sandbox.fake.resolves(fakeClientResponseMessage) };
             fakeConnectionManager = { getClientUuid: sandbox.fake.returns(fakeClientUUID) };
 

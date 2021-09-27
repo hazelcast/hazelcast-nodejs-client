@@ -2702,11 +2702,11 @@ SELECT * FROM employee
 
 #### Lazy SQL Row Deserialization
 
-Rows in an SqlResult are deserialized lazily to allow you to access part of it if there is a value that can't be deserialized.
+Rows in an `SqlResult` are deserialized lazily to allow you to access part of it if there is a value that can't be deserialized.
 
 While executing a query, if you set `SqlStatementOptions.returnRawResult` to `true`, `SqlRow` objects will be returned while
 iterating the `SqlResult`. Then, with `SqlRow.getObject` you can access values in a `SqlRow`. Each call to this method might
-result in deserialization if the column type for this object is `OBJECT`.  It is advised to assign the result of this method
+result in deserialization if the column type for this object is `OBJECT`. It is advised to assign the result of this method
 call to some variable and reuse it.
 
 If you set `SqlStatementOptions.returnRawResult` to `false`, you will get regular JavaScript objects where keys are column names
