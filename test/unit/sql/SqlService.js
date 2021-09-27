@@ -153,6 +153,23 @@ describe('SqlServiceTest', function () {
             error.should.be.instanceof(HazelcastSqlException).that.has.ownProperty('code', SqlErrorCode.CONNECTION_PROBLEM);
         });
 
+        it('should throw HazelcastSqlException that has proper cause if invocation fails', async function () {
+            const err = new Error('Invocation failed');
+            fakeInvocationService.invokeOnConnection = sandbox.fake.rejects(err);
+            sqlService = new SqlServiceImpl(
+                fakeConnectionRegistry,
+                fakeSerializationService,
+                fakeInvocationService,
+                fakeConnectionManager
+            );
+            const error = await getRejectionReasonOrThrow(async () => {
+                await sqlService.execute('SELECT * FROM map', [], {});
+            });
+            error.should.be.instanceof(HazelcastSqlException);
+            error.should.have.ownProperty('cause', err);
+            error.should.have.ownProperty('code', SqlErrorCode.GENERIC);
+        });
+
         it('should construct a SqlResultImpl with default result type if it\'s not specified', async function () {
             const fake = sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake(SqlResultImpl.newResult));
             await sqlService.execute('s', [], { cursorBufferSize: 1 });
