@@ -92,15 +92,13 @@ describe('SqlResultTest', function () {
         let fakeSqlService;
         let fakeConnection;
         let fakeQueryId;
-        let fakeSerializationService;
+        let fakeDeserializeFn;
 
         beforeEach(function () {
             fakeSqlService = sandbox.fake();
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
-            fakeSerializationService = {
-                toObject: sandbox.fake(v => v)
-            };
+            fakeDeserializeFn = sandbox.fake(v => v);
         });
 
         afterEach(function () {
@@ -109,8 +107,8 @@ describe('SqlResultTest', function () {
 
         it('should async iterable, over objects; by default and if returnRawResults is false', async function () {
             for (const sqlResult of [
-                new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId, 4096),
-                new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId, 4096, false)
+                new SqlResultImpl(fakeSqlService, fakeDeserializeFn, fakeConnection, fakeQueryId, 4096),
+                new SqlResultImpl(fakeSqlService, fakeDeserializeFn, fakeConnection, fakeQueryId, 4096, false)
             ]) {
                 const rowCount = 3;
                 simulateExecutionResponse(sqlResult, rowCount, defaultRowMetadata);
@@ -130,7 +128,7 @@ describe('SqlResultTest', function () {
         it('should be async iterable, iterating over SqlRowImpls; if returnRawResults is true', async function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
-                fakeSerializationService,
+                fakeDeserializeFn,
                 fakeConnection,
                 fakeQueryId,
                 4096,
@@ -153,7 +151,7 @@ describe('SqlResultTest', function () {
         it('should be iterable via next()', async function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
-                fakeSerializationService,
+                fakeDeserializeFn,
                 fakeConnection,
                 fakeQueryId,
                 4096
@@ -176,7 +174,7 @@ describe('SqlResultTest', function () {
         it('should reject for await iteration on execute error', async function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
-                fakeSerializationService,
+                fakeDeserializeFn,
                 fakeConnection,
                 fakeQueryId,
                 4096
@@ -194,7 +192,7 @@ describe('SqlResultTest', function () {
         it('should reject next() iteration on execute error', async function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
-                fakeSerializationService,
+                fakeDeserializeFn,
                 fakeConnection,
                 fakeQueryId,
                 4096
@@ -414,9 +412,9 @@ describe('SqlResultTest', function () {
     describe('getCurrentRow', function () {
         let fakeSqlService;
         let fakeConnection;
-        let fakeSerializationService;
         let fakeQueryId;
         let sqlResult;
+        let fakeDeserializeFn;
 
         const fakeSqlPage = {};
         const cursorBufferSize = 4096;
@@ -437,13 +435,11 @@ describe('SqlResultTest', function () {
                 fetch: sandbox.fake.resolves(fakeSqlPage),
                 close: sandbox.fake.resolves()
             };
-            fakeSerializationService = {
-                toObject: sandbox.fake(v => v)
-            };
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
             fakeConnection = sandbox.fake();
-            sqlResult = new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId,
+            fakeDeserializeFn = sandbox.fake(v => v);
+            sqlResult = new SqlResultImpl(fakeSqlService, fakeDeserializeFn, fakeConnection, fakeQueryId,
                 cursorBufferSize);
             sqlResult.rowMetadata = rowMetadata;
             sqlResult.currentPage = new SqlPage([2, 2], [['1', '2'], ['3', '4']], true);
@@ -455,7 +451,7 @@ describe('SqlResultTest', function () {
 
         it('should call toObject of serialization service', function () {
             sqlResult.getCurrentRow();
-            fakeSerializationService.toObject.called.should.be.true;
+            fakeDeserializeFn.called.should.be.true;
         });
 
         it('should return object if returnRawResult is false', function () {
@@ -474,8 +470,8 @@ describe('SqlResultTest', function () {
         let fakeSqlService;
         let fakeConnection;
         let fakeQueryId;
-        let fakeSerializationService;
         let sqlResult;
+        let fakeDeserializeFn;
 
         const fakeSqlPage = new SqlPage([2, 2], [['1', '2'], ['3', '4']], true);
         const cursorBufferSize = 4096;
@@ -484,12 +480,10 @@ describe('SqlResultTest', function () {
             fakeSqlService = {
                 fetch: sandbox.fake.resolves(fakeSqlPage)
             };
-            fakeSerializationService = {
-                toObject: sandbox.fake(v => v)
-            };
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
-            sqlResult = new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId,
+            fakeDeserializeFn = sandbox.fake(v => v);
+            sqlResult = new SqlResultImpl(fakeSqlService, fakeDeserializeFn, fakeConnection, fakeQueryId,
                 cursorBufferSize);
         });
 

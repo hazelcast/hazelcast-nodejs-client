@@ -24,7 +24,7 @@ import {SqlQueryId} from './SqlQueryId';
 import {DeferredPromise, deferredPromise} from '../util/Util';
 import {HazelcastSqlException, IllegalStateError, UUID} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
-import {SerializationService} from '../serialization/SerializationService';
+import {Data} from '../serialization';
 
 export type SqlRowAsObject = { [key: string]: any };
 export type SqlRowType = SqlRow | SqlRowAsObject;
@@ -150,7 +150,7 @@ export class SqlResultImpl implements SqlResult {
 
     constructor(
         private readonly sqlService: SqlServiceImpl,
-        private readonly serializationService: SerializationService,
+        private readonly deserializeFn: (data: Data) => any,
         private readonly connection: Connection,
         private readonly queryId: SqlQueryId,
         /** The page size used for pagination */
@@ -179,15 +179,14 @@ export class SqlResultImpl implements SqlResult {
      */
     static newResult(
         sqlService: SqlServiceImpl,
-        serializationService: SerializationService,
+        deserializeFn: (data: Data) => any,
         connection: Connection,
         queryId: SqlQueryId,
         cursorBufferSize: number,
         returnRawResult: boolean,
         clientUUID: UUID
     ) {
-        return new SqlResultImpl(sqlService, serializationService, connection, queryId, cursorBufferSize,
-            returnRawResult, clientUUID);
+        return new SqlResultImpl(sqlService, deserializeFn, connection, queryId, cursorBufferSize, returnRawResult, clientUUID);
     }
 
     isRowSet(): boolean {
@@ -258,14 +257,15 @@ export class SqlResultImpl implements SqlResult {
             const columnCount = this.currentPage.getColumnCount();
             const values = new Array(columnCount);
             for (let i = 0; i < columnCount; i++) {
-                values[i] = this.serializationService.toObject(this.currentPage.getValue(this.currentPosition, i));
+                values[i] = this.currentPage.getValue(this.currentPosition, i);
             }
-            return new SqlRowImpl(values, this.rowMetadata);
+            // Deserialization happens lazily while getting the object.
+            return new SqlRowImpl(values, this.rowMetadata, this.deserializeFn);
         } else { // Return objects
             const result: SqlRowAsObject = {};
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 const columnMetadata = this.rowMetadata.getColumn(i);
-                result[columnMetadata.name] = this.serializationService.toObject(
+                result[columnMetadata.name] = this.deserializeFn(
                     this.currentPage.getValue(this.currentPosition, i)
                 );
             }

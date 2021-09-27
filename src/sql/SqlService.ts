@@ -36,6 +36,7 @@ import {
     tryGetString
 } from '../util/Util';
 import {SqlPage} from './SqlPage';
+import {Data} from '../serialization';
 
 /**
  * SQL Service of the client. You can use this service to execute SQL queries.
@@ -268,15 +269,16 @@ export class SqlServiceImpl implements SqlService {
         }
     }
 
-    toHazelcastSqlException(err: any): HazelcastSqlException {
+    toHazelcastSqlException(err: any, message: string = err.message): HazelcastSqlException {
         let originatingMemberId;
         if (err.hasOwnProperty('originatingMemberId')) {
             originatingMemberId = err.originatingMemberId;
         } else {
             originatingMemberId = this.connectionManager.getClientUuid();
         }
+
         return new HazelcastSqlException(
-            originatingMemberId, SqlErrorCode.GENERIC, err.message, err
+            originatingMemberId, SqlErrorCode.GENERIC, message, err
         );
     }
 
@@ -347,7 +349,7 @@ export class SqlServiceImpl implements SqlService {
 
             const res = SqlResultImpl.newResult(
                 this,
-                this.serializationService,
+                this.deserializeRowValue.bind(this),
                 connection,
                 queryId,
                 cursorBufferSize,
@@ -412,5 +414,16 @@ export class SqlServiceImpl implements SqlService {
             }
             return response.rowPage;
         });
+    }
+
+    /**
+     * Used for lazy deserialization of row values.
+     */
+    private deserializeRowValue(data: Data) : any {
+        try {
+            return this.serializationService.toObject(data);
+        } catch (e) {
+            throw this.toHazelcastSqlException(e, `Failed to deserialize query result value: ${e.message}`);
+        }
     }
 }

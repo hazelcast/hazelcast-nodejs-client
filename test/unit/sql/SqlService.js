@@ -70,7 +70,7 @@ describe('SqlServiceTest', function () {
             fakeConnectionRegistry = {
                 getConnectionForSql: sandbox.fake.returns(fakeConnection)
             };
-            fakeSerializationService = { toData: sandbox.fake(v => v) };
+            fakeSerializationService = { toData: sandbox.fake(v => v), toObject: v => v };
             fakeInvocationService = { invokeOnConnection: sandbox.fake.resolves(fakeClientResponseMessage) };
             fakeConnectionManager = { getClientUuid: sandbox.fake.returns(fakeClientUUID) };
 
@@ -154,14 +154,14 @@ describe('SqlServiceTest', function () {
         it('should construct a SqlResultImpl with default result type if it\'s not specified', async function () {
             const fake = sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake(SqlResultImpl.newResult));
             await sqlService.execute('s', [], { cursorBufferSize: 1 });
-            fake.calledOnceWithExactly(
-                sqlService,
-                fakeSerializationService,
-                fakeConnection,
-                fakeQueryId,
-                1,
-                SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT,
-                fakeClientUUID
+            fake.calledWith(
+                sandbox.match(sqlService),
+                sandbox.match.func,
+                sandbox.match(fakeConnection),
+                sandbox.match(fakeQueryId),
+                sandbox.match(1),
+                sandbox.match(SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT),
+                sandbox.match(fakeClientUUID)
             ).should.be.true;
         });
 
@@ -169,14 +169,14 @@ describe('SqlServiceTest', function () {
             const fake = sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake(SqlResultImpl.newResult));
 
             await sqlService.execute('s', [], { returnRawResult: true });
-            fake.calledOnceWithExactly(
-                sqlService,
-                fakeSerializationService,
-                fakeConnection,
-                fakeQueryId,
-                SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE,
-                true,
-                fakeClientUUID
+            fake.calledWith(
+                sandbox.match(sqlService),
+                sandbox.match.func,
+                sandbox.match(fakeConnection),
+                sandbox.match(fakeQueryId),
+                sandbox.match(SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE),
+                sandbox.match(true),
+                sandbox.match(fakeClientUUID)
             ).should.be.true;
         });
 
@@ -184,14 +184,14 @@ describe('SqlServiceTest', function () {
             const fake = sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake(SqlResultImpl.newResult));
 
             await sqlService.execute('s', [], { returnRawResult: true, cursorBufferSize: 1 });
-            fake.calledOnceWithExactly(
-                sqlService,
-                fakeSerializationService,
-                fakeConnection,
-                fakeQueryId,
-                1,
-                true,
-                fakeClientUUID
+            fake.calledWithMatch(
+                sandbox.match(sqlService),
+                sandbox.match.func,
+                sandbox.match(fakeConnection),
+                sandbox.match(fakeQueryId),
+                sandbox.match(1),
+                sandbox.match(true),
+                sandbox.match(fakeClientUUID)
             ).should.be.true;
         });
 
