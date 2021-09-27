@@ -430,7 +430,7 @@ export class SqlServiceImpl implements SqlService {
         } catch (e) {
             let message = 'Failed to deserialize query result value.';
             if (!isRaw) {
-                message += 'In order to partially deserialize SQL rows you can set `returnRawResult` option to `true`. Check '
+                message += ' In order to partially deserialize SQL rows you can set `returnRawResult` option to `true`. Check '
                         + 'out the "Lazy SQL Row Deserialization" section in the client\'s reference manual.';
             }
             message += ` Error: ${e.message}`;
