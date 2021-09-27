@@ -39,6 +39,9 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  * values represent row values. The default object returning behavior can be changed via the option
  * {@link SqlStatementOptions.returnRawResult}. If it is true, {@link SqlRow} objects are returned instead of regular objects.
  *
+ * Values in SQL rows are deserialized lazily. While iterating you will get a {@link HazelcastSqlException} if a value in SQL row
+ * cannot be deserialized.
+ *
  * Use {@link close} to release the resources associated with the result.
  *
  * #### for-await... of
@@ -79,6 +82,7 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
      *  Returns next {@link SqlRowType} iteration result. You should not call this method when result does not contain
      *  rows.
      *  @throws {@link IllegalStateError} if result does not contain rows, but update count.
+     *  @throws {@link HazelcastSqlException} if a value in current row cannot be deserialized.
      *  @returns an object including `value` and `done` keys. The `done` key indicates if
      *  iteration is ended, i.e when there are no more results. `value` holds iteration values which are in SqlRowType type.
      *  `value` has undefined value if iteration has ended.
@@ -150,7 +154,7 @@ export class SqlResultImpl implements SqlResult {
 
     constructor(
         private readonly sqlService: SqlServiceImpl,
-        private readonly deserializeFn: (data: Data) => any,
+        private readonly deserializeFn: (data: Data, isRaw: boolean) => any,
         private readonly connection: Connection,
         private readonly queryId: SqlQueryId,
         /** The page size used for pagination */
@@ -179,7 +183,7 @@ export class SqlResultImpl implements SqlResult {
      */
     static newResult(
         sqlService: SqlServiceImpl,
-        deserializeFn: (data: Data) => any,
+        deserializeFn: (data: Data, isRaw: boolean) => any,
         connection: Connection,
         queryId: SqlQueryId,
         cursorBufferSize: number,
@@ -265,9 +269,7 @@ export class SqlResultImpl implements SqlResult {
             const result: SqlRowAsObject = {};
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 const columnMetadata = this.rowMetadata.getColumn(i);
-                result[columnMetadata.name] = this.deserializeFn(
-                    this.currentPage.getValue(this.currentPosition, i)
-                );
+                result[columnMetadata.name] = this.deserializeFn(this.currentPage.getValue(this.currentPosition, i), false);
             }
             return result;
         }
