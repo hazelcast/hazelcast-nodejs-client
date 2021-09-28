@@ -103,7 +103,9 @@
       * [8.7.9.3. Important Notes About Comparison and Casting](#8793-important-notes-about-comparison-and-casting)
     * [8.7.10. Functions and Operators](#8710-functions-and-operators)
     * [8.7.11. Limitations](#8711-limitations)
-    * [8.7.12. More Information](#8712-more-information)
+    * [8.7.12. Improving the Performance of SQL Queries](#8712-improving-the-performance-of-sql-queries)
+    * [8.7.13. More Information](#8713-more-information)
+      * [8.7.13.1 Code Samples](#87131-code-samples)
   * [8.8. Distributed Query](#88-distributed-query)
     * [8.8.1. How Distributed Query Works](#881-how-distributed-query-works)
       * [8.8.1.1. Employee Map Query Example](#8811-employee-map-query-example)
@@ -2916,13 +2918,25 @@ SQL has the following limitations. We plan to remove these limitations in future
 * Limited support for joins. See [Join Tables](https://docs.hazelcast.com/hazelcast/latest/sql/select#join-tables).
 * No support for window functions. You cannot group or aggregate results in streaming queries.
 
-### 8.7.12. More Information
+### 8.7.12. Improving the Performance of SQL Queries
 
-Please refer to [Hazelcast SQL docs](https://docs.hazelcast.com/hazelcast/latest/sql/sql-statements.html) for more information.
+You can improve the performance of queries over maps by indexing map entries. To find out more about indexing map entries, see
+`addIndex` method of map in [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
 
-For basic usage of SQL, see [this](code_samples/sql-basic-usage.js) code sample.
+<!-- markdownlint-disable-next-line MD013 -->
+If you find that your queries lead to out of memory exceptions (OOME), consider decreasing the value of the Jet engine’s [max-processor-accumulated-records](https://docs.hazelcast.com/hazelcast/latest/configuration/jet-configuration#list-of-configuration-options)
+option.
 
-For usages of SQL with different data types, see [this](code_samples/sql-data-types.js) code sample.
+### 8.7.13. More Information
+
+Please refer to [Hazelcast SQL docs](https://docs.hazelcast.com/hazelcast/5.0/sql/sql-overview) for more information.
+
+### 8.7.13.1 Code Samples
+
+* For basic usage of SQL, see [this](code_samples/sql-basic-usage.js) code sample.
+* For usage of SQL with different data types, see [this](code_samples/sql-data-types.js) code sample.
+* For usage of SQL with `ORDER BY`, `LIMIT` and `OFFSET`, see [this](code_samples/sql-order-by-limit-offset-example.js) code
+sample.
 
 ## 8.8. Distributed Query
 
