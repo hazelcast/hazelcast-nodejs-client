@@ -78,13 +78,32 @@
   * [8.6. Distributed Computing](#86-distributed-computing)
     * [8.6.1. Using EntryProcessor](#861-using-entryprocessor)
   * [8.7. SQL](#87-sql)
-    * [8.7.1. SQL Statements](#871-sql-statements)
-    * [8.7.2. Querying IMap](#872-querying-imap)
-    * [8.7.3. Data Types](#873-data-types)
-    * [8.7.4. Casting](#874-casting)
-    * [8.7.5. Expressions](#875-expressions)
-    * [8.7.6. Source and Sink Connectors](#876-source-and-sink-connectors)
-    * [8.7.7. More Information](#877-more-information)
+    * [8.7.1. Supported Queries](#871-supported-queries)
+      * [8.7.1.1. Ad-Hoc Queries](#8711-ad-hoc-queries)
+      * [8.7.1.2. Streaming Queries (Continuous Queries)](#8712-streaming-queries-continuous-queries)
+      * [8.7.1.3. Federated Queries](#8713-federated-queries)
+    * [8.7.2. Mappings](#872-mappings)
+      * [8.7.2.1. Case sensitivity](#8721-case-sensitivity)
+    * [8.7.3. SQL Statements](#873-sql-statements)
+      * [8.7.3.1. Data Manipulation Language(DML) Statements](#8731-data-manipulation-languagedml-statements)
+      * [8.7.3.2. Data Definition Language(DDL) Statements](#8732-data-definition-languageddl-statements)
+      * [8.7.3.3. Job Management Statements](#8733-job-management-statements)
+    * [8.7.4. Querying Maps with SQL](#874-querying-maps-with-sql)
+      * [8.7.4.1. Key and Value Objects](#8741-key-and-value-objects)
+      * [8.7.4.2. "SELECT *" Queries](#8742-select--queries)
+      * [8.7.4.3. Key and Value Fields](#8743-key-and-value-fields)
+    * [8.7.5. Using Query Parameters](#875-using-query-parameters)
+      * [8.7.5.1. Benefits of Query Parameters](#8751-benefits-of-query-parameters)
+    * [8.7.6. Querying JSON Objects](#876-querying-json-objects)
+    * [8.7.7. Lazy SQL Row Deserialization](#877-lazy-sql-row-deserialization)
+    * [8.7.8. Data Types](#878-data-types)
+    * [8.7.9. Casting](#879-casting)
+      * [8.7.9.1. How to Cast](#8791-how-to-cast)
+      * [8.7.9.2. An Example of Casting](#8792-an-example-of-casting)
+      * [8.7.9.3. Important Notes About Comparison and Casting](#8793-important-notes-about-comparison-and-casting)
+    * [8.7.10. Functions and Operators](#8710-functions-and-operators)
+    * [8.7.11. Limitations](#8711-limitations)
+    * [8.7.12. More Information](#8712-more-information)
   * [8.8. Distributed Query](#88-distributed-query)
     * [8.8.1. How Distributed Query Works](#881-how-distributed-query-works)
       * [8.8.1.1. Employee Map Query Example](#8811-employee-map-query-example)
@@ -1478,14 +1497,14 @@ this operation may run again, which may cause two instances of the same object i
 
 ## 8.4. Using Distributed Data Structures
 
-Most of the distributed data structures available in IMDG are supported by the Node.js client. In this chapter, you will learn
-how to use these distributed data structures.
+Most of the distributed data structures available in Hazelcast are supported by the Node.js client. In this chapter, you will
+learn how to use these distributed data structures.
 
 ### 8.4.1. Using Map
 
 Hazelcast Map (`IMap`) is a distributed map. Through the Node.js client, you can perform operations like reading and writing
 from/to a Hazelcast Map with the well known get and put methods. For details, see the
-[Map section](https://docs.hazelcast.com/imdg/latest/data-structures/map.html) in the Hazelcast IMDG Reference Manual.
+[Map section](https://docs.hazelcast.com/hazelcast/latest/data-structures/map.html) in the Hazelcast Reference Manual.
 
 A Map usage example is shown below.
 
@@ -1497,7 +1516,7 @@ await map.put('key', 'value');
 const val = await map.get('key');
 // Run concurrent Map operations (optimistic updates)
 await map.putIfAbsent('somekey', 'somevalue');
-await map.replace('key', 'value', 'newvalue');
+await map.replaceIfSame('key', 'value', 'newvalue');
 ```
 
 Hazelcast Map supports a Near Cache for remotely stored entries to increase the performance of read operations. See the
@@ -2552,142 +2571,170 @@ console.log(value);
 
 The SQL service provided by Hazelcast Node.js client allows you to run SQL queries.
 
-> **WARNING: The SQL feature have become stable in 5.0. In order a client and a server to be fully compatible with each other,
-> their major versions must be the same.**
+You can use SQL to query data in maps, Kafka topics, or a variety of file systems. Results can be sent directly to the client
+or inserted into maps or Kafka topics. For streaming queries, you can submit them to a cluster as jobs to run in the background.
 
-> **WARNING: A [Unisocket Client](#822-unisocket-client) must connect to a member that is not
-> [lite](https://docs.hazelcast.com/hazelcast/latest/management/cluster-utilities.html#enabling-lite-members) (non-lite members
-> are called data members), otherwise Data Manipulation Language(DML) statements below won't work for that client.**
+> **WARNING: The SQL feature have become stable in 5.0 versions of the client and the server. In order a client and a server to
+> be fully compatible with each other, their major versions must be the same.**
 
-### 8.7.1 SQL Statements
+> **WARNING: A [Unisocket Client](#822-unisocket-client) must connect to a data member, i.e not a
+> [lite](https://docs.hazelcast.com/hazelcast/latest/management/cluster-utilities.html#enabling-lite-members) member, because SQL
+> queries cannot be executed on lite members.**
 
-#### Data Manipulation Language(DML) Statements
+### 8.7.1. Supported Queries
 
-- [SELECT:](https://docs.hazelcast.com/hazelcast/latest/sql/select.html) Read data from a table.
-- [SINK INTO/INSERT INTO:](https://docs.hazelcast.com/hazelcast/latest/sql/sink-into.html) Ingest data into a map and/or forward
+> **TIP: For a hands-on introduction to SQL, see
+> [Get Started with SQL Over Maps](https://docs.hazelcast.com/hazelcast/latest/sql/get-started-sql).**
+
+You can run the following queries with SQL:
+
+#### 8.7.1.1. Ad-Hoc Queries
+
+Query large datasets either in one or multiple systems and/or run aggregations on them to get deeper insights.
+
+See the [Get Started with SQL Over Maps](https://docs.hazelcast.com/hazelcast/latest/sql/get-started-sql) tutorial for reference.
+
+#### 8.7.1.2. Streaming Queries (Continuous Queries)
+
+Keep an open connection to a streaming data source and run a continuous query to get near real-time updates.
+
+See the [Get Started with SQL Over Kafka](https://docs.hazelcast.com/hazelcast/latest/sql/learn-sql) tutorial for reference.
+
+#### 8.7.1.3. Federated Queries
+
+Query different datasets such as Kafka topics and Hazelcast maps, using a single query. Normally, querying in SQL is database
+or dataset-specific. However, with [mappings](#872-mappings), you can pull information from different sources to present a more
+complete picture.
+
+See the [Get Started with SQL Over Files](https://docs.hazelcast.com/hazelcast/latest/sql/get-started-sql-files) tutorial for
+reference.
+
+### 8.7.2. Mappings
+
+To connect to data sources and query them as if they were tables, the SQL service uses a concept called *mappings*.
+
+Mappings store essential metadata about the source’s data model, data access patterns, and serialization formats so that the SQL
+service can connect to the data source and query it.
+
+You can create mappings for the following data sources by using the
+[CREATE MAPPING statement](https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping):
+* [Hazelcast Maps](https://docs.hazelcast.com/hazelcast/latest/sql/mapping-to-maps)
+* [Kafka Topics](https://docs.hazelcast.com/hazelcast/latest/sql/mapping-to-kafka)
+* [File Systems](https://docs.hazelcast.com/hazelcast/latest/sql/mapping-to-a-file-system)
+
+#### 8.7.2.1. Case sensitivity
+
+Mapping names and field names are case-sensitive.
+
+For example, you can access an `employee` map as `employee` but not as `Employee`.
+
+### 8.7.3. SQL Statements
+
+Hazelcast supports the following SQL statements. Explore the available statements and find more details about them.
+
+#### 8.7.3.1. Data Manipulation Language(DML) Statements
+
+- [SELECT:](https://docs.hazelcast.com/hazelcast/latest/sql/select) Read data from a table.
+- [SINK INTO/INSERT INTO:](https://docs.hazelcast.com/hazelcast/latest/sql/sink-into) Ingest data into a map and/or forward
 data to other systems.
-- [UPDATE:](https://docs.hazelcast.com/hazelcast/latest/sql/update.html) Overwrite values in map entries.
-- [DELETE:](https://docs.hazelcast.com/hazelcast/latest/sql/delete.html) Delete map entries.
+- [UPDATE:](https://docs.hazelcast.com/hazelcast/latest/sql/update) Overwrite values in map entries.
+- [DELETE:](https://docs.hazelcast.com/hazelcast/latest/sql/delete) Delete map entries.
 
-####  Data Definition Language(DDL) Statements
+#### 8.7.3.2. Data Definition Language(DDL) Statements
 
-- [CREATE MAPPING:](https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping.html) Map a local or remote data object to a
+- [CREATE MAPPING:](https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping) Map a local or remote data object to a
 table that Hazelcast can access.
-- [SHOW MAPPINGS:](https://docs.hazelcast.com/hazelcast/latest/sql/show-mappings.html) Get the names of existing mappings.
-- [DROP MAPPING](https://docs.hazelcast.com/hazelcast/latest/sql/drop-mapping.html) Remove a mapping.
+- [SHOW MAPPINGS:](https://docs.hazelcast.com/hazelcast/latest/sql/show-mappings) Get the names of existing mappings.
+- [DROP MAPPING](https://docs.hazelcast.com/hazelcast/latest/sql/drop-mapping) Remove a mapping.
 
-#### Job Management Statements
+#### 8.7.3.3. Job Management Statements
 
-- [CREATE JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/create-job.html) Create a job that is not tied to the client
+- [CREATE JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/create-job) Create a job that is not tied to the client
 session.
-- [ALTER JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/alter-job.html) Restart, suspend, or resume a job.
-- [SHOW JOBS:](https://docs.hazelcast.com/hazelcast/latest/sql/show-jobs.html) Get the names of all running jobs.
-- [DROP JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/drop-job.html) Cancel a job.
-- [CREATE OR REPLACE SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/latest/sql/create-snapshot.html) Create a
+- [ALTER JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/alter-job) Restart, suspend, or resume a job.
+- [SHOW JOBS:](https://docs.hazelcast.com/hazelcast/latest/sql/show-jobs) Get the names of all running jobs.
+- [DROP JOB:](https://docs.hazelcast.com/hazelcast/latest/sql/drop-job) Cancel a job.
+- [CREATE OR REPLACE SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/latest/sql/create-snapshot) Create a
 snapshot of a running job, so you can stop and restart it at a later date.
-- [DROP SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/latest/sql/drop-snapshot.html) Cancel a running job.
+- [DROP SNAPSHOT (Enterprise only):](https://docs.hazelcast.com/hazelcast/latest/sql/drop-snapshot) Cancel a running job.
 
-### 8.7.2. Querying IMap
+### 8.7.4. Querying Maps with SQL
 
 > **WARNING: SQL queries against heterogenous maps is not supported and it may not work as expected.**
 
-This SQL query returns map entries whose values are more than 1:
+With SQL, you can query the keys and values of maps in your cluster.
+
+Assume that we have a map called `employees` that contains values of type `Employee`:
 
 ```javascript
-const map = await client.getMap('my-distributed-map');
-await map.put('key1', 1);
-await map.put('key2', 2);
-await map.put('key3', 3);
+class Employee {
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
+        this.factoryId = 1;
+        this.classId = 2;
+    }
 
-const result = await client.getSql().execute(`SELECT __key, this FROM my-distributed-map WHERE this > 1`);
+    readPortable(reader) {
+        this.name = reader.readString('name');
+        this.age = reader.readInt('age');
+    }
 
-for await (const row of result) {
-    console.log(row); // {__key: 'key3', this: 3} and {__key: 'key2', this: 2}
+    writePortable(writer) {
+        writer.writeString('name', this.name);
+        writer.writeInt('age', this.age);
+    }
+}
+
+const employees = await client.getMap('employees');
+
+await employees.set(1, new Employee('John Doe', 33));
+await employees.set(2, new Employee('Jane Doe', 29));
+```
+
+Before starting to query data, we must create a *mapping* for the `employees` map. The details of `CREATE MAPPING` statement is
+discussed in the [reference manual](https://docs.hazelcast.com/hazelcast/latest/sql/mapping-to-maps). For the `Employee` class
+above, the mapping statement is shown below. It is enough to create the mapping once per map.
+
+```javascript
+await client.getSql().execute(`
+    CREATE MAPPING IF NOT EXISTS employees (
+        __key DOUBLE,
+        name VARCHAR,
+        age INT
+    )
+    TYPE IMap
+    OPTIONS (
+      'keyFormat' = 'double',
+      'valueFormat' = 'portable',
+      'valuePortableFactoryId' = '1',
+      'valuePortableClassId' = '2'
+    )
+`);
+```
+
+The following code prints names of the employees whose age is less than `30`:
+
+```javascript
+const sqlResult = await client.getSql().execute('SELECT name FROM employees WHERE age < 30');
+
+for await (const row of sqlResult) {
+    console.log(row.name); // Jane Doe
 }
 ```
 
-The following subsections describe how you can access Hazelcast map objects and perform queries on them.
+The following subsections describe how you can access Hazelcast maps and perform queries on them in more details.
 
-#### Names
+#### 8.7.4.1. Key and Value Objects
 
-The SQL service exposes `IMap` objects as tables in the predefined `partitioned` schema using exact names.
-This schema is in the SQL service search path so that you can access the `IMap` objects with or without the schema name.
-
-Schema and table names are case-sensitive; you can access the `employee` map, for example, as employee or `partitioned.employee`,
-but not as `Employee`:
-```sql
-SELECT * FROM employee
-SELECT * FROM partitioned.employee
-```
-
-#### Fields
-
-The SQL service resolves fields accessible from the SQL automatically. The service reads the first local entry pair of
-the `IMap` to construct the list of fields.
-
-Field names are case-sensitive.
-
-##### Key and Value Objects
-
-An `IMap` entry consists of a key and a value. These are accessible through the `__key` and `this` aliases. The following
+A map entry consists of a key and a value. These are accessible through the `__key` and `this` aliases. The following
 query returns the keys and values of all entries in a map:
 
 ```sql
 SELECT __key, this FROM employee
 ```
 
-##### Key and Value Fields
-
-You may also access the nested fields of a key or value. The list of exposed fields depends on the serialization format,
-as described below:
-
-* For [IdentifiedDataSerializable](#41-identifieddataserializable-serialization) objects, you can use public field name or
-getter names.
-* For [Portable](#42-portable-serialization) objects, the fields written with `PortableWriter` methods are exposed using their
-exact names.
-
-> **NOTE: You cannot query JSON fields in SQL. If you want to query JSON, see
-> [Querying with JSON Strings](#8814-querying-with-json-strings).**
-
-For example, consider this portable class:
-
-```javascript
-class Employee {
-    constructor(age, name) {
-        this.age = age;
-        this.name = name;
-        this.factoryId = 321;
-        this.classId = 1;
-    }
-
-    readPortable(reader) {
-        this.age = reader.readInt('age');
-        this.name = reader.readString('name');
-    }
-
-    writePortable(writer) {
-        writer.writeInt('age', this.age);
-        writer.writeString('name', this.name);
-    }
-}
-```
-
-The SQL service can access the following fields:
-
-|  Name  |  Type     |
-|--------|-----------|
-|  name  |  VARCHAR  |
-|  age   |  INTEGER  |
-
-Together with the key and value objects, you may query the following fields from `IMap<number, Employee>`:
-
-```sql
-SELECT __key, this, name, age FROM employee
-```
-
-If both the key and value have fields with the same name, then the field of the value is exposed.
-
-#### "SELECT *" Queries
+#### 8.7.4.2. "SELECT *" Queries
 
 You may use the `SELECT * FROM <table>` syntax to get all the table fields.
 
@@ -2700,7 +2747,83 @@ The `__key` and `this` fields are returned by the `SELECT *` queries if they do 
 SELECT * FROM employee
 ```
 
-#### Lazy SQL Row Deserialization
+#### 8.7.4.3. Key and Value Fields
+
+You may also access the nested fields of a key or value. The list of exposed fields depends on the serialization format, as
+described [Querying Maps with SQL](https://docs.hazelcast.com/hazelcast/latest/sql/querying-maps-sql) section.
+
+Field names are case-sensitive.
+
+#### 8.7.5. Using Query Parameters
+
+You can use query parameters to build safer and faster SQL queries.
+
+A query parameter is a piece of information that you supply to a query before you run it. Parameters can be used by themselves
+or as part of a larger expression to form a criterion in the query.
+
+```javascript
+const ageToCompare = 30;
+await client.getSql().execute(`SELECT name FROM employees WHERE employees.age > ?`, [ageToCompare]);
+```
+
+Instead of putting data straight into an SQL statement, you use the `?` placeholder in your client code to indicate that you will
+replace that placeholder with a parameter.
+
+##### 8.7.5.1. Benefits of Query Parameters
+
+Query parameters have the following benefits:
+
+* Faster execution of similar queries. If you submit more than one query where only a value changes, the SQL service uses the
+cached query plan from the first query rather than optimizing each query again.
+* Protection against SQL injection. If you use query parameters, you don’t need to escape special characters in user-provided
+strings.
+
+### 8.7.6. Querying JSON Objects
+
+To query JSON objects, you should create an explicit mapping using the
+[CREATE MAPPING](https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping) statement, similar to the example above.
+
+For example, this code snippet creates a mapping to a new map called `json_employees`, which stores the JSON values `name` and
+`salary` and query it:
+
+```javascript
+const client = await Client.newHazelcastClient();
+
+await client.getSql().execute(`
+    CREATE MAPPING IF NOT EXISTS jsonEmployees (
+        __key DOUBLE,
+        name VARCHAR,
+        salary DOUBLE
+    )
+    TYPE IMap
+    OPTIONS (
+        'keyFormat' = 'double',
+        'valueFormat' = 'json-flat'
+    )
+`);
+
+const jsonEmployees = await client.getMap('jsonEmployees');
+
+await jsonEmployees.set(1, {
+   name: 'John Doe',
+   salary: 60000
+});
+
+await jsonEmployees.set(2, {
+    name: 'Jane Doe',
+    salary: 80000
+});
+
+const sqlResult = await client.getSql().execute(
+    'SELECT __key AS employeeId, name, salary FROM jsonEmployees WHERE salary > ?', [75000]
+);
+
+for await (const row of sqlResult) {
+    console.log(`Employee ${row.employeeId}: Name: ${row.name} Salary: ${row.salary}`);
+}
+```
+
+### 8.7.7. Lazy SQL Row Deserialization
 
 Rows in an `SqlResult` are deserialized lazily to allow you to access part of it if there is a value that can't be deserialized.
 
@@ -2714,7 +2837,7 @@ and values are values in the SQL row. If there is a field with `OBJECT` column t
 you will get an error. In this case, it is advised to set `SqlStatementOptions.returnRawResult` to `true` if you want partial
 deserialization.
 
-### 8.7.3. Data Types
+### 8.7.8. Data Types
 
 The SQL service supports a set of SQL data types. The table below shows SQL data types and corresponding JavaScript types:
 
@@ -2739,12 +2862,12 @@ The SQL service supports a set of SQL data types. The table below shows SQL data
 See [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for how you can use
 `BigDecimal`, `LocalDate`, `LocalTime`, `LocalDateTime` and `OffsetDateTime` classes.
 
-### 8.7.4. Casting
+### 8.7.9. Casting
 
 In general, you should try to send parameters having same data type with its related column. Otherwise, you need to cast
 parameters to suitable types.
 
-#### How to Cast
+#### 8.7.9.1. How to Cast
 
 Casting syntax: `CAST(? AS TYPE)`
 
@@ -2754,12 +2877,13 @@ Example casting:
 SELECT * FROM someMap WHERE this = CAST(? AS INTEGER)
 ```
 
-#### An Example of Casting
+#### 8.7.9.2. An Example of Casting
 
-Since Node.js client uses double as default number type, to compare with an integer based column you need to use casting.
+Since Node.js client's number type is like a double, to compare with an integer-like column, you need to use casting.
+Alternatively, you can use `Long` objects to compare with columns with `BIGINT` type.
 
-In the example below, age column is of type `INTEGER`. Since numbers are sent as `DOUBLE` by default and `DOUBLE` is not
-comparable with `INTEGER`, the query needs a `CAST`. Note that, the cast can fail if the sent number cannot be converted to
+In the example below, the `age` column's type is `INTEGER`. Since numbers are sent as `DOUBLE` by default and `DOUBLE` is not
+comparable with `INTEGER`, the query needs a `CAST`. Note that, the cast can fail if the parameter cannot be converted to
 an integer.
 
 ```javascript
@@ -2768,33 +2892,31 @@ const result = await client.getSql().execute('SELECT * FROM myMap WHERE age > CA
 );
 ```
 
-##### Important Notes About Comparison and Casting
+#### 8.7.9.3. Important Notes About Comparison and Casting
 
 * In case of comparison operators (=, <, <>, ...), if one side is `?`, it's assumed to be exactly the other side's type.
 
 * String parameters can be cast to any type. The cast operation may fail though.
 
-### 8.7.5. Expressions
+### 8.7.10. Functions and Operators
 
 Hazelcast SQL supports logical predicates, `IS` predicates, comparison operators, mathematical functions and operators, string
 functions, and special functions. Refer to [Hazelcast](https://docs.hazelcast.com/hazelcast/latest/sql/expressions.html) for all
 possible operations.
 
-### 8.7.6 Source and Sink Connectors
+### 8.7.11. Limitations
 
-SQL connectors are extensions that allow you to communicate with external systems such as databases, using SQL.
-These connectors are configured to read and write data in the most efficient way for their respective system.
+SQL has the following limitations. We plan to remove these limitations in future releases.
 
-Available connectors:
+* You cannot run SQL queries on lite members.
+* The only supported Hazelcast data structure is map. You cannot query other data structures such as replicated maps.
+* No support for the `CREATE INDEX` statement. To create indexes for maps in Hazelcast, see `addIndex` method of map in
+  [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
+* No support for the JSON type. You can’t use functions such as `JSON_VALUE` or `JSON_QUERY`.
+* Limited support for joins. See [Join Tables](https://docs.hazelcast.com/hazelcast/latest/sql/select#join-tables).
+* No support for window functions. You cannot group or aggregate results in streaming queries.
 
-- Apache Kafka: Read from and write to Kafka topics.
-- File: Read from a local or remote file.
-- IMap: Read from and write to an IMap.
-
-To learn how you can use them, refer to [SQL Connectors section](https://docs.hazelcast.com/hazelcast/latest/sql/connectors.html)
-in Hazelcast docs.
-
-### 8.7.7. More Information
+### 8.7.12. More Information
 
 Please refer to [Hazelcast SQL docs](https://docs.hazelcast.com/hazelcast/latest/sql/sql-statements.html) for more information.
 
