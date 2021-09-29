@@ -46,11 +46,12 @@ describe('SqlResultTest', function () {
     let someMap;
     let mapName;
     let result;
+    let serverVersionNewerThanFive;
 
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     before(async function () {
-        const serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
+        serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
         const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
 
         TestUtil.markClientVersionAtLeast(this, '4.2');
@@ -65,7 +66,7 @@ describe('SqlResultTest', function () {
     beforeEach(async function () {
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
-        await TestUtil.createMapping(true, client, 'double', 'double', mapName);
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
         await someMap.put(0, 1);
         await someMap.put(1, 2);
         await someMap.put(2, 3);
