@@ -2579,9 +2579,9 @@ or inserted into maps or Kafka topics. For streaming queries, you can submit the
 > **WARNING: The SQL feature have become stable in 5.0 versions of the client and the server. In order a client and a server to
 > be fully compatible with each other, their major versions must be the same.**
 
-> **WARNING:  To use the SQL feature, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the
-> classpath  of the members. If you are using the CLI, Docker image, or distributions to start Hazelcast members, then you don't
-> need to  do anything, as the above preconditions are already satisfied for such members.**
+> **WARNING: To use the SQL feature, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the
+> classpath of the members. If you are using the CLI, Docker image, or distributions to start Hazelcast members, then you don't
+> need to do anything, as the above preconditions are already satisfied for such members.**
 >
 > **However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that
 > `The Jet engine is disabled` or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while
