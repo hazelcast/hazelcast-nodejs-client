@@ -3,13 +3,13 @@
 * [Introduction](#introduction)
 * [1. Getting Started](#1-getting-started)
   * [1.1. Requirements](#11-requirements)
-  * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
-    * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
+  * [1.2. Working with Hazelcast Clusters](#12-working-with-hazelcast-clusters)
+    * [1.2.1. Setting Up a Hazelcast Cluster](#121-setting-up-a-hazelcast-cluster)
       * [1.2.1.1. Running Standalone JARs](#1211-running-standalone-jars)
       * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
   * [1.3. Downloading and Installing](#13-downloading-and-installing)
   * [1.4. Basic Configuration](#14-basic-configuration)
-    * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
+    * [1.4.1. Configuring Hazelcast](#141-configuring-hazelcast)
     * [1.4.2. Configuring Hazelcast Node.js Client](#142-configuring-hazelcast-nodejs-client)
       * [1.4.2.1. Cluster Name Setting](#1421-cluster-name-setting)
       * [1.4.2.2. Network Settings](#1422-network-settings)
@@ -38,7 +38,7 @@
   * [6.1. Configuring Client Connection Retry](#61-configuring-client-connection-retry)
 * [7. Blue-Green Deployment and Disaster Recovery](#7-blue-green-deployment-and-disaster-recovery)
   * [7.1. Configuring Client](#71-configuring-client)
-* [8. Using Node.js Client with Hazelcast IMDG](#8-using-nodejs-client-with-hazelcast-imdg)
+* [8. Using Node.js Client with Hazelcast](#8-using-nodejs-client-with-hazelcast)
   * [8.1. Node.js Client API Overview](#81-nodejs-client-api-overview)
   * [8.2. Node.js Client Operation Modes](#82-nodejs-client-operation-modes)
       * [8.2.1. Smart Client](#821-smart-client)
@@ -127,15 +127,14 @@
 # Introduction
 
 This document provides information about the Node.js client for [Hazelcast](https://hazelcast.com/). This client uses Hazelcast's
-[Open Client Protocol](https://github.com/hazelcast/hazelcast-client-protocol) and works with Hazelcast IMDG 4.0 and
-higher versions.
+[Open Client Protocol](https://github.com/hazelcast/hazelcast-client-protocol) and works with Hazelcast 4.0 and higher versions.
 
 ## Resources
 
-See the following for more information on Node.js and Hazelcast IMDG:
+See the following for more information on Node.js and Hazelcast:
 
-* Hazelcast IMDG [website](https://hazelcast.com/)
-* Hazelcast IMDG [Reference Manual](https://docs.hazelcast.com/imdg/latest/)
+* Hazelcast [website](https://hazelcast.com/)
+* Hazelcast [Reference Manual](https://docs.hazelcast.com/hazelcast/latest/)
 * About [Node.js](https://nodejs.org/en/about/)
 
 ## Release Notes
@@ -153,26 +152,26 @@ map in Node.js client.
 - Windows, Linux or MacOS
 - Node.js 10 or newer
 - Java 8 or newer
-- Hazelcast IMDG 4.0 or newer
+- Hazelcast 4.0 or newer
 - Latest Hazelcast Node.js client
 
-## 1.2. Working with Hazelcast IMDG Clusters
+## 1.2. Working with Hazelcast Clusters
 
-Hazelcast Node.js client requires a working Hazelcast IMDG cluster to run. This cluster handles storage and manipulation of the
-user data. Clients are a way to connect to the Hazelcast IMDG cluster and access such data.
+Hazelcast Node.js client requires a working Hazelcast cluster to run. This cluster handles storage and manipulation of the
+user data. Clients are a way to connect to the Hazelcast cluster and access such data.
 
-Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or physical
+Hazelcast cluster consists of one or more cluster members. These members generally run on multiple virtual or physical
 machines and are connected to each other via network. Any data put on the cluster is partitioned to multiple members transparent
-to the user. It is therefore very easy to scale the system by adding new members as the data grows. Hazelcast IMDG cluster also
+to the user. It is therefore very easy to scale the system by adding new members as the data grows. Hazelcast cluster also
 offers resilience. Should any hardware or software problem causes a crash to any member, the data on that member is recovered
 from backups, and the cluster continues to operate without any downtime. Hazelcast clients are an easy way to connect to a
-Hazelcast IMDG cluster and perform tasks on distributed data structures that live on the cluster.
+Hazelcast cluster and perform tasks on distributed data structures that live on the cluster.
 
-In order to use Hazelcast Node.js client, we first need to set up a Hazelcast IMDG cluster.
+In order to use Hazelcast Node.js client, we first need to set up a Hazelcast cluster.
 
-### 1.2.1. Setting Up a Hazelcast IMDG Cluster
+### 1.2.1. Setting Up a Hazelcast Cluster
 
-There are following options to start a Hazelcast IMDG cluster easily:
+There are following options to start a Hazelcast cluster easily:
 
 * You can run standalone members by downloading and running JAR files from the website.
 * You can embed members to your Java projects.
@@ -182,15 +181,15 @@ We are going to download JARs from the website and run a standalone member for t
 
 #### 1.2.1.1. Running Standalone JARs
 
-Follow the instructions below to create a Hazelcast IMDG cluster:
+Follow the instructions below to create a Hazelcast cluster:
 
 1. Go to Hazelcast's download [page](https://hazelcast.com/open-source-projects/downloads/) and download either the `.zip` or
-`.tar` distribution of Hazelcast IMDG.
+`.tar` distribution of Hazelcast.
 2. Decompress the contents into any directory that you
 want to run members from.
 3. Change into the directory that you decompressed the Hazelcast content and then into the `bin` directory.
 4. Use either `start.sh` or `start.bat` depending on your operating system. Once you run the start script, you should see the
-Hazelcast IMDG logs in the terminal.
+Hazelcast logs in the terminal.
 
 You should see a log similar to the following, which means that your 1-member cluster is ready to be used:
 
@@ -237,8 +236,8 @@ The following is an example configuration when you are adding an `IdentifiedData
 If you want to add a `Portable` class, you should use `<portable-factories>` instead of `<data-serializable-factories>` in the
 above configuration.
 
-See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.com/imdg/latest/getting-started.html) for more information on
-setting up the clusters.
+See the [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest/getting-started/install-hazelcast) for more
+information on setting up the clusters.
 
 ## 1.3. Downloading and Installing
 
@@ -251,29 +250,29 @@ npm install hazelcast-client --save
 
 ## 1.4. Basic Configuration
 
-If you are using Hazelcast IMDG and Node.js Client on the same machine, generally the default configuration should be fine.
+If you are using Hazelcast and Node.js Client on the same machine, generally the default configuration should be fine.
 This is great for trying out the client. However, if you run the client on a different machine than any of the cluster members,
 you may need to do some simple configurations such as specifying the member addresses.
 
-The Hazelcast IMDG members and clients have their own configuration options. You may need to reflect some member side
+The Hazelcast members and clients have their own configuration options. You may need to reflect some member side
 configurations on the client side to properly connect to the cluster.
 
 This section describes the most common configuration elements to get you started in no time.
 It discusses some member side configuration options to ease the understanding of Hazelcast's ecosystem. Then, the client side
-configuration options regarding the cluster connection are discussed. The configurations for the Hazelcast IMDG data structures
+configuration options regarding the cluster connection are discussed. The configurations for the Hazelcast data structures
 that can be used in the Node.js client are discussed in the following sections.
 
-See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.com/imdg/latest/) and [Configuration section](#3-configuration)
+See the [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest/) and [Configuration section](#3-configuration)
 for more information.
 
-### 1.4.1. Configuring Hazelcast IMDG
+### 1.4.1. Configuring Hazelcast
 
-Hazelcast IMDG aims to run out-of-the-box for most common scenarios. However, if you have limitations on your network such as
-multicast being disabled, you may have to configure your Hazelcast IMDG members so that they can find each other on the network.
+Hazelcast aims to run out-of-the-box for most common scenarios. However, if you have limitations on your network such as
+multicast being disabled, you may have to configure your Hazelcast members so that they can find each other on the network.
 Also, since most of the distributed data structures are configurable, you may want to configure them according to your needs.
 We will show you the basics about network configuration here.
 
-You can use the following options to configure Hazelcast IMDG:
+You can use the following options to configure Hazelcast:
 
 * Using the `hazelcast.xml` configuration file.
 * Programmatically configuring the member before starting it from the Java code.
@@ -363,7 +362,7 @@ const client = await Client.newHazelcastClient();
 // Some operations
 ```
 
-If you run the Hazelcast IMDG members on a different server than the client, you most probably have configured the members'
+If you run the Hazelcast members on a different server than the client, you most probably have configured the members'
 ports and cluster names as explained in the previous section. If you did, then you need to make certain changes to the network
 settings of your client.
 
@@ -1177,7 +1176,7 @@ You can also fine-tune this feature using `hazelcast.client.operation.backup.tim
 
 ## 5.8. External Client Public Address Discovery
 
-> **NOTE: This feature requires Hazelcast IMDG 4.2 or higher version.**
+> **NOTE: This feature requires Hazelcast 4.2 or higher version.**
 
 When you set up a Hazelcast cluster in the Cloud (AWS, Azure, GCP, Kubernetes) and would like to use it from outside the Cloud
 network, the client needs to communicate with all cluster members via their public IP addresses. Whenever Hazelcast cluster
@@ -1193,7 +1192,7 @@ need to use public addresses. If not, then
 3 members are checked). If the check succeeds, the client uses public addresses for further communication.
 
 For more details on member-side configuration, refer to the
-[Discovery SPI section](https://docs.hazelcast.com/imdg/latest/extending-hazelcast/discovery-spi.html) in the Hazelcast IMDG
+[Discovery SPI section](https://docs.hazelcast.com/hazelcast/latest/extending-hazelcast/discovery-spi.html) in the Hazelcast
 Reference Manual.
 
 You can disable the detection mechanism and specify the client behavior by using the `hazelcast.discovery.public.ip.enabled`
@@ -1293,17 +1292,17 @@ connection timeout; see the [Setting Connection Timeout](#54-setting-connection-
 
 Hazelcast provides disaster recovery for the client-cluster connections and can use the well-known blue-green mechanism, so that
 a Node.js client is automatically diverted to another cluster on demand or when the intended cluster becomes unavailable.
-These features require **Hazelcast IMDG Enterprise** edition.
+These features require **Hazelcast Enterprise** edition.
 
 Using the blue-green system, the clients can connect to another cluster automatically when they are blacklisted from their
-currently connected cluster. See the
-[Blue-Green Mechanism section](https://docs.hazelcast.com/imdg/latest/clients/java.html#blue-green-mechanism) in the Hazelcast
-IMDG Reference Manual for information on the blue-green deployment support.
+<!-- markdownlint-disable-next-line MD013 -->
+currently connected cluster. See the [Blue-Green Mechanism section](https://docs.hazelcast.com/hazelcast/latest/clients/java.html#blue-green-deployment-and-disaster-recovery)
+in the Hazelcast Reference Manual for information on the blue-green deployment support.
 
 With the disaster recovery, the clients tries to connect to alternative clusters described in the failover config when one of
 your clusters is gone due to a failure. See the
-[Disaster Recovery Mechanism section](https://docs.hazelcast.com/imdg/latest/clients/java.html#disaster-recovery-mechanism) in
-the Hazelcast IMDG Reference Manual for information on the disaster recovery.
+[Disaster Recovery Mechanism section](https://docs.hazelcast.com/hazelcast/latest/clients/java.html#disaster-recovery-mechanism)
+in the Hazelcast Reference Manual for information on the disaster recovery.
 
 ## 7.1. Configuring Client
 
@@ -1353,9 +1352,9 @@ be exactly the same except the following configuration options:
   - `network.hazelcastCloud`
 
 
-# 8. Using Node.js Client with Hazelcast IMDG
+# 8. Using Node.js Client with Hazelcast
 
-This chapter provides information on how you can use Hazelcast IMDG's data structures in the Node.js client, after giving some
+This chapter provides information on how you can use Hazelcast's data structures in the Node.js client, after giving some
 basic information including an overview to the client API, operation modes of the client and how it handles the failures.
 
 ## 8.1. Node.js Client API Overview
@@ -1478,14 +1477,14 @@ this operation may run again, which may cause two instances of the same object i
 
 ## 8.4. Using Distributed Data Structures
 
-Most of the distributed data structures available in IMDG are supported by the Node.js client. In this chapter, you will learn
+Most of the distributed data structures available in are supported by the Node.js client. In this chapter, you will learn
 how to use these distributed data structures.
 
 ### 8.4.1. Using Map
 
 Hazelcast Map (`IMap`) is a distributed map. Through the Node.js client, you can perform operations like reading and writing
 from/to a Hazelcast Map with the well known get and put methods. For details, see the
-[Map section](https://docs.hazelcast.com/imdg/latest/data-structures/map.html) in the Hazelcast IMDG Reference Manual.
+[Map section](https://docs.hazelcast.com/hazelcast/latest/data-structures/map) in the Hazelcast Reference Manual.
 
 A Map usage example is shown below.
 
@@ -1510,7 +1509,7 @@ listener object and register it.
 ### 8.4.2. Using MultiMap
 
 Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details,
-see the [MultiMap section](https://docs.hazelcast.com/imdg/latest/data-structures/multimap.html) in the Hazelcast IMDG Reference
+see the [MultiMap section](https://docs.hazelcast.com/hazelcast/latest/data-structures/multimap) in the Hazelcast Reference
 Manual.
 
 A MultiMap usage example is shown below.
@@ -1539,7 +1538,7 @@ register it.
 
 Hazelcast `ReplicatedMap` is a distributed key-value data structure where the data is replicated to all members in the cluster.
 It provides full replication of entries to all members for high speed access. For details, see the
-[Replicated Map section](https://docs.hazelcast.com/imdg/latest/data-structures/replicated-map.html) in the Hazelcast IMDG
+[Replicated Map section](https://docs.hazelcast.com/hazelcast/latest/data-structures/replicated-map) in the Hazelcast
 Reference Manual.
 
 A Replicated Map usage example is shown below.
@@ -1564,7 +1563,7 @@ an entry listener object and register it.
 ### 8.4.4. Using Queue
 
 Hazelcast Queue (`IQueue`) is a distributed queue which enables all cluster members to interact with it. For details, see the
-[Queue section](https://docs.hazelcast.com/imdg/latest/data-structures/queue.html) in the Hazelcast IMDG Reference Manual.
+[Queue section](https://docs.hazelcast.com/hazelcast/latest/data-structures/queue) in the Hazelcast Reference Manual.
 
 A Queue usage example is shown below.
 
@@ -1590,7 +1589,7 @@ See the [Item Listener section](#8523-item-listener) for information on how to c
 ### 8.4.5. Using Set
 
 Hazelcast Set (`ISet`) is a distributed set which does not allow duplicate elements. For details, see the
-[Set section](https://docs.hazelcast.com/imdg/latest/data-structures/set.html) in the Hazelcast IMDG Reference Manual.
+[Set section](https://docs.hazelcast.com/hazelcast/latest/data-structures/set) in the Hazelcast Reference Manual.
 
 A Set usage example is shown below.
 
@@ -1615,7 +1614,7 @@ the [Item Listener section](#8523-item-listener) for information on how to creat
 ### 8.4.6. Using List
 
 Hazelcast List (`IList`) is a distributed list which allows duplicate elements and preserves the order of elements. For details,
-see the [List section](https://docs.hazelcast.com/imdg/latest/data-structures/list.html) in the Hazelcast IMDG Reference Manual.
+see the [List section](https://docs.hazelcast.com/hazelcast/latest/data-structures/list) in the Hazelcast Reference Manual.
 
 A List usage example is shown below.
 
@@ -1644,8 +1643,7 @@ Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that s
 think of it as a circular array with a given capacity. Each Ringbuffer has a tail and a head. The tail is where the items are
 added and the head is where the items are overwritten or expired. You can reach each element in a Ringbuffer using a sequence ID,
 which is mapped to the elements between the head and tail (inclusive) of the Ringbuffer. For details, see the
-[Ringbuffer section](https://docs.hazelcast.com/imdg/latest/data-structures/ringbuffer.html) in the Hazelcast IMDG Reference
-Manual.
+[Ringbuffer section](https://docs.hazelcast.com/hazelcast/latest/data-structures/ringbuffer) in the Hazelcast Reference Manual.
 
 A Ringbuffer usage example is shown below.
 
@@ -1667,7 +1665,7 @@ console.log('Next value:', value);
 ### 8.4.8. Using Reliable Topic
 
 Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the `Ringbuffer` data structure. For details, see
-the [Reliable Topic section](https://docs.hazelcast.com/imdg/latest/data-structures/reliable-topic.html) in the Hazelcast IMDG
+the [Reliable Topic section](https://docs.hazelcast.com/hazelcast/latest/data-structures/reliable-topic) in the Hazelcast
 Reference Manual.
 
 A Reliable Topic usage example is shown below.
@@ -1709,8 +1707,8 @@ configuration.
 * `readBatchSize`: Minimum number of messages that Reliable Topic tries to read in batches. Its default value is `10`.
 * `overloadPolicy`: Policy to handle an overloaded topic. Available values are `DISCARD_OLDEST`, `DISCARD_NEWEST`, `BLOCK` and
 `ERROR`. Its default value is `BLOCK`. See
-[Slow Consumers](https://docs.hazelcast.com/imdg/latest/data-structures/reliable-topic.html#slow-consumers) for definitions of
-these policies.
+[Slow Consumers](https://docs.hazelcast.com/hazelcast/latest/data-structures/reliable-topic.html#slow-consumers) for definitions
+of these policies.
 
 > **NOTE: When you use `default` as the Reliable Topic configuration key, it has a special meaning. Hazelcast client will use
 > that configuration as the default one for all Reliable Topics, unless there is a specific configuration for the topic.**
@@ -1719,8 +1717,7 @@ these policies.
 
 Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually
 consistent counter given there is no member failure. For details, see the
-[PN Counter section](https://docs.hazelcast.com/imdg/latest/data-structures/pn-counter.html) in the Hazelcast IMDG Reference
-Manual.
+[PN Counter section](https://docs.hazelcast.com/hazelcast/latest/data-structures/pn-counter) in the Hazelcast Reference Manual.
 
 A PN Counter usage example is shown below.
 
@@ -1748,8 +1745,8 @@ console.log('Decremented counter by one. New value:', value); // 6
 
 Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values
 and are k-ordered (roughly ordered). IDs are in the range from `0` to `2^63-1` (maximum value for Java's `long` type). For
-details, see the [FlakeIdGenerator section](https://docs.hazelcast.com/imdg/latest/data-structures/flake-id-generator.html) in
-the Hazelcast IMDG Reference Manual.
+details, see the [FlakeIdGenerator section](https://docs.hazelcast.com/hazelcast/latest/data-structures/flake-id-generator) in
+the Hazelcast Reference Manual.
 
 A Flake ID Generator usage example is shown below.
 
@@ -1775,8 +1772,6 @@ const cfg = {
     }
 };
 ```
-> **NOTE: Since JavaScript's `number` type cannot represent numbers greater than `2^53` without precision loss, you need to put
-> long numbers in quotes as a string.**
 
 The following are the descriptions of configuration elements and attributes:
 
@@ -1796,7 +1791,7 @@ out of order. If ordering is not important, set this value to `0`.
 
 ### 8.4.11. CP Subsystem
 
-Hazelcast IMDG 4.0 introduces CP concurrency primitives with respect to the
+Hazelcast 4.0 introduces CP concurrency primitives with respect to the
 [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always maintain
 [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network
 partitions and client or server failures.
@@ -1804,7 +1799,7 @@ partitions and client or server failures.
 All data structures within CP Subsystem are available through `client.getCPSubsystem()` component of the client.
 
 Before using Atomic Long, Lock, and Semaphore, CP Subsystem has to be enabled on cluster-side. Refer to
-[CP Subsystem](https://docs.hazelcast.com/imdg/latest/cp-subsystem/cp-subsystem.html) documentation for more information.
+[CP Subsystem](https://docs.hazelcast.com/hazelcast/latest/cp-subsystem/cp-subsystem) documentation for more information.
 
 Data structures in CP Subsystem run in CP groups. Each CP group elects its own Raft leader and runs the Raft consensus algorithm
 independently. The CP data structures differ from the other Hazelcast data structures in two aspects. First, an internal commit
@@ -1841,7 +1836,7 @@ AtomicLong implementation does not offer exactly-once / effectively-once executi
 execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can
 be tuned to offer at-most-once execution semantics. Please see `fail-on-indeterminate-operation-state` option in
 <!-- markdownlint-disable-next-line MD013 -->
-[CP Subsystem server-side configuration](https://docs.hazelcast.com/imdg/latest/cp-subsystem/configuration.html#cp-subsystem-configuration).
+[CP Subsystem server-side configuration](https://docs.hazelcast.com/hazelcast/latest/cp-subsystem/configuration.html#cp-subsystem-configuration).
 
 #### 8.4.11.2. Using Lock
 
@@ -1864,7 +1859,7 @@ try {
 ```
 
 FencedLock works on top of CP sessions. It keeps a CP session open while the lock is acquired. Please refer to
-[CP Session](https://docs.hazelcast.com/imdg/latest/cp-subsystem/sessions.html) documentation for more information.
+[CP Session](https://docs.hazelcast.com/hazelcast/latest/cp-subsystem/sessions) documentation for more information.
 
 Distributed locks are unfortunately *not equivalent* to single-node mutexes because of the complexities in distributed systems,
 such as uncertain communication patterns, and independent and partial failures. In an asynchronous network, no lock service can
@@ -1977,7 +1972,7 @@ only the permits it has acquired earlier.
 permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit
 owners on your own. If a Hazelcast server or a client fails while holding some permits, they will not be automatically released.
 You can use the sessionless CP Semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer
-to [Semaphore configuration](https://docs.hazelcast.com/imdg/latest/cp-subsystem/configuration.html#semaphore-configuration)
+to [Semaphore configuration](https://docs.hazelcast.com/hazelcast/latest/cp-subsystem/configuration.html#semaphore-configuration)
 documentation for more details.
 
 #### 8.4.11.4. Using CountDownLatch
@@ -2058,7 +2053,7 @@ AtomicReference does not offer exactly-once / effectively-once execution semanti
 semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to
 offer at-most-once execution semantics. Please see `fail-on-indeterminate-operation-state` option in
 <!-- markdownlint-disable-next-line MD013 -->
-[CP Subsystem server-side configuration](https://docs.hazelcast.com/imdg/latest/cp-subsystem/configuration.html#cp-subsystem-configuration).
+[CP Subsystem server-side configuration](https://docs.hazelcast.com/hazelcast/latest/cp-subsystem/configuration.html#cp-subsystem-configuration).
 
 ## 8.5. Distributed Events
 
@@ -2384,7 +2379,7 @@ topic.publish('Message1');
 
 ## 8.6. Distributed Computing
 
-This chapter explains how you can use Hazelcast IMDG's entry processor implementation in the Node.js client.
+This chapter explains how you can use Hazelcast's entry processor implementation in the Node.js client.
 
 ### 8.6.1. Using EntryProcessor
 
@@ -2529,7 +2524,7 @@ Now you need to configure the `hazelcast.xml` to add your factory as shown below
 
 In this example the code that runs on the entries is implemented in Java on the server side. The client side entry processor is
 used to specify which entry processor should be called. For more details about the Java implementation of the entry processor,
-see the [Entry Processor section](https://docs.hazelcast.com/imdg/latest/computing/entry-processor.html) in the Hazelcast IMDG
+see the [Entry Processor section](https://docs.hazelcast.com/hazelcast/latest/computing/entry-processor) in the Hazelcast
 Reference Manual.
 
 After the above implementations and configuration are done and you start the server where your library is added to its
@@ -2906,7 +2901,7 @@ In the above example code, `predicate` verifies whether the entry is active and 
 `predicate` is applied to the `employee` map using the `map.valuesWithPredicate(predicate)` method. This method sends the
 predicate to all cluster members and merges the results coming from them.
 
-> **NOTE: Predicates can also be applied to `keySet` and `entrySet` methods of the Hazelcast IMDG's distributed map.**
+> **NOTE: Predicates can also be applied to `keySet` and `entrySet` methods of the Hazelcast's distributed map.**
 
 #### 8.8.1.3. Querying with SQL
 
@@ -3314,8 +3309,8 @@ await ordersMap.putAll([
 ```
 
 For more details, see the
-[PartitionAware section](https://docs.hazelcast.com/imdg/latest/performance/data-affinity.html#partitionaware) in the Hazelcast
-IMDG Reference Manual.
+[PartitionAware section](https://docs.hazelcast.com/hazelcast/latest/performance/data-affinity#partitionaware) in the Hazelcast
+Reference Manual.
 
 ### 8.9.2. Near Cache
 
@@ -3440,8 +3435,8 @@ it is evicted and `undefined` is returned as the value to the caller.
 
 Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the
 original map (to prevent stale reads). See the
-[Near Cache Invalidation section](https://docs.hazelcast.com/imdg/latest/performance/near-cache.html#near-cache-invalidation) in
-the Hazelcast IMDG Reference Manual.
+[Near Cache Invalidation section](https://docs.hazelcast.com/hazelcast/5.0/performance/near-cache#near-cache-invalidation) in
+the Hazelcast Reference Manual.
 
 #### 8.9.2.6. Near Cache Eventual Consistency
 
@@ -3561,7 +3556,7 @@ specific to those client connections.
 You can also group your clients using the client labels. These client groups can be blacklisted in Hazelcast Management Center so
 that they can be prevented from connecting to a cluster. See the
 <!-- markdownlint-disable-next-line MD013 -->
-[related section](https://docs.hazelcast.com/management-center/latest/monitor-imdg/monitor-clients.html#changing-cluster-client-filtering)
+[related section](https://docs.hazelcast.com/management-center/5.0/monitor-imdg/client-filtering)
 in the Hazelcast Management Center Reference Manual for more information on this topic.
 
 You can define the client labels using the `clientLabels` config option. See the below example.
@@ -3618,7 +3613,7 @@ object into the `loadBalancer.customLoadBalancer` config option.
 
 This chapter describes the security features of Hazelcast Node.js client. These include using TLS/SSL for connections between
 members and between clients and members, mutual authentication and credentials. These security features require
-**Hazelcast IMDG Enterprise** edition.
+**Hazelcast Enterprise** edition.
 
 ## 9.1. TLS/SSL
 
@@ -3636,9 +3631,9 @@ You should set `keyStore` and `trustStore` before starting the members. See the 
 ### 9.1.1. TLS/SSL for Hazelcast Members
 
 Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members,
-for end to end encryption. To use it, see the
+for end-to-end encryption. To use it, see the
 <!-- markdownlint-disable-next-line MD013 -->
-[TLS/SSL for Hazelcast Members section](https://docs.hazelcast.com/imdg/latest/security/tls-ssl.html#tlsssl-for-hazelcast-members).
+[TLS/SSL for Hazelcast Members section](https://docs.hazelcast.com/hazelcast/latest/security/tls-ssl#tlsssl-for-hazelcast-members).
 
 ### 9.1.2. TLS/SSL for Hazelcast Node.js Clients
 
@@ -3680,8 +3675,8 @@ To enable mutual authentication, firstly, you need to set the following property
 ```
 
 You can see the details of setting mutual authentication on the server side in the
-[Mutual Authentication section](https://docs.hazelcast.com/imdg/latest/security/tls-ssl.html#mutual-authentication) of the
-Hazelcast IMDG Reference Manual.
+[Mutual Authentication section](https://docs.hazelcast.com/hazelcast/latest/security/tls-ssl#mutual-authentication) of the
+Hazelcast Reference Manual.
 
 At the Node.js client side, you need to supply an SSL `options` object to pass to
 [`tls.connect`](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback) of Node.js.
@@ -3806,7 +3801,7 @@ on user groups.
 > **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL
 > encryption is highly recommended while using the custom credentials as described in [TLS/SSL section](#91-tlsssl).**
 
-Also, see the [Security section](https://docs.hazelcast.com/imdg/latest/security/security.html) of Hazelcast IMDG Reference
+Also, see the [Security section](https://docs.hazelcast.com/hazelcast/latest/security/overview.html) of Hazelcast Reference
 Manual for more information.
 
 
@@ -3860,7 +3855,7 @@ Following command starts the tests:
 npm test
 ```
 
-Test script automatically downloads `hazelcast-remote-controller` and Hazelcast IMDG. The script uses Maven to download those.
+Test script automatically downloads `hazelcast-remote-controller` and Hazelcast. The script uses Maven to download those.
 
 # 11. Getting Help
 

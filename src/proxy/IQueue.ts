@@ -58,7 +58,7 @@ export interface IQueue<E> extends DistributedObject {
     /**
      * Returns `true` if this queue contains the given item.
      * @param item
-     * @return `true` if this queue containse the item, `false` otherwise.
+     * @return `true` if this queue contains the item, `false` otherwise.
      */
     contains(item: E): Promise<boolean>;
 
@@ -108,7 +108,7 @@ export interface IQueue<E> extends DistributedObject {
 
     /**
      * Inserts the item at the end of this queue. It waits to return until
-     * space becomes available if neccessary.
+     * space becomes available if necessary.
      * @param item
      */
     put(item: E): Promise<void>;
@@ -156,7 +156,6 @@ export interface IQueue<E> extends DistributedObject {
     /**
      * Retrieves and removes the head of this queue, waiting if necessary
      * until an element becomes available.
-     * @param item
      * @return head of the queue.
      */
     take(): Promise<E>;

@@ -25,8 +25,8 @@ import {DistributedObject} from '../core';
  * failures and network partitions. If a network partition occurs, it remains
  * available on at most one side of the partition.
  *
- * FencedLock works on top of CP sessions. Please refer to CP Session
- * IMDG documentation section for more information.
+ * FencedLock works on top of CP sessions. Please refer to Hazelcast CP Session
+ * documentation section for more information.
  *
  * Important note: FencedLock is non-reentrant. Once a caller acquires
  * the lock, it can not acquire the lock reentrantly. So, the next acquire

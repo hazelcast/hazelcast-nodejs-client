@@ -490,8 +490,8 @@ describe('SqlExecuteTest', function () {
             serviceSpy.callCount.should.be.greaterThanOrEqual(4);
             sinon.restore();
         });
-        // TODO: add update count result type test once it's supported in imdg
-        // TODO: add schema test once it's supported in imdg
+        // TODO: add update count result type test once it's supported in Hazelcast
+        // TODO: add schema test once it's supported in Hazelcast
         it('should return rows when expected result type is rows', async function () {
             const entryCount = 1;
             await populateMap(entryCount);
