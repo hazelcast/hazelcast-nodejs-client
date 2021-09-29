@@ -267,7 +267,9 @@ describe('DefaultSerializersLiveTest', function () {
     ];
 
     it('should deserialize LocalDate', async function () {
+        // Default serializer for date/time classes are added in 5.0 versions of client and server.
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        TestUtil.markServerVersionAtLeast(this, client, '5.0');
 
         let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
 
@@ -289,7 +291,9 @@ describe('DefaultSerializersLiveTest', function () {
     });
 
     it('should serialize LocalDate correctly', async function () {
+        // Default serializer for date/time classes are added in 5.0 versions of client and server.
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        TestUtil.markServerVersionAtLeast(this, client, '5.0');
         const LocalDate = TestUtil.getLocalDate();
 
         for (let i = 0; i < dtParams.length; i++) {
@@ -313,7 +317,9 @@ describe('DefaultSerializersLiveTest', function () {
     });
 
     it('should deserialize LocalTime', async function () {
+        // Default serializer for date/time classes are added in 5.0 versions of client and server.
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        TestUtil.markServerVersionAtLeast(this, client, '5.0');
 
         let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
 
@@ -344,7 +350,10 @@ describe('DefaultSerializersLiveTest', function () {
     });
 
     it('should serialize LocalTime correctly', async function () {
+        // Default serializer for date/time classes are added in 5.0 versions of client and server.
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        TestUtil.markServerVersionAtLeast(this, client, '5.0');
+
         const LocalTime = TestUtil.getLocalTime();
         for (let i = 0; i < dtParams.length; i++) {
             const param = dtParams[i][0];
@@ -377,7 +386,9 @@ describe('DefaultSerializersLiveTest', function () {
     });
 
     it('should deserialize LocalDateTime', async function () {
+        // Default serializer for date/time classes are added in 5.0 versions of client and server.
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        TestUtil.markServerVersionAtLeast(this, client, '5.0');
 
         let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
 
@@ -413,7 +424,10 @@ describe('DefaultSerializersLiveTest', function () {
     });
 
     it('should serialize LocalDateTime correctly', async function () {
+        // Default serializer for date/time classes are added in 5.0 versions of client and server.
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        TestUtil.markServerVersionAtLeast(this, client, '5.0');
+
         const LocalDateTime = TestUtil.getLocalDateTime();
 
         for (let i = 0; i < dtParams.length; i++) {
@@ -455,7 +469,9 @@ describe('DefaultSerializersLiveTest', function () {
     });
 
     it('should deserialize OffsetDateTime', async function () {
+        // Default serializer for date/time classes are added in 5.0 versions of client and server.
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        TestUtil.markServerVersionAtLeast(this, client, '5.0');
 
         let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
 
@@ -494,7 +510,10 @@ describe('DefaultSerializersLiveTest', function () {
     });
 
     it('should serialize OffsetDateTime correctly', async function () {
+        // Default serializer for date/time classes are added in 5.0 versions of client and server.
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        TestUtil.markServerVersionAtLeast(this, client, '5.0');
+
         const getTimezoneOffsetFromSeconds = TestUtil.getDateTimeUtil().getTimezoneOffsetFromSeconds;
         const OffsetDateTime = TestUtil.getOffsetDateTime();
 
