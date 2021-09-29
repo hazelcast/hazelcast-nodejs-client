@@ -68,7 +68,12 @@ describe('SqlExecuteTest', function () {
     let serverVersionNewerThanFive;
 
     const runSQLQueryWithParams = async () => {
-        for (const _mapName of [mapName, 'public.' + mapName]) {
+        const mapNames = [mapName, `partitioned.${mapName}`];
+        if (serverVersionNewerThanFive) {
+            mapNames.push(`public.${mapName}`);
+        }
+
+        for (const _mapName of mapNames) {
             const entryCount = 10;
             const limit = 6;
 
@@ -252,7 +257,12 @@ describe('SqlExecuteTest', function () {
 
         it('should execute without params', async function () {
             await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
-            for (const _mapName of [mapName, 'public.' + mapName]) {
+            const mapNames = [mapName, `partitioned.${mapName}`];
+            if (serverVersionNewerThanFive) {
+                mapNames.push(`public.${mapName}`);
+            }
+
+            for (const _mapName of mapNames) {
                 const entryCount = 10;
                 await populateMap(entryCount);
 
