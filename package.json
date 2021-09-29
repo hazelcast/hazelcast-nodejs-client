@@ -60,7 +60,7 @@
         "lint-markdown:fix": "markdownlint -f --ignore node_modules '**/*.md'",
         "startrc": "node scripts/test-runner.js startrc",
         "check-code-samples": "node scripts/test-runner.js check-code-samples",
-        "check-markdown-broken": "markdown-link-check -q",
+        "check-markdown-links": "markdown-link-check -q",
         "prepare": "husky install"
     },
     "repository": {

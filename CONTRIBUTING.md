@@ -56,8 +56,8 @@ do not submit a single and large PR for it. For an enhancement or larger feature
     * `npm run compile`: Compiles TypeScript into JavaScript, checking for any errors along the way
     * `npm run lint`: Runs linting to find stylistic/structural errors in the code and markdown files
     * `npm run validate-user-code`: Checks the validity of generated TypeScript type declaration files
-    * `npm run check-markdown-broken <FILE>`: Checks broken links in a markdown.
-    Example usage: `npm run check-markdown-broken DOCUMENTATION.md`
+    * `npm run check-markdown-links <FILE>`: Checks for broken links in a markdown.
+    Example usage: `npm run check-markdown-links DOCUMENTATION.md`
     * `npm run test:unit`: Runs unit tests against the generated JavaScript code (the generated code is in `lib/` folder)
     * `npm run test:integration`(SLOW): Runs integration tests against the generated JavaScript code
     (the generated code is in `lib/` folder)

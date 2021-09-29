@@ -209,7 +209,7 @@ Follow the instructions below to create a Hazelcast cluster:
 2. Decompress the contents into any directory that you
 want to run members from.
 3. Change into the directory that you decompressed the Hazelcast content and then into the `bin` directory.
-4. Use either `start.sh` or `start.bat` depending on your operating system. Once you run the start script, you should see the
+4. Use either `hz-start` or `hz-start.bat` depending on your operating system. Once you run the start script, you should see the
 Hazelcast logs in the terminal.
 
 You should see a log similar to the following, which means that your 1-member cluster is ready to be used:
@@ -3576,7 +3576,7 @@ it is evicted and `undefined` is returned as the value to the caller.
 
 Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the
 original map (to prevent stale reads). See the
-[Near Cache Invalidation section](https://docs.hazelcast.com/hazelcast/5.0/performance/near-cache#near-cache-invalidation) in
+[Near Cache Invalidation section](https://docs.hazelcast.com/hazelcast/latest/performance/near-cache#near-cache-invalidation) in
 the Hazelcast Reference Manual.
 
 #### 8.9.2.6. Near Cache Eventual Consistency
@@ -3697,7 +3697,7 @@ specific to those client connections.
 You can also group your clients using the client labels. These client groups can be blacklisted in Hazelcast Management Center so
 that they can be prevented from connecting to a cluster. See the
 <!-- markdownlint-disable-next-line MD013 -->
-[related section](https://docs.hazelcast.com/management-center/5.0/monitor-imdg/client-filtering)
+[related section](https://docs.hazelcast.com/management-center/latest/monitor-imdg/client-filtering)
 in the Hazelcast Management Center Reference Manual for more information on this topic.
 
 You can define the client labels using the `clientLabels` config option. See the below example.
