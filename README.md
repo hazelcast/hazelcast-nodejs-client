@@ -23,20 +23,20 @@
 [Hazelcast](https://hazelcast.com/) is an open-source distributed in-memory data store and computation platform that
 provides a wide variety of distributed data structures and concurrency primitives.
 
-Hazelcast Node.js client is a way to communicate to Hazelcast IMDG clusters and access the cluster data.
+Hazelcast Node.js client is a way to communicate to Hazelcast clusters and access the cluster data.
 The client provides a Promise-based API with a builtin support for native JavaScript objects.
 
 ## Installation
 
 ### Hazelcast
 
-Hazelcast Node.js client requires a working Hazelcast IMDG cluster to run. This cluster handles the storage and
+Hazelcast Node.js client requires a working Hazelcast cluster to run. This cluster handles the storage and
 manipulation of the user data.
 
-A Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or
+A Hazelcast cluster consists of one or more cluster members. These members generally run on multiple virtual or
 physical machines and are connected to each other via the network. Any data put on the cluster is partitioned to
 multiple members transparent to the user. It is therefore very easy to scale the system by adding new members as
-the data grows. Hazelcast IMDG cluster also offers resilience. Should any hardware or software problem causes a crash
+the data grows. Hazelcast cluster also offers resilience. Should any hardware or software problem causes a crash
 to any member, the data on that member is recovered from backups and the cluster continues to operate without any
 downtime.
 
@@ -48,7 +48,7 @@ docker run -p 5701:5701 hazelcast/hazelcast:4.1.1
 ```
 
 You can also use our ZIP or TAR [distributions](https://hazelcast.com/open-source-projects/downloads/)
-as described [here](DOCUMENTATION.md#121-setting-up-a-hazelcast-imdg-cluster).
+as described [here](DOCUMENTATION.md#121-setting-up-a-hazelcast-cluster).
 
 ### Client
 
@@ -84,7 +84,7 @@ await client.shutdown();
 > Refer to the [Code Samples section](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples)
 > to see samples with the complete code.**
 
-If you are using Hazelcast IMDG and the Node.js client on the same machine, the default configuration should work
+If you are using Hazelcast and the Node.js client on the same machine, the default configuration should work
 out-of-the-box. However, you may need to configure the client to connect to cluster nodes that are running on
 different machines or to customize client properties.
 
@@ -147,7 +147,7 @@ We encourage any type of contribution in the form of issue reports or pull reque
 
 For issue reports, please share the following information with us to quickly resolve the problems.
 
-* Hazelcast IMDG and the client version that you use
+* Hazelcast and the client version that you use
 * General information about the environment and the architecture you use like Node.js version, cluster size,
 number of clients, Java version, JVM parameters, operating system etc.
 * Logs and stack traces, if any.
@@ -180,7 +180,7 @@ Following command starts the tests:
 npm test
 ```
 
-Test script automatically downloads `hazelcast-remote-controller` and Hazelcast IMDG. The script uses Maven to download those.
+Test script automatically downloads `hazelcast-remote-controller` and Hazelcast. The script uses Maven to download those.
 
 In order to run specific tests, you can give a pattern to the test command like the following:
 

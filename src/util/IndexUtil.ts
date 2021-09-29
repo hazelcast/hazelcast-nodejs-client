@@ -110,7 +110,7 @@ export class IndexUtil {
     /**
      * Validate attribute name.
      *
-     * @param config Index config.
+     * @param indexName Index name.
      * @param attributeName Attribute name.
      */
     static validateAttribute(indexName: string, attributeName: string): void {
