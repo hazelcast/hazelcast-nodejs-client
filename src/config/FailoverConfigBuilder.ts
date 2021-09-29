@@ -82,8 +82,8 @@ export class FailoverConfigBuilder {
 
     private validateAlternativeConfigs(main: ClientConfigImpl,
                                        alternative: ClientConfigImpl): void {
-        const mainCopy = this.copyWithoutAllowedFields(main);
-        const alternativeCopy = this.copyWithoutAllowedFields(alternative);
+        const mainCopy = FailoverConfigBuilder.copyWithoutAllowedFields(main);
+        const alternativeCopy = FailoverConfigBuilder.copyWithoutAllowedFields(alternative);
 
         assert(
             util.isDeepStrictEqual(mainCopy, alternativeCopy),
@@ -95,7 +95,7 @@ export class FailoverConfigBuilder {
         );
     }
 
-    private copyWithoutAllowedFields(config: ClientConfigImpl): Record<string, unknown> {
+    private static copyWithoutAllowedFields(config: ClientConfigImpl): Record<string, unknown> {
         // make a shallow copy of the config
         const copy = {
             ...config

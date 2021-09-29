@@ -365,11 +365,11 @@ export class FalsePredicate extends AbstractPredicate {
     classId = FalsePredicate.CLASS_ID;
     static INSTANCE: FalsePredicate = new FalsePredicate();
 
-    readData(input: DataInput): any {
+    readData(_input: DataInput): any {
         // no-op
     }
 
-    writeData(output: DataOutput): any {
+    writeData(_output: DataOutput): any {
         // no-op
     }
 }
@@ -382,11 +382,11 @@ export class TruePredicate extends AbstractPredicate {
     classId = TruePredicate.CLASS_ID;
     static INSTANCE: TruePredicate = new TruePredicate();
 
-    readData(input: DataInput): any {
+    readData(_input: DataInput): any {
         // no-op
     }
 
-    writeData(output: DataOutput): any {
+    writeData(_output: DataOutput): any {
         // no-op
     }
 }

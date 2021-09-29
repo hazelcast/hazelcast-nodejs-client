@@ -112,7 +112,7 @@ export class ClusterService implements Cluster {
         const registrationId = UuidUtil.generate().toString();
         this.listeners.set(registrationId, listener);
 
-        if (this.isInitialMembershipListener(listener)) {
+        if (ClusterService.isInitialMembershipListener(listener)) {
             const members = this.getMemberList();
             // if members are empty,it means initial event did not arrive yet
             // it will be redirected to listeners when it arrives, see #handleInitialMembershipEvent
@@ -185,7 +185,7 @@ export class ClusterService implements Cluster {
 
         if (memberListVersion >= this.memberListSnapshot.version) {
             const prevMembers = this.memberListSnapshot.memberList;
-            const snapshot = this.createSnapshot(memberListVersion, memberInfos);
+            const snapshot = ClusterService.createSnapshot(memberListVersion, memberInfos);
             this.memberListSnapshot = snapshot;
             const currentMembers = snapshot.memberList;
             const events = this.detectMembershipEvents(prevMembers, currentMembers, connectionRegistry);
@@ -209,18 +209,18 @@ export class ClusterService implements Cluster {
         }
     }
 
-    private isInitialMembershipListener(listener: MembershipListener): listener is InitialMembershipListener {
+    private static isInitialMembershipListener(listener: MembershipListener): listener is InitialMembershipListener {
         return (listener as InitialMembershipListener).init !== undefined;
     }
 
     private applyInitialState(memberListVersion: number, memberInfos: MemberInfo[]): Promise<void> {
-        const snapshot = this.createSnapshot(memberListVersion, memberInfos);
+        const snapshot = ClusterService.createSnapshot(memberListVersion, memberInfos);
         this.memberListSnapshot = snapshot;
-        this.logger.info('ClusterService', this.membersString(snapshot));
+        this.logger.info('ClusterService', ClusterService.membersString(snapshot));
         const members = snapshot.memberList;
         const event = new InitialMembershipEvent(members);
         this.listeners.forEach((listener) => {
-            if (this.isInitialMembershipListener(listener)) {
+            if (ClusterService.isInitialMembershipListener(listener)) {
                 listener.init(event);
             }
         });
@@ -266,13 +266,13 @@ export class ClusterService implements Cluster {
 
         if (events.length !== 0) {
             if (this.memberListSnapshot.members.size !== 0) {
-                this.logger.info('ClusterService', this.membersString(this.memberListSnapshot));
+                this.logger.info('ClusterService', ClusterService.membersString(this.memberListSnapshot));
             }
         }
         return events;
     }
 
-    private createSnapshot(memberListVersion: number, memberInfos: MemberInfo[]): MemberListSnapshot {
+    private static createSnapshot(memberListVersion: number, memberInfos: MemberInfo[]): MemberListSnapshot {
         const newMembers = new Map<string, MemberImpl>();
         const newMemberList = new Array<MemberImpl>(memberInfos.length);
         let index = 0;
@@ -285,7 +285,7 @@ export class ClusterService implements Cluster {
         return new MemberListSnapshot(memberListVersion, newMembers, newMemberList);
     }
 
-    private membersString(snapshot: MemberListSnapshot): string {
+    private static membersString(snapshot: MemberListSnapshot): string {
         const members = snapshot.memberList;
         let logString = '\n\nMembers [' + members.length + '] {';
         for (const member of members) {

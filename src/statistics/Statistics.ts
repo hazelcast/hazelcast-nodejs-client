@@ -177,7 +177,7 @@ export class Statistics {
         }
     }
 
-    private addAttribute(stats: string[],
+    private static addAttribute(stats: string[],
                          name: string,
                          value: number | string,
                          keyPrefix?: string): void {
@@ -211,7 +211,7 @@ export class Statistics {
                     compressor.addDouble(descriptor, value);
                     break;
                 default:
-                    throw new Error('Unexpected type: ' + type);
+                    this.logCompressorError(new Error('Unexpected type: ' + type));
             }
         } catch (err) {
             this.logCompressorError(err);
@@ -245,13 +245,13 @@ export class Statistics {
     private fillMetrics(stats: string[],
                         compressor: MetricsCompressor,
                         connection: Connection): void {
-        this.addAttribute(stats, 'lastStatisticsCollectionTime', Date.now());
-        this.addAttribute(stats, 'enterprise', 'false');
-        this.addAttribute(stats, 'clientType', CLIENT_TYPE);
-        this.addAttribute(stats, 'clientVersion', BuildInfo.getClientVersion());
-        this.addAttribute(stats, 'clusterConnectionTimestamp', connection.getStartTime());
-        this.addAttribute(stats, 'clientAddress', connection.getLocalAddress().toString());
-        this.addAttribute(stats, 'clientName', this.clientName);
+        Statistics.addAttribute(stats, 'lastStatisticsCollectionTime', Date.now());
+        Statistics.addAttribute(stats, 'enterprise', 'false');
+        Statistics.addAttribute(stats, 'clientType', CLIENT_TYPE);
+        Statistics.addAttribute(stats, 'clientVersion', BuildInfo.getClientVersion());
+        Statistics.addAttribute(stats, 'clusterConnectionTimestamp', connection.getStartTime());
+        Statistics.addAttribute(stats, 'clientAddress', connection.getLocalAddress().toString());
+        Statistics.addAttribute(stats, 'clientName', this.clientName);
 
         for (const gaugeName in this.allGauges) {
             const gauge = this.allGauges[gaugeName];
@@ -259,14 +259,14 @@ export class Statistics {
                 const value = gauge.gaugeFn();
                 this.addSimpleMetric(compressor, gaugeName, value, gauge.type);
                 // necessary for compatibility with Management Center 4.0
-                this.addAttribute(stats, gaugeName, value);
+                Statistics.addAttribute(stats, gaugeName, value);
             } catch (err) {
                 this.logger.trace('Statistics', 'Could not collect data for gauge ' + gaugeName, err);
             }
         }
     }
 
-    private getNameWithPrefix(name: string): string[] {
+    private static getNameWithPrefix(name: string): string[] {
         const escapedName = [Statistics.NEAR_CACHE_CATEGORY_PREFIX];
         const prefixLen = Statistics.NEAR_CACHE_CATEGORY_PREFIX.length;
         escapedName.push(name);
@@ -274,11 +274,11 @@ export class Statistics {
             escapedName.splice(prefixLen, 1);
         }
 
-        this.escapeSpecialCharacters(escapedName, prefixLen);
+        Statistics.escapeSpecialCharacters(escapedName, prefixLen);
         return escapedName;
     }
 
-    private escapeSpecialCharacters(buffer: string[], start: number): void {
+    private static escapeSpecialCharacters(buffer: string[], start: number): void {
         for (let i = start; i < buffer.length; i++) {
             const c = buffer[i];
             if (c === '=' || c === '.' || c === ',' || c === Statistics.ESCAPE_CHAR) {
@@ -291,7 +291,7 @@ export class Statistics {
     private addNearCacheStats(stats: string[], compressor: MetricsCompressor): void {
         for (const nearCache of this.nearCacheManager.listAllNearCaches()) {
             const name = nearCache.getName();
-            const nearCacheNameWithPrefix = this.getNameWithPrefix(name);
+            const nearCacheNameWithPrefix = Statistics.getNameWithPrefix(name);
             nearCacheNameWithPrefix.push('.');
             const nameWithPrefix = nearCacheNameWithPrefix.join('');
 
@@ -326,13 +326,13 @@ export class Statistics {
                                type: ValueType,
                                unit: ProbeUnit): void {
         this.addMetric(compressor,
-            this.nearCacheDescriptor(metric, nearCacheName, unit),
+            Statistics.nearCacheDescriptor(metric, nearCacheName, unit),
             value, type);
         // necessary for compatibility with Management Center 4.0
-        this.addAttribute(stats, metric, value, nearCacheNameWithPrefix);
+        Statistics.addAttribute(stats, metric, value, nearCacheNameWithPrefix);
     }
 
-    private nearCacheDescriptor(metric: string,
+    private static nearCacheDescriptor(metric: string,
                                 nearCacheName: string,
                                 unit?: ProbeUnit): MetricDescriptor {
         const descriptor: MetricDescriptor = {

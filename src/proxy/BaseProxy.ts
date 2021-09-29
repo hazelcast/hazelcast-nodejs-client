@@ -140,9 +140,10 @@ export abstract class BaseProxy {
 
     protected getConnectedServerVersion(): number {
         const activeConnections = this.connectionRegistry.getConnections();
-        for (const address in activeConnections) {
-            return activeConnections[address].getConnectedServerVersion();
+        if (activeConnections.length === 0) {
+            return BuildInfo.UNKNOWN_VERSION_ID;
+        } else {
+            return activeConnections[0].getConnectedServerVersion();
         }
-        return BuildInfo.UNKNOWN_VERSION_ID;
     }
 }

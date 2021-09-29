@@ -82,20 +82,20 @@ export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembe
 
     abstract canGetNextDataMember(): boolean;
 
-    initLoadBalancer(cluster: Cluster, config: ClientConfig): void {
+    initLoadBalancer(cluster: Cluster, _config: ClientConfig): void {
         this.cluster = cluster;
         cluster.addMembershipListener(this);
     }
 
-    init(event: InitialMembershipEvent): void {
+    init(_event: InitialMembershipEvent): void {
         this.setMembers();
     }
 
-    memberAdded(membership: MembershipEvent): void {
+    memberAdded(_membership: MembershipEvent): void {
         this.setMembers();
     }
 
-    memberRemoved(membership: MembershipEvent): void {
+    memberRemoved(_membership: MembershipEvent): void {
         this.setMembers();
     }
 
