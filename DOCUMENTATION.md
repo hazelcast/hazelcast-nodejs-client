@@ -2579,9 +2579,14 @@ or inserted into maps or Kafka topics. For streaming queries, you can submit the
 > **WARNING: The SQL feature have become stable in 5.0 versions of the client and the server. In order a client and a server to
 > be fully compatible with each other, their major versions must be the same.**
 
-> **WARNING: A [Unisocket Client](#822-unisocket-client) must connect to a data member, i.e not a
-> [lite](https://docs.hazelcast.com/hazelcast/latest/management/cluster-utilities.html#enabling-lite-members) member, because SQL
-> queries cannot be executed on lite members.**
+> **WARNING:  To use the SQL feature, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the
+> classpath  of the members. If you are using the CLI, Docker image, or distributions to start Hazelcast members, then you don't
+> need to  do anything, as the above preconditions are already satisfied for such members.**
+>
+> **However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that
+> `The Jet engine is disabled` or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while
+> executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the
+> `hazelcast-sql` module to your member's classpath.**
 
 ### 8.7.1. Supported Queries
 
@@ -2756,7 +2761,7 @@ described [Querying Maps with SQL](https://docs.hazelcast.com/hazelcast/latest/s
 
 Field names are case-sensitive.
 
-#### 8.7.5. Using Query Parameters
+### 8.7.5. Using Query Parameters
 
 You can use query parameters to build safer and faster SQL queries.
 
@@ -2771,7 +2776,7 @@ await client.getSql().execute(`SELECT name FROM employees WHERE employees.age > 
 Instead of putting data straight into an SQL statement, you use the `?` placeholder in your client code to indicate that you will
 replace that placeholder with a parameter.
 
-##### 8.7.5.1. Benefits of Query Parameters
+#### 8.7.5.1. Benefits of Query Parameters
 
 Query parameters have the following benefits:
 
@@ -2881,12 +2886,12 @@ SELECT * FROM someMap WHERE this = CAST(? AS INTEGER)
 
 #### 8.7.9.2. An Example of Casting
 
-Since Node.js client's number type is like a double, to compare with an integer-like column, you need to use casting.
-Alternatively, you can use `Long` objects to compare with columns with `BIGINT` type.
+Since Node.js client's default number type corresponds to `DOUBLE` type in SQL, to compare with an integer-like column, you need
+to use casting. Alternatively, you can use `Long` objects where you have a column with `BIGINT` type, because `Long` objects
+correspond to the `BIGINT` type.
 
-In the example below, the `age` column's type is `INTEGER`. Since numbers are sent as `DOUBLE` by default and `DOUBLE` is not
-comparable with `INTEGER`, the query needs a `CAST`. Note that, the cast can fail if the parameter cannot be converted to
-an integer.
+In the example below, the `age` column's type is `INTEGER`.  Since `DOUBLE` is not comparable with `INTEGER`, the query needs an
+explicit cast. Note that, the cast can fail if the parameter cannot be converted to an integer.
 
 ```javascript
 const result = await client.getSql().execute('SELECT * FROM myMap WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)',
@@ -2929,7 +2934,7 @@ option.
 
 ### 8.7.13. More Information
 
-Please refer to [Hazelcast SQL docs](https://docs.hazelcast.com/hazelcast/5.0/sql/sql-overview) for more information.
+Please refer to [Hazelcast SQL docs](https://docs.hazelcast.com/hazelcast/latest/sql/sql-overview) for more information.
 
 ### 8.7.13.1 Code Samples
 
