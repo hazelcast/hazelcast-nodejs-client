@@ -2,7 +2,7 @@
 
 This code sample demonstrates how to assign different permission policies for different user groups with the
 Hazelcast's JAAS based security features.
-Security features used in this code sample requires **Hazelcast IMDG Enterprise** edition.
+Security features used in this code sample requires **Hazelcast Enterprise** edition.
 
 ---
 

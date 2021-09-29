@@ -229,8 +229,9 @@ export interface IMap<K, V> extends DistributedObject {
      * turned off, this call may be rejected with `ReachedMaxSizeError`
      * if the write-behind queue has reached its per-node maximum capacity.
      *
+     * Works with Hazelcast versions 4.1 and above.
+     *
      * @param pairs entries to be put
-     * @requires Hazelcast IMDG 4.1
      */
     setAll(pairs: Array<[K, V]>): Promise<void>;
 
@@ -436,7 +437,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Replaces value of the key if only it was associated to `oldValue`.
      *
      * @param key the key of the map entry
-     * @param value new value
+     * @param newValue new value
      * @param oldValue expected old value
      * @throws RangeError if key, oldValue or newValue is `null` or `undefined`
      * @returns `true` if the value was replaced

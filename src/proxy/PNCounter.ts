@@ -170,7 +170,7 @@ export interface PNCounter extends DistributedObject {
      * @throws `UnsupportedOperationError`  if the cluster version is less
      *                                        than 3.10
      * @throws `ConsistencyLostError`       if the session guarantees have
-     *                                        beenlost
+     *                                        been lost
      */
     getAndIncrement(): Promise<Long>;
 

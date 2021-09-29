@@ -1,8 +1,8 @@
 Make sure you have
 * [Java 8+](https://www.java.com/en/download/) installed on your system.
-* [Hazelcast IMDG Enterprise JAR](https://hazelcast.com/download/) available in your system.
+* [Hazelcast Enterprise JAR](https://hazelcast.com/download/) available in your system.
 
-Then, put your Hazelcast IMDG Enterprise license key into the [hazelcast.xml](src/main/resources/hazelcast.xml).
+Then, put your Hazelcast Enterprise license key into the [hazelcast.xml](src/main/resources/hazelcast.xml).
 
 Compile the Java files with the following command:
 
