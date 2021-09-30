@@ -105,7 +105,7 @@ enum ConnectionState {
      * it switches to this state. When a client loses all connections to
      * the current cluster and connects to a new cluster, its state goes
      * back to {@link CONNECTED_TO_CLUSTER}.
-     * <p>
+     *
      * Invocations are allowed in this state.
      */
     INITIALIZED_ON_CLUSTER = 2,
@@ -140,7 +140,7 @@ export interface ConnectionRegistry {
     /**
      * Returns a connection for executing SQL.
      *
-     * @throws IllegalStateError If there are more than 2 distinct member versions found
+     * @throws {@link IllegalStateError} If there are more than 2 distinct member versions found
      * @return
      * * A random connection to a data member from the larger same-version group
      * * If there's no such connection, return connection to a random data member

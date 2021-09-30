@@ -47,7 +47,7 @@ export interface PartitionService {
      *
      * @param key
      * @returns the partition id.
-     * @throws ClientOfflineError if the partition table has not arrived yet.
+     * @throws {@link ClientOfflineError} if the partition table has not arrived yet.
      */
     getPartitionId(key: any): number;
 

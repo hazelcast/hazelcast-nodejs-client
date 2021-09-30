@@ -22,7 +22,7 @@ export class ConfigPatternMatcher {
      *
      * @param configPatterns
      * @param itemName
-     * @throws
+     * @throws TypeError
      * @returns `null` if there is no matching pattern;
      *          the best matching pattern otherwise
      */

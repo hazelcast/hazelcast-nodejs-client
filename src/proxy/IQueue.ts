@@ -28,7 +28,7 @@ export interface IQueue<E> extends DistributedObject {
      * Adds given item to the end of the queue. Operation is successful only
      * if queue has required capacity.
      * @param item element to add.
-     * @throws `IllegalStateError` if queue is full.
+     * @throws {@link IllegalStateError} if queue is full.
      * @return `true`.
      */
     add(item: E): Promise<boolean>;

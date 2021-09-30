@@ -165,8 +165,8 @@ export class BigDecimal {
      * </pre>
      *
      * @param value a non-null `BigDecimal` string
-     * @throws TypeError if value is not a string.
-     * @throws RangeError if value is not a valid representation of a `BigDecimal`.
+     * @throws TypeError if `value` is not a `string`.
+     * @throws RangeError if `value` is not a valid representation of a `BigDecimal`.
      */
     static fromString(value: string): BigDecimal {
         // inspired from openjdk BigDecimal's `BigDecimal(char[] in, int offset, int len, MathContext mc)` constructor
