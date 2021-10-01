@@ -1,4 +1,4 @@
-# Simple benchmark for Hazelcast IMDG Node.js Client
+# Simple benchmark for Hazelcast Node.js Client
 
 A simple benchmark that runs operations on `Map` concurrently, measures the execution time and calculates the throughput:
 * `set` - runs `map.set(key, value)` operations.
@@ -17,12 +17,14 @@ Then, build the client (compile TypeScript):
 npm run compile
 ```
 
-Next, run at least one instance of IMDG. The most simple way to do it would be to use the [official Docker image](https://hub.docker.com/r/hazelcast/hazelcast/):
+Next, run at least one instance of Hazelcast. The most simple way to do it would be to use the
+[official Docker image](https://hub.docker.com/r/hazelcast/hazelcast/):
 ```bash
 docker run --net=host hazelcast/hazelcast:4.1.1
 ```
 
-Note: it's important to use host network when benchmarking to avoid the [overhead](https://github.com/hazelcast/hazelcast-docker/issues/165#issuecomment-725901950) introduced by Docker's NAT.
+Note: it's important to use host network when benchmarking to avoid the
+[overhead](https://github.com/hazelcast/hazelcast-docker/issues/165#issuecomment-725901950) introduced by Docker's NAT.
 
 Finally, run one of the benchmarks, e.g.:
 ```bash

@@ -29,7 +29,7 @@ const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
 const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
 const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
 const { HazelcastSqlException } = require('../../../lib/core/HazelcastError');
-const { assertTrueEventually, getRejectionReasonOrThrow } = require('../../TestUtil');
+const { getRejectionReasonOrThrow } = require('../../TestUtil');
 
 const defaultRowMetadata = new SqlRowMetadataImpl([
     {
@@ -46,7 +46,6 @@ const defaultRowMetadata = new SqlRowMetadataImpl([
 
 /**
  * Simulates a successful execute response
- * @param timeoutMs timeout in ms to simulate response
  * @param sqlResult
  * @param rowCount how many rows to add to the sqlResult
  * @param rowMetadata
@@ -54,7 +53,6 @@ const defaultRowMetadata = new SqlRowMetadataImpl([
  * @param isLast
  */
 function simulateExecutionResponse(
-    timeoutMs = 1000,
     sqlResult,
     rowCount = 0,
     rowMetadata = defaultRowMetadata,
@@ -77,21 +75,16 @@ function simulateExecutionResponse(
         isLast // isLast
     );
 
-    setTimeout(() => {
-        sqlResult.onExecuteResponse(rowMetadata, rowPage, updateCount);
-    }, timeoutMs);
+    sqlResult.onExecuteResponse(rowMetadata, rowPage, updateCount);
 }
 
 /**
  * Simulates an execute error after timeoutMs
- * @param timeoutMs
  * @param sqlResult
  * @param error
  */
-function simulateExecuteError(timeoutMs, sqlResult, error = new Error('whoops')) {
-    setTimeout(() => {
-        sqlResult.onExecuteError(error);
-    }, timeoutMs);
+function simulateExecuteError(sqlResult, error = new Error('whoops')) {
+    sqlResult.onExecuteError(error);
 }
 
 describe('SqlResultTest', function () {
@@ -99,15 +92,13 @@ describe('SqlResultTest', function () {
         let fakeSqlService;
         let fakeConnection;
         let fakeQueryId;
-        let fakeSerializationService;
+        let fakeDeserializeFn;
 
         beforeEach(function () {
             fakeSqlService = sandbox.fake();
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
-            fakeSerializationService = {
-                toObject: sandbox.fake(v => v)
-            };
+            fakeDeserializeFn = sandbox.fake(v => v);
         });
 
         afterEach(function () {
@@ -116,11 +107,11 @@ describe('SqlResultTest', function () {
 
         it('should async iterable, over objects; by default and if returnRawResults is false', async function () {
             for (const sqlResult of [
-                new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId, 4096),
-                new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId, 4096, false)
+                new SqlResultImpl(fakeSqlService, fakeDeserializeFn, fakeConnection, fakeQueryId, 4096),
+                new SqlResultImpl(fakeSqlService, fakeDeserializeFn, fakeConnection, fakeQueryId, 4096, false)
             ]) {
                 const rowCount = 3;
-                simulateExecutionResponse(100, sqlResult, rowCount, defaultRowMetadata);
+                simulateExecutionResponse(sqlResult, rowCount, defaultRowMetadata);
 
                 let rowCounter = 0;
                 for await (const row of sqlResult) {
@@ -128,23 +119,23 @@ describe('SqlResultTest', function () {
                     rowCounter++;
                 }
                 rowCounter.should.be.eq(rowCount);
-                (await sqlResult.getRowMetadata()).should.be.eq(defaultRowMetadata);
+                sqlResult.rowMetadata.should.be.eq(defaultRowMetadata);
                 (await sqlResult.isRowSet()).should.be.true;
-                (await sqlResult.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
+                sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
             }
         });
 
         it('should be async iterable, iterating over SqlRowImpls; if returnRawResults is true', async function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
-                fakeSerializationService,
+                fakeDeserializeFn,
                 fakeConnection,
                 fakeQueryId,
                 4096,
                 true // return raw results
             );
             const rowCount = 3;
-            simulateExecutionResponse(100, sqlResult, rowCount, defaultRowMetadata);
+            simulateExecutionResponse(sqlResult, rowCount, defaultRowMetadata);
 
             let rowCounter = 0;
             for await (const row of sqlResult) {
@@ -152,21 +143,21 @@ describe('SqlResultTest', function () {
                 rowCounter++;
             }
             rowCounter.should.be.eq(rowCount);
-            (await sqlResult.getRowMetadata()).should.be.eq(defaultRowMetadata);
+            sqlResult.rowMetadata.should.be.eq(defaultRowMetadata);
             (await sqlResult.isRowSet()).should.be.true;
-            (await sqlResult.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
+            sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
         });
 
         it('should be iterable via next()', async function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
-                fakeSerializationService,
+                fakeDeserializeFn,
                 fakeConnection,
                 fakeQueryId,
                 4096
             );
             const rowCount = 3;
-            simulateExecutionResponse(100, sqlResult, rowCount, defaultRowMetadata);
+            simulateExecutionResponse(sqlResult, rowCount, defaultRowMetadata);
 
             let current;
             let counter = 0;
@@ -175,50 +166,42 @@ describe('SqlResultTest', function () {
                 counter++;
             }
             counter.should.be.eq(rowCount);
-            (await sqlResult.getRowMetadata()).should.be.eq(defaultRowMetadata);
+            sqlResult.rowMetadata.should.be.eq(defaultRowMetadata);
             (await sqlResult.isRowSet()).should.be.true;
-            (await sqlResult.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
+            sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
         });
 
-        it('should reject for await iteration on execute error', function () {
+        it('should reject for await iteration on execute error', async function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
-                fakeSerializationService,
+                fakeDeserializeFn,
                 fakeConnection,
                 fakeQueryId,
                 4096
             );
 
-            const executeError = new Error('whoops..');
-            simulateExecuteError(100, sqlResult, executeError);
+            simulateExecuteError(sqlResult);
 
-            return assertTrueEventually(async () => {
-                const err = await getRejectionReasonOrThrow(async () => {
-                    // eslint-disable-next-line no-empty,no-unused-vars
-                    for await (const row of sqlResult) {
-                    }
-                });
-                err.should.be.eq(executeError);
+            await getRejectionReasonOrThrow(async () => {
+                // eslint-disable-next-line no-empty,no-unused-vars
+                for await (const row of sqlResult) {
+                }
             });
         });
 
-        it('should reject next() iteration on execute error', function () {
+        it('should reject next() iteration on execute error', async function () {
             const sqlResult = new SqlResultImpl(
                 fakeSqlService,
-                fakeSerializationService,
+                fakeDeserializeFn,
                 fakeConnection,
                 fakeQueryId,
                 4096
             );
 
-            const executeError = new Error('whoops..');
-            simulateExecuteError(100, sqlResult, executeError);
+            simulateExecuteError(sqlResult);
 
-            return assertTrueEventually(async () => {
-                const err = await getRejectionReasonOrThrow(async () => {
-                    await sqlResult.next();
-                });
-                err.should.be.eq(executeError);
+            await getRejectionReasonOrThrow(async () => {
+                await sqlResult.next();
             });
         });
     });
@@ -227,8 +210,8 @@ describe('SqlResultTest', function () {
 
         beforeEach(function () {
             fakeSqlService = {
-                toHazelcastSqlException: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', err)),
-                rethrow: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', err)),
+                toHazelcastSqlException: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', undefined, err)),
+                rethrow: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', undefined, err)),
                 close: sandbox.fake.resolves(undefined),
                 fetch: sandbox.fake(() => {
                     return delayedPromise(500);
@@ -254,21 +237,6 @@ describe('SqlResultTest', function () {
                 err.should.be.instanceof(HazelcastSqlException).with.property('code', SqlErrorCode.CANCELLED_BY_USER);
                 done();
             }).catch(done);
-            sqlResult.close();
-        });
-
-        it('should stop an ongoing execute() if close() is called', function (done) {
-            const sqlResult = new SqlResultImpl(fakeSqlService, {}, {}, {}, 4096);
-            const fake = sandbox.replace(sqlResult, 'onExecuteError', sandbox.fake(sqlResult.onExecuteError));
-
-            sqlResult.executeDeferred.promise.then(() => {
-                done(new Error('Not expected to run this line'));
-            }).catch(err => {
-                err.should.be.instanceof(HazelcastSqlException).with.property('code', SqlErrorCode.CANCELLED_BY_USER);
-                fake.calledOnceWithExactly(err).should.be.true;
-                done();
-            }).catch(done);
-            simulateExecutionResponse(100, sqlResult, 1, defaultRowMetadata);
             sqlResult.close();
         });
 
@@ -305,7 +273,7 @@ describe('SqlResultTest', function () {
             const onExecuteErrorFake = sandbox.replace(sqlResult, 'onExecuteError', sandbox.fake(sqlResult.onExecuteError));
             // simulate a response then call close()
             setTimeout(async () => {
-                sqlResult.onExecuteError(new Error('whoops'));
+                simulateExecuteError(sqlResult);
                 await sqlResult.close();
                 onExecuteErrorFake.callCount.should.be.eq(1);
                 done();
@@ -337,7 +305,7 @@ describe('SqlResultTest', function () {
         });
     });
     describe('getters', function () {
-        it('should resolve after successful execute', function () {
+        it('should resolve after successful execute', async function () {
             const sqlResult1 = new SqlResultImpl({}, {}, {}, {}, 4096);
 
             const rowMetadata = new SqlRowMetadataImpl([
@@ -355,36 +323,16 @@ describe('SqlResultTest', function () {
 
             const sqlResult2 = new SqlResultImpl({}, {}, {}, {}, 4096);
 
-            simulateExecutionResponse(100, sqlResult1, 2, rowMetadata);
-            simulateExecutionResponse(100, sqlResult2, 2, null, long.fromNumber(1));
+            simulateExecutionResponse(sqlResult1, 2, rowMetadata);
+            simulateExecutionResponse(sqlResult2, 2, null, long.fromNumber(1));
 
-            return assertTrueEventually(async () => {
-                (await sqlResult1.getRowMetadata()).should.be.eq(rowMetadata);
-                (await sqlResult1.isRowSet()).should.be.true;
-                (await sqlResult1.getUpdateCount()).eq(long.fromNumber(-1)).should.be.true;
+            sqlResult1.rowMetadata.should.be.eq(rowMetadata);
+            (await sqlResult1.isRowSet()).should.be.true;
+            sqlResult1.updateCount.eq(long.fromNumber(-1)).should.be.true;
 
-                should.equal((await sqlResult2.getRowMetadata()), null);
-                (await sqlResult2.isRowSet()).should.be.false;
-                (await sqlResult2.getUpdateCount()).eq(long.fromNumber(1)).should.be.true;
-            });
-        });
-
-        it('should reject after execute error', async function () {
-            const sqlResult1 = new SqlResultImpl({}, {}, {}, {}, 4096);
-
-            const anError = new Error('oops');
-
-            simulateExecuteError(100, sqlResult1, anError);
-
-            (await getRejectionReasonOrThrow(async () => {
-                await sqlResult1.getRowMetadata();
-            })).should.be.eq(anError);
-            (await getRejectionReasonOrThrow(async () => {
-                await sqlResult1.isRowSet();
-            })).should.be.eq(anError);
-            (await getRejectionReasonOrThrow(async () => {
-                await sqlResult1.getUpdateCount();
-            })).should.be.eq(anError);
+            should.equal(sqlResult2.rowMetadata, null);
+            (await sqlResult2.isRowSet()).should.be.false;
+            sqlResult2.updateCount.eq(long.fromNumber(1)).should.be.true;
         });
     });
     describe('fetch', function () {
@@ -398,8 +346,8 @@ describe('SqlResultTest', function () {
 
         beforeEach(function () {
             fakeSqlService = {
-                toHazelcastSqlException: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', err)),
-                rethrow: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', err)),
+                toHazelcastSqlException: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', undefined, err)),
+                rethrow: sandbox.fake((err) => new HazelcastSqlException(null, 1, '', undefined, err)),
                 fetch: sandbox.fake.resolves(fakeSqlPage),
                 close: sandbox.fake.resolves()
             };
@@ -464,9 +412,9 @@ describe('SqlResultTest', function () {
     describe('getCurrentRow', function () {
         let fakeSqlService;
         let fakeConnection;
-        let fakeSerializationService;
         let fakeQueryId;
         let sqlResult;
+        let fakeDeserializeFn;
 
         const fakeSqlPage = {};
         const cursorBufferSize = 4096;
@@ -487,13 +435,11 @@ describe('SqlResultTest', function () {
                 fetch: sandbox.fake.resolves(fakeSqlPage),
                 close: sandbox.fake.resolves()
             };
-            fakeSerializationService = {
-                toObject: sandbox.fake(v => v)
-            };
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
             fakeConnection = sandbox.fake();
-            sqlResult = new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId,
+            fakeDeserializeFn = sandbox.fake(v => v);
+            sqlResult = new SqlResultImpl(fakeSqlService, fakeDeserializeFn, fakeConnection, fakeQueryId,
                 cursorBufferSize);
             sqlResult.rowMetadata = rowMetadata;
             sqlResult.currentPage = new SqlPage([2, 2], [['1', '2'], ['3', '4']], true);
@@ -505,7 +451,7 @@ describe('SqlResultTest', function () {
 
         it('should call toObject of serialization service', function () {
             sqlResult.getCurrentRow();
-            fakeSerializationService.toObject.called.should.be.true;
+            fakeDeserializeFn.called.should.be.true;
         });
 
         it('should return object if returnRawResult is false', function () {
@@ -524,8 +470,8 @@ describe('SqlResultTest', function () {
         let fakeSqlService;
         let fakeConnection;
         let fakeQueryId;
-        let fakeSerializationService;
         let sqlResult;
+        let fakeDeserializeFn;
 
         const fakeSqlPage = new SqlPage([2, 2], [['1', '2'], ['3', '4']], true);
         const cursorBufferSize = 4096;
@@ -534,12 +480,10 @@ describe('SqlResultTest', function () {
             fakeSqlService = {
                 fetch: sandbox.fake.resolves(fakeSqlPage)
             };
-            fakeSerializationService = {
-                toObject: sandbox.fake(v => v)
-            };
             fakeConnection = sandbox.fake();
             fakeQueryId = sandbox.fake();
-            sqlResult = new SqlResultImpl(fakeSqlService, fakeSerializationService, fakeConnection, fakeQueryId,
+            fakeDeserializeFn = sandbox.fake(v => v);
+            sqlResult = new SqlResultImpl(fakeSqlService, fakeDeserializeFn, fakeConnection, fakeQueryId,
                 cursorBufferSize);
         });
 
@@ -548,16 +492,14 @@ describe('SqlResultTest', function () {
         });
 
         it('should reject if execute is failed', async function () {
-            const anError = new Error('oops');
-
-            simulateExecuteError(1, sqlResult, anError);
-            (await getRejectionReasonOrThrow(async () => {
+            simulateExecuteError(sqlResult);
+            await getRejectionReasonOrThrow(async () => {
                 await sqlResult.hasNext();
-            })).should.be.eq(anError);
+            });
         });
 
         it('should resolve to false if last page is received and all rows are read', async function () {
-            simulateExecutionResponse(1, sqlResult, 2);
+            simulateExecutionResponse(sqlResult, 2);
             // eslint-disable-next-line no-unused-vars,no-empty
             for await (const row of sqlResult) {
             }
@@ -566,7 +508,7 @@ describe('SqlResultTest', function () {
         });
 
         it('should resolve to true if there are rows to read from current page', async function () {
-            simulateExecutionResponse(1, sqlResult, 2);
+            simulateExecutionResponse(sqlResult, 2);
 
             await sqlResult.next();
 
@@ -576,7 +518,7 @@ describe('SqlResultTest', function () {
 
         it('should fetch next page if current page is ends', async function () {
             // Non-last page with one row
-            simulateExecutionResponse(1, sqlResult, 1, undefined, undefined, false);
+            simulateExecutionResponse(sqlResult, 1, undefined, undefined, false);
 
             // Consume the row
             await sqlResult.next();
@@ -633,13 +575,7 @@ describe('SqlResultTest', function () {
             const sqlResult = new SqlResultImpl({}, {}, {}, {}, 4096);
             sqlResult.updateCount = long.fromNumber(1); // change update count to see if it's changed
 
-            const anError = new HazelcastSqlException();
-            simulateExecuteError(100, sqlResult, anError);
-
-            const err = await getRejectionReasonOrThrow(async () => {
-                await sqlResult.executeDeferred.promise;
-            });
-            err.should.be.eq(anError);
+            simulateExecuteError(sqlResult);
             sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
         });
     });
@@ -651,9 +587,8 @@ describe('SqlResultTest', function () {
 
         it('should close the result and set updateCount if update count result is received ', async function () {
             // pass null to make sure row page is not used
-            simulateExecutionResponse(100, sqlResult, 0, null, long.fromNumber(5));
+            simulateExecutionResponse(sqlResult, 0, null, long.fromNumber(5));
 
-            await sqlResult.executeDeferred.promise;
             sqlResult.closed.should.be.true;
             should.equal(sqlResult.currentPage, null);
             sqlResult.updateCount.eq(long.fromNumber(5)).should.be.true;
@@ -664,9 +599,8 @@ describe('SqlResultTest', function () {
             const rowMetadata = {};
 
             // row metadata being not null means rows received
-            simulateExecutionResponse(100, sqlResult, 0, rowMetadata, undefined);
+            simulateExecutionResponse(sqlResult, 0, rowMetadata, undefined);
 
-            await sqlResult.executeDeferred.promise;
             sqlResult.rowMetadata.should.be.eq(rowMetadata);
             fake.calledOnce.should.be.true;
             sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;

@@ -24,9 +24,18 @@ import {SqlQueryId} from './SqlQueryId';
 import {DeferredPromise, deferredPromise} from '../util/Util';
 import {HazelcastSqlException, IllegalStateError, UUID} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
-import {SerializationService} from '../serialization/SerializationService';
+import {Data} from '../serialization';
 
+/**
+ * An {@link SqlResult} iterates over this type if {@link SqlStatementOptions.returnRawResult} is set to `false`
+ * (by default `false`) while {@link SqlService.execute | executing} an SQL query.
+ *
+ * Keys are column names and values are values in the SQL row.
+ */
 export type SqlRowAsObject = { [key: string]: any };
+/**
+ * Represents one of {@link SqlRow} and {@link SqlRowAsObject}.
+ */
 export type SqlRowType = SqlRow | SqlRowAsObject;
 
 /**
@@ -34,12 +43,17 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  *
  * ### Iteration
  *
- * The SqlResult is an async iterable of {@link SqlRowType} which is either an {@link SqlRow} or regular objects.
+ * An `SqlResult` is an async iterable of {@link SqlRowType} which is either an {@link SqlRow} or regular JavaScript objects.
  * By default it returns regular JavaScript objects, containing key and values. Keys represent column names, whereas
  * values represent row values. The default object returning behavior can be changed via the option
  * {@link SqlStatementOptions.returnRawResult}. If it is true, {@link SqlRow} objects are returned instead of regular objects.
  *
+ * Values in SQL rows are deserialized lazily. While iterating you will get a {@link HazelcastSqlException} if a value in SQL row
+ * cannot be deserialized.
+ *
  * Use {@link close} to release the resources associated with the result.
+ *
+ * An `SqlResult` can be iterated only once.
  *
  * #### for-await... of
  *
@@ -54,9 +68,10 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  *
  * #### next()
  *
- * Another approach to iterating rows is using {@link next}. Next returns an object with `done` and `value` properties.
- * `done` is false when there are more rows to iterate, false otherwise. `value` holds the current row value. Refer to
- * [iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators) for more information.
+ * Another approach of iterating rows is using the {@link next} method. Every call to `next` returns an object with `done` and
+ * `value` properties. `done` is `false` when there are more rows to iterate, `true` otherwise. `value` holds the current row
+ * value. Refer to [iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators) for more
+ * information about iteration in JavaScript.
  *
  * ```js
  * let row = await result.next();
@@ -68,7 +83,7 @@ export type SqlRowType = SqlRow | SqlRowAsObject;
  *
  * ### Usage for update count
  * ```js
- * const updateCount = await result.getUpdateCount();
+ * const updateCount = result.updateCount; // A Long object
  * ```
  *
  * You don't need to call {@link close} in this case.
@@ -79,6 +94,7 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
      *  Returns next {@link SqlRowType} iteration result. You should not call this method when result does not contain
      *  rows.
      *  @throws {@link IllegalStateError} if result does not contain rows, but update count.
+     *  @throws {@link HazelcastSqlException} if a value in current row cannot be deserialized.
      *  @returns an object including `value` and `done` keys. The `done` key indicates if
      *  iteration is ended, i.e when there are no more results. `value` holds iteration values which are in SqlRowType type.
      *  `value` has undefined value if iteration has ended.
@@ -95,41 +111,37 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
     close(): Promise<void>;
 
     /**
-     * Returns row metadata of the result.
-     * @returns SQL row metadata if rows exist in the result; otherwise null.
+     * SQL row metadata if rows exist in the result; otherwise null.
      */
-    getRowMetadata(): Promise<SqlRowMetadata | null>;
+    readonly rowMetadata: SqlRowMetadata | null;
 
     /**
      * Return whether this result has rows to iterate. False if update count is returned, true if rows are returned.
      * @returns whether this result is a row set
      */
-    isRowSet(): Promise<boolean>;
+    isRowSet(): boolean;
 
     /**
-     * Returns the number of rows updated by the statement or `-1` if this result is a row set.
-     * @returns update count
+     * The number of rows updated by the statement or `-1` if this result is a row set.
      */
-    getUpdateCount(): Promise<Long>;
+    readonly updateCount: Long;
 }
 
 /** @internal */
 export class SqlResultImpl implements SqlResult {
     /** Update count received as a result of SQL execution. See {@link SqlExpectedResultType} */
-    private updateCount: Long;
+    updateCount: Long;
+
     private currentPage: SqlPage | null;
+
     /* The number of rows in current page */
     private currentRowCount: number;
+
     /* Current row position in current page */
     private currentPosition: number;
+
     /* Set to true when the last page is received */
     private last: boolean;
-
-    /**
-     * Deferred promise that resolves to true when an execute response is received. If an error is occurred during execution,
-     * this promise is rejected with the error.
-     */
-    private readonly executeDeferred: DeferredPromise<boolean>;
 
     /**
      * Deferred promise that resolves to an SqlPage when current fetch request is completed.
@@ -148,18 +160,13 @@ export class SqlResultImpl implements SqlResult {
     private closed: boolean;
 
     /**
-     * Whether a response is received or not from server. The response can be an error message or a success message.
-     */
-    private responseReceived: boolean;
-
-    /**
      * Row metadata of the result. Initially null.
      */
-    private rowMetadata: SqlRowMetadata | null;
+    rowMetadata: SqlRowMetadata | null;
 
     constructor(
         private readonly sqlService: SqlServiceImpl,
-        private readonly serializationService: SerializationService,
+        private readonly deserializeFn: (data: Data, isRaw: boolean) => any,
         private readonly connection: Connection,
         private readonly queryId: SqlQueryId,
         /** The page size used for pagination */
@@ -170,12 +177,8 @@ export class SqlResultImpl implements SqlResult {
     ) {
         this.closed = false;
         this.last = false;
-        this.responseReceived = false;
         this.rowMetadata = null;
         this.currentPage = null;
-        this.executeDeferred = deferredPromise<boolean>();
-        this.executeDeferred.promise.catch(() => {
-        });
     }
 
     /** This symbol is needed to be included to be an async iterable */
@@ -192,33 +195,18 @@ export class SqlResultImpl implements SqlResult {
      */
     static newResult(
         sqlService: SqlServiceImpl,
-        serializationService: SerializationService,
+        deserializeFn: (data: Data, isRaw: boolean) => any,
         connection: Connection,
         queryId: SqlQueryId,
         cursorBufferSize: number,
         returnRawResult: boolean,
         clientUUID: UUID
     ) {
-        return new SqlResultImpl(sqlService, serializationService, connection, queryId, cursorBufferSize,
-            returnRawResult, clientUUID);
+        return new SqlResultImpl(sqlService, deserializeFn, connection, queryId, cursorBufferSize, returnRawResult, clientUUID);
     }
 
-    getUpdateCount(): Promise<Long> {
-        return this.executeDeferred.promise.then(() => {
-            return this.updateCount;
-        });
-    }
-
-    isRowSet(): Promise<boolean> {
-        return this.executeDeferred.promise.then(() => {
-            return this.rowMetadata !== null;
-        });
-    }
-
-    getRowMetadata(): Promise<SqlRowMetadata | null> {
-        return this.executeDeferred.promise.then(() => {
-            return this.rowMetadata;
-        });
+    isRowSet(): boolean {
+        return this.rowMetadata !== null;
     }
 
     close(): Promise<void> {
@@ -235,10 +223,6 @@ export class SqlResultImpl implements SqlResult {
 
         const error = new HazelcastSqlException(this.clientUUID, SqlErrorCode.CANCELLED_BY_USER,
             'Query was cancelled by user');
-        // Reject execution with user cancellation error if the cancellation is initiated before a response is received.
-        if (!this.responseReceived) {
-            this.onExecuteError(error);
-        }
         // Prevent ongoing/future fetch requests
         if (!this.fetchDeferred) {
             this.fetchDeferred = deferredPromise<SqlPage>();
@@ -276,14 +260,8 @@ export class SqlResultImpl implements SqlResult {
      * @param error The wrapped error that can be propagated to the user through executeDeferred.
      */
     onExecuteError(error: HazelcastSqlException): void {
-        // Ignore the error if SQL result is closed.
-        if (this.closed) {
-            return;
-        }
-        this.responseReceived = true;
         this.updateCount = Long.fromInt(-1);
         this.rowMetadata = null;
-        this.executeDeferred.reject(error);
     }
 
     /**
@@ -295,16 +273,15 @@ export class SqlResultImpl implements SqlResult {
             const columnCount = this.currentPage.getColumnCount();
             const values = new Array(columnCount);
             for (let i = 0; i < columnCount; i++) {
-                values[i] = this.serializationService.toObject(this.currentPage.getValue(this.currentPosition, i));
+                values[i] = this.currentPage.getValue(this.currentPosition, i);
             }
-            return new SqlRowImpl(values, this.rowMetadata);
+            // Deserialization happens lazily while getting the object.
+            return new SqlRowImpl(values, this.rowMetadata, this.deserializeFn);
         } else { // Return objects
             const result: SqlRowAsObject = {};
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 const columnMetadata = this.rowMetadata.getColumn(i);
-                result[columnMetadata.name] = this.serializationService.toObject(
-                    this.currentPage.getValue(this.currentPosition, i)
-                );
+                result[columnMetadata.name] = this.deserializeFn(this.currentPage.getValue(this.currentPosition, i), false);
             }
             return result;
         }
@@ -317,11 +294,6 @@ export class SqlResultImpl implements SqlResult {
      * @param updateCount The update count.
      */
     onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage | null, updateCount: Long) {
-        // Ignore the response if the SQL result is closed.
-        if (this.closed) {
-            return;
-        }
-
         if (rowMetadata !== null) { // Result that includes rows
             this.rowMetadata = rowMetadata;
             this.onNextPage(rowPage);
@@ -330,8 +302,6 @@ export class SqlResultImpl implements SqlResult {
             this.updateCount = updateCount;
             this.closed = true;
         }
-        this.responseReceived = true;
-        this.executeDeferred.resolve(true);
     }
 
     /**
@@ -385,12 +355,10 @@ export class SqlResultImpl implements SqlResult {
      * @returns if there are rows to be iterated.
      */
     private hasNext(): Promise<boolean> {
-        return this.executeDeferred.promise.then(() => {
-            if (this.rowMetadata === null) {
-                return Promise.reject(new IllegalStateError('This result contains only update count'));
-            }
-            return this.checkHasNext();
-        });
+        if (this.rowMetadata === null) {
+            return Promise.reject(new IllegalStateError('This result contains only update count'));
+        }
+        return this.checkHasNext();
     }
 
     next(): Promise<IteratorResult<SqlRowType, SqlRowType | undefined>> {

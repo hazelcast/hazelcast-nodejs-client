@@ -53,7 +53,21 @@ function portableFactory(classId) {
         };
 
         const client = await Client.newHazelcastClient(cfg);
-        const map = await client.getMap('decimalMap');
+        const mapName = 'decimalMap';
+        const map = await client.getMap(mapName);
+        // To be able to use our map in SQL we need to create mapping for it.
+        const createMappingQuery = `
+            CREATE MAPPING ${mapName} (
+                __key VARCHAR,
+                this DECIMAL
+            )
+            TYPE IMAP
+            OPTIONS (
+                'keyFormat' = 'varchar',
+                'valueFormat' = 'decimal'
+            )
+        `;
+        await client.getSql().execute(createMappingQuery);
 
         // You can use BigDecimals for any operation
         // Let's add some BigDecimals:
@@ -76,7 +90,7 @@ function portableFactory(classId) {
 
         // You can run an SQL query with a BigDecimal:
 
-        const result = client.getSql().execute(
+        const result = await client.getSql().execute(
             'SELECT * FROM decimalMap WHERE this > ?',
             [BigDecimal.fromString('2.22222222222222222')]
         );

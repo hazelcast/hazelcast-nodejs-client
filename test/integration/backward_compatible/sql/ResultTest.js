@@ -46,12 +46,16 @@ describe('SqlResultTest', function () {
     let someMap;
     let mapName;
     let result;
+    let serverVersionNewerThanFive;
 
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     before(async function () {
+        serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
+        const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
+
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await RC.createCluster(null, JET_ENABLED_CONFIG);
+        cluster = await RC.createCluster(null, CLUSTER_CONFIG);
         await RC.startMember(cluster.id);
         client = await Client.newHazelcastClient({
             clusterName: cluster.id
@@ -62,6 +66,7 @@ describe('SqlResultTest', function () {
     beforeEach(async function () {
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
         await someMap.put(0, 1);
         await someMap.put(1, 2);
         await someMap.put(2, 3);
@@ -83,7 +88,7 @@ describe('SqlResultTest', function () {
     });
 
     it('should reject iteration after close()', async function () {
-        result = TestUtil.getSql(client).execute(`SELECT * FROM ${mapName} WHERE this > ?`, [1], {cursorBufferSize: 1});
+        result = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName} WHERE this > ?`, [1], {cursorBufferSize: 1});
         const error = await TestUtil.getRejectionReasonOrThrow(async () => {
             let counter = 0;
             // eslint-disable-next-line no-empty,no-unused-vars
@@ -101,15 +106,15 @@ describe('SqlResultTest', function () {
     });
 
     it('getters should work', async function () {
-        result = TestUtil.getSql(client).execute(`SELECT * FROM ${mapName} WHERE this > ?`, [1]);
-        const rowMetadata = await result.getRowMetadata();
+        result = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName} WHERE this > ?`, [1]);
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.should.be.instanceof(getSqlRowMetadataImpl());
         rowMetadata.getColumnCount().should.be.eq(2);
 
         const isRowSet = await result.isRowSet();
         isRowSet.should.be.true;
 
-        const updateCount = await result.getUpdateCount();
+        const updateCount = await TestUtil.getUpdateCount(result);
         updateCount.eq(long.fromNumber(-1)).should.be.true;
     });
 });
