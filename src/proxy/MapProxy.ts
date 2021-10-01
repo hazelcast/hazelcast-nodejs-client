@@ -674,6 +674,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         const partitionService = this.partitionService;
         const partitionsToKeys: { [id: number]: Array<[Data, Data]> } = {};
         for (const pair of pairs) {
+            assertNotNull(pair[0]);
+            assertNotNull(pair[1]);
             const keyData = this.toData(pair[0]);
             const pId: number = partitionService.getPartitionId(keyData);
             if (!partitionsToKeys[pId]) {
