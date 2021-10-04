@@ -208,10 +208,19 @@ export class ConfigBuilder {
             }
             this.effectiveConfig.network.ssl.sslOptions = jsonObject.sslOptions;
         } else if (jsonObject.sslOptionsFactory || jsonObject.sslOptionsFactoryProperties) {
-            this.effectiveConfig.network.ssl.sslOptionsFactory = jsonObject.sslOptionsFactory;
+            this.handleSSLOptionsFactory(jsonObject.sslOptionsFactory);
             this.effectiveConfig.network.ssl.sslOptionsFactoryProperties = jsonObject.sslOptionsFactoryProperties
                 ? this.parseProperties(jsonObject.sslOptionsFactoryProperties) : null;
         }
+    }
+
+    private handleSSLOptionsFactory(sslOptionsFactory: any) {
+        if (typeof sslOptionsFactory.init !== 'function' || typeof sslOptionsFactory.getSSLOptions !== 'function') {
+            throw new RangeError(
+                `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. Check out the API documentation for the expected object.`
+            );
+        }
+        this.effectiveConfig.network.ssl.sslOptionsFactory = sslOptionsFactory;
     }
 
     private handleClusterMembers(jsonObject: any): void {
@@ -300,6 +309,9 @@ export class ConfigBuilder {
     private handleLifecycleListeners(jsonObject: any): void {
         const listenersArray = tryGetArray(jsonObject);
         for (const listener of listenersArray) {
+            if (typeof listener !== 'function') {
+                throw new RangeError(`Lifecycle listener given in 'lifecycleListeners' is not a function ${listener}`);
+            }
             this.effectiveConfig.lifecycleListeners.push(listener);
         }
     }
@@ -307,8 +319,17 @@ export class ConfigBuilder {
     private handleMembershipListeners(jsonObject: any): void {
         const listenersArray = tryGetArray(jsonObject);
         for (const listener of listenersArray) {
-            this.effectiveConfig.membershipListeners.push(listener);
+            this.handleMembershipListener(listener);
         }
+    }
+
+    private handleMembershipListener(membershipListener: any) {
+        // Throw in case both memberAdded and memberRemoved are invalid.
+        if (typeof membershipListener.memberAdded !== 'function' && typeof membershipListener.memberRemoved !== 'function') {
+            throw new RangeError(`Invalid membershipListener is given in 'membershipListeners': ${membershipListener}. `
+                                + 'Check out the API documentation for the expected object.');
+        }
+        this.effectiveConfig.membershipListeners.push(membershipListener);
     }
 
     private handleSerialization(jsonObject: any): void {
@@ -320,20 +341,11 @@ export class ConfigBuilder {
             } else if (key === 'portableVersion') {
                 this.effectiveConfig.serialization.portableVersion = tryGetNumber(jsonObject[key]);
             } else if (key === 'dataSerializableFactories') {
-                for (const index in jsonObject[key]) {
-                    const idx = Number.parseInt(index);
-                    this.effectiveConfig.serialization
-                        .dataSerializableFactories[idx] = jsonObject[key][index];
-                }
+                this.handleDataSerializableFactories(jsonObject[key]);
             } else if (key === 'portableFactories') {
-                for (const index in jsonObject[key]) {
-                    const idx = Number.parseInt(index);
-                    this.effectiveConfig.serialization
-                        .portableFactories[idx] = jsonObject[key][index];
-                }
+                this.handlePortableFactories(jsonObject[key]);
             } else if (key === 'globalSerializer') {
-                const globalSerializer = jsonObject[key];
-                this.effectiveConfig.serialization.globalSerializer = globalSerializer;
+                this.handleGlobalSerializer(jsonObject[key]);
             } else if (key === 'customSerializers') {
                 this.handleCustomSerializers(jsonObject[key]);
             } else if (key === 'jsonStringDeserializationPolicy') {
@@ -345,9 +357,54 @@ export class ConfigBuilder {
         }
     }
 
+    private handleGlobalSerializer(globalSerializer: any) {
+        if (typeof globalSerializer.id !== 'number'
+            || typeof globalSerializer.read !== 'function' || typeof globalSerializer.write !== 'function') {
+            throw new RangeError(
+                `Invalid global serializer given: ${globalSerializer}. Check out the API documentation for the expected object.`
+            );
+        }
+        this.effectiveConfig.serialization.globalSerializer = globalSerializer;
+    }
+
+    private handlePortableFactories(portableFactories: any) {
+        for (const index in portableFactories) {
+            const idx = +index;
+            if (!Number.isInteger(idx)) {
+                throw new RangeError(`"portableFactories" should only include integer keys, given key: ${index}`);
+            }
+            if (typeof portableFactories[index] !== 'function') {
+                throw new RangeError(`Expected the portableFactory to be function but it is not: ${portableFactories[index]}`);
+            }
+            this.effectiveConfig.serialization.portableFactories[idx] = portableFactories[index];
+        }
+    }
+
+    private handleDataSerializableFactories(dataSerializableFactories: any) {
+        for (const index in dataSerializableFactories) {
+            const idx = +index;
+            if (!Number.isInteger(idx)) {
+                throw new RangeError(`"dataSerializableFactories" should only include integer keys, given key: ${index}`);
+            }
+            if (typeof dataSerializableFactories[index] !== 'function') {
+                throw new RangeError(
+                    `Expected the dataSerializableFactory to be function but it is not: ${dataSerializableFactories[index]}`
+                );
+            }
+            this.effectiveConfig.serialization.dataSerializableFactories[idx] = dataSerializableFactories[index];
+        }
+    }
+
     private handleCustomSerializers(jsonObject: any): void {
         const serializersArray = tryGetArray(jsonObject);
+
         for (const serializer of serializersArray) {
+            if (typeof serializer.id !== 'number'
+                || typeof serializer.read !== 'function' || typeof serializer.write !== 'function') {
+                throw new RangeError(
+                    `Invalid custom serializer given: ${serializer}. Check out the API documentation for the expected object.`
+                );
+            }
             this.effectiveConfig.serialization.customSerializers.push(serializer);
         }
     }
@@ -426,11 +483,21 @@ export class ConfigBuilder {
             if (key === 'type') {
                 this.effectiveConfig.loadBalancer.type = tryGetEnum(LoadBalancerType, jsonObject[key]);
             } else if (key === 'customLoadBalancer') {
-                this.effectiveConfig.loadBalancer.customLoadBalancer = jsonObject[key];
+                this.handleCustomLoadBalancer(jsonObject[key]);
             } else {
                 throw new RangeError(`Unexpected load balancer config '${key}' is passed to the Hazelcast Client`);
             }
         }
+    }
+
+    private handleCustomLoadBalancer(customLB: any) {
+        if (typeof customLB.initLoadBalancer !== 'function' || typeof customLB.next !== 'function') {
+            throw new RangeError(
+                `Invalid LoadBalancer given: ${customLB}. Check out the API documentation for the expected object.`
+            );
+        }
+
+        this.effectiveConfig.loadBalancer.customLoadBalancer = customLB;
     }
 
     private handleLogger(jsonObject: any): void {
