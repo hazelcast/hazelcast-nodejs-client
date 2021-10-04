@@ -91,7 +91,7 @@ export class ConfigBuilder {
             } else if (key === 'customLogger') {
                 this.handleLogger(value);
             } else if (key === 'customCredentials') {
-                this.handleCredentials(value);
+                this.effectiveConfig.customCredentials = jsonObject;
             } else if (key === 'backupAckToClientEnabled') {
                 this.effectiveConfig.backupAckToClientEnabled = tryGetBoolean(value);
             } else {
@@ -310,7 +310,9 @@ export class ConfigBuilder {
         const listenersArray = tryGetArray(jsonObject);
         for (const listener of listenersArray) {
             if (typeof listener !== 'function') {
-                throw new RangeError(`Lifecycle listener given in 'lifecycleListeners' is not a function ${listener}`);
+                throw new RangeError(
+                    `Lifecycle listener given in 'lifecycleListeners' is not a function, but a: ${typeof listener}`
+                );
             }
             this.effectiveConfig.lifecycleListeners.push(listener);
         }
@@ -368,6 +370,9 @@ export class ConfigBuilder {
     }
 
     private handlePortableFactories(portableFactories: any) {
+        if (typeof portableFactories !== 'object') {
+            throw new RangeError(`Expected 'portableFactories' to be an object but it is a: ${typeof portableFactories}`);
+        }
         for (const index in portableFactories) {
             const idx = +index;
             if (!Number.isInteger(idx)) {
@@ -381,6 +386,11 @@ export class ConfigBuilder {
     }
 
     private handleDataSerializableFactories(dataSerializableFactories: any) {
+        if (typeof dataSerializableFactories !== 'object') {
+            throw new RangeError(
+                `Expected 'dataSerializableFactories' to be an object but it is a: ${typeof dataSerializableFactories}`
+            );
+        }
         for (const index in dataSerializableFactories) {
             const idx = +index;
             if (!Number.isInteger(idx)) {
@@ -410,6 +420,11 @@ export class ConfigBuilder {
     }
 
     private handleNearCaches(jsonObject: any): void {
+        if (typeof jsonObject !== 'object') {
+            throw new RangeError(
+                `Expected 'nearCaches' to be an object but it is a: ${typeof jsonObject}`
+            );
+        }
         for (const name in jsonObject) {
             const ncConfig = jsonObject[name];
             const nearCacheConfig = new NearCacheConfigImpl();
@@ -441,6 +456,11 @@ export class ConfigBuilder {
     }
 
     private handleReliableTopics(jsonObject: any): void {
+        if (typeof jsonObject !== 'object') {
+            throw new RangeError(
+                `Expected 'reliableTopics' to be an object but it is a: ${typeof jsonObject}`
+            );
+        }
         for (const name in jsonObject) {
             const jsonRtCfg = jsonObject[name];
             const reliableTopicConfig = new ReliableTopicConfigImpl();
@@ -460,6 +480,11 @@ export class ConfigBuilder {
     }
 
     private handleFlakeIdGenerators(jsonObject: any): void {
+        if (typeof jsonObject !== 'object') {
+            throw new RangeError(
+                `Expected 'flakeIdGenerators' to be an object but it is a: ${typeof jsonObject}`
+            );
+        }
         for (const name in jsonObject) {
             const fidConfig = jsonObject[name];
             const flakeIdConfig = new FlakeIdGeneratorConfigImpl();
@@ -500,11 +525,15 @@ export class ConfigBuilder {
         this.effectiveConfig.loadBalancer.customLoadBalancer = customLB;
     }
 
-    private handleLogger(jsonObject: any): void {
-        this.effectiveConfig.customLogger = jsonObject;
-    }
+    private handleLogger(customLogger: any): void {
+        if (typeof customLogger.log !== 'function' || typeof customLogger.error !== 'function' ||
+            typeof customLogger.warn !== 'function' || typeof customLogger.info !== 'function' ||
+            typeof customLogger.debug !== 'function' || typeof customLogger.trace !== 'function') {
+            throw new RangeError(
+                `Invalid custom logger given: ${customLogger}. Check out the API documentation for the expected object.`
+            );
+        }
 
-    private handleCredentials(jsonObject: any): void {
-        this.effectiveConfig.customCredentials = jsonObject;
+        this.effectiveConfig.customLogger = customLogger;
     }
 }
