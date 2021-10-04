@@ -43,9 +43,15 @@ describe('ConfigBuilderTest', function () {
     const dataSerializableFactory = () => {};
     const portableFactory = () => {};
     const customSerializer = {
-        id: 3
+        id: 3,
+        read: () => {},
+        write: () => {}
     };
-    const globalSerializer = {};
+    const globalSerializer = {
+        id: 44,
+        read: () => {},
+        write: () => {}
+    };
     const customLoadBalancer = {
         initLoadBalancer: () => {},
         next: () => {}
