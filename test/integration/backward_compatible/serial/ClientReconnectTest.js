@@ -16,8 +16,8 @@
 'use strict';
 
 const { expect } = require('chai');
-const RC = require('../RC');
-const TestUtil = require('../../TestUtil');
+const RC = require('../../RC');
+const TestUtil = require('../../../TestUtil');
 
 /**
  * Basic tests for reconnection to cluster scenarios.
