@@ -65,12 +65,12 @@ describe('LoggingTest', function () {
     let consoleLogSpy;
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
     });
 
     after(async function () {
-        return testFactory.cleanUp();
+        return testFactory.shutdownAll();
     });
 
     beforeEach(function () {
@@ -91,7 +91,7 @@ describe('LoggingTest', function () {
             loggingHappened = true;
         });
 
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             customLogger: winstonAdapter
         }, member);
@@ -99,7 +99,7 @@ describe('LoggingTest', function () {
     });
 
     it('no logging', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'OFF'
@@ -109,14 +109,14 @@ describe('LoggingTest', function () {
     });
 
     it('default logging in case of empty property', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
         sinon.assert.called(console.log);
     });
 
     it('default logging in case of default property', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'INFO'
@@ -133,14 +133,14 @@ describe('LoggingTest', function () {
     });
 
     it('default logging, default level', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
         sinon.assert.calledWithMatch(console.log, '[DefaultLogger] %s at %s: %s', 'INFO');
     });
 
     it('default logging, error level', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'ERROR'
@@ -150,7 +150,7 @@ describe('LoggingTest', function () {
     });
 
     it('default logging, trace level', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.logging.level': 'TRACE'

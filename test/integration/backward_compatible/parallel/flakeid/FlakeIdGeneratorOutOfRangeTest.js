@@ -36,7 +36,7 @@ describe('FlakeIdGeneratorOutOfRangeTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     async function assignOverflowedNodeId(clusterId, instanceNum) {
@@ -55,10 +55,10 @@ describe('FlakeIdGeneratorOutOfRangeTest', function () {
      * overflow the member 0;
      */
     it('newId should succeed while there is at least one suitable member', async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         const member1 = await RC.startMember(cluster.id);
 
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             network: {
                 smartRouting: false
@@ -80,13 +80,13 @@ describe('FlakeIdGeneratorOutOfRangeTest', function () {
     });
 
     it('should throw when there is no server with a join id smaller than 2^16', async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         const member1 = await RC.startMember(cluster.id);
         const member2 = await RC.startMember(cluster.id);
         await assignOverflowedNodeId(cluster.id, 0);
         await assignOverflowedNodeId(cluster.id, 1);
 
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, [member1, member2]);
         flakeIdGenerator = await client.getFlakeIdGenerator('test');

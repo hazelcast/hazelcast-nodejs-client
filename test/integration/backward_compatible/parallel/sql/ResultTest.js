@@ -55,9 +55,9 @@ describe('SqlResultTest', function () {
         const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
 
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await testFactory.createClusterForParallelTest(null, CLUSTER_CONFIG);
+        cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
         TestUtil.markServerVersionAtLeast(this, client, '4.2');
@@ -75,7 +75,7 @@ describe('SqlResultTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     afterEach(async function () {

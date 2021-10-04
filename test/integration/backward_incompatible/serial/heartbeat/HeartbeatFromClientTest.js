@@ -26,11 +26,11 @@ describe('HeartbeatFromClientTest', function () {
 
     beforeEach(async function () {
         const serverConfig = fs.readFileSync(__dirname + '/short-heartbeat.xml', 'utf8');
-        cluster = await testFactory.createClusterForSerialTest(null, serverConfig);
+        cluster = await testFactory.createClusterForSerialTests(null, serverConfig);
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('client sends heartbeat periodically even when server continuously pushes messages', async function () {
@@ -44,11 +44,11 @@ describe('HeartbeatFromClientTest', function () {
             }
         };
         await RC.startMember(cluster.id);
-        const client1 = await testFactory.newHazelcastClientForSerialTest(clientConfig);
+        const client1 = await testFactory.newHazelcastClientForSerialTests(clientConfig);
         client1.getConnectionManager().on('connectionClosed', () => {
             connectionClosedEventCount++;
         });
-        const client2 = await testFactory.newHazelcastClientForSerialTest(clientConfig);
+        const client2 = await testFactory.newHazelcastClientForSerialTests(clientConfig);
         const mapFromClient1 = await client1.getMap(MAP_NAME);
         await mapFromClient1.addEntryListener({
             added: function () {

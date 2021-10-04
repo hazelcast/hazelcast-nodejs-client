@@ -34,13 +34,13 @@ describe('Invalidation metadata distortion', function () {
     let validationClient;
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'));
         member = await RC.startMember(cluster.id);
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     afterEach(async function () {
@@ -66,8 +66,8 @@ describe('Invalidation metadata distortion', function () {
     }
 
     beforeEach(async function () {
-        client = await testFactory.newHazelcastClientForParallelTest(createConfig(true), member);
-        validationClient = await testFactory.newHazelcastClientForParallelTest(createConfig(false), member);
+        client = await testFactory.newHazelcastClientForParallelTests(createConfig(true), member);
+        validationClient = await testFactory.newHazelcastClientForParallelTests(createConfig(false), member);
     });
 
     it('lost invalidation', function (done) {

@@ -38,7 +38,7 @@ describe('ClientSSLAuthenticationTest', function () {
     });
 
     async function createMemberWithXML(serverXML) {
-        cluster = await testFactory.createClusterForParallelTest(null, fs.readFileSync(serverXML, 'utf8'));
+        cluster = await testFactory.createClusterForParallelTests(null, fs.readFileSync(serverXML, 'utf8'));
         return RC.startMember(cluster.id);
     }
 
@@ -108,12 +108,12 @@ describe('ClientSSLAuthenticationTest', function () {
             });
 
             after(async function () {
-                await testFactory.cleanUp();
+                await testFactory.shutdownAll();
             });
 
             it('ma:required, they both know each other should connect', async function () {
                 const member = await createMemberWithXML(maRequiredXML);
-                const client = await testFactory.newHazelcastClientForParallelTest(createClientConfigFn(
+                const client = await testFactory.newHazelcastClientForParallelTests(createClientConfigFn(
                     './client1-key.pem', './client1-cert.pem', './server1-cert.pem', member.port
                 ));
                 await client.shutdown();
@@ -121,28 +121,28 @@ describe('ClientSSLAuthenticationTest', function () {
 
             it('ma:required, server knows client, client does not know server should fail', async function () {
                 const member = await createMemberWithXML(maRequiredXML);
-                await expect(testFactory.newHazelcastClientForParallelTest(createClientConfigFn(
+                await expect(testFactory.newHazelcastClientForParallelTests(createClientConfigFn(
                     './client1-key.pem', './client1-cert.pem', './server2-cert.pem', member.port
                 ))).to.be.rejectedWith(IllegalStateError);
             });
 
             it('ma:required, server does not know client, client knows server should fail', async function () {
                 const member = await createMemberWithXML(maRequiredXML);
-                await expect(testFactory.newHazelcastClientForParallelTest(createClientConfigFn(
+                await expect(testFactory.newHazelcastClientForParallelTests(createClientConfigFn(
                     './client2-key.pem', './client2-cert.pem', './server1-cert.pem', member.port
                 ))).to.be.rejectedWith(IllegalStateError);
             });
 
             it('ma:required, neither one knows the other should fail', async function () {
                 const member = await createMemberWithXML(maRequiredXML);
-                await expect(testFactory.newHazelcastClientForParallelTest(createClientConfigFn(
+                await expect(testFactory.newHazelcastClientForParallelTests(createClientConfigFn(
                     './client2-key.pem', './client2-cert.pem', './server2-cert.pem', member.port
                 ))).to.be.rejectedWith(IllegalStateError);
             });
 
             it('ma:optional, they both know each other should connect', async function () {
                 const member = await createMemberWithXML(maOptionalXML);
-                const client = await testFactory.newHazelcastClientForParallelTest(createClientConfigFn(
+                const client = await testFactory.newHazelcastClientForParallelTests(createClientConfigFn(
                     './client1-key.pem', './client1-cert.pem', './server1-cert.pem', member.port
                 ));
                 await client.shutdown();
@@ -150,21 +150,21 @@ describe('ClientSSLAuthenticationTest', function () {
 
             it('ma:optional, server knows client, client does not know server should fail', async function () {
                 const member = await createMemberWithXML(maOptionalXML);
-                await expect(testFactory.newHazelcastClientForParallelTest(createClientConfigFn(
+                await expect(testFactory.newHazelcastClientForParallelTests(createClientConfigFn(
                     './client1-key.pem', './client1-cert.pem', './server2-cert.pem', member.port
                 ))).to.be.rejectedWith(IllegalStateError);
             });
 
             it('ma:optional, server does not know client, client knows server should fail', async function () {
                 const member = await createMemberWithXML(maOptionalXML);
-                await expect(testFactory.newHazelcastClientForParallelTest(createClientConfigFn(
+                await expect(testFactory.newHazelcastClientForParallelTests(createClientConfigFn(
                     './client2-key.pem', './client2-cert.pem', './server1-cert.pem', member.port
                 ))).to.be.rejectedWith(IllegalStateError);
             });
 
             it('ma:optional, neither knows the other should fail', async function () {
                 const member = await createMemberWithXML(maOptionalXML);
-                await expect(testFactory.newHazelcastClientForParallelTest(createClientConfigFn(
+                await expect(testFactory.newHazelcastClientForParallelTests(createClientConfigFn(
                     './client2-key.pem', './client2-cert.pem', './server2-cert.pem', member.port
                 ))).to.be.rejectedWith(IllegalStateError);
             });

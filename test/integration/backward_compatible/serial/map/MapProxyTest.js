@@ -33,10 +33,10 @@ describe('MapProxyTest', function () {
             const nearCacheConfig = fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8');
 
             before(async function () {
-                cluster = await testFactory.createClusterForSerialTest(null, nearCacheEnabled ? nearCacheConfig : null);
+                cluster = await testFactory.createClusterForSerialTests(null, nearCacheEnabled ? nearCacheConfig : null);
                 await RC.startMember(cluster.id);
 
-                client = await testFactory.newHazelcastClientForSerialTest({
+                client = await testFactory.newHazelcastClientForSerialTests({
                     clusterName: cluster.id,
                     nearCaches: nearCacheEnabled ? { test: { timeToLiveSeconds: 1 } } : {}
                 });
@@ -52,7 +52,7 @@ describe('MapProxyTest', function () {
             });
 
             after(async function () {
-                await testFactory.cleanUp();
+                await testFactory.shutdownAll();
             });
 
             function generateLockScript(mapName, keyName) {

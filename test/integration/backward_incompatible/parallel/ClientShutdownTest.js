@@ -39,13 +39,13 @@ describe('ClientShutdownTest', function () {
 
     afterEach(async function () {
         sandbox.restore();
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('client should call shutdown on failed start', async function () {
         sandbox.spy(Client.prototype, 'shutdown');
 
-        await expect(testFactory.newHazelcastClientForParallelTest({
+        await expect(testFactory.newHazelcastClientForParallelTests({
             connectionStrategy: {
                 connectionRetry: {
                     clusterConnectTimeoutMillis: 100,
@@ -68,10 +68,10 @@ describe('ClientShutdownTest', function () {
         sandbox.spy(ConnectionManager.prototype, 'shutdown');
         sandbox.spy(InvocationService.prototype, 'shutdown');
 
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
 
-        const client = await testFactory.newHazelcastClientForParallelTest({
+        const client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
         // force ReparingTask initialization

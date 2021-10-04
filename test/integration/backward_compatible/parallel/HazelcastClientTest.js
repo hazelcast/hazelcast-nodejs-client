@@ -83,9 +83,9 @@ configParams.forEach((cfg) => {
         };
 
         before(async function () {
-            cluster = await testFactory.createClusterForParallelTest();
+            cluster = await testFactory.createClusterForParallelTests();
             const member = await RC.startMember(cluster.id);
-            client = await testFactory.newHazelcastClientForParallelTest({
+            client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id
             }, member);
         });
@@ -99,7 +99,7 @@ configParams.forEach((cfg) => {
         });
 
         after(async function () {
-            await testFactory.cleanUp();
+            await testFactory.shutdownAll();
         });
 
         it('getDistributedObject returns empty array when there is no distributed object', async function () {

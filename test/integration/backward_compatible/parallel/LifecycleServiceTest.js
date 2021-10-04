@@ -26,12 +26,12 @@ describe('LifecycleServiceTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
     });
 
     after(async function () {
-        return testFactory.cleanUp();
+        return testFactory.shutdownAll();
     });
 
     // expected order is: STARTING, STARTED, CONNECTED, SHUTTING_DOWN, DISCONNECTED and SHUTDOWN
@@ -55,7 +55,7 @@ describe('LifecycleServiceTest', function () {
             }
         };
 
-        testFactory.newHazelcastClientForParallelTest({
+        testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             lifecycleListeners: [listener]
         }, member)
@@ -67,7 +67,7 @@ describe('LifecycleServiceTest', function () {
 
     it('event listener should get SHUTTING_DOWN, DISCONNECTED and SHUTDOWN events when added after startup', function (done) {
         let expectedState = 'SHUTTING_DOWN';
-        testFactory.newHazelcastClientForParallelTest({
+        testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member).then((client) => {
             client.lifecycleService.on('lifecycleEvent', (state) => {
@@ -86,7 +86,7 @@ describe('LifecycleServiceTest', function () {
     });
 
     it('isRunning returns correct values at lifecycle stages', function (done) {
-        testFactory.newHazelcastClientForParallelTest({
+        testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member).then((client) => {
             client.lifecycleService.on('lifecycleEvent',

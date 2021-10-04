@@ -31,9 +31,9 @@ describe('ReplicatedMapProxyTest', function () {
 
     before(async function () {
         const config = fs.readFileSync(path.join(__dirname, 'hazelcast_replicatedmap.xml'), 'utf8');
-        const cluster = await testFactory.createClusterForParallelTest(null, config);
+        const cluster = await testFactory.createClusterForParallelTests(null, config);
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
     });
@@ -47,7 +47,7 @@ describe('ReplicatedMapProxyTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('puts one entry and gets one entry', async function () {

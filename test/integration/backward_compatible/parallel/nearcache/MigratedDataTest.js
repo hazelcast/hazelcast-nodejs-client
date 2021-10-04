@@ -61,14 +61,14 @@ describe('MigratedDataTest', function () {
     }
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'));
         member1 = await RC.startMember(cluster.id);
         member2 = await RC.startMember(cluster.id);
     });
 
     beforeEach(async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             nearCaches: {
                 [mapName]: {}
@@ -85,7 +85,7 @@ describe('MigratedDataTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('killing a server migrates data to the other node, migrated data has new uuid, '

@@ -31,16 +31,16 @@ describe('RestValueTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        const cluster = await testFactory.createClusterForParallelTest(null,
+        const cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_rest.xml', 'utf8'));
         member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('client should receive REST events from server as RestValue', async function () {

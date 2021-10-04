@@ -55,18 +55,18 @@ describe('MapPartitionAwareTest', function () {
 
     before(async function () {
         expect(memberCount, 'This test should have at least 2 members.').to.be.at.least(2);
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         for (let i = 0; i < memberCount; i++) {
             members.push(RC.startMember(cluster.id));
         }
         members = await Promise.all(members);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, members);
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     beforeEach(async function () {

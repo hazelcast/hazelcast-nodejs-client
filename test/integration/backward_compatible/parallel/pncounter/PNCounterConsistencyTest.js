@@ -32,17 +32,17 @@ describe('PNCounterConsistencyTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(path.resolve(__dirname, 'hazelcast_crdtreplication_delayed.xml'), 'utf8'));
         const member1 = await RC.startMember(cluster.id);
         const member2 = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, [member1, member2]);
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('target replica killed, no replica is up-to-date, get operation throws ConsistencyLostError', async function () {

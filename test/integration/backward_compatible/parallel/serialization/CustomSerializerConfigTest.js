@@ -28,12 +28,12 @@ describe('CustomSerializerConfigTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     function createConfig(clusterName) {
@@ -47,7 +47,7 @@ describe('CustomSerializerConfigTest', function () {
 
     it('should be configured programmatically', async function () {
         const musician = new Musician('Furkan');
-        client = await testFactory.newHazelcastClientForParallelTest(createConfig(cluster.id), member);
+        client = await testFactory.newHazelcastClientForParallelTests(createConfig(cluster.id), member);
         expect(client.getSerializationService().findSerializerFor(musician).id).to.be.equal(10);
         const map = await client.getMap('musicians');
         await map.put('neyzen', musician);

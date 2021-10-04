@@ -62,15 +62,15 @@ describe('ReliableTopicTest', function () {
 
     before(async function () {
         const memberConfig = fs.readFileSync(__dirname + '/hazelcast_topic.xml', 'utf8');
-        cluster = await testFactory.createClusterForParallelTest(null, memberConfig);
+        cluster = await testFactory.createClusterForParallelTests(null, memberConfig);
         const member = await RC.startMember(cluster.id);
         const config = createConfig(cluster.id, member.port);
-        clientOne = await testFactory.newHazelcastClientForParallelTest(config, member);
-        clientTwo = await testFactory.newHazelcastClientForParallelTest(config, member);
+        clientOne = await testFactory.newHazelcastClientForParallelTests(config, member);
+        clientTwo = await testFactory.newHazelcastClientForParallelTests(config, member);
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('writes and reads messages', function (done) {

@@ -34,10 +34,10 @@ describe('NonStopNearCacheTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
         const disconnectedDeferred = deferredPromise();
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             nearCaches: {
                 [mapName]: {}

@@ -80,12 +80,12 @@ describe('Data type test', function () {
         const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
 
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        cluster = await testFactory.createClusterForParallelTest(null, CLUSTER_CONFIG);
+        cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
         member = await RC.startMember(cluster.id);
     });
 
     const basicSetup = async (testFn) => {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
         TestUtil.markServerVersionAtLeast(testFn, client, '4.2');
@@ -107,7 +107,7 @@ describe('Data type test', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should be able to decode/serialize VARCHAR', async function () {
@@ -756,7 +756,7 @@ describe('Data type test', function () {
     });
     it('should be able to decode/serialize OBJECT(portable) without server config', async function () {
         const SqlColumnType = TestUtil.getSqlColumnType();
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
                 portableFactories: {

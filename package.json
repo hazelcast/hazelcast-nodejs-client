@@ -10,8 +10,7 @@
     ],
     "dependencies": {
         "@types/long": "4.0.1",
-        "long": "4.0.0",
-        "mocha-jenkins-reporter": "^0.4.6"
+        "long": "4.0.0"
     },
     "devDependencies": {
         "@types/node": "~10.17.60",

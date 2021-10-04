@@ -67,9 +67,9 @@ describe('StatisticsTest (default period)', function () {
     let map;
 
     before(async function () {
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             nearCaches: {
                 'nearCachedMap*': {
@@ -86,7 +86,7 @@ describe('StatisticsTest (default period)', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     beforeEach(async function () {
@@ -151,9 +151,9 @@ describe('StatisticsTest (non-default period)', function () {
     let client;
 
     before(async function () {
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.statistics.enabled': true,
@@ -166,7 +166,7 @@ describe('StatisticsTest (non-default period)', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should not change before period', async function () {
@@ -190,9 +190,9 @@ describe('StatisticsTest (negative period)', function () {
     let cluster;
 
     before(async function () {
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.statistics.enabled': true,
@@ -205,7 +205,7 @@ describe('StatisticsTest (negative period)', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should be enabled via configuration', async function () {

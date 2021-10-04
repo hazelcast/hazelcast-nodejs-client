@@ -68,21 +68,21 @@ describe('FencedLockTest', function () {
     }
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'));
         members = await Promise.all([
             RC.startMember(cluster.id),
             RC.startMember(cluster.id),
             RC.startMember(cluster.id)
         ]);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, members);
         lock = await client.getCPSubsystem().getLock('alock');
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should create FencedLock with respect to given CP group', async function () {
@@ -98,7 +98,7 @@ describe('FencedLockTest', function () {
     });
 
     it('should release locks on client shutdown', async function () {
-        const anotherClient = await testFactory.newHazelcastClientForParallelTest({
+        const anotherClient = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, members);
         const lockOfAnotherClient = await anotherClient.getCPSubsystem().getLock('alock');

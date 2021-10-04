@@ -43,15 +43,15 @@ describe('Jet Test', function () {
     });
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null, JET_ENABLED_CONFIG);
+        cluster = await testFactory.createClusterForParallelTests(null, JET_ENABLED_CONFIG);
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should be able to run a generate_series query', async function () {

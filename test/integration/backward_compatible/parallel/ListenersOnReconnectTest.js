@@ -27,11 +27,11 @@ describe('ListenersOnReconnectTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     async function closeTwoMembersOutOfThreeAndTestListener(done, isSmart, membersToClose, turnoffMember) {
@@ -43,7 +43,7 @@ describe('ListenersOnReconnectTest', function () {
                 RC.startMember(cluster.id),
                 RC.startMember(cluster.id)
             ]);
-            client = await testFactory.newHazelcastClientForParallelTest({
+            client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 network: {
                     smartRouting: isSmart

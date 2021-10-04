@@ -28,7 +28,7 @@ describe('ClientLabelTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
     });
 
@@ -37,11 +37,11 @@ describe('ClientLabelTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('labels should be received on member side', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             clientLabels: ['testLabel']
         }, member);

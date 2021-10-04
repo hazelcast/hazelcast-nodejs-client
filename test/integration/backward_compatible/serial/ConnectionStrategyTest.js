@@ -37,11 +37,11 @@ describe('ConnectionStrategyTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('client with async start should throw when there is no cluster', async function () {
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             connectionStrategy: {
                 asyncStart: true
             }
@@ -50,7 +50,7 @@ describe('ConnectionStrategyTest', function () {
     });
 
     it('client with async start should throw after shutdown when there is no cluster', async function () {
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             connectionStrategy: {
                 asyncStart: true
             }
@@ -76,9 +76,9 @@ describe('ConnectionStrategyTest', function () {
             }
         });
 
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         config.clusterName = cluster.id;
-        client = await testFactory.newHazelcastClientForSerialTest(config);
+        client = await testFactory.newHazelcastClientForSerialTests(config);
 
         expect(client.getLifecycleService().isRunning()).to.be.true;
         await RC.startMember(cluster.id);
@@ -103,10 +103,10 @@ describe('ConnectionStrategyTest', function () {
             }
         });
 
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         config.clusterName = cluster.id;
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForSerialTest(config);
+        client = await testFactory.newHazelcastClientForSerialTests(config);
         const map = await client.getMap(TestUtil.randomString());
 
         // no exception at this point
@@ -136,10 +136,10 @@ describe('ConnectionStrategyTest', function () {
             }
         });
 
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         config.clusterName = cluster.id;
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForSerialTest(config);
+        client = await testFactory.newHazelcastClientForSerialTests(config);
         const map = await client.getMap(TestUtil.randomString());
 
         // no exception at this point
@@ -162,7 +162,7 @@ describe('ConnectionStrategyTest', function () {
     });
 
     it('client with async start should throw on get partition specific proxy calls when no cluster', async function () {
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             connectionStrategy: {
                 asyncStart: true
             }

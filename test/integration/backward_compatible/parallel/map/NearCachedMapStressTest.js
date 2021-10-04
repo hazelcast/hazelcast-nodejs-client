@@ -41,11 +41,11 @@ describe('NearCachedMapStress', function () {
     let totalGetOperations = 0;
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'));
         const member = await RC.startMember(cluster.id);
 
-        client1 = await testFactory.newHazelcastClientForParallelTest({
+        client1 = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             nearCaches: {
                 [MAP_NAME]: {
@@ -53,13 +53,13 @@ describe('NearCachedMapStress', function () {
                 }
             }
         }, member);
-        validatingClient = await testFactory.newHazelcastClientForParallelTest({
+        validatingClient = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     async function completeOperation() {

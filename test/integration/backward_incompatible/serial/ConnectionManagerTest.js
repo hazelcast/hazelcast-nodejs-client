@@ -46,7 +46,7 @@ describe('ConnectionManagerTest', function () {
     }
 
     before(async function () {
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         await RC.startMember(cluster.id);
     });
 
@@ -63,12 +63,12 @@ describe('ConnectionManagerTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should give up connecting after timeout', async function () {
         const timeoutTime = 1000;
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             network: {
                 connectionTimeout: timeoutTime
@@ -87,7 +87,7 @@ describe('ConnectionManagerTest', function () {
 
     it('destroys socket after connection timeout', async function () {
         const timeoutTime = 1000;
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             network: {
                 connectionTimeout: timeoutTime
@@ -118,7 +118,7 @@ describe('ConnectionManagerTest', function () {
             done();
         }, networkConfig.connectionTimeout + 1000); // 1 second more than default, client should be retrying after this time
 
-        testFactory.newHazelcastClientForSerialTest({
+        testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             network: {
                 connectionTimeout: timeoutTime
@@ -146,7 +146,7 @@ describe('ConnectionManagerTest', function () {
         const timeout = 2000;
 
         try {
-            await expect(testFactory.newHazelcastClientForSerialTest({
+            await expect(testFactory.newHazelcastClientForSerialTests({
                 clusterName: cluster.id,
                 network: {
                     clusterMembers: [`127.0.0.1:${port}`]
@@ -167,7 +167,7 @@ describe('ConnectionManagerTest', function () {
     });
 
     it('should close connection on socket error', async function () {
-        client = await testFactory.newHazelcastClientForSerialTest({ clusterName: cluster.id });
+        client = await testFactory.newHazelcastClientForSerialTests({ clusterName: cluster.id });
         // we should get existing connection here
         const conn = await client.getConnectionManager().getOrConnectToAddress(new AddressImpl('localhost', 5701));
         expect(conn.isAlive()).to.be.true;
@@ -180,7 +180,7 @@ describe('ConnectionManagerTest', function () {
     });
 
     it('should close all connections when shut down', async function () {
-        client = await testFactory.newHazelcastClientForSerialTest({ clusterName: cluster.id });
+        client = await testFactory.newHazelcastClientForSerialTests({ clusterName: cluster.id });
         const connectionManager = client.getConnectionManager();
         expect(connectionManager.pendingConnections).to.have.lengthOf(0);
 
@@ -203,7 +203,7 @@ describe('ConnectionManagerTest', function () {
     });
 
     it('should close active connections when reset', async function () {
-        client = await testFactory.newHazelcastClientForSerialTest({ clusterName: cluster.id });
+        client = await testFactory.newHazelcastClientForSerialTests({ clusterName: cluster.id });
         const connectionManager = client.getConnectionManager();
         expect(connectionManager.connectionRegistry.activeConnections).to.have.lengthOf(1);
 

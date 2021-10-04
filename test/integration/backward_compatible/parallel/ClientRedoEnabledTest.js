@@ -34,16 +34,16 @@ describe('ClientRedoEnabledTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('List.get should throw on out of bounds index access', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             network: {
                 redoOperation: true
@@ -55,7 +55,7 @@ describe('ClientRedoEnabledTest', function () {
     });
 
     it('Map.unlock should throw when not locked', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             network: {
                 redoOperation: true,
@@ -68,7 +68,7 @@ describe('ClientRedoEnabledTest', function () {
 
     it('should redo operations in smart mode when member goes down', async function () {
         const memberTwo = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             network: {
                 redoOperation: true
@@ -93,7 +93,7 @@ describe('ClientRedoEnabledTest', function () {
 
     it('should redo operations in unisocket mode when member goes down', async function () {
         await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             network: {
                 redoOperation: true,

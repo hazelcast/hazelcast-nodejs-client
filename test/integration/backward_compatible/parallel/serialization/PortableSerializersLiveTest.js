@@ -49,14 +49,14 @@ describe('PortableSerializersLiveTest', function () {
     }
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest(getClientConfig(cluster.id), member);
+        client = await testFactory.newHazelcastClientForParallelTests(getClientConfig(cluster.id), member);
         map = await client.getMap('test');
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('client can write and read two different serializable objects of the same factory', async function () {
@@ -81,7 +81,7 @@ describe('PortableSerializersLiveTest', function () {
         ]);
         await client.shutdown();
 
-        client = await testFactory.newHazelcastClientForParallelTest(getClientConfig(cluster.id), member);
+        client = await testFactory.newHazelcastClientForParallelTests(getClientConfig(cluster.id), member);
         map = await client.getMap('test');
         const sp = await map.get('simpleportable');
         const ip = await map.get('innerportable');

@@ -28,9 +28,9 @@ describe('ListProxyTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        const cluster = await testFactory.createClusterForParallelTest();
+        const cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
     });
@@ -44,7 +44,7 @@ describe('ListProxyTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('appends one item', async function () {

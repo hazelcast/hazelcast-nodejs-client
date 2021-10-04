@@ -422,30 +422,27 @@ exports.TestFactory = class TestFactory {
         `;
         this.clusterIds = new Set();
         this.clients = new Set();
-        TestFactory.prototype.defaultClusterTimeoutMillis = 20000;
     }
 
-    // Creates a new hazelcast client for a serial test with given config and registers it to clients set
-    async newHazelcastClientForSerialTest(clientConfig) {
+    // Creates a new Hazelcast client for a serial test with given config and registers it to clients set
+    async newHazelcastClientForSerialTests(clientConfig) {
         return await this._createClient(clientConfig);
     }
 
-    // Creates a new hazelcast client for a parallel test with given config and registers it to clients set
-    async newHazelcastClientForParallelTest(clientConfig, memberOrMemberList) {
+    // Creates a new Hazelcast client for a parallel test with given config and registers it to clients set
+    async newHazelcastClientForParallelTests(clientConfig, memberOrMemberList) {
         // Add cluster member config for parallel tests.
-        TestFactory.addClusterMembersToConfig(clientConfig, memberOrMemberList);
+        this._addClusterMembersToConfig(clientConfig, memberOrMemberList);
         return await this._createClient(clientConfig);
     }
 
     async _createClient(clientConfig) {
-        // Override default infinite timeout to avoid tests from running forever.
-        TestFactory.assignClusterConnectTimeoutToConfig(clientConfig);
         const client = await Client.newHazelcastClient(clientConfig);
         this.clients.add(client);
         return client;
     }
 
-    static addClusterMembersToConfig(clientConfig, memberOrMemberList) {
+    _addClusterMembersToConfig(clientConfig, memberOrMemberList) {
         if (memberOrMemberList === undefined) {
             return;
         }
@@ -461,45 +458,22 @@ exports.TestFactory = class TestFactory {
         }
     }
 
-    static assignClusterConnectTimeoutToConfig(clientConfig) {
-        if (clientConfig.connectionStrategy === undefined) {
-            clientConfig.connectionStrategy = {
-                connectionRetry: {
-                    clusterConnectTimeoutMillis: TestFactory.prototype.defaultClusterTimeoutMillis
-                }
-            };
-        } else if (clientConfig.connectionStrategy.connectionRetry === undefined) {
-            clientConfig.connectionStrategy.connectionRetry = {
-                    clusterConnectTimeoutMillis: TestFactory.prototype.defaultClusterTimeoutMillis
-            };
-        } else if (clientConfig.connectionStrategy.connectionRetry.clusterConnectTimeoutMillis === undefined) {
-            clientConfig.connectionStrategy.connectionRetry.clusterConnectTimeoutMillis =
-                TestFactory.prototype.defaultClusterTimeoutMillis;
-        }
-    }
-
-    // Creates a new hazelcast failover client for parallel tests with given config and registers it to clients set
-    async newHazelcastFailoverClientForParallelTest(clientFailoverConfig, memberOrMemberList) {
-        if (Array.isArray(clientFailoverConfig.clientConfigs)) {
-            // Add cluster member config for parallel tests.
-            clientFailoverConfig.clientConfigs.forEach(clientConfig => {
-                TestFactory.addClusterMembersToConfig(clientConfig, memberOrMemberList);
-            });
-        }
+    // Creates a new Hazelcast failover client for parallel tests with given config and registers it to clients set
+    async newHazelcastFailoverClientForParallelTests(clientFailoverConfig, memberOrMemberList) {
+        // Add cluster member config for parallel tests.
+        clientFailoverConfig.clientConfigs.forEach(clientConfig => {
+            this._addClusterMembersToConfig(clientConfig, memberOrMemberList);
+        });
 
         return await this._createFailoverClient(clientFailoverConfig);
     }
 
-    // Creates a new hazelcast failover client for serial tests with given config and registers it to clients set
-    async newHazelcastFailoverClientForSerialTest(clientFailoverConfig) {
+    // Creates a new Hazelcast failover client for serial tests with given config and registers it to clients set
+    async newHazelcastFailoverClientForSerialTests(clientFailoverConfig) {
         return await this._createFailoverClient(clientFailoverConfig);
     }
 
     async _createFailoverClient(clientFailoverConfig) {
-        if (Array.isArray(clientFailoverConfig.clientConfigs)) {
-            // Override default infinite timeout to avoid tests from running forever.
-            clientFailoverConfig.clientConfigs.forEach(TestFactory.assignClusterConnectTimeoutToConfig);
-        }
         const client = await Client.newHazelcastFailoverClient(clientFailoverConfig);
         this.clients.add(client);
         return client;
@@ -511,27 +485,27 @@ exports.TestFactory = class TestFactory {
         return cluster;
     }
 
-    // Creates a new hazelcast cluster for a serial test and registers it to clusters set
-    async createClusterForSerialTest(hzVersion = null, clusterConfig = null) {
+    // Creates a new Hazelcast cluster for a serial test and registers it to clusters set
+    async createClusterForSerialTests(hzVersion = null, clusterConfig = null) {
         return await this._createCluster(hzVersion, clusterConfig);
     }
 
-    // Creates a new hazelcast cluster for a parallel test and registers it to clusters set
-    async createClusterForParallelTest(hzVersion = null, clusterConfig = this.defaultConfig) {
+    // Creates a new Hazelcast cluster for a parallel test and registers it to clusters set
+    async createClusterForParallelTests(hzVersion = null, clusterConfig = this.defaultConfig) {
         return await this._createCluster(hzVersion, clusterConfig);
     }
 
-    // Creates a new hazelcast for serial test cluster keeping its name and registers it to clusters set
-    async createClusterKeepClusterNameForSerialTest(hzVersion = null, clusterConfig = null) {
+    // Creates a new Hazelcast for serial test cluster keeping its name and registers it to clusters set
+    async createClusterKeepClusterNameForSerialTests(hzVersion = null, clusterConfig = null) {
         return await this._createClusterKeepClusterName(hzVersion, clusterConfig);
     }
 
-    // Creates a new hazelcast cluster for parallel test keeping its name and registers it to clusters set
-    async createClusterKeepClusterNameForParallelTest(hzVersion = null, clusterConfig = this.defaultConfig) {
+    // Creates a new Hazelcast cluster for parallel test keeping its name and registers it to clusters set
+    async createClusterKeepClusterNameForParallelTests(hzVersion = null, clusterConfig = this.defaultConfig) {
         return await this._createClusterKeepClusterName(hzVersion, clusterConfig);
     }
 
-    // Creates a new hazelcast cluster keeping its name and registers it to clusters set
+    // Creates a new Hazelcast cluster keeping its name and registers it to clusters set
     async _createClusterKeepClusterName(hzVersion, clusterConfig) {
         const cluster = await RC.createClusterKeepClusterName(hzVersion, clusterConfig);
         this.clusterIds.add(cluster.id);
@@ -539,7 +513,7 @@ exports.TestFactory = class TestFactory {
     }
 
     // Shutdowns all clients and clusters
-    async cleanUp() {
+    async shutdownAll() {
         for (const client of this.clients) {
             await client.shutdown();
         }

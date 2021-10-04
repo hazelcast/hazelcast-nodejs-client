@@ -38,10 +38,10 @@ describe('MapPredicateTest', function () {
     }
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_identifiedfactory.xml', 'utf8'));
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
                 dataSerializableFactories: {
@@ -61,7 +61,7 @@ describe('MapPredicateTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     async function fillMap(size) {

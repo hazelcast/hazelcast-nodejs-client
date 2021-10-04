@@ -140,9 +140,9 @@ describe('SqlExecuteTest', function () {
         const mapName = 'someMap';
 
         before(async function () {
-            const cluster = await testFactory.createClusterForParallelTest(null, CLUSTER_CONFIG);
+            const cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
             const member = await RC.startMember(cluster.id);
-            client = await testFactory.newHazelcastClientForParallelTest({
+            client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id
             }, member);
             await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'double', mapName);
@@ -154,7 +154,7 @@ describe('SqlExecuteTest', function () {
         });
 
         after(async function () {
-            await testFactory.cleanUp();
+            await testFactory.shutdownAll();
         });
 
         afterEach(async function () {
@@ -237,9 +237,9 @@ describe('SqlExecuteTest', function () {
         let cluster;
 
         before(async function () {
-            cluster = await testFactory.createClusterForParallelTest(null, CLUSTER_CONFIG);
+            cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
             const member = await RC.startMember(cluster.id);
-            client = await testFactory.newHazelcastClientForParallelTest({
+            client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id
             }, member);
             TestUtil.markServerVersionAtLeast(this, client, '4.2');
@@ -251,7 +251,7 @@ describe('SqlExecuteTest', function () {
         });
 
         after(async function () {
-            await testFactory.cleanUp();
+            await testFactory.shutdownAll();
         });
 
         afterEach(async function () {
@@ -412,7 +412,7 @@ describe('SqlExecuteTest', function () {
         });
 
         after(async function () {
-            await testFactory.cleanUp();
+            await testFactory.shutdownAll();
         });
 
         it('should be able to execute sql query', async function () {
@@ -421,9 +421,9 @@ describe('SqlExecuteTest', function () {
     });
     describe('options', function () {
         before(async function () {
-            const cluster = await testFactory.createClusterForParallelTest(null, CLUSTER_CONFIG);
+            const cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
             const member = await RC.startMember(cluster.id);
-            client = await testFactory.newHazelcastClientForParallelTest({
+            client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id
             }, member);
             TestUtil.markServerVersionAtLeast(this, client, '4.2');
@@ -436,7 +436,7 @@ describe('SqlExecuteTest', function () {
         });
 
         after(async function () {
-            await testFactory.cleanUp();
+            await testFactory.shutdownAll();
         });
 
         afterEach(async function () {
@@ -623,14 +623,14 @@ describe('SqlExecuteTest', function () {
         let cluster;
 
         beforeEach(async function () {
-            cluster = await testFactory.createClusterForParallelTest(null, CLUSTER_CONFIG);
+            cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
             member = await RC.startMember(cluster.id);
-            client = await testFactory.newHazelcastClientForParallelTest({
+            client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id
             }, member);
         });
         afterEach(async function () {
-            await testFactory.cleanUp();
+            await testFactory.shutdownAll();
         });
 
         it('should return an error if sql query sent to lite member', async function () {
@@ -761,14 +761,14 @@ describe('SqlExecuteTest', function () {
                     ${jetConfigOrEmpty}
                 </hazelcast>
             `;
-            const cluster = await testFactory.createClusterForParallelTest(null, LITE_MEMBER_CONFIG);
+            const cluster = await testFactory.createClusterForParallelTests(null, LITE_MEMBER_CONFIG);
             const member = await RC.startMember(cluster.id);
-            client = await testFactory.newHazelcastClientForParallelTest({
+            client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id
             }, member);
         });
         afterEach(async function () {
-            await testFactory.cleanUp();
+            await testFactory.shutdownAll();
         });
 
         it('should return an error if sql query sent to lite member', async function () {

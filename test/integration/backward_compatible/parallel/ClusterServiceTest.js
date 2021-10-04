@@ -30,9 +30,9 @@ describe('ClusterServiceTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         member1 = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.heartbeat.interval': 1000,
@@ -42,7 +42,7 @@ describe('ClusterServiceTest', function () {
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should know when a new member joins to cluster', function (done) {
@@ -104,7 +104,7 @@ describe('ClusterServiceTest', function () {
     });
 
     it('should throw when wrong host addresses given in config', async function () {
-        await expect(testFactory.newHazelcastClientForParallelTest({
+        await expect(testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             network: {
                 clusterMembers: [
@@ -121,7 +121,7 @@ describe('ClusterServiceTest', function () {
     });
 
     it('should throw with wrong cluster name', async function () {
-        await expect(testFactory.newHazelcastClientForParallelTest({
+        await expect(testFactory.newHazelcastClientForParallelTests({
             clusterName: 'wrong',
             connectionStrategy: {
                 connectionRetry: {

@@ -32,9 +32,9 @@ describe('FlakeIdGeneratorProxyTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             flakeIdGenerators: {
                 'shortterm': {
@@ -50,7 +50,7 @@ describe('FlakeIdGeneratorProxyTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     function addToListFunction(l) {

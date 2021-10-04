@@ -29,13 +29,13 @@ describe('MultiMapProxyLockTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        const cluster = await testFactory.createClusterForParallelTest();
+        const cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
         const cfg = {
             clusterName: cluster.id
         };
-        clientOne = await testFactory.newHazelcastClientForParallelTest(cfg, member);
-        clientTwo = await testFactory.newHazelcastClientForParallelTest(cfg, member);
+        clientOne = await testFactory.newHazelcastClientForParallelTests(cfg, member);
+        clientTwo = await testFactory.newHazelcastClientForParallelTests(cfg, member);
     });
 
     beforeEach(async function () {
@@ -48,7 +48,7 @@ describe('MultiMapProxyLockTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('locks and unlocks', async function () {

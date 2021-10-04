@@ -37,13 +37,13 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     beforeEach(async function () {
         client1 = undefined;
         client2 = undefined;
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         member = await RC.startMember(cluster.id);
     });
 
@@ -59,7 +59,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     });
 
     const createInvocationTimeoutSetClient = (invocationTimeoutMillis) => {
-        return testFactory.newHazelcastClientForSerialTest({
+        return testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             connectionStrategy: {
                 connectionRetry: {
@@ -73,7 +73,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     };
 
     const createClient = () => {
-        return testFactory.newHazelcastClientForSerialTest({
+        return testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             connectionStrategy: {
                 connectionRetry: {

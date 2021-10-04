@@ -51,7 +51,7 @@ describe('ClientReconnectAdvancedTest', function () {
     }
 
     async function testConnectionRestoredAfterClientReconnect(memberAddress, clientAddress) {
-        cluster = await testFactory.createClusterForSerialTest(null, createClusterConfig(memberAddress));
+        cluster = await testFactory.createClusterForSerialTests(null, createClusterConfig(memberAddress));
         const member = await RC.startMember(cluster.id);
 
         let disconnected = false;
@@ -66,7 +66,7 @@ describe('ClientReconnectAdvancedTest', function () {
                 reconnectedDeferred.resolve();
             }
         };
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             network: {
                 clusterMembers: [clientAddress]
@@ -99,10 +99,10 @@ describe('ClientReconnectAdvancedTest', function () {
 
     async function testListenersAfterClientDisconnected(memberAddress, clientAddress) {
         const heartbeatSecs = 6;
-        cluster = await testFactory.createClusterForSerialTest(null, createClusterConfig(memberAddress, heartbeatSecs));
+        cluster = await testFactory.createClusterForSerialTests(null, createClusterConfig(memberAddress, heartbeatSecs));
         const member = await RC.startMember(cluster.id);
 
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             network: {
                 clusterMembers: [clientAddress]
@@ -146,7 +146,7 @@ describe('ClientReconnectAdvancedTest', function () {
     }
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('connections should be restored after client reconnect - member hostname, client IP', async function () {

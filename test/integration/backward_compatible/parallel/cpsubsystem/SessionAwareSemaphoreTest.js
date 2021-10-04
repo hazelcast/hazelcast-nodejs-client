@@ -40,20 +40,20 @@ describe('SessionAwareSemaphoreTest', function () {
     }
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'));
         const members = await Promise.all([
             RC.startMember(cluster.id),
             RC.startMember(cluster.id),
             RC.startMember(cluster.id)
         ]);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, members);
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('release: should throw when not acquired', async function () {

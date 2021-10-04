@@ -36,12 +36,12 @@ const TestUtil = require('../../../TestUtil');
         }
 
         before(async function () {
-            cluster = await testFactory.createClusterForParallelTest();
+            cluster = await testFactory.createClusterForParallelTests();
             member = await RC.startMember(cluster.id);
         });
 
         beforeEach(async function () {
-            client = await testFactory.newHazelcastClientForParallelTest({
+            client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 network: {
                     smartRouting: isSmartService
@@ -54,7 +54,7 @@ const TestUtil = require('../../../TestUtil');
         });
 
         after(async function () {
-            await testFactory.cleanUp();
+            await testFactory.shutdownAll();
         });
 
         it('listener is invoked when new object is created[smart=' + isSmartService + ']', function (done) {

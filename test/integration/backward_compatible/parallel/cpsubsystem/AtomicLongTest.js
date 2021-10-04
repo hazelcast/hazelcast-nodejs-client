@@ -37,14 +37,14 @@ describe('AtomicLongTest', function () {
     }
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'));
         const members = await Promise.all([
             RC.startMember(cluster.id),
             RC.startMember(cluster.id),
             RC.startMember(cluster.id)
         ]);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, members);
         long = await client.getCPSubsystem().getAtomicLong('along');
@@ -56,7 +56,7 @@ describe('AtomicLongTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should create AtomicLong with respect to given CP group', async function () {

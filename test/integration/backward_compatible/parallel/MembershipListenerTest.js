@@ -28,16 +28,15 @@ describe('MembershipListenerTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
     });
 
     afterEach(async function () {
-        await client.shutdown();
-        return RC.terminateCluster(cluster.id);
+        await testFactory.shutdownAll();
     });
 
     it('sees member added event', async function () {

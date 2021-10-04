@@ -40,7 +40,7 @@ describe('ClientBackupAcksTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         const member1 = await RC.startMember(cluster.id);
         const member2 = await RC.startMember(cluster.id);
         members = [member1, member2];
@@ -52,11 +52,11 @@ describe('ClientBackupAcksTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should receive backup acks in smart mode', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.operation.fail.on.indeterminate.state': true,
@@ -74,7 +74,7 @@ describe('ClientBackupAcksTest', function () {
     });
 
     it('should throw when backup acks were lost in smart mode when prop is set', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.operation.backup.timeout.millis': 300,
@@ -89,7 +89,7 @@ describe('ClientBackupAcksTest', function () {
     });
 
     it('should not throw when backup acks were lost in smart mode when prop is not set', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.operation.backup.timeout.millis': 300
@@ -104,7 +104,7 @@ describe('ClientBackupAcksTest', function () {
     });
 
     it('should receive ack in smart mode when acks to client are disabled', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             backupAckToClientEnabled: false
         }, members);
@@ -115,7 +115,7 @@ describe('ClientBackupAcksTest', function () {
     });
 
     it('should receive ack in unisocket mode', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             network: {
                 smartRouting: false

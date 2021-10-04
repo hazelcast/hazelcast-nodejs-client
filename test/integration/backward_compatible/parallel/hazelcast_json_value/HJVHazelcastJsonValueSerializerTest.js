@@ -28,9 +28,9 @@ describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
                 jsonStringDeserializationPolicy: JsonStringDeserializationPolicy.NO_DESERIALIZATION
@@ -47,7 +47,7 @@ describe('HazelcastJsonValue with HazelcastJsonValueSerializer', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('storing JavaScript objects', async function () {

@@ -40,24 +40,24 @@ describe('SessionlessSemaphoreTest', function () {
     }
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'));
         members = await Promise.all([
             RC.startMember(cluster.id),
             RC.startMember(cluster.id),
             RC.startMember(cluster.id)
         ]);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, members);
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('release: should succeed when acquired by another client', async function () {
-        const anotherClient = await testFactory.newHazelcastClientForParallelTest({
+        const anotherClient = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, members);
         const anotherSemaphore = await anotherClient.getCPSubsystem().getSemaphore('sessionless');

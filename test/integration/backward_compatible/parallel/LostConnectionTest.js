@@ -27,9 +27,9 @@ describe('LostConnectionTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         oldMember = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.heartbeat.interval': 500,
@@ -39,7 +39,7 @@ describe('LostConnectionTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('M2 starts, M1 goes down, client connects to M2', function (done) {

@@ -44,11 +44,11 @@ describe('ClientSSLTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     async function createClusterAndMember(sConfig) {
-        cluster = await testFactory.createClusterForParallelTest(null, sConfig);
+        cluster = await testFactory.createClusterForParallelTests(null, sConfig);
         return RC.startMember(cluster.id);
     }
 
@@ -59,7 +59,7 @@ describe('ClientSSLTest', function () {
             .replace('[password]', 'password');
         const member = await createClusterAndMember(sConfig);
 
-        await expect(testFactory.newHazelcastClientForParallelTest({
+        await expect(testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             network: {
                 ssl: {
@@ -80,7 +80,7 @@ describe('ClientSSLTest', function () {
             .replace(/\[serverCertificate]/g, __dirname + '/keystore.jks')
             .replace('[password]', '123456');
         const member = await createClusterAndMember(sConfig);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             network: {
                 ssl: {

@@ -56,13 +56,13 @@ describe('ClientReconnectTest', function () {
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('member restarts, while map.put in progress', async function () {
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.heartbeat.interval': 1000,
@@ -81,9 +81,9 @@ describe('ClientReconnectTest', function () {
     });
 
     it('member restarts, while map.put in progress 2', async function () {
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             network: {
                 connectionTimeout: 10000
@@ -111,7 +111,7 @@ describe('ClientReconnectTest', function () {
     it('create proxy while member is down, member comes back', async function () {
         cluster = await RC.createCluster(null, null);
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             properties: {
                 'hazelcast.client.heartbeat.interval': 1000,

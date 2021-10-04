@@ -65,18 +65,18 @@ describe('HeartbeatFromServerTest', function () {
     }
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('connectionRemoved fired when second member stops heartbeating', function (done) {
         let member2;
         const memberAddedPromise = deferredPromise();
         RC.startMember(cluster.id).then(() => {
-            return testFactory.newHazelcastClientForSerialTest({
+            return testFactory.newHazelcastClientForSerialTests({
                 clusterName: cluster.id,
                 properties: {
                     'hazelcast.client.heartbeat.interval': 500,
@@ -121,7 +121,7 @@ describe('HeartbeatFromServerTest', function () {
         let member2;
         const memberAddedPromise = deferredPromise();
         RC.startMember(cluster.id).then(() => {
-            return testFactory.newHazelcastClientForSerialTest({
+            return testFactory.newHazelcastClientForSerialTests({
                 clusterName: cluster.id,
                 properties: {
                     'hazelcast.client.heartbeat.interval': 500,

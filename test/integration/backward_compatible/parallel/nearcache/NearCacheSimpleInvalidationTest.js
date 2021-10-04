@@ -40,21 +40,21 @@ describe('NearCacheSimpleInvalidationTest', function () {
                 if (!batchInvalidationEnabled) {
                     clusterConfig = fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8');
                 }
-                cluster = await testFactory.createClusterForParallelTest(null, clusterConfig);
+                cluster = await testFactory.createClusterForParallelTests(null, clusterConfig);
                 const member = await RC.startMember(cluster.id);
-                client = await testFactory.newHazelcastClientForParallelTest({
+                client = await testFactory.newHazelcastClientForParallelTests({
                     clusterName: cluster.id,
                     nearCaches: {
                         [mapName]: {}
                     }
                 }, member);
-                updaterClient = await testFactory.newHazelcastClientForParallelTest({
+                updaterClient = await testFactory.newHazelcastClientForParallelTests({
                     clusterName: cluster.id
                 }, member);
             });
 
             after(async function () {
-                await testFactory.cleanUp();
+                await testFactory.shutdownAll();
             });
 
             it('client observes outside invalidations', async function () {

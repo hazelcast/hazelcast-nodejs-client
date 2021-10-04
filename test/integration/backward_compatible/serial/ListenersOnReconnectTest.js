@@ -27,11 +27,11 @@ describe('ListenersOnReconnectTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     [true, false].forEach((isSmart) => {
@@ -41,7 +41,7 @@ describe('ListenersOnReconnectTest', function () {
 
             async function testListener(done) {
                 const member = await RC.startMember(cluster.id);
-                client = await testFactory.newHazelcastClientForSerialTest({
+                client = await testFactory.newHazelcastClientForSerialTests({
                     clusterName: cluster.id,
                     network: {
                         smartRouting: isSmart,

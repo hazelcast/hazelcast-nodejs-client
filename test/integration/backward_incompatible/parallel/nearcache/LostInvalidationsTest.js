@@ -57,13 +57,13 @@ describe('LostInvalidationTest', function () {
     }
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'));
         member = await RC.startMember(cluster.id);
     });
 
     beforeEach(async function () {
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             nearCaches: {
                 [mapName]: {}
@@ -74,7 +74,7 @@ describe('LostInvalidationTest', function () {
                 'hazelcast.invalidation.max.tolerated.miss.count': 2
             }
         }, member);
-        modifyingClient = await testFactory.newHazelcastClientForParallelTest({
+        modifyingClient = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
     });
@@ -85,7 +85,7 @@ describe('LostInvalidationTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('client eventually receives an update for which the invalidation event was dropped', async function () {

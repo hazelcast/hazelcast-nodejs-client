@@ -40,15 +40,15 @@ describe('DistributedObjectsTest', function () {
     };
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('get distributed objects with no object on cluster', async function () {
@@ -73,7 +73,7 @@ describe('DistributedObjectsTest', function () {
         const queue = await client.getQueue(TestUtil.randomString());
         let objects = await client.getDistributedObjects();
         expect(filterInternalMaps(objects)).to.have.deep.members([map, set, queue]);
-        const otherClient = await testFactory.newHazelcastClientForParallelTest({
+        const otherClient = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
         objects = await otherClient.getDistributedObjects();
@@ -87,7 +87,7 @@ describe('DistributedObjectsTest', function () {
     });
 
     it('get distributed objects should clear local instances of destroyed proxies', async function () {
-        const otherClient = await testFactory.newHazelcastClientForParallelTest({
+        const otherClient = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
         const map = await client.getMap(TestUtil.randomString());

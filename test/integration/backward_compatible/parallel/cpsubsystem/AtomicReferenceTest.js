@@ -31,14 +31,14 @@ describe('AtomicReferenceTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest(null,
+        cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'));
         const members = await Promise.all([
             RC.startMember(cluster.id),
             RC.startMember(cluster.id),
             RC.startMember(cluster.id)
         ]);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, members);
         ref = await client.getCPSubsystem().getAtomicReference('aref');
@@ -50,7 +50,7 @@ describe('AtomicReferenceTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should create AtomicReference with respect to given CP group', async function () {

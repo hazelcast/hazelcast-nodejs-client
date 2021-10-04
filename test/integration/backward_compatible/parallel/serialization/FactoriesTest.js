@@ -29,12 +29,12 @@ describe('FactoriesTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     afterEach(async function () {
@@ -58,7 +58,7 @@ describe('FactoriesTest', function () {
     }
 
     it('should be configured programmatically', async function () {
-        client = await testFactory.newHazelcastClientForParallelTest(createConfig(cluster.id), member);
+        client = await testFactory.newHazelcastClientForParallelTests(createConfig(cluster.id), member);
         const map = await client.getMap('furkan');
         await map.put('foo', new Foo('elma'));
         await map.put('address', new Address('Sahibiata', 42000, 'Konya', 'Turkey'));

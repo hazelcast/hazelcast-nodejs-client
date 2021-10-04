@@ -23,7 +23,8 @@ const RC = require('../../RC');
 const {
     ClientOfflineError,
     InvalidConfigurationError,
-    IllegalStateError
+    IllegalStateError,
+    Client
 } = require('../../../../lib');
 const { deferredPromise } = require('../../../../lib/util/Util');
 const TestUtil = require('../../../TestUtil');
@@ -82,10 +83,10 @@ describe('ClientFailoverTest - community', function () {
     });
 
     beforeEach(async function () {
-        cluster1 = await testFactory.createClusterKeepClusterNameForParallelTest(null,
+        cluster1 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
             createClusterConfig({ clusterName: 'dev1' }));
         member = await RC.startMember(cluster1.id);
-        cluster2 = await testFactory.createClusterKeepClusterNameForParallelTest(null,
+        cluster2 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
             createClusterConfig({ clusterName: 'dev2' }));
     });
 
@@ -95,11 +96,11 @@ describe('ClientFailoverTest - community', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should reject when connecting to community cluster', async function () {
-        await expect(testFactory.newHazelcastFailoverClientForParallelTest({
+        await expect(testFactory.newHazelcastFailoverClientForParallelTests({
             tryCount: 1,
             clientConfigs: [
                 createClientConfig({ clusterName: 'dev1', clusterMembers: [`127.0.0.1:${member.port}`] }),
@@ -126,10 +127,10 @@ describe('ClientFailoverTest - enterprise', function () {
     });
 
     beforeEach(async function () {
-        cluster1 = await testFactory.createClusterKeepClusterNameForParallelTest(null,
+        cluster1 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
             createClusterConfig({ clusterName: 'dev1' }));
         member1 = await RC.startMember(cluster1.id);
-        cluster2 = await testFactory.createClusterKeepClusterNameForParallelTest(null,
+        cluster2 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
             createClusterConfig({ clusterName: 'dev2' }));
         member2 = await RC.startMember(cluster2.id);
     });
@@ -145,8 +146,12 @@ describe('ClientFailoverTest - enterprise', function () {
         }
     });
 
+    after(async function () {
+        await testFactory.shutdownAll();
+    });
+
     it('should be able to connect to enterprise cluster', async function () {
-        client = await testFactory.newHazelcastFailoverClientForParallelTest({
+        client = await testFactory.newHazelcastFailoverClientForParallelTests({
             tryCount: 1,
             clientConfigs: [
                 createClientConfig({
@@ -161,7 +166,7 @@ describe('ClientFailoverTest - enterprise', function () {
         await RC.terminateCluster(cluster1.id);
 
         // should not switch to the alive cluster, but instead fail
-        await expect(testFactory.newHazelcastFailoverClientForParallelTest({
+        await expect(testFactory.newHazelcastFailoverClientForParallelTests({
             tryCount: 0, // no retries
             clientConfigs: [
                 createClientConfig({
@@ -187,7 +192,7 @@ describe('ClientFailoverTest - enterprise', function () {
                 clusterChanged = true;
             }
         };
-        client = await testFactory.newHazelcastFailoverClientForParallelTest({
+        client = await testFactory.newHazelcastFailoverClientForParallelTests({
             tryCount: 1,
             clientConfigs: [
                 createClientConfig({
@@ -234,7 +239,7 @@ describe('ClientFailoverTest - enterprise', function () {
             clusterMembers: [`127.0.0.1:${member1.port}`]
         });
         config.connectionStrategy.reconnectMode = 'ASYNC';
-        client = await testFactory.newHazelcastFailoverClientForParallelTest({
+        client = await testFactory.newHazelcastFailoverClientForParallelTests({
             // default tryCount is Number.MAX_SAFE_INTEGER
             clientConfigs: [config]
         });
@@ -258,7 +263,7 @@ describe('ClientFailoverTest - enterprise', function () {
     });
 
     it('should shutdown when switching to cluster with different partition count', async function () {
-        cluster3 = await testFactory.createClusterKeepClusterNameForParallelTest(null,
+        cluster3 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
             createClusterConfig({ clusterName: 'dev3', partitionCount: 42 }));
         const member3 = await RC.startMember(cluster3.id);
 
@@ -268,7 +273,7 @@ describe('ClientFailoverTest - enterprise', function () {
                 shutdownTriggeredDeferred.resolve();
             }
         };
-        client = await testFactory.newHazelcastFailoverClientForParallelTest({
+        client = await testFactory.newHazelcastFailoverClientForParallelTests({
             tryCount: 1,
             clientConfigs: [
                 createClientConfig({
@@ -294,24 +299,20 @@ describe('ClientFailoverTest - enterprise', function () {
         await shutdownTriggeredDeferred.promise;
     });
 
-    it('should throw when starting with invalid failover config', async function () {
-        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
-            await testFactory.newHazelcastFailoverClientForParallelTest({
-                tryCount: 1,
-                clientConfigs: [
-                    {
-                        clusterName: 'dev1',
-                        backupAckToClientEnabled: true
-                    },
-                    {
-                        clusterName: 'dev2',
-                        // the following difference is invalid
-                        backupAckToClientEnabled: false
-                    }
-                ]
-            });
-        });
-
-        expect(error).to.be.instanceOf(InvalidConfigurationError);
+    it('should throw when starting with invalid failover config', function () {
+        expect(() => Client.newHazelcastFailoverClient({
+            tryCount: 1,
+            clientConfigs: [
+                {
+                    clusterName: 'dev1',
+                    backupAckToClientEnabled: true
+                },
+                {
+                    clusterName: 'dev2',
+                    // the following difference is invalid
+                    backupAckToClientEnabled: false
+                }
+            ]
+        })).to.throw(InvalidConfigurationError);
     });
 });

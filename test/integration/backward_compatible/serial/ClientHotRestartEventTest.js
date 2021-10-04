@@ -53,7 +53,7 @@ describe('ClientHotRestartEventTest', function () {
 
     beforeEach(async function () {
         client = undefined;
-        cluster = await testFactory.createClusterKeepClusterNameForSerialTest(null, createClusterConfig(5701));
+        cluster = await testFactory.createClusterKeepClusterNameForSerialTests(null, createClusterConfig(5701));
     });
 
     afterEach(async function () {
@@ -64,13 +64,13 @@ describe('ClientHotRestartEventTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should receive membership events when the member is restarted with another port and same uuid', async function () {
         const member = await RC.startMember(cluster.id);
 
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id
         });
         const listener = new TestUtil.CountingMembershipListener(1, 1);
@@ -78,7 +78,7 @@ describe('ClientHotRestartEventTest', function () {
 
         await RC.shutdownCluster(cluster.id);
         // now stop cluster, restart it with the same name and then start member with port 5702
-        cluster = await testFactory.createClusterKeepClusterNameForSerialTest(null, createClusterConfig(5702));
+        cluster = await testFactory.createClusterKeepClusterNameForSerialTests(null, createClusterConfig(5702));
         await RC.startMember(cluster.id);
 
         await listener.expectedPromise;
@@ -96,7 +96,7 @@ describe('ClientHotRestartEventTest', function () {
         let removedMemberUUID;
         let addedMemberUUID;
 
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id
         });
         client.getCluster().addMembershipListener({

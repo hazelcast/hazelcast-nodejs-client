@@ -50,9 +50,9 @@ describe('MapLockTest', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.1');
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
     });
@@ -67,7 +67,7 @@ describe('MapLockTest', function () {
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should acquire the lock when key owner terminates', function (done) {
@@ -77,7 +77,7 @@ describe('MapLockTest', function () {
 
         RC.startMember(cluster.id).then((m) => {
             keyOwner = m;
-            return testFactory.newHazelcastClientForParallelTest({
+            return testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 properties: {
                     ['hazelcast.client.invocation.timeout.millis']: INVOCATION_TIMEOUT_FOR_TWO

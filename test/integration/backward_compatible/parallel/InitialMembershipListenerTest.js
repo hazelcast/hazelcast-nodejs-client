@@ -33,12 +33,12 @@ describe('InitialMembershipListenerTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     beforeEach(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         initialMember = await RC.startMember(cluster.id);
     });
 
     afterEach(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     it('should receive available member when added before client start', async function () {
@@ -63,7 +63,7 @@ describe('InitialMembershipListenerTest', function () {
             ]
         };
 
-        client = await testFactory.newHazelcastClientForParallelTest(config, initialMember);
+        client = await testFactory.newHazelcastClientForParallelTests(config, initialMember);
 
         await initTriggered.promise;
     });
@@ -85,7 +85,7 @@ describe('InitialMembershipListenerTest', function () {
             }
         };
 
-        client = await testFactory.newHazelcastClientForParallelTest({
+        client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, initialMember);
         client.getCluster().addMembershipListener(membershipListener);
@@ -124,7 +124,7 @@ describe('InitialMembershipListenerTest', function () {
             membershipListeners: [membershipListener]
         };
 
-        client = await testFactory.newHazelcastClientForParallelTest(config, initialMember);
+        client = await testFactory.newHazelcastClientForParallelTests(config, initialMember);
         const newMember = await RC.startMember(cluster.id);
         newMemberStarted.resolve();
 

@@ -51,12 +51,12 @@ describe('ConnectionManagerTranslateTest', function () {
     }
 
     before(async function () {
-        cluster = await testFactory.createClusterForSerialTest();
+        cluster = await testFactory.createClusterForSerialTests();
         await RC.startMember(cluster.id);
     });
 
     after(async function () {
-        await testFactory.cleanUp();
+        await testFactory.shutdownAll();
     });
 
     afterEach(async function () {
@@ -64,7 +64,7 @@ describe('ConnectionManagerTranslateTest', function () {
     });
 
     it('should use existing connection when connecting to member', async function () {
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             network: {
                 connectionTimeout: 1000
@@ -85,7 +85,7 @@ describe('ConnectionManagerTranslateTest', function () {
     });
 
     it('should translate and connect when internal address is not reachable and property set to true', async function () {
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             network: {
                 connectionTimeout: 1000
@@ -103,7 +103,7 @@ describe('ConnectionManagerTranslateTest', function () {
     });
 
     it('should not translate and fail when internal address is not reachable and property set to false', async function () {
-        client = await testFactory.newHazelcastClientForSerialTest({
+        client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             network: {
                 connectionTimeout: 1000

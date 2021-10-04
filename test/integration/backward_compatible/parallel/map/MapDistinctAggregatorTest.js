@@ -35,9 +35,9 @@ describe('MapDistinctAggregatorTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTest();
+        cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
-        client = await testFactory.newHazelcastClientForParallelTest({ clusterName: cluster.id }, member);
+        client = await testFactory.newHazelcastClientForParallelTests({ clusterName: cluster.id }, member);
 
         // distinct aggregator is added in 5.0 to the Node.js client
         TestUtil.markClientVersionAtLeast(this, '5.0');
