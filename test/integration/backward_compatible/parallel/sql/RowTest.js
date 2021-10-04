@@ -29,12 +29,13 @@ describe('SqlRowTest', function () {
     let someMap;
     let mapName;
     let result;
+    let serverVersionNewerThanFive;
 
     const testFactory = new TestUtil.TestFactory();
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     before(async function () {
-        const serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
+        serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
         const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
 
         TestUtil.markClientVersionAtLeast(this, '4.2');
@@ -52,10 +53,10 @@ describe('SqlRowTest', function () {
         await someMap.put(0, '1');
         await someMap.put(1, '2');
         await someMap.put(2, '3');
-        await TestUtil.createMapping(true, client, 'double', 'varchar', mapName);
+        await TestUtil.createMapping(serverVersionNewerThanFive, client, 'double', 'varchar', mapName);
 
         const sqlService = TestUtil.getSql(client);
-        result = sqlService.execute(`SELECT * FROM ${mapName} WHERE __key > ?`, [0], {
+        result = await sqlService.execute(`SELECT * FROM ${mapName} WHERE __key > ?`, [0], {
             returnRawResult: true
         });
     });
@@ -91,7 +92,7 @@ describe('SqlRowTest', function () {
     });
 
     it('getMetadata should return same metadata with result', async function () {
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
 
         for await (const row of result) {
             row.getMetadata().should.be.eq(rowMetadata);

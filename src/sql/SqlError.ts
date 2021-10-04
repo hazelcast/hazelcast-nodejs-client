@@ -22,10 +22,17 @@ import {UUID} from '../core';
  * @internal
  */
 export class SqlError {
+
     constructor(
+        /** The error code. */
         readonly code: number,
+        /** The error message. */
         readonly message: string,
-        readonly originatingMemberId: UUID
+        /** UUID of the member or client that caused or initiated an error condition. */
+        readonly originatingMemberId: UUID,
+        _ : boolean,
+        /** Suggested SQL statement to remediate experienced error. */
+        readonly suggestion: string | null
     ) {
     }
 }

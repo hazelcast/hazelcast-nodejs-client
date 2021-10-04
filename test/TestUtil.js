@@ -348,9 +348,64 @@ exports.createMapping = async (serverVersionNewerThanFive, client, keyFormat, va
             )
         `;
 
-    const result = exports.getSql(client).execute(createMappingQuery);
+    const result = await exports.getSql(client).execute(createMappingQuery);
     // Wait for execution to end.
-    await result.getUpdateCount();
+    if (!exports.isClientVersionAtLeast('5.0')) {
+        await result.getUpdateCount();
+    }
+};
+
+/**
+ * Creates portable mapping for SQL queries. In 5.0, users started to write explicit mapping for SQL queries against maps.
+ * @param keyFormat Key format
+ * @param factoryId Portable's factory id
+ * @param classId Portable's class id
+ * @param columns Columns as a dict where keys are column names, and values are case insensitive value formats.
+ * @param client Client instance
+ * @param mapName Map name
+ * @param serverVersionNewerThanFive true if server version >= 5.0
+ */
+exports.createMappingForPortable = async (
+    keyFormat, factoryId, classId, columns, client, mapName, serverVersionNewerThanFive
+) => {
+    if (!serverVersionNewerThanFive) {
+        // Before 5.0, mappings are created implicitly, thus we don't need to create explicitly.
+        return;
+    }
+
+    const columnsString = Object.entries(columns).map(column => `${column[0]} ${column[1].toUpperCase()}`).join(',\n');
+
+    const createMappingQuery = `
+            CREATE MAPPING ${mapName} (
+                __key ${keyFormat}${Object.keys(columns).length > 0 ? ',' : ''}
+                ${columnsString}
+            )
+            TYPE IMaP
+            OPTIONS (
+                'keyFormat' = '${keyFormat}',
+                'valueFormat' = 'portable',
+                'valuePortableFactoryId' = '${factoryId}',
+                'valuePortableClassId' = '${classId}'
+            )
+        `;
+
+    await exports.getSql(client).execute(createMappingQuery);
+};
+
+exports.getRowMetadata = async (result) => {
+    if (exports.isClientVersionAtLeast('5.0')) {
+        return result.rowMetadata;
+    } else {
+        return await result.getRowMetadata();
+    }
+};
+
+exports.getUpdateCount = async (result) => {
+    if (exports.isClientVersionAtLeast('5.0')) {
+        return result.updateCount;
+    } else {
+        return await result.getUpdateCount();
+    }
 };
 
 exports.TestFactory = class TestFactory {

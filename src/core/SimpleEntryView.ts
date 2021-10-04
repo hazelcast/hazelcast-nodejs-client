@@ -57,7 +57,7 @@ export class SimpleEntryView<K, V> {
     lastAccessTime: Long;
 
     /**
-     * Last time the value was flushed to mapstore.
+     * Last time the value was flushed to map store.
      */
     lastStoredTime: Long;
 

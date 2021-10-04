@@ -84,40 +84,6 @@ describe('Data type test', function () {
         member = await RC.startMember(cluster.id);
     });
 
-    /**
-     * Creates portable mapping for SQL queries. In 5.0, users started to write explicit mapping for SQL queries against maps.
-     * @param keyFormat Key format
-     * @param factoryId Portable's factory id
-     * @param classId Portable's class id
-     * @param columns Columns as a dict where keys are column names, and values are case insensitive value formats.
-     */
-    const createMappingForPortable = async (keyFormat, factoryId, classId, columns) => {
-        if (!serverVersionNewerThanFive) {
-            // Before 5.0, mappings are created implicitly, thus we don't need to create explicitly.
-            return;
-        }
-
-        const columnsString = Object.entries(columns).map(column => `${column[0]} ${column[1].toUpperCase()}`).join(',\n');
-
-        const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
-                __key ${keyFormat},
-                ${columnsString}
-            )
-            TYPE IMaP
-            OPTIONS (
-                'keyFormat' = 'double',
-                'valueFormat' = 'portable',
-                'valuePortableFactoryId' = '${factoryId}',
-                'valuePortableClassId' = '${classId}'
-            )
-        `;
-
-        const result = TestUtil.getSql(client).execute(createMappingQuery);
-        // Wait for execution to end.
-        await result.getUpdateCount();
-    };
-
     const basicSetup = async (testFn) => {
         client = await testFactory.newHazelcastClientForParallelTest({
             clusterName: cluster.id
@@ -157,10 +123,10 @@ describe('Data type test', function () {
         `;
 
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = TestUtil.getSql(client).execute(
+        const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this = ? OR this = ? ORDER BY __key ASC`, ['7', '2']
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.VARCHAR);
 
         const rows = [];
@@ -186,8 +152,9 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = TestUtil.getSql(client).execute(`SELECT * FROM ${mapName} WHERE this = ? ORDER BY __key ASC`, [true]);
-        const rowMetadata = await result.getRowMetadata();
+        const result = await TestUtil.getSql(client)
+            .execute(`SELECT * FROM ${mapName} WHERE this = ? ORDER BY __key ASC`, [true]);
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BOOLEAN);
 
         const rows = [];
@@ -213,11 +180,11 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = TestUtil.getSql(client).execute(
+        const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS TINYINT) AND this < CAST(? AS TINYINT) ORDER BY __key ASC`,
             [10, 16]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TINYINT);
 
         const rows = [];
@@ -243,11 +210,11 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = TestUtil.getSql(client).execute(
+        const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS SMALLINT) AND this < CAST(? AS SMALLINT) ORDER BY __key ASC`,
             [8, 16]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.SMALLINT);
 
         const rows = [];
@@ -273,11 +240,11 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = TestUtil.getSql(client).execute(
+        const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS INTEGER) AND this < CAST(? AS INTEGER) ORDER BY __key ASC`,
             [10, 20]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.INTEGER);
 
         const rows = [];
@@ -303,11 +270,11 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = TestUtil.getSql(client).execute(
+        const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [long.fromNumber(10), long.fromNumber(18)]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
 
         const rows = [];
@@ -351,7 +318,7 @@ describe('Data type test', function () {
         let result;
         if (clientVersionNewerThanFive) {
             const BigDecimal = TestUtil.getBigDecimal();
-            result = TestUtil.getSql(client).execute(
+            result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
                     BigDecimal.fromString('-22.00000000000000000000000000000001'),
@@ -359,13 +326,13 @@ describe('Data type test', function () {
                 ]
             );
         } else {
-            result = TestUtil.getSql(client).execute(
+            result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST(? AS DECIMAL) AND this < CAST(? AS DECIMAL) ORDER BY __key ASC`,
                 ['-22.00000000000000000000000000000001', '1.0000000000000231213123123125465462513214653123']
             );
         }
 
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DECIMAL);
 
         const rows = [];
@@ -407,11 +374,11 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = TestUtil.getSql(client).execute(
+        const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > CAST(? AS REAL) AND this < CAST(? AS REAL) ORDER BY __key ASC`,
             [-0.5, 0.5]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.REAL);
 
         const rows = [];
@@ -442,12 +409,12 @@ describe('Data type test', function () {
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-        const result = TestUtil.getSql(client).execute(
+        const result = await TestUtil.getSql(client).execute(
             // cast it if default number type is different
             `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
             [-0.7, 0.7]
         );
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DOUBLE);
 
         const rows = [];
@@ -482,7 +449,7 @@ describe('Data type test', function () {
             `
             var map = instance_0.getMap("${mapName}");
             for (var key = 1; key < 12; key++) {
-                map.set(new java.lang.Integer(key), java.time.LocalDate.of(key+50002,key+1,key));
+                map.set(new java.lang.Integer(key), java.time.LocalDate.of(key+5002,key+1,key));
             }
         `;
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
@@ -490,17 +457,17 @@ describe('Data type test', function () {
         let result;
         if (clientVersionNewerThanFive) {
             const LocalDate = TestUtil.getLocalDate();
-            result = TestUtil.getSql(client).execute(
+            result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-                [new LocalDate(50001, 1, 1), new LocalDate(50005, 5, 5)]
+                [new LocalDate(5001, 1, 1), new LocalDate(5005, 5, 5)]
             );
         } else {
-            result = TestUtil.getSql(client).execute(
+            result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS DATE) AND this < CAST(? AS DATE) ORDER BY __key ASC`,
-                ['50001-01-01', '50005-05-05']
+                ['5001-01-01', '5005-05-05']
             );
         }
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.DATE);
 
         const rows = [];
@@ -511,7 +478,7 @@ describe('Data type test', function () {
 
         const expectedKeys = [1, 2, 3];
         const expectedBaseValues = {
-            year: 50003,
+            year: 5003,
             month: 2,
             date: 1
         };
@@ -553,18 +520,18 @@ describe('Data type test', function () {
         let result;
         if (clientVersionNewerThanFive) {
             const LocalTime = TestUtil.getLocalTime();
-            result = TestUtil.getSql(client).execute(
+            result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [new LocalTime(1, 0, 0, 0), new LocalTime(10, 0, 0, 0)]
             );
         } else {
-            result = TestUtil.getSql(client).execute(
+            result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIME) AND this < CAST (? AS TIME) ORDER BY __key ASC`,
                 ['01:00:00', '10:00:00']
             );
         }
 
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIME);
 
         const rows = [];
@@ -627,7 +594,7 @@ describe('Data type test', function () {
             const LocalTime = TestUtil.getLocalTime();
             const LocalDate = TestUtil.getLocalDate();
 
-            result = TestUtil.getSql(client).execute(
+            result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
                     new LocalDateTime(new LocalDate(1, 6, 5), new LocalTime(4, 3, 2, 1)),
@@ -635,7 +602,7 @@ describe('Data type test', function () {
                 ]
             );
         } else {
-            result = TestUtil.getSql(client).execute(
+            result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS TIMESTAMP) AND this < CAST (? AS TIMESTAMP) ORDER BY __key ASC`,
                 [
                     '0001-06-05T04:03:02.000000001',
@@ -643,7 +610,7 @@ describe('Data type test', function () {
                 ]
             );
         }
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIMESTAMP);
 
         const rows = [];
@@ -724,7 +691,7 @@ describe('Data type test', function () {
             const LocalDate = TestUtil.getLocalDate();
             const OffsetDateTime = TestUtil.getOffsetDateTime();
 
-            result = TestUtil.getSql(client).execute(
+            result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
                 [
                     new OffsetDateTime(new LocalDateTime(new LocalDate(1, 6, 5), new LocalTime(4, 3, 2, 1)), 0),
@@ -732,7 +699,7 @@ describe('Data type test', function () {
                 ]
             );
         } else {
-            result = TestUtil.getSql(client).execute(
+            result = await TestUtil.getSql(client).execute(
                 `SELECT * FROM ${mapName} WHERE this > CAST (? AS ${timestampWithTimezoneString})` +
                 ` AND this < CAST (? AS ${timestampWithTimezoneString}) ORDER BY __key ASC`,
                 [
@@ -741,7 +708,7 @@ describe('Data type test', function () {
                 ]
             );
         }
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.TIMESTAMP_WITH_TIME_ZONE);
 
         const rows = [];
@@ -804,7 +771,15 @@ describe('Data type test', function () {
             type: 'SORTED',
             attributes: ['age']
         });
-        await createMappingForPortable('double', 666, 1, {age: 'bigint', height: 'real'});
+        await TestUtil.createMappingForPortable(
+            'double',
+            666,
+            1,
+            {age: 'bigint', height: 'real'},
+            client,
+            mapName,
+            serverVersionNewerThanFive
+        );
 
         const student1 = new Student(long.fromNumber(12), 123.23);
         const student2 = new Student(long.fromNumber(15), null);
@@ -813,12 +788,12 @@ describe('Data type test', function () {
         await someMap.put(1, student2);
         await someMap.put(2, student3);
 
-        const result = TestUtil.getSql(client).execute(
+        const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE age > ? AND age < ? ORDER BY age DESC`,
             [long.fromNumber(13), long.fromNumber(18)]
         );
 
-        const rowMetadata = await result.getRowMetadata();
+        const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.BIGINT);
         rowMetadata.getColumn(rowMetadata.findColumn('height')).type.should.be.eq(SqlColumnType.REAL);
 
