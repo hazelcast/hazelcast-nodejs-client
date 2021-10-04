@@ -30,7 +30,6 @@ import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfigImpl} from './FlakeIdGeneratorConfig';
 import {InMemoryFormat} from './InMemoryFormat';
 import {NearCacheConfigImpl} from './NearCacheConfig';
-import {Properties} from './Properties';
 import {ReliableTopicConfigImpl} from './ReliableTopicConfig';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 import {ReconnectMode} from './ConnectionStrategyConfig';
@@ -183,14 +182,6 @@ export class ConfigBuilder {
         }
     }
 
-    private parseProperties(jsonObject: any): Properties {
-        const props: Properties = {} as Properties;
-        for (const key in jsonObject) {
-            props[key] = jsonObject[key];
-        }
-        return props;
-    }
-
     private handleSSL(jsonObject: any): void {
         const sslConfigKeys = new Set(Object.keys(this.effectiveConfig.network.ssl));
         for (const key in jsonObject) {
@@ -209,8 +200,13 @@ export class ConfigBuilder {
             this.effectiveConfig.network.ssl.sslOptions = jsonObject.sslOptions;
         } else if (jsonObject.sslOptionsFactory || jsonObject.sslOptionsFactoryProperties) {
             this.handleSSLOptionsFactory(jsonObject.sslOptionsFactory);
+            if (typeof jsonObject.sslOptionsFactoryProperties !== 'object') {
+                throw new RangeError('Expected "sslOptionsFactoryProperties" to be an object but it is a: '
+                    + typeof jsonObject.sslOptionsFactoryProperties
+                );
+            }
             this.effectiveConfig.network.ssl.sslOptionsFactoryProperties = jsonObject.sslOptionsFactoryProperties
-                ? this.parseProperties(jsonObject.sslOptionsFactoryProperties) : null;
+                ? jsonObject.sslOptionsFactoryProperties : null;
         }
     }
 
@@ -232,6 +228,9 @@ export class ConfigBuilder {
     }
 
     private handleProperties(jsonObject: any): void {
+        if (typeof jsonObject !== 'object') {
+            throw new RangeError(`Expected 'properties' to be an object but it is a: ${typeof jsonObject}`);
+        }
         for (const key in jsonObject) {
             let value = jsonObject[key];
             try {
