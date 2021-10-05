@@ -77,6 +77,7 @@ configParams.forEach((cfg) => {
         let cluster;
         let client;
         let managed;
+        let member;
 
         const filterInternalMaps = (distributedObjects) => {
             return distributedObjects.filter(distObj => !distObj.getName().startsWith('__'));
@@ -84,18 +85,18 @@ configParams.forEach((cfg) => {
 
         before(async function () {
             cluster = await testFactory.createClusterForParallelTests();
-            const member = await RC.startMember(cluster.id);
-            client = await testFactory.newHazelcastClientForParallelTests({
-                clusterName: cluster.id
-            }, member);
+            member = await RC.startMember(cluster.id);
         });
 
-        beforeEach(function () {
+        beforeEach(async function () {
             managed = new ManagedObjects();
+            cfg.clusterName = cluster.id;
+            client = await testFactory.newHazelcastClientForParallelTests(cfg, member);
         });
 
         afterEach(async function () {
             await managed.destroyAll();
+            await client.shutdown();
         });
 
         after(async function () {
