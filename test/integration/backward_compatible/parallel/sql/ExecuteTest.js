@@ -396,7 +396,7 @@ describe('SqlExecuteTest', function () {
                 </hazelcast>
             `;
 
-            const cluster = await RC.createCluster(null, LITE_MEMBER_CONFIG);
+            const cluster = await testFactory.createClusterForParallelTests(null, LITE_MEMBER_CONFIG);
             await RC.startMember(cluster.id);
             await RC.startMember(cluster.id);
             await RC.executeOnController(cluster.id, `
@@ -647,7 +647,7 @@ describe('SqlExecuteTest', function () {
                 </hazelcast>
             `;
 
-            const cluster = await RC.createCluster(null, LITE_MEMBER_CONFIG);
+            const cluster = await testFactory.createClusterForParallelTests(null, LITE_MEMBER_CONFIG);
             await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
                 clusterName: cluster.id

@@ -109,7 +109,7 @@ describe('ClientReconnectTest', function () {
     });
 
     it('create proxy while member is down, member comes back', async function () {
-        cluster = await RC.createCluster(null, null);
+        cluster = await testFactory.createClusterForSerialTests();
         const member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
