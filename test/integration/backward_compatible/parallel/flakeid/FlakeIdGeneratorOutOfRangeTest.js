@@ -22,7 +22,6 @@ const expect = chai.expect;
 const RC = require('../../../RC');
 const { HazelcastError } = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');
-const { assertTrueEventually } = require('../../../../TestUtil');
 
 describe('FlakeIdGeneratorOutOfRangeTest', function () {
     let cluster, client;
@@ -48,35 +47,26 @@ describe('FlakeIdGeneratorOutOfRangeTest', function () {
         return RC.executeOnController(clusterId, script, 1);
     }
 
-    /**
-     * Since this test is used with a unisocket client, getRandomConnection will return the first connection in the
-     * active connection pool. In Node.js Maps, values() return values in insertion order. So it is enough for us to
-     * overflow the member 0;
-     */
-    it('newId should succeed while there is at least one suitable member', async function () {
-        cluster = await testFactory.createClusterForParallelTests();
-        const member1 = await RC.startMember(cluster.id);
+    for (let repeat = 0; repeat < 2; repeat++) {
+        it('newId should succeed while there is at least one suitable member (repeat: ' + repeat + '/2)', async function () {
+            cluster = await testFactory.createClusterForParallelTests();
+            const member1 = await RC.startMember(cluster.id);
+            const member2 = await RC.startMember(cluster.id);
+            await assignOverflowedNodeId(cluster.id, repeat);
 
-        client = await testFactory.newHazelcastClientForParallelTests({
-            clusterName: cluster.id,
-            network: {
-                smartRouting: false
+            client = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                network: {
+                    smartRouting: false
+                }
+            }, [member1, member2]);
+
+            flakeIdGenerator = await client.getFlakeIdGenerator('test');
+            for (let i = 0; i < 100; i++) {
+                await flakeIdGenerator.newId();
             }
-        }, member1);
-
-        // wait for the client to connect to first member, it is the one that will be overflowed
-        await assertTrueEventually(async () => {
-            expect(client.connectionRegistry.activeConnections.size).to.be.eq(1);
         });
-
-        await RC.startMember(cluster.id);
-        await assignOverflowedNodeId(cluster.id, 0);
-
-        flakeIdGenerator = await client.getFlakeIdGenerator('test');
-        for (let i = 0; i < 100; i++) {
-            await flakeIdGenerator.newId();
-        }
-    });
+    }
 
     it('should throw when there is no server with a join id smaller than 2^16', async function () {
         cluster = await testFactory.createClusterForParallelTests();

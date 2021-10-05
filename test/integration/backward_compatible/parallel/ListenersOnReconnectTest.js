@@ -35,59 +35,46 @@ describe('ListenersOnReconnectTest', function () {
     });
 
     async function closeTwoMembersOutOfThreeAndTestListener(done, isSmart, membersToClose, turnoffMember) {
-        let doneCalled = false;
-
-        try {
-            const members = await Promise.all([
-                RC.startMember(cluster.id),
-                RC.startMember(cluster.id),
-                RC.startMember(cluster.id)
-            ]);
-            client = await testFactory.newHazelcastClientForParallelTests({
-                clusterName: cluster.id,
-                network: {
-                    smartRouting: isSmart
-                },
-                properties: {
-                    'hazelcast.client.heartbeat.interval': 1000,
-                    'hazelcast.client.heartbeat.timeout': 3000
-                }
-            }, members);
-            map = await client.getMap('testmap');
-
-            const listener = {
-                added: (entryEvent) => {
-                    if (!doneCalled) {
-                        try {
-                            expect(entryEvent.name).to.equal('testmap');
-                            expect(entryEvent.key).to.equal('keyx');
-                            expect(entryEvent.value).to.equal('valx');
-                            expect(entryEvent.oldValue).to.be.equal(null);
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
-                            done();
-                        } catch (err) {
-                            done(err);
-                        } finally {
-                            doneCalled = true;
-                        }
-                    }
-                }
-            };
-            await map.addEntryListener(listener, 'keyx', true);
-            await Promise.all([
-                turnoffMember(cluster.id, members[membersToClose[0]].uuid),
-                turnoffMember(cluster.id, members[membersToClose[1]].uuid)
-            ]);
-
-            await TestUtil.promiseWaitMilliseconds(8000);
-            await map.put('keyx', 'valx');
-        } catch (e) {
-            if (!doneCalled) {
-                done(e);
-                doneCalled = true;
+        const members = await Promise.all([
+            RC.startMember(cluster.id),
+            RC.startMember(cluster.id),
+            RC.startMember(cluster.id)
+        ]);
+        client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            network: {
+                smartRouting: isSmart
+            },
+            properties: {
+                'hazelcast.client.heartbeat.interval': 1000,
+                'hazelcast.client.heartbeat.timeout': 3000
             }
-        }
+        }, members);
+        map = await client.getMap('testmap');
+
+        const listener = {
+            added: (entryEvent) => {
+                try {
+                    expect(entryEvent.name).to.equal('testmap');
+                    expect(entryEvent.key).to.equal('keyx');
+                    expect(entryEvent.value).to.equal('valx');
+                    expect(entryEvent.oldValue).to.be.equal(null);
+                    expect(entryEvent.mergingValue).to.be.equal(null);
+                    expect(entryEvent.member).to.not.be.equal(null);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }
+        };
+        await map.addEntryListener(listener, 'keyx', true);
+        await Promise.all([
+            turnoffMember(cluster.id, members[membersToClose[0]].uuid),
+            turnoffMember(cluster.id, members[membersToClose[1]].uuid)
+        ]);
+
+        await TestUtil.promiseWaitMilliseconds(8000);
+        return map.put('keyx', 'valx');
     }
 
     [true, false].forEach((isSmart) => {

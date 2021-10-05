@@ -17,7 +17,7 @@
 
 const { expect } = require('chai');
 const { BuildInfo } = require('../lib/BuildInfo');
-const { Lang } = require('./integration/remote_controller/remote-controller_types');
+const { Lang } = require('./integration/remote_controller/remote_controller_types');
 const { Client } = require('..');
 const RC = require('./integration/RC');
 

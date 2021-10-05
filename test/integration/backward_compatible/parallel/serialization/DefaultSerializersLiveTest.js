@@ -18,7 +18,7 @@
 const Long = require('long');
 const { expect } = require('chai');
 const RC = require('../../../RC');
-const { Lang } = require('../../../remote_controller/remote-controller_types');
+const { Lang } = require('../../../remote_controller/remote_controller_types');
 const { RestValue, UUID } = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');
 

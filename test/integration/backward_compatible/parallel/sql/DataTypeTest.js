@@ -16,7 +16,7 @@
  */
 'use strict';
 
-const { Lang } = require('../../../remote_controller/remote-controller_types');
+const { Lang } = require('../../../remote_controller/remote_controller_types');
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
 

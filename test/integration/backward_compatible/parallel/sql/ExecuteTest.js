@@ -25,7 +25,7 @@ chai.should();
 const { Client, HazelcastSqlException } = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');
 const RC = require('../../../RC');
-const {Lang} = require('../../../remote_controller/remote-controller_types');
+const {Lang} = require('../../../remote_controller/remote_controller_types');
 const fs = require('fs');
 const path = require('path');
 const { isClientVersionAtLeast } = require('../../../../TestUtil');

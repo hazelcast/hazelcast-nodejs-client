@@ -1,4 +1,4 @@
-Tests in this folder run in parallel. Mocha runs every file as separate Node.js processes. -j option of mocha
+Tests in this folder run in parallel. Mocha runs every file as separate Node.js processes. `-j` option of mocha
 determines the number of processes that run at the same time. It is by default number of cores - 1. Mocha docs say that
 setting it higher is unnecessary but for our case it might be useful. (Hazelcast is IO intensive). GH actions have 2 cores
 for linux machines.

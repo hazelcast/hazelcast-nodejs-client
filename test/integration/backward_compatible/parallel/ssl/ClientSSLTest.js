@@ -39,10 +39,6 @@ describe('ClientSSLTest', function () {
         await testFactory.shutdownAll();
     });
 
-    after(async function () {
-        await testFactory.shutdownAll();
-    });
-
     async function createClusterAndMember(sConfig) {
         cluster = await testFactory.createClusterForParallelTests(null, sConfig);
         return RC.startMember(cluster.id);

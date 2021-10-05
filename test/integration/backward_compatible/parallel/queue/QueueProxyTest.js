@@ -108,9 +108,7 @@ describe('QueueProxyTest', function () {
 
     it('poll returns head after a new element added', async function () {
         await queue.clear();
-        setTimeout(async () => {
-            await queue.offer('new_item');
-        }, 500);
+        await queue.offer('new_item');
         const ret = await queue.poll(1000);
         expect(ret).to.equal('new_item');
     });
