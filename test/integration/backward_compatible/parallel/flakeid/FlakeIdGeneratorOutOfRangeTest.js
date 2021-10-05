@@ -31,8 +31,7 @@ describe('FlakeIdGeneratorOutOfRangeTest', function () {
 
     afterEach(async function () {
         await flakeIdGenerator.destroy();
-        await client.shutdown();
-        await RC.terminateCluster(cluster.id);
+        await testFactory.shutdownAll();
     });
 
     after(async function () {

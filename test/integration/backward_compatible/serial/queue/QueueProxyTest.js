@@ -32,7 +32,9 @@ describe('QueueProxyTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForSerialTests(null, fs.readFileSync(__dirname + '/hazelcast_queue.xml', 'utf8'));
+        cluster = await testFactory.createClusterForSerialTests(
+            null, fs.readFileSync(__dirname + '/hazelcast_queue.xml', 'utf8')
+        );
         await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForSerialTests({ clusterName: cluster.id });
     });

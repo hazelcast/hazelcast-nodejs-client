@@ -106,7 +106,6 @@ describe('ConnectionManagerTest', function () {
 
         await promiseWaitMilliseconds(100);
         expect(fakeSocket.destroy.callCount).to.be.equal(1);
-        sandbox.restore();
     });
 
     it('should not give up when timeout set to 0', function (done) {

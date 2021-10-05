@@ -36,11 +36,7 @@ describe('ClientSSLTest', function () {
     });
 
     afterEach(async function () {
-        if (client) {
-            await client.shutdown();
-            client = null;
-        }
-        return RC.terminateCluster(cluster.id);
+        await testFactory.shutdownAll();
     });
 
     after(async function () {

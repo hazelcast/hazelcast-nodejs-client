@@ -73,8 +73,6 @@ const testFactory = new TestUtil.TestFactory();
  * Tests blue/green failover support for OSS.
  */
 describe('ClientFailoverTest - community', function () {
-    let cluster1;
-    let cluster2;
     let member;
 
     before(function () {
@@ -83,16 +81,15 @@ describe('ClientFailoverTest - community', function () {
     });
 
     beforeEach(async function () {
-        cluster1 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
+        const cluster1 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
             createClusterConfig({ clusterName: 'dev1' }));
         member = await RC.startMember(cluster1.id);
-        cluster2 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
+        await testFactory.createClusterKeepClusterNameForParallelTests(null,
             createClusterConfig({ clusterName: 'dev2' }));
     });
 
     afterEach(async function () {
-        await RC.terminateCluster(cluster1.id);
-        await RC.terminateCluster(cluster2.id);
+        await testFactory.shutdownAll();
     });
 
     after(async function () {
@@ -116,9 +113,7 @@ describe('ClientFailoverTest - community', function () {
 describe('ClientFailoverTest - enterprise', function () {
     let cluster1;
     let member1;
-    let cluster2;
     let member2;
-    let cluster3;
     let client;
 
     before(function () {
@@ -130,20 +125,13 @@ describe('ClientFailoverTest - enterprise', function () {
         cluster1 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
             createClusterConfig({ clusterName: 'dev1' }));
         member1 = await RC.startMember(cluster1.id);
-        cluster2 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
+        const cluster2 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
             createClusterConfig({ clusterName: 'dev2' }));
         member2 = await RC.startMember(cluster2.id);
     });
 
     afterEach(async function () {
-        if (client != null) {
-            await client.shutdown();
-        }
-        await RC.terminateCluster(cluster1.id);
-        await RC.terminateCluster(cluster2.id);
-        if (cluster3 != null) {
-            await RC.terminateCluster(cluster3.id);
-        }
+        await testFactory.shutdownAll();
     });
 
     after(async function () {
@@ -263,7 +251,7 @@ describe('ClientFailoverTest - enterprise', function () {
     });
 
     it('should shutdown when switching to cluster with different partition count', async function () {
-        cluster3 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
+        const cluster3 = await testFactory.createClusterKeepClusterNameForParallelTests(null,
             createClusterConfig({ clusterName: 'dev3', partitionCount: 42 }));
         const member3 = await RC.startMember(cluster3.id);
 
