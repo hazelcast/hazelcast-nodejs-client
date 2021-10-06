@@ -37,8 +37,6 @@ describe('ListenersOnReconnectTest', function () {
     [true, false].forEach((isSmart) => {
         // This test needs to run serially since it restarts a member.
         it('restart member, listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            let doneCalled = false;
-
             async function testListener(done) {
                 const member = await RC.startMember(cluster.id);
                 client = await testFactory.newHazelcastClientForSerialTests({
@@ -54,20 +52,16 @@ describe('ListenersOnReconnectTest', function () {
 
                 const listener = {
                     added: (entryEvent) => {
-                        if (!doneCalled) {
-                            try {
-                                expect(entryEvent.name).to.equal('testmap');
-                                expect(entryEvent.key).to.equal('keyx');
-                                expect(entryEvent.value).to.equal('valx');
-                                expect(entryEvent.oldValue).to.be.equal(null);
-                                expect(entryEvent.mergingValue).to.be.equal(null);
-                                expect(entryEvent.member).to.not.be.equal(null);
-                                done();
-                            } catch (err) {
-                                done(err);
-                            } finally {
-                                doneCalled = true;
-                            }
+                        try {
+                            expect(entryEvent.name).to.equal('testmap');
+                            expect(entryEvent.key).to.equal('keyx');
+                            expect(entryEvent.value).to.equal('valx');
+                            expect(entryEvent.oldValue).to.be.equal(null);
+                            expect(entryEvent.mergingValue).to.be.equal(null);
+                            expect(entryEvent.member).to.not.be.equal(null);
+                            done();
+                        } catch (err) {
+                            done(err);
                         }
                     }
                 };
@@ -80,12 +74,7 @@ describe('ListenersOnReconnectTest', function () {
                 return map.put('keyx', 'valx');
             }
 
-            testListener(done).catch(e => {
-                if (!doneCalled) {
-                    done(e);
-                    doneCalled = true;
-                }
-            });
+            testListener(done).catch(done);
         });
     });
 });

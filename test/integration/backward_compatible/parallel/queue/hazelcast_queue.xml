@@ -21,4 +21,7 @@
     <queue name="ClientQueueTest*">
         <max-size>15</max-size>
     </queue>
+    <network>
+        <port>0</port>
+    </network>
 </hazelcast>

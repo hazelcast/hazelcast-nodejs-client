@@ -86,27 +86,27 @@ describe('ListenersOnReconnectTest', function () {
          */
 
         it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], RC.terminateMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], RC.terminateMember).catch(done);
         });
 
         it('kill two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], RC.terminateMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], RC.terminateMember).catch(done);
         });
 
         it('kill two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], RC.terminateMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], RC.terminateMember).catch(done);
         });
 
         it('shutdown two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], RC.shutdownMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], RC.shutdownMember).catch(done);
         });
 
         it('shutdown two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], RC.shutdownMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], RC.shutdownMember).catch(done);
         });
 
         it('shutdown two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], RC.shutdownMember);
+            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], RC.shutdownMember).catch(done);
         });
     });
 });

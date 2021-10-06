@@ -629,48 +629,9 @@ describe('SqlExecuteTest', function () {
                 clusterName: cluster.id
             }, member);
         });
+
         afterEach(async function () {
             await testFactory.shutdownAll();
-        });
-
-        it('should return an error if sql query sent to lite member', async function () {
-            const jetConfigOrEmpty =
-                await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0 ? '<jet enabled="true"></jet>' : '';
-
-            const LITE_MEMBER_CONFIG = `
-                <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                    http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-                    <lite-member enabled="true" />
-                    ${jetConfigOrEmpty}
-                </hazelcast>
-            `;
-
-            const cluster = await testFactory.createClusterForParallelTests(null, LITE_MEMBER_CONFIG);
-            await RC.startMember(cluster.id);
-            client = await Client.newHazelcastClient({
-                clusterName: cluster.id
-            });
-            TestUtil.markServerVersionAtLeast(this, client, '4.2');
-            mapName = TestUtil.randomString(10);
-            someMap = await client.getMap(mapName);
-
-            const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
-                const result = await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`);
-                await TestUtil.getRowMetadata(result);
-            });
-            error1.should.be.instanceof(getHazelcastSqlException());
-
-            const error2 = await TestUtil.getRejectionReasonOrThrow(async () => {
-                const result = await TestUtil.getSql(client).executeStatement({
-                    sql: `SELECT * FROM ${mapName}`,
-                    params: [],
-                    options: {}
-                });
-                await TestUtil.getRowMetadata(result);
-            });
-            error2.should.be.instanceof(getHazelcastSqlException());
         });
 
         it('should return an error if connection lost', async function () {
@@ -767,6 +728,7 @@ describe('SqlExecuteTest', function () {
                 clusterName: cluster.id
             }, member);
         });
+
         afterEach(async function () {
             await testFactory.shutdownAll();
         });

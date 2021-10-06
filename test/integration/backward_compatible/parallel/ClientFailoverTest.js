@@ -92,10 +92,6 @@ describe('ClientFailoverTest - community', function () {
         await testFactory.shutdownAll();
     });
 
-    after(async function () {
-        await testFactory.shutdownAll();
-    });
-
     it('should reject when connecting to community cluster', async function () {
         await expect(testFactory.newHazelcastFailoverClientForParallelTests({
             tryCount: 1,
@@ -131,10 +127,6 @@ describe('ClientFailoverTest - enterprise', function () {
     });
 
     afterEach(async function () {
-        await testFactory.shutdownAll();
-    });
-
-    after(async function () {
         await testFactory.shutdownAll();
     });
 
