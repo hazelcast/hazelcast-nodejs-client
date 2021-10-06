@@ -78,8 +78,7 @@ const startRC = async () => {
             `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
             '-cp',
             CLASSPATH,
-            'com.hazelcast.remotecontroller.Main',
-            '--use-simple-server'
+            'com.hazelcast.remotecontroller.Main'
         ], {
             stdio: [
                 'ignore',
@@ -98,8 +97,7 @@ const startRC = async () => {
             `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
             '-cp',
             CLASSPATH,
-            'com.hazelcast.remotecontroller.Main',
-            '--use-simple-server'
+            'com.hazelcast.remotecontroller.Main'
         ], {
             stdio: [
                 'ignore',
@@ -171,31 +169,37 @@ const stopRC = async () => {
 if (process.argv.length === 3 || process.argv.length === 4) {
     if (process.argv[2] === 'unit') {
         if (process.argv.length === 4) {
-            testCommand = `node node_modules/mocha/bin/mocha --recursive -g "${process.argv[3]}" "test/unit/**/*.js"`;
+            testCommand = `node node_modules/mocha/bin/mocha -g "${process.argv[3]}" "test/unit/**/*.js"`;
         } else {
             testCommand = 'node node_modules/mocha/bin/mocha "test/unit/**/*.js"';
         }
         testType = 'unit';
     } else if (process.argv[2] === 'integration') {
         if (process.argv.length === 4) {
-            testCommand = 'node node_modules/mocha/bin/mocha --recursive -g ' +
-                          `"${process.argv[3]}" "test/integration/**/*.js"`;
+            testCommand = `node node_modules/mocha/bin/mocha -g "${process.argv[3]}" ` +
+                          '"test/integration/**/serial/**/*.js" && ';
+            testCommand += `node node_modules/mocha/bin/mocha -j 8 --parallel -g  "${process.argv[3]}" ` +
+                '"test/integration/**/parallel/**/*.js"';
         } else {
-            testCommand = 'node node_modules/mocha/bin/mocha "test/integration/**/*.js"';
+            testCommand = 'node node_modules/mocha/bin/mocha "test/integration/**/serial/**/*.js" && node'
+                        + ' node_modules/mocha/bin/mocha -j 8 --parallel "test/integration/**/parallel/**/*.js"';
         }
         testType = 'integration';
     } else if (process.argv[2] === 'all') {
         if (process.argv.length === 4) {
-            testCommand = `node node_modules/mocha/bin/mocha --recursive -g "${process.argv[3]}" "test/**/*.js"`;
+            testCommand = `node node_modules/mocha/bin/mocha -g "${process.argv[3]}" "test/unit/**/*.js" && `;
+            testCommand += `node node_modules/mocha/bin/mocha -g "${process.argv[3]}" ` +
+                '"test/integration/**/serial/**/*.js" && ';
+            testCommand += `node node_modules/mocha/bin/mocha -j 8 --parallel -g  "${process.argv[3]}" ` +
+                '"test/**/parallel/**/*.js"';
         } else {
-            testCommand = 'node node_modules/mocha/bin/mocha "test/**/*.js"';
+            testCommand = 'node node_modules/mocha/bin/mocha "test/unit/**/*.js" && ';
+            testCommand += 'node node_modules/mocha/bin/mocha "test/**/serial/**/*.js" && ';
+            testCommand += 'node node_modules/mocha/bin/mocha -j 8 --parallel "test/**/parallel/**/*.js"';
         }
         testType = 'all';
     } else if (process.argv[2] === 'startrc') {
         runTests = false;
-    } else if (process.argv[2] === 'coverage') {
-        testCommand = 'node node_modules/nyc/bin/nyc node_modules/mocha/bin/_mocha "test/**/*.js"';
-        testType = 'coverage';
     } else if (process.argv[2] === 'check-code-samples') {
         runTests = false;
         testType = 'check-code-samples';
@@ -204,7 +208,7 @@ if (process.argv.length === 3 || process.argv.length === 4) {
     }
 } else {
     throw 'Usage: node <script-file> <operation-type> [test regex].\n'
-        + 'Operation type can be one of "unit", "integration", "all", "startrc", "coverage".\n'
+        + 'Operation type can be one of "unit", "integration", "all", "startrc", "check-code-samples".\n'
         + '[test regex] only used in "unit", "all" and "integration" operations.';
 }
 

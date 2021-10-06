@@ -49,7 +49,7 @@
         "test:unit": "node scripts/test-runner.js unit",
         "test:integration": "node scripts/test-runner.js integration",
         "validate-user-code": "tsc --build test/user_code/tsconfig.json",
-        "coverage": "node scripts/test-runner.js coverage",
+        "coverage": "nyc npm test",
         "pregenerate-docs": "rimraf docs",
         "generate-docs": "typedoc --options typedoc.json",
         "generate-docs:watch": "typedoc --watch --options typedoc.json",
