@@ -33,10 +33,6 @@ describe('FlakeIdGeneratorOutOfRangeTest', function () {
         await testFactory.shutdownAll();
     });
 
-    after(async function () {
-        await testFactory.shutdownAll();
-    });
-
     async function assignOverflowedNodeId(clusterId, instanceNum) {
         const script =
             `function assignOverflowedNodeId() {
