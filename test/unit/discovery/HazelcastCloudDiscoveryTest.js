@@ -75,10 +75,10 @@ describe('HazelcastCloudDiscoveryTest', function () {
     });
 
     it('should cancel request on timeout', async function () {
-        await startUnresponsiveServer(9999);
+        await startUnresponsiveServer(10000);
 
         const connectionTimeoutMs = 100;
-        const discovery = new HazelcastCloudDiscovery('https://localhost:9999', connectionTimeoutMs);
+        const discovery = new HazelcastCloudDiscovery('https://localhost:10000', connectionTimeoutMs);
 
         await expect(discovery.discoverNodes()).to.be.rejectedWith(HazelcastError);
     });

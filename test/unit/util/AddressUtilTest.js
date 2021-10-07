@@ -15,7 +15,9 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const chai = require('chai');
+const expect = chai.expect;
+chai.use(require('chai-as-promised'));
 const net = require('net');
 const {
     createAddressFromString,
@@ -120,10 +122,10 @@ describe('AddressUtilTest', function () {
         const server = net.createServer(() => {
             // no-response
         });
-        await new Promise((resolve) => server.listen(5701, resolve));
+        await new Promise((resolve) => server.listen(0, resolve));
 
         try {
-            const result = await isAddressReachable('127.0.0.1', 5701, 1000);
+            const result = await isAddressReachable('127.0.0.1', server.address().port, 1000);
             expect(result).to.be.true;
         } finally {
             server.close();
@@ -134,10 +136,10 @@ describe('AddressUtilTest', function () {
         const server = net.createServer(() => {
             // no-response
         });
-        await new Promise((resolve) => server.listen(5701, resolve));
+        await new Promise((resolve) => server.listen(0, resolve));
 
         try {
-            const result = await isAddressReachable('localhost', 5701, 1000);
+            const result = await isAddressReachable('localhost', server.address().port, 1000);
             expect(result).to.be.true;
         } finally {
             server.close();
