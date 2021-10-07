@@ -18,6 +18,7 @@
 const { expect } = require('chai');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
+const { deferredPromise } = require('../../../../lib/util/Util');
 
 describe('ListenersOnReconnectTest', function () {
     let client;
@@ -36,45 +37,44 @@ describe('ListenersOnReconnectTest', function () {
 
     [true, false].forEach((isSmart) => {
         // This test needs to run serially since it restarts a member.
-        it('restart member, listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            async function testListener(done) {
-                const member = await RC.startMember(cluster.id);
-                client = await testFactory.newHazelcastClientForSerialTests({
-                    clusterName: cluster.id,
-                    network: {
-                        smartRouting: isSmart,
-                    },
-                    properties: {
-                        'hazelcast.client.heartbeat.interval': 1000
+        it('restart member, listener still receives map.put event [smart=' + isSmart + ']', async function () {
+            const deferred = deferredPromise();
+
+            const member = await RC.startMember(cluster.id);
+            client = await testFactory.newHazelcastClientForSerialTests({
+                clusterName: cluster.id,
+                network: {
+                    smartRouting: isSmart,
+                },
+                properties: {
+                    'hazelcast.client.heartbeat.interval': 1000
+                }
+            });
+            map = await client.getMap('testmap');
+
+            const listener = {
+                added: (entryEvent) => {
+                    try {
+                        expect(entryEvent.name).to.equal('testmap');
+                        expect(entryEvent.key).to.equal('keyx');
+                        expect(entryEvent.value).to.equal('valx');
+                        expect(entryEvent.oldValue).to.be.equal(null);
+                        expect(entryEvent.mergingValue).to.be.equal(null);
+                        expect(entryEvent.member).to.not.be.equal(null);
+                        deferred.resolve();
+                    } catch (err) {
+                        deferred.reject(err);
                     }
-                });
-                map = await client.getMap('testmap');
+                }
+            };
+            await map.addEntryListener(listener, 'keyx', true);
 
-                const listener = {
-                    added: (entryEvent) => {
-                        try {
-                            expect(entryEvent.name).to.equal('testmap');
-                            expect(entryEvent.key).to.equal('keyx');
-                            expect(entryEvent.value).to.equal('valx');
-                            expect(entryEvent.oldValue).to.be.equal(null);
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
-                            done();
-                        } catch (err) {
-                            done(err);
-                        }
-                    }
-                };
-                await map.addEntryListener(listener, 'keyx', true);
+            await RC.terminateMember(cluster.id, member.uuid);
+            await RC.startMember(cluster.id);
 
-                await RC.terminateMember(cluster.id, member.uuid);
-                await RC.startMember(cluster.id);
-
-                await TestUtil.promiseWaitMilliseconds(8000);
-                return map.put('keyx', 'valx');
-            }
-
-            testListener(done).catch(done);
+            await TestUtil.promiseWaitMilliseconds(8000);
+            await map.put('keyx', 'valx');
+            await deferred;
         });
     });
 });
