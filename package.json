@@ -43,7 +43,7 @@
         "node": ">=10.4.0"
     },
     "scripts": {
-        "clean": "rimraf lib *.jar *.log",
+        "clean": "rimraf lib *.jar *.log *.xml coverage",
         "compile": "tsc",
         "test": "node scripts/test-runner.js all",
         "test:unit": "node scripts/test-runner.js unit",
