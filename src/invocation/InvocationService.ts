@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
 import {
     ClientNotActiveError,
     HazelcastInstanceNotActiveError,
@@ -172,7 +171,6 @@ export class Invocation {
     }
 
     notify(clientMessage: ClientMessage): void {
-        assert(clientMessage != null, 'Response can not be null');
         const expectedBackups = clientMessage.getNumberOfBackupAcks();
         if (expectedBackups > this.backupsAcksReceived) {
             this.pendingResponseReceivedMillis = Date.now();
@@ -529,7 +527,6 @@ export class InvocationService {
     }
 
     private send(invocation: Invocation, connection: Connection): Promise<void> {
-        assert(connection != null);
         if (this.isShutdown) {
             return Promise.reject(new ClientNotActiveError('Client is shutting down.'));
         }
