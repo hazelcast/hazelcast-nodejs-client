@@ -15,111 +15,50 @@
  */
 /** @ignore *//** */
 
-import * as _assert from 'assert';
+import * as assert from 'assert';
 import * as Long from 'long';
 import * as Path from 'path';
 import {BigDecimal, IllegalStateError, LocalDate, LocalDateTime, LocalTime, MemberImpl, OffsetDateTime, UUID} from '../core';
 import {MemberVersion} from '../core/MemberVersion';
 import {BuildInfo} from '../BuildInfo';
-import {AssertionError} from 'assert';
 
 // Used to assert only in development mode
 const IS_DEVELOPMENT_MODE = process.env.HZ_NODEJS_ENV === 'development';
 
 /** @internal */
-export const assert : (value: any, message?: string | Error) => void = _assert;
-
-/** @internal */
-export const assertCond : (value: any, message?: string | Error) => void = IS_DEVELOPMENT_MODE ? _assert : () => {};
-
-/** @internal */
-export const assertNotNullCond : (v: any) => void = IS_DEVELOPMENT_MODE ? assertNotNull : () => {};
+export const assertNotNullConditional : (v: any) => void = IS_DEVELOPMENT_MODE ? assertNotNull : () => {};
 
 /** @internal */
 export function assertNotNull(v: any): void {
-    if (v === null) {
-        throw new AssertionError({
-            message: 'Non null value expected.',
-            expected: null,
-            actual: v
-        });
-    }
+    assert.notStrictEqual(v, null, 'Non null value expected.');
 }
 
 /** @internal */
 export function assertArray(x: any): void {
-    const isArray = Array.isArray(x);
-    if (!isArray) {
-        throw new AssertionError({
-            message: 'Should be array.',
-            actual: isArray,
-            expected: true
-        });
-    }
+    assert(Array.isArray(x), 'Should be array.');
 }
-
-/** @internal */
-export const assertArrayCond : (x: any) => void = IS_DEVELOPMENT_MODE ? assertArray : () => {};
 
 /** @internal */
 export function assertString(v: any): void {
-    const isString = typeof v === 'string';
-    if (!isString) {
-        throw new AssertionError({
-            message: 'String value expected.',
-            actual: isString,
-            expected: true
-        });
-    }
+    assert(typeof v === 'string', 'String value expected.');
 }
-
-/** @internal */
-export const assertStringCond : (v: any) => void = IS_DEVELOPMENT_MODE ? assertString : () => {};
 
 /** @internal */
 export function assertNumber(v: any): void {
-    const isNumber = typeof v === 'number';
-    if (!isNumber) {
-        throw new AssertionError({
-            message: 'Number value expected.',
-            actual: isNumber,
-            expected: true
-        });
-    }
+    assert(typeof v === 'number', 'Number value expected.');
 }
-
-/** @internal */
-export const assertNumberCond : (v: any) => void = IS_DEVELOPMENT_MODE ? assertNumber : () => {};
 
 /** @internal */
 export function assertNonNegativeNumber(v: any, m?: string): void {
-    const isNonNegativeNumber = typeof v === 'number' && v >= 0;
-    if (!isNonNegativeNumber) {
-        throw new AssertionError({
-            message: 'Non-negative number expected.',
-            actual: isNonNegativeNumber,
-            expected: true
-        });
-    }
+    assert(typeof v === 'number', m || 'Number value expected.');
+    assert(v >= 0, m || 'Non-negative value expected.');
 }
-
-/** @internal */
-export const assertNonNegativeNumberCond : (v: any) => void = IS_DEVELOPMENT_MODE ? assertNonNegativeNumber : () => {};
 
 /** @internal */
 export function assertPositiveNumber(v: any, m?: string): void {
-    const isPositiveNumber = typeof v === 'number' && v > 0;
-    if (!isPositiveNumber) {
-        throw new AssertionError({
-            message: 'Positive number expected.',
-            actual: isPositiveNumber,
-            expected: true
-        });
-    }
+    assert(typeof v === 'number', m || 'Number value expected.');
+    assert(v > 0, m || 'Positive value expected.');
 }
-
-/** @internal */
-export const assertPositiveNumberCond : (v: any) => void = IS_DEVELOPMENT_MODE ? assertPositiveNumber : () => {};
 
 /** @internal */
 export function shuffleArray<T>(array: T[]): void {
@@ -135,7 +74,7 @@ export function shuffleArray<T>(array: T[]): void {
 
 /** @internal */
 export function getType(obj: any): string {
-    assertNotNullCond(obj);
+    assertNotNullConditional(obj);
     if (Long.isLong(obj)) {
         return 'long';
     } else if (Buffer.isBuffer(obj)) {

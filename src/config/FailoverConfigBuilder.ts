@@ -17,8 +17,8 @@
 
 import * as util from 'util';
 import {InvalidConfigurationError} from '../core';
+import * as assert from 'assert';
 import {
-    assert,
     assertPositiveNumber,
     assertNonNegativeNumber,
     tryGetArray,
