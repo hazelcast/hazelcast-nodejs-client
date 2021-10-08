@@ -22,12 +22,6 @@ import {BigDecimal, IllegalStateError, LocalDate, LocalDateTime, LocalTime, Memb
 import {MemberVersion} from '../core/MemberVersion';
 import {BuildInfo} from '../BuildInfo';
 
-// Used to assert only in development mode
-const IS_DEVELOPMENT_MODE = process.env.HZ_NODEJS_ENV === 'development';
-
-/** @internal */
-export const assertNotNullConditional : (v: any) => void = IS_DEVELOPMENT_MODE ? assertNotNull : () => {};
-
 /** @internal */
 export function assertNotNull(v: any): void {
     assert.notStrictEqual(v, null, 'Non null value expected.');

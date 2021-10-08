@@ -20,7 +20,6 @@ import {ClientConfig, ClientConfigImpl} from '../config/Config';
 import {MemberSelector} from '../core/MemberSelector';
 import {
     assertNotNull,
-    assertNotNullConditional,
     deferredPromise,
     timedPromise
 } from '../util/Util';
@@ -79,7 +78,6 @@ export class ClusterService implements Cluster {
      * @return The member that was found, or undefined if not found.
      */
     getMember(uuid: string): MemberImpl | undefined {
-        assertNotNullConditional(uuid);
         return this.memberListSnapshot.members.get(uuid);
     }
 

@@ -18,7 +18,6 @@
 * [2. Features](#2-features)
 * [3. Configuration](#3-configuration)
   * [3.1 Client Properties](#31-client-properties)
-  * [3.2 Enabling Assertions](#32-enabling-assertions)
 * [4. Serialization](#4-serialization)
   * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
   * [4.2. Portable Serialization](#42-portable-serialization)
@@ -645,12 +644,6 @@ The following is the list of all client properties in alphabetical order.
 | hazelcast.invalidation.max.tolerated.miss.count        | 10                                  | number          | If missed invalidation count is bigger than this value, relevant cached data in a Near Cache will be made unreachable.                                                                                                                                                                                                                                                                                              |
 | hazelcast.invalidation.reconciliation.interval.seconds | 60                                  | number          | Period of the task that scans cluster members to compare generated invalidation events with the received ones from the client Near Cache.                                                                                                                                                                                                                                                                           |
 | hazelcast.logging.level                                | INFO                                | string          | Logging level. Can be one of `OFF`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`.                                                                                                                                                                                                                                                                                                                                      |
-
-# 3.2 Enabling Assertions
-
-There are some assertions in the Hazelcast Node.js Client's codebase, by default disabled to avoid performance penalty.
-By setting `HZ_NODEJS_ENV` environment variable to `development`, you can enable assertions.
-This can be useful to debug your code.
 
 # 4. Serialization
 
