@@ -29,12 +29,9 @@ import {
     InvalidConfigurationError,
     TargetDisconnectedError,
     UUID,
-    LoadBalancer,
     AddressImpl,
     Addresses,
     MemberImpl,
-    ClientOfflineError,
-    IOError
 } from '../core';
 import {lookupPublicAddress} from '../core/MemberInfo';
 import {Connection} from './Connection';
@@ -48,7 +45,6 @@ import {
     shuffleArray,
     Task,
     timedPromise,
-    memberOfLargerSameVersionGroup
 } from '../util/Util';
 import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
 import {ILogger} from '../logging/ILogger';
@@ -71,6 +67,7 @@ import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {AddressProvider} from '../connection/AddressProvider';
 import {ClusterService} from '../invocation/ClusterService';
 import {SerializationService} from '../serialization/SerializationService';
+import {ConnectionRegistryImpl} from './ConnectionRegistry';
 
 /** @internal */
 export const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
@@ -82,9 +79,9 @@ export const CLIENT_TYPE = 'NJS';
 const SERIALIZATION_VERSION = 1;
 const SET_TIMEOUT_MAX_DELAY = 2147483647;
 const BINARY_PROTOCOL_VERSION = Buffer.from('CP2');
-const SQL_CONNECTION_RANDOM_ATTEMPTS = 10;
 
-enum ConnectionState {
+/** @internal */
+export enum ClientState {
     /**
      * Clients start with this state. Once a client connects to a cluster,
      * it directly switches to {@link INITIALIZED_ON_CLUSTER} instead of
@@ -109,196 +106,6 @@ enum ConnectionState {
      * Invocations are allowed in this state.
      */
     INITIALIZED_ON_CLUSTER = 2,
-}
-
-export interface ConnectionRegistry {
-    /**
-     * Returns if the registry active
-     * @return Return true if the registry is active, false otherwise
-     */
-    isActive(): boolean;
-
-    /**
-     * Returns connection by UUID
-     * @param uuid UUID that identifies the connection
-     * @return Connection if there is a connection with the UUID, undefined otherwise
-     */
-    getConnection(uuid: UUID): Connection | undefined;
-
-    /**
-     * Returns all active connections in the registry
-     * @return Array of Connection objects
-     */
-    getConnections(): Connection[];
-
-    /**
-     * Returns a random connection from active connections
-     * @return Connection if there is at least one connection, otherwise null
-     */
-    getRandomConnection(): Connection | null;
-
-    /**
-     * Returns a connection for executing SQL.
-     *
-     * @throws IllegalStateError If there are more than 2 distinct member versions found
-     * @return
-     * * A random connection to a data member from the larger same-version group
-     * * If there's no such connection, return connection to a random data member
-     * * If there's no such connection, return any random connection
-     * * If there are no connections, null is returned
-     */
-    getConnectionForSql(): Connection | null;
-
-    /**
-     * Returns if invocation allowed. Invocation is allowed only if connection state is {@link INITIALIZED_ON_CLUSTER}
-     * and there is at least one active connection.
-     * @return Error if invocation is not allowed, null otherwise
-     */
-    checkIfInvocationAllowed(): Error | null;
-}
-
-export class ConnectionRegistryImpl implements ConnectionRegistry {
-
-    private active = false;
-    private readonly activeConnections = new Map<string, Connection>();
-    private connectionState = ConnectionState.INITIAL;
-
-    constructor(
-        private readonly asyncStart: boolean,
-        private readonly reconnectMode: ReconnectMode,
-        private readonly smartRoutingEnabled: boolean,
-        private readonly loadBalancer: LoadBalancer,
-        private readonly clusterService: ClusterService
-    ) {
-    }
-
-    isActive(): boolean {
-        return this.active;
-    }
-
-    getConnectionState(): ConnectionState {
-        return this.connectionState;
-    }
-
-    isEmpty(): boolean {
-        return this.activeConnections.size === 0;
-    }
-
-    getConnections(): Connection[] {
-        return Array.from(this.activeConnections.values());
-    }
-
-    getConnection(uuid: UUID): Connection | undefined {
-        return this.activeConnections.get(uuid.toString());
-    }
-
-    getRandomConnection(): Connection | null {
-        if (this.smartRoutingEnabled) {
-            const member = this.loadBalancer.next();
-            if (member != null) {
-                const connection = this.getConnection(member.uuid);
-                if (connection != null) {
-                    return connection;
-                }
-            }
-        }
-
-        const iterator = this.activeConnections.values();
-        const next = iterator.next();
-        if (!next.done) {
-            return next.value;
-        } else {
-            return null;
-        }
-    }
-
-    getConnectionForSql(): Connection | null {
-        if (this.smartRoutingEnabled) {
-            // There might be a race - the chosen member might be just connected or disconnected - try a
-            // couple of times, the memberOfLargerSameVersionGroup returns a random connection,
-            // we might be lucky...
-            for (let i = 0; i < SQL_CONNECTION_RANDOM_ATTEMPTS; i++) {
-                const member = memberOfLargerSameVersionGroup(this.clusterService.getMembers());
-
-                if (member === null) {
-                    break;
-                }
-                const connection = this.getConnection(member.uuid);
-                if (connection !== undefined) {
-                    return connection;
-                }
-            }
-        }
-
-        // Otherwise iterate over connections and return the first one that's not to a lite member
-        let firstConnection: Connection | null = null;
-        for (const entry of this.activeConnections) {
-            const memberId = entry[0];
-            const connection = entry[1];
-
-            if (firstConnection === null) {
-                firstConnection = connection;
-            }
-            const member = this.clusterService.getMember(memberId);
-            if (member === undefined || member.liteMember) {
-                continue;
-            }
-            return connection;
-        }
-
-        // Failed to get a connection to a data member
-        return firstConnection;
-    }
-
-    forEachConnection(fn: (conn: Connection) => void): void {
-        this.activeConnections.forEach(fn);
-    }
-
-    checkIfInvocationAllowed(): Error | null {
-        const state = this.connectionState;
-        if (state === ConnectionState.INITIALIZED_ON_CLUSTER && this.activeConnections.size > 0) {
-            return null;
-        }
-
-        let error: Error;
-        if (state === ConnectionState.INITIAL) {
-            if (this.asyncStart) {
-                error = new ClientOfflineError();
-            } else {
-                error = new IOError('No connection found to cluster since the client is starting.');
-            }
-        } else if (this.reconnectMode === ReconnectMode.ASYNC) {
-            error = new ClientOfflineError();
-        } else {
-            error = new IOError('No connection found to cluster.');
-        }
-        return error;
-    }
-
-    deleteConnection(uuid: UUID): void {
-        this.activeConnections.delete(uuid.toString());
-    }
-
-    /**
-     * Adds or updates a client connection by uuid
-     * @param uuid UUID to identify the connection
-     * @param connection to set
-     */
-    setConnection(uuid: UUID, connection: Connection): void {
-        this.activeConnections.set(uuid.toString(), connection);
-    }
-
-    setConnectionState(connectionState: ConnectionState): void {
-        this.connectionState = connectionState;
-    }
-
-    activate(): void {
-        this.active = true;
-    }
-
-    deactivate(): void {
-        this.active = false;
-    }
 }
 
 interface ClientForConnectionManager {
@@ -335,6 +142,16 @@ export class ConnectionManager extends EventEmitter {
     private reconnectToMembersTask: Task;
     // contains member UUIDs (strings) for members with in-flight connection attempt
     private readonly connectingMembers = new Set<string>();
+    /**
+     * The number of bytes received over all connections (active and closed). Guaranteed to be monotonically increasing
+     * counter, but may not show the latest total.
+     */
+    private totalBytesRead : number;
+    /**
+     * The number of bytes sent over all connections (active and closed). Guaranteed to be monotonically increasing
+     * counter, but may not show the latest total.
+     */
+    private totalBytesWritten : number;
 
     constructor(
         private readonly client: ClientForConnectionManager,
@@ -481,7 +298,9 @@ export class ConnectionManager extends EventEmitter {
                     translatedAddress,
                     socket,
                     this.connectionIdCounter++,
-                    this.lifecycleService
+                    this.lifecycleService,
+                    numberOfBytes => {this.totalBytesRead += numberOfBytes},
+                    numberOfBytes => {this.totalBytesWritten += numberOfBytes}
                 );
                 // close the connection proactively on errors
                 socket.once('error', (err: NodeJS.ErrnoException) => {
@@ -521,7 +340,7 @@ export class ConnectionManager extends EventEmitter {
             this.logger.info('ConnectionManager', 'Removed connection to endpoint: '
                 + endpoint + ':' + memberUuid + ', connection: ' + connection);
             if (this.connectionRegistry.isEmpty()) {
-                if (this.connectionRegistry.getConnectionState() === ConnectionState.INITIALIZED_ON_CLUSTER) {
+                if (this.connectionRegistry.getClientState() === ClientState.INITIALIZED_ON_CLUSTER) {
                     this.emitLifecycleEvent(LifecycleState.DISCONNECTED);
                 }
                 this.triggerClusterReconnection();
@@ -997,10 +816,10 @@ export class ConnectionManager extends EventEmitter {
         if (connectionsEmpty) {
             this.clusterId = newClusterId;
             if (clusterIdChanged) {
-                this.connectionRegistry.setConnectionState(ConnectionState.CONNECTED_TO_CLUSTER);
+                this.connectionRegistry.setClientState(ClientState.CONNECTED_TO_CLUSTER);
                 this.initializeClientOnCluster(newClusterId);
             } else {
-                this.connectionRegistry.setConnectionState(ConnectionState.INITIALIZED_ON_CLUSTER);
+                this.connectionRegistry.setClientState(ClientState.INITIALIZED_ON_CLUSTER);
                 this.emitLifecycleEvent(LifecycleState.CONNECTED);
             }
         }
@@ -1080,10 +899,10 @@ export class ConnectionManager extends EventEmitter {
                     this.logger.trace('ConnectionManager', 'Client state is sent to cluster: '
                         + targetClusterId);
 
-                    this.connectionRegistry.setConnectionState(ConnectionState.INITIALIZED_ON_CLUSTER);
+                    this.connectionRegistry.setClientState(ClientState.INITIALIZED_ON_CLUSTER);
                     this.emitLifecycleEvent(LifecycleState.CONNECTED);
                 } else {
-                    this.logger.warn('ConnectionManager', 'Cannot set connection state to initialized on '
+                    this.logger.warn('ConnectionManager', 'Cannot set client state to initialized on '
                         + 'cluster because current cluster id: ' + this.clusterId
                         + ' is different than expected cluster id: ' + targetClusterId);
                 }
@@ -1110,5 +929,14 @@ export class ConnectionManager extends EventEmitter {
         }
         return Promise.all(promises)
             .then(() => undefined);
+    }
+
+    getTotalBytesWritten(): number {
+        return this.totalBytesWritten;
+    }
+
+
+    getTotalBytesRead(): number {
+        return this.totalBytesRead;
     }
 }
