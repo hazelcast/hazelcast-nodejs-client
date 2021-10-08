@@ -45,6 +45,7 @@
     "scripts": {
         "clean": "rimraf lib *.jar *.log *.xml coverage",
         "compile": "tsc",
+        "precompile": "rimraf lib",
         "test": "node scripts/test-runner.js all",
         "test:unit": "node scripts/test-runner.js unit",
         "test:integration": "node scripts/test-runner.js integration",

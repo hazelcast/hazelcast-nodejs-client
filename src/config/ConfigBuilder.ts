@@ -211,7 +211,8 @@ export class ConfigBuilder {
     }
 
     private handleSSLOptionsFactory(sslOptionsFactory: any) {
-        if (typeof sslOptionsFactory.init !== 'function' || typeof sslOptionsFactory.getSSLOptions !== 'function') {
+        if (!sslOptionsFactory
+            || typeof sslOptionsFactory.init !== 'function' || typeof sslOptionsFactory.getSSLOptions !== 'function') {
             throw new RangeError(
                 `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. Check out the API documentation for the expected object.`
             );
@@ -359,7 +360,7 @@ export class ConfigBuilder {
     }
 
     private handleGlobalSerializer(globalSerializer: any) {
-        if (typeof globalSerializer.id !== 'number'
+        if (!globalSerializer || typeof globalSerializer.id !== 'number'
             || typeof globalSerializer.read !== 'function' || typeof globalSerializer.write !== 'function') {
             throw new RangeError(
                 `Invalid global serializer given: ${globalSerializer}. Check out the API documentation for the expected object.`
@@ -515,7 +516,7 @@ export class ConfigBuilder {
     }
 
     private handleCustomLoadBalancer(customLB: any) {
-        if (typeof customLB.initLoadBalancer !== 'function' || typeof customLB.next !== 'function') {
+        if (!customLB || typeof customLB.initLoadBalancer !== 'function' || typeof customLB.next !== 'function') {
             throw new RangeError(
                 `Invalid LoadBalancer given: ${customLB}. Check out the API documentation for the expected object.`
             );
@@ -525,7 +526,7 @@ export class ConfigBuilder {
     }
 
     private handleLogger(customLogger: any): void {
-        if (typeof customLogger.log !== 'function' || typeof customLogger.error !== 'function' ||
+        if (!customLogger || typeof customLogger.log !== 'function' || typeof customLogger.error !== 'function' ||
             typeof customLogger.warn !== 'function' || typeof customLogger.info !== 'function' ||
             typeof customLogger.debug !== 'function' || typeof customLogger.trace !== 'function') {
             throw new RangeError(

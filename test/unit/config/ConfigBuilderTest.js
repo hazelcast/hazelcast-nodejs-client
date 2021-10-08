@@ -260,7 +260,7 @@ describe('ConfigBuilderValidationTest', function () {
                             initialBackoffMillis: invalidValue
                         }
                     }
-                }).build()).to.throw(InvalidConfigurationError);
+                }).build()).to.throw(InvalidConfigurationError, 'Initial backoff');
             }
             for (const validValue of validValues) {
                 expect(() => new ConfigBuilder({
@@ -283,7 +283,7 @@ describe('ConfigBuilderValidationTest', function () {
                             maxBackoffMillis: invalidValue
                         }
                     }
-                }).build()).to.throw(InvalidConfigurationError);
+                }).build()).to.throw(InvalidConfigurationError, 'Max backoff');
             }
             for (const validValue of validValues) {
                 expect(() => new ConfigBuilder({
@@ -306,7 +306,7 @@ describe('ConfigBuilderValidationTest', function () {
                             multiplier: invalidValue
                         }
                     }
-                }).build()).to.throw(InvalidConfigurationError);
+                }).build()).to.throw(InvalidConfigurationError, 'Multiplier');
             }
             for (const validValue of validValues) {
                 expect(() => new ConfigBuilder({
@@ -329,7 +329,7 @@ describe('ConfigBuilderValidationTest', function () {
                             clusterConnectTimeoutMillis: invalidValue
                         }
                     }
-                }).build()).to.throw(InvalidConfigurationError);
+                }).build()).to.throw(InvalidConfigurationError, 'ClusterConnectTimeoutMillis');
             }
             for (const validValue of validValues) {
                 expect(() => new ConfigBuilder({
@@ -352,7 +352,7 @@ describe('ConfigBuilderValidationTest', function () {
                             jitter: invalidValue
                         }
                     }
-                }).build()).to.throw(InvalidConfigurationError);
+                }).build()).to.throw(InvalidConfigurationError, 'Jitter');
             }
             for (const validValue of validValues) {
                 expect(() => new ConfigBuilder({
@@ -428,7 +428,7 @@ describe('ConfigBuilderValidationTest', function () {
                         properties: {
                             [param.property]: invalidValue
                         }
-                    }).build()).to.throw(InvalidConfigurationError);
+                    }).build()).to.throw(InvalidConfigurationError, 'Property validation error');
                 }
 
                 for (const validValue of param.validValues) {
@@ -451,11 +451,13 @@ describe('ConfigBuilderValidationTest', function () {
            for (const invalidSSLFactory of invalidSSLFactories) {
                expect(() => new ConfigBuilder({
                    network: {
-                       sslOptions: {
-                           sslOptionsFactory: invalidSSLFactory
+                       ssl: {
+                           enabled: true,
+                           sslOptionsFactory: invalidSSLFactory,
+                           sslOptionsFactoryProperties: {}
                        }
                    }
-               }).build()).to.throw(InvalidConfigurationError);
+               }).build()).to.throw(InvalidConfigurationError, 'Invalid SSLOptionsFactory given');
            }
 
            const validFactory = {
@@ -467,7 +469,8 @@ describe('ConfigBuilderValidationTest', function () {
                network: {
                    ssl: {
                        enabled: true,
-                       sslOptionsFactory: validFactory
+                       sslOptionsFactory: validFactory,
+                       sslOptionsFactoryProperties: {}
                    }
                }
            }).build()).not.to.throw();
@@ -485,7 +488,7 @@ describe('ConfigBuilderValidationTest', function () {
                     loadBalancer: {
                         customLoadBalancer: invalidCustomLoadBalancer
                     }
-                }).build()).to.throw(InvalidConfigurationError);
+                }).build()).to.throw(InvalidConfigurationError, 'Invalid LoadBalancer given');
             }
 
             const validCustomLoadBalancer = {
@@ -512,12 +515,13 @@ describe('ConfigBuilderValidationTest', function () {
                     serialization: {
                         portableFactories: invalidFactories
                     }
-                }).build()).to.throw(InvalidConfigurationError);
+                }).build()).to.throw(InvalidConfigurationError, 'portable');
+
                 expect(() => new ConfigBuilder({
                     serialization: {
                         dataSerializableFactories: invalidFactories
                     }
-                }).build()).to.throw(InvalidConfigurationError);
+                }).build()).to.throw(InvalidConfigurationError, 'dataSerializable');
             }
 
             const validFactories = {
@@ -555,7 +559,7 @@ describe('ConfigBuilderValidationTest', function () {
                     serialization: {
                         customSerializers: invalidCustomSerializers
                     }
-                }).build()).to.throw(InvalidConfigurationError);
+                }).build()).to.throw(InvalidConfigurationError, /(not an array|Invalid custom serializer)/);
             }
 
             const validCustomSerializers = [
@@ -589,7 +593,7 @@ describe('ConfigBuilderValidationTest', function () {
                     serialization: {
                         globalSerializer: invalidGlobalSerializer
                     }
-                }).build()).to.throw(InvalidConfigurationError);
+                }).build()).to.throw(InvalidConfigurationError, 'Invalid global serializer');
             }
 
             const validGlobalSerializer = {
@@ -612,7 +616,7 @@ describe('ConfigBuilderValidationTest', function () {
         for (const invalidLifecycleListeners of invalidLifecycleListenersArray) {
             expect(() => new ConfigBuilder({
                 lifecycleListeners: invalidLifecycleListeners
-            }).build()).to.throw(InvalidConfigurationError);
+            }).build()).to.throw(InvalidConfigurationError, /(Lifecycle listener|not an array)/);
         }
 
         const validLifecycleListeners = [() => {}, () => {}];
@@ -628,7 +632,7 @@ describe('ConfigBuilderValidationTest', function () {
         for (const invalidMembershipListeners of invalidMembershipListenersArray) {
             expect(() => new ConfigBuilder({
                 membershipListeners: invalidMembershipListeners
-            }).build()).to.throw(InvalidConfigurationError);
+            }).build()).to.throw(InvalidConfigurationError, /(membershipListener|not an array)/);
         }
 
         const validMembershipListeners = [{memberAdded: () => {}}, {memberAdded: () => {}, memberRemoved: () => {}}];
@@ -644,7 +648,7 @@ describe('ConfigBuilderValidationTest', function () {
         for (const invalidLogger of invalidCustomLoggers) {
             expect(() => new ConfigBuilder({
                 customLogger: invalidLogger
-            }).build()).to.throw(InvalidConfigurationError);
+            }).build()).to.throw(InvalidConfigurationError, 'custom logger');
         }
 
         const validCustomLogger = {
@@ -660,7 +664,7 @@ describe('ConfigBuilderValidationTest', function () {
     it('should throw InvalidConfigurationError when invalid top level config key is passed', function () {
         expect(() => new ConfigBuilder({
             a: 1
-        }).build()).to.throw(InvalidConfigurationError);
+        }).build()).to.throw(InvalidConfigurationError, 'Unexpected config key');
     });
 
     it('should throw InvalidConfigurationError when invalid network config key is passed', function () {
@@ -668,7 +672,7 @@ describe('ConfigBuilderValidationTest', function () {
             network: {
                 a: 1
             }
-        }).build()).to.throw(InvalidConfigurationError);
+        }).build()).to.throw(InvalidConfigurationError, 'Unexpected network option');
     });
 
     it('should throw InvalidConfigurationError when invalid connectionStrategy config key is passed', function () {
@@ -676,7 +680,7 @@ describe('ConfigBuilderValidationTest', function () {
             connectionStrategy: {
                 a: 1
             }
-        }).build()).to.throw(InvalidConfigurationError);
+        }).build()).to.throw(InvalidConfigurationError, 'Unexpected connection strategy config');
     });
 
     it('should throw InvalidConfigurationError when invalid loadBalancer config key is passed', function () {
@@ -684,7 +688,7 @@ describe('ConfigBuilderValidationTest', function () {
             loadBalancer: {
                 a: 1
             }
-        }).build()).to.throw(InvalidConfigurationError);
+        }).build()).to.throw(InvalidConfigurationError, 'Unexpected load balancer config');
     });
 
     it('should throw InvalidConfigurationError when invalid serialization config key is passed', function () {
@@ -692,7 +696,7 @@ describe('ConfigBuilderValidationTest', function () {
             serialization: {
                 a: 1
             }
-        }).build()).to.throw(InvalidConfigurationError);
+        }).build()).to.throw(InvalidConfigurationError, 'Unexpected serialization config');
     });
 
     it('should throw InvalidConfigurationError when invalid distributed objects config key is passed', function () {
@@ -704,7 +708,7 @@ describe('ConfigBuilderValidationTest', function () {
                     }
                 }
             ]
-        }).build()).to.throw(InvalidConfigurationError);
+        }).build()).to.throw(InvalidConfigurationError, 'Unexpected near cache config');
 
         expect(() => new ConfigBuilder({
             reliableTopics: [
@@ -714,7 +718,7 @@ describe('ConfigBuilderValidationTest', function () {
                     }
                 }
             ]
-        }).build()).to.throw(InvalidConfigurationError);
+        }).build()).to.throw(InvalidConfigurationError, 'Unexpected reliable topic config');
 
         expect(() => new ConfigBuilder({
             flakeIdGenerators: [
@@ -724,6 +728,6 @@ describe('ConfigBuilderValidationTest', function () {
                     }
                 }
             ]
-        }).build()).to.throw(InvalidConfigurationError);
+        }).build()).to.throw(InvalidConfigurationError, 'Unexpected flake id generator config');
     });
 });
