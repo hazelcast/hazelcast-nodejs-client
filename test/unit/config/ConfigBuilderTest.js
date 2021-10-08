@@ -444,7 +444,7 @@ describe('ConfigBuilderValidationTest', function () {
 
     describe('networkConfig', function () {
        it('should validate sslOptionsFactory', function () {
-           const invalidSSLFactories = [() => {}, 1, undefined, '1', {
+           const invalidSSLFactories = [() => {}, 1, '1', {
                init: () => {}
            }];
 

@@ -211,8 +211,8 @@ export class ConfigBuilder {
     }
 
     private handleSSLOptionsFactory(sslOptionsFactory: any) {
-        if (!sslOptionsFactory
-            || typeof sslOptionsFactory.init !== 'function' || typeof sslOptionsFactory.getSSLOptions !== 'function') {
+        if (sslOptionsFactory
+            && (typeof sslOptionsFactory.init !== 'function' || typeof sslOptionsFactory.getSSLOptions !== 'function')) {
             throw new RangeError(
                 `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. Check out the API documentation for the expected object.`
             );
