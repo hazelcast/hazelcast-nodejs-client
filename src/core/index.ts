@@ -20,6 +20,7 @@
  */
 
 export * from './Address';
+export * from './BigDecimal';
 export * from './ClientInfo';
 export * from './Cluster';
 export * from './Comparator';
@@ -40,4 +41,3 @@ export * from './ReadResultSet';
 export * from './RestValue';
 export * from './SimpleEntryView';
 export * from './UUID';
-export * from './BigDecimal';

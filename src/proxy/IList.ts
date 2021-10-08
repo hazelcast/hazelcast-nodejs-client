@@ -42,7 +42,7 @@ export interface IList<E> extends DistributedObject {
     addAt(index: number, element: E): Promise<void>;
 
     /**
-     * Appends all elements in the specified array to the end of this list,
+     * Appends all elements in the specified array to the end of this list, keeping the order of the array.
      * @param elements array to be appended
      * @return `true` if this list has changed as a result of this operation, `false` otherwise.
      */
@@ -67,35 +67,34 @@ export interface IList<E> extends DistributedObject {
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string>;
 
     /**
-     * Clears this list.
+     * Removes all of the elements from this list.
      */
     clear(): Promise<void>;
 
     /**
      * Checks if the list contains the given element.
      * @param element
-     * @return `true` if this list contains an element that is equal the to given element, `false` otherwise.
+     * @return `true` if this list contains the specified element, `false` otherwise.
      */
     contains(element: E): Promise<boolean>;
 
     /**
-     * Checks if the list contains all of the given elements.
+     * Checks if the list contains all of the elements of the specified array.
      * @param elements - elements to be checked for presence in this list.
-     * @return `true` if this list contains all of the given elements, `false` otherwise.
+     * @return `true` if this list contains all of the elements of the specified array, `false` otherwise.
      */
     containsAll(elements: E[]): Promise<boolean>;
 
     /**
-     * Retrieves the element at given location.
+     * Returns the element at the specified position in this list.
      * @param index index of the element to return.
-     * @return the element at that position.
      */
     get(index: number): Promise<E>;
 
     /**
-     * Returns the position of first occurrence of the given element in this list.
+     * Returns the index of the first occurrence of the specified element in this list, or `-1` if this list does not contain
+     * the element.
      * @param element element to search for
-     * @return the index of first occurrence of given element or `-1` if the list does not contain given element.
      */
     indexOf(element: E): Promise<number>;
 
@@ -106,27 +105,28 @@ export interface IList<E> extends DistributedObject {
     isEmpty(): Promise<boolean>;
 
     /**
-     * Returns position of the last occurrence of the given element in this list.
+     * Returns the index of the last occurrence of the specified element in this list,
+     * or -1 if this list does not contain the element.
      * @param element
      */
     lastIndexOf(element: E): Promise<number>;
 
     /**
-     * Removes the given element from this list.
+     * Removes the first occurrence of the specified element from this list, if it is present.
      * @param element element to be removed
      * @return `true` if this list has changed as a result of this operation, `false` otherwise.
      */
     remove(element: E): Promise<boolean>;
 
     /**
-     * Removes the element at the given index.
+     * Removes the element at the specified position in this list.
      * @param index index of the element to be removed.
      * @return the removed element.
      */
     removeAt(index: number): Promise<E>;
 
     /**
-     * Removes given elements from the list.
+     * Removes from this list all of its elements that are contained in the specified array.
      * @param elements elements to be removed
      * @return `true` if this list has changed as a result of this operation, `false` otherwise.
      */
@@ -140,7 +140,7 @@ export interface IList<E> extends DistributedObject {
     removeItemListener(listenerId: string): Promise<boolean>;
 
     /**
-     * Removes all elements from this list except the ones contained in the given array.
+     * Retains only the elements in this list that are contained in the specified array.
      * @param elements elements to retain
      * @return `true` if this list has changed as a result of this operation, `false` otherwise.
      */
@@ -170,7 +170,7 @@ export interface IList<E> extends DistributedObject {
     subList(start: number, end: number): Promise<ReadOnlyLazyList<E>>;
 
     /**
-     * Returns an array that contains all elements of this list in proper sequence.
+     * Returns an array that contains all elements of this list in proper sequence (from first to last element).
      */
     toArray(): Promise<E[]>;
 }

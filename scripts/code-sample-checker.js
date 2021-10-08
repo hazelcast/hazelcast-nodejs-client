@@ -9,7 +9,8 @@ const ignoredNames = [
     'paging_predicate.js', // needs identified factory registration
     'EntryProcessorSample.js', // needs identified factory registration
     'hazelcast_cloud_discovery.js', // needs a token
-    'jaas_sample' // this example is hard to run
+    'jaas_sample', // this example is hard to run
+    'paging_predicate_sample', // this example is hard to run
 ];
 
 // Recursively walks inside a directory, returning all the JavaScript files inside of it

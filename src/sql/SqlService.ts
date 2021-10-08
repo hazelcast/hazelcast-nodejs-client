@@ -36,88 +36,44 @@ import {
     tryGetString
 } from '../util/Util';
 import {SqlPage} from './SqlPage';
+import {Data} from '../serialization';
+import {SqlError} from './SqlError';
 
 /**
  * SQL Service of the client. You can use this service to execute SQL queries.
  *
- * The service is in beta state. Behavior and API might change in future releases.
+ * ## Enabling SQL Service
  *
- * ### Overview
- * Hazelcast is able to execute distributed SQL queries over the following entities:
- * * IMap
+ * To use this service, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the classpath
+ * of the members. If you are using the CLI, Docker image, or distributions to start Hazelcast members, then you don't need to
+ * do anything, as the above preconditions are already satisfied for such members.
  *
- * ##### Querying an IMap
+ * However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that
+ * `The Jet engine is disabled` or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while
+ * executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the
+ * `hazelcast-sql` module to your member's classpath.
  *
- * Every IMap instance is exposed as a table with the same name in the `partitioned` schema. The `partitioned`
- * schema is included into a default search path, therefore an IMap could be referenced in an SQL statement with or without the
- * schema name.
+ * ## Overview
  *
- * ###### Column Resolution
+ * Hazelcast is currently able to execute distributed SQL queries using the following connectors:
+ * * {@link IMap}
+ * * Kafka
+ * * Files
  *
- * Every table backed by an IMap has a set of columns that are resolved automatically. Column resolution uses IMap entries
- * located on the member that initiates the query. The engine extracts columns from a key and a value and then merges them
- * into a single column set. In case the key and the value have columns with the same name, the key takes precedence.
+ * SQL statements are not atomic. _INSERT_/_SINK_ can fail and commit part of the data.
  *
- * Columns are extracted from objects as follows(which happens on the server-side):
- * * For non-Portable objects, public getters and fields are used to populate the column list. For getters, the first
- *   letter is converted to lower case. A getter takes precedence over a field in case of naming conflict.
- * * For Portable objects, field names used in the {@link PortableWriter.writePortable} method are used to populate the column
- *   list
+ * ## Usage
  *
- * The whole key and value objects could be accessed through a special fields `__key` and `this`, respectively. If
- * key (value) object has fields, then the whole key (value) field is exposed as a normal field. Otherwise the field is hidden.
- * Hidden fields can be accessed directly, but are not returned by `SELECT * FROM ...` queries.
+ * Before you can access any object using SQL, a _mapping_ has to be created. See the documentation for the `CREATE MAPPING`
+ * command.
  *
- * If the member that initiates a query doesn't have local entries for the given IMap, the query fails.
- *
- * Consider the following key/value model using Portable classes:
- *
- * ```js
- * class PersonKey {
- *     constructor(personId, deptId) {
- *         this.personId = personId;
- *         this.deptId = deptId;
- *     }
- *
- *     writePortable(writer) {
- *         writer.writeLong('personId', this.personId);
- *         writer.writeLong('deptId', this.deptId);
- *     }
- * }
- *
- * class Person {
- *     constructor(name) {
- *         this.name = name;
- *     }
- *
- *     writePortable(writer) {
- *         writer.writeString('name', this.name);
- *     }
- * }
- * ```
- * This model will be resolved to the following table columns:
- * * personId BIGINT
- * * deptId BIGINT
- * * name VARCHAR
- * * __key OBJECT (hidden)
- * * this OBJECT (hidden)
- *
- * ##### Consistency
- *
- * Results returned from IMap query are weakly consistent:
- * * If an entry was not updated during iteration, it is guaranteed to be returned exactly once.
- * * If an entry was modified during iteration, it might be returned zero, one or several times.
- *
- * #### Usage
- *
- * When a query is executed, an {@link SqlResult} is returned. The returned result is an async iterable. It can also be
- * iterated using {@link SqlResult.next} method. The result should be closed at the end to release server resources.
- * Fetching the last page closes the result.
- * The code snippet below demonstrates a typical usage pattern:
+ * When a query is executed, an {@link SqlResult} is returned. The returned result is an async iterable of {@link SqlRowType}.
+ * It can also be iterated using {@link SqlResult.next} method. The result should be closed at the end to release server
+ * resources. Fetching the last page closes the result. The code snippet below demonstrates a typical usage pattern:
  *
  * ```
  * const client = await Client.newHazelcastClient();
- * let result = client.getSqlService().execute('SELECT * FROM person');
+ * const result = await client.getSql().execute('SELECT * FROM persons');
  * for await (const row of result) {
  *    console.log(row.personId);
  *    console.log(row.name);
@@ -128,7 +84,7 @@ import {SqlPage} from './SqlPage';
  */
 export interface SqlService {
     /**
-     * Executes SQL and returns an SqlResult.
+     * Executes SQL and returns an {@link SqlResult}.
      * Converts passed SQL string and parameter values into an {@link SqlStatement} object and invokes {@link executeStatement}.
      *
      * @param sql SQL string. SQL string placeholder character is question mark(`?`)
@@ -136,18 +92,16 @@ export interface SqlService {
      * @param options Options that are affecting how the query is executed
      * @throws {@link IllegalArgumentError} if arguments are not valid
      * @throws {@link HazelcastSqlException} in case of an execution error
-     * @returns {@link SqlResult}
      */
-    execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult;
+    execute(sql: string, params?: any[], options?: SqlStatementOptions): Promise<SqlResult>;
 
     /**
-     * Executes SQL and returns an SqlResult.
+     * Executes SQL and returns an {@link SqlResult}.
      * @param sql SQL statement object
      * @throws {@link IllegalArgumentError} if arguments are not valid
      * @throws {@link HazelcastSqlException} in case of an execution error
-     * @returns {@link SqlResult}
      */
-    executeStatement(sql: SqlStatement): SqlResult;
+    executeStatement(sql: SqlStatement): Promise<SqlResult>;
 }
 
 /** @internal */
@@ -180,12 +134,9 @@ export class SqlServiceImpl implements SqlService {
      */
     private static handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
         const response = SqlExecuteCodec.decodeResponse(clientMessage);
-        if (response.error !== null) {
-            res.onExecuteError(
-                new HazelcastSqlException(
-                    response.error.originatingMemberId, response.error.code, response.error.message
-                )
-            );
+        const sqlError = response.error;
+        if (sqlError !== null) {
+            throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code, sqlError.message, sqlError.suggestion);
         } else {
             res.onExecuteResponse(
                 response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
@@ -255,13 +206,18 @@ export class SqlServiceImpl implements SqlService {
      * @param connection
      * @returns {@link HazelcastSqlException}
      */
-    rethrow(err: any, connection: Connection): HazelcastSqlException {
+    rethrow(err: Error, connection: Connection): HazelcastSqlException {
+        if (err instanceof HazelcastSqlException) {
+            return err;
+        }
+
         if (!connection.isAlive()) {
             return new HazelcastSqlException(
                 this.connectionManager.getClientUuid(),
                 SqlErrorCode.CONNECTION_PROBLEM,
                 'Cluster topology changed while a query was executed:' +
                 `Member cannot be reached: ${connection.getRemoteAddress()}`,
+                undefined,
                 err
             )
         } else {
@@ -269,22 +225,19 @@ export class SqlServiceImpl implements SqlService {
         }
     }
 
-    toHazelcastSqlException(err: any): HazelcastSqlException {
-        if (err instanceof HazelcastSqlException) {
-            return err;
-        }
+    toHazelcastSqlException(err: Error, message: string = err.message): HazelcastSqlException {
         let originatingMemberId;
-        if (err.hasOwnProperty('originatingMemberId')) {
+        if (err instanceof SqlError) {
             originatingMemberId = err.originatingMemberId;
         } else {
             originatingMemberId = this.connectionManager.getClientUuid();
         }
         return new HazelcastSqlException(
-            originatingMemberId, SqlErrorCode.GENERIC, err.message, err
+            originatingMemberId, SqlErrorCode.GENERIC, message, undefined, err
         );
     }
 
-    executeStatement(sqlStatement: SqlStatement): SqlResult {
+    executeStatement(sqlStatement: SqlStatement): Promise<SqlResult> {
         try {
             SqlServiceImpl.validateSqlStatement(sqlStatement);
         } catch (error) {
@@ -311,7 +264,7 @@ export class SqlServiceImpl implements SqlService {
         const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
 
         const expectedResultType: SqlExpectedResultType = sqlStatement.options?.hasOwnProperty('expectedResultType') ?
-                SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
+            SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
         let timeoutMillis: Long;
         if (sqlStatement.options?.hasOwnProperty('timeoutMillis')) {
@@ -346,12 +299,13 @@ export class SqlServiceImpl implements SqlService {
                 cursorBufferSize,
                 schema,
                 expectedResultType,
-                queryId
+                queryId,
+                false // Used to skip updating statistics from MC client, should be false in other clients
             );
 
             const res = SqlResultImpl.newResult(
                 this,
-                this.serializationService,
+                this.deserializeRowValue.bind(this),
                 connection,
                 queryId,
                 cursorBufferSize,
@@ -359,21 +313,20 @@ export class SqlServiceImpl implements SqlService {
                 this.connectionManager.getClientUuid()
             );
 
-            this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
+            return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
                 SqlServiceImpl.handleExecuteResponse(clientMessage, res);
+                return res;
             }).catch(err => {
-                res.onExecuteError(
-                    this.rethrow(err, connection)
-                );
+                const error = this.rethrow(err, connection);
+                res.onExecuteError(error);
+                throw error;
             });
-
-            return res;
         } catch (error) {
             throw this.rethrow(error, connection);
         }
     }
 
-    execute(sql: string, params?: any[], options?: SqlStatementOptions): SqlResult {
+    execute(sql: string, params?: any[], options?: SqlStatementOptions): Promise<SqlResult> {
         const sqlStatement: SqlStatement = {
             sql: sql
         };
@@ -417,5 +370,25 @@ export class SqlServiceImpl implements SqlService {
             }
             return response.rowPage;
         });
+    }
+
+    /**
+     * Used for lazy deserialization of row values.
+     * @param data The data to be deserialized.
+     * @param isRaw `true` if the row is raw, i.e an {@link SqlRowImpl}; `false` otherwise, i.e a regular JSON object. Used to log
+     * more information about lazy deserialization if row is a regular JSON object.
+     */
+    private deserializeRowValue(data: Data, isRaw: boolean) : any {
+        try {
+            return this.serializationService.toObject(data);
+        } catch (e) {
+            let message = 'Failed to deserialize query result value.';
+            if (!isRaw) {
+                message += ' In order to partially deserialize SQL rows you can set `returnRawResult` option to `true`. Check '
+                        + 'out the "Lazy SQL Row Deserialization" section in the client\'s reference manual.';
+            }
+            message += ` Error: ${e.message}`;
+            throw this.toHazelcastSqlException(e, message);
+        }
     }
 }

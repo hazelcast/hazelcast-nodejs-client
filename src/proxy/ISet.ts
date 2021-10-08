@@ -64,7 +64,7 @@ export interface ISet<E> extends DistributedObject {
      * Checks whether this set contains all elements of given array.
      * @param items
      * @throws {Error} if collection or one of its elements is null or undefined.
-     * @return `tru`e if this set contains all elments of given collection, `false` otherwise.
+     * @return `tru`e if this set contains all elements of given collection, `false` otherwise.
      */
     containsAll(items: E[]): Promise<boolean>;
 

@@ -1,5 +1,5 @@
 {
-    "timeout": 120000,
+    "timeout": 600000,
     "exit": true,
     "exclude": [
         "test/soak_test/**",

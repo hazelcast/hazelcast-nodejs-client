@@ -23,6 +23,8 @@ const { SqlColumnType } = require('../../../lib/sql/SqlColumnMetadata');
 const { IllegalArgumentError } = require('../../../lib/core/HazelcastError');
 
 describe('SqlRowTest', function () {
+    const fakeDeserializeFn = v => v;
+
     const instance = new SqlRowImpl([
         1, null
     ], new SqlRowMetadataImpl([{
@@ -33,7 +35,7 @@ describe('SqlRowTest', function () {
         name: 'bar',
         type: SqlColumnType.VARCHAR,
         nullable: true
-    }]));
+    }]), fakeDeserializeFn);
     describe('getObject', function () {
         it('should give correct values', function () {
             instance.getObject('foo').should.be.eq(1);

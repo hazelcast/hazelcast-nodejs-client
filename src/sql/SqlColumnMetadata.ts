@@ -36,7 +36,7 @@ export enum SqlColumnType {
     /** BIGINT type, represented by [long](https://www.npmjs.com/package/long). */
     BIGINT,
 
-    /** DECIMAL type, represented by `string`. */
+    /** DECIMAL type, represented by {@link BigDecimal}. */
     DECIMAL,
 
     /** REAL type, represented by `number`. */
@@ -45,16 +45,16 @@ export enum SqlColumnType {
     /** DOUBLE type, represented by `number`. */
     DOUBLE,
 
-    /** DATE type, represented by `string`. */
+    /** DATE type, represented by {@link LocalDate}. */
     DATE,
 
-    /** TIME type, represented by `string`. */
+    /** TIME type, represented by {@link LocalTime}. */
     TIME,
 
-    /** TIMESTAMP type, represented by `string`. */
+    /** TIMESTAMP type, represented by {@link LocalDateTime}. */
     TIMESTAMP,
 
-    /** TIMESTAMP_WITH_TIME_ZONE type, represented by `string`. */
+    /** TIMESTAMP_WITH_TIME_ZONE type, represented by {@link OffsetDateTime}. */
     TIMESTAMP_WITH_TIME_ZONE,
 
     /** OBJECT type, could be represented by any class. */
