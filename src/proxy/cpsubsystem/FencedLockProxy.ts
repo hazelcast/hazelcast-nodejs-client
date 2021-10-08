@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as assert from 'assert';
-import { assertNonNegativeNumber } from '../../util/Util';
 import * as Long from 'long';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {FencedLock} from '../FencedLock';
@@ -30,6 +29,7 @@ import {
     FencedLockGetLockOwnershipCodec,
     FencedLockGetLockOwnershipResponseParams
 } from '../../codec/FencedLockGetLockOwnershipCodec';
+import {assertNonNegativeNumber} from '../../util/Util';
 import {UuidUtil} from '../../util/UuidUtil';
 import {
     IllegalMonitorStateError,

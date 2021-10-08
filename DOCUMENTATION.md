@@ -648,8 +648,9 @@ The following is the list of all client properties in alphabetical order.
 
 # 3.2 Enabling Assertions
 
-There are some assertions in the Hazelcast Node.js Client's codebase, by default disabled to avoid performance penalty. By setting `HZ_NODEJS_ENV` environment
-variable to `development`, you can enable assertions. This can be useful to debug your code.
+There are some assertions in the Hazelcast Node.js Client's codebase, by default disabled to avoid performance penalty.
+By setting `HZ_NODEJS_ENV` environment variable to `development`, you can enable assertions.
+This can be useful to debug your code.
 
 # 4. Serialization
 

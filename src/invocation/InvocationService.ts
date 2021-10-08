@@ -38,7 +38,7 @@ import {
     cancelRepetitionTask,
     Task,
     deferredPromise,
-    DeferredPromise,
+    DeferredPromise
 } from '../util/Util';
 import {ClientConfig} from '../config';
 import {ListenerService} from '../listener/ListenerService';

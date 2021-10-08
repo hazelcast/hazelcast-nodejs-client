@@ -15,9 +15,9 @@
  */
 /** @ignore *//** */
 
+import * as assert from 'assert';
 import * as util from 'util';
 import {InvalidConfigurationError} from '../core';
-import * as assert from 'assert';
 import {
     assertPositiveNumber,
     assertNonNegativeNumber,
