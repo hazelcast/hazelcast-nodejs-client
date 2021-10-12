@@ -182,6 +182,8 @@ export class ConnectionManager extends EventEmitter {
         const connectionStrategyConfig = this.clientConfig.connectionStrategy;
         this.asyncStart = connectionStrategyConfig.asyncStart;
         this.reconnectMode = connectionStrategyConfig.reconnectMode;
+        this.totalBytesWritten = 0;
+        this.totalBytesRead = 0;
     }
 
     start(): Promise<void> {
