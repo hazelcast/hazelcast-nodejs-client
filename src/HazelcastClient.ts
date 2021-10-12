@@ -166,7 +166,6 @@ export class HazelcastClient {
             this.config.connectionStrategy.asyncStart,
             this.config.connectionStrategy.reconnectMode,
             this.config.network.smartRouting,
-            this.config.properties,
             this.loadBalancer,
             this.clusterService
         );

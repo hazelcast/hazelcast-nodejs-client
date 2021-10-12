@@ -17,7 +17,7 @@
 
 import {ClientOfflineError, IOError, LoadBalancer, UUID} from '../core';
 import {Connection} from './Connection';
-import {Properties, ReconnectMode} from '../config';
+import {ReconnectMode} from '../config';
 import {ClusterService} from '../invocation/ClusterService';
 import {memberOfLargerSameVersionGroup} from '../util/Util';
 import {ClientState} from './ConnectionManager';
@@ -87,7 +87,6 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         private readonly asyncStart: boolean,
         private readonly reconnectMode: ReconnectMode,
         private readonly smartRoutingEnabled: boolean,
-        private readonly properties: Properties,
         private readonly loadBalancer: LoadBalancer,
         private readonly clusterService: ClusterService
     ) {
