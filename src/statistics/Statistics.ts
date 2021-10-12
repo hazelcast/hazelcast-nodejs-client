@@ -20,17 +20,8 @@ import {CLIENT_TYPE, ConnectionManager} from '../network/ConnectionManager';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
-import {
-    MetricsCompressor,
-    MetricDescriptor,
-    ProbeUnit,
-    ValueType
-} from './MetricsCompressor';
-import {
-    scheduleWithRepetition,
-    cancelRepetitionTask,
-    Task
-} from '../util/Util';
+import {MetricDescriptor, MetricsCompressor, ProbeUnit, ValueType} from './MetricsCompressor';
+import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging/ILogger';
@@ -41,6 +32,7 @@ import {NearCacheManager} from '../nearcache/NearCacheManager';
 type GaugeDescription = {
     gaugeFn: () => number;
     type: ValueType;
+    unit?: ProbeUnit;
 }
 
 /**
@@ -163,21 +155,24 @@ export class Statistics {
         this.registerGauge('runtime.totalMemory', () => process.memoryUsage().heapTotal);
         this.registerGauge('runtime.uptime', () => process.uptime() * 1000);
         this.registerGauge('runtime.usedMemory', () => process.memoryUsage().heapUsed);
-        this.registerGauge('tcp.bytesReceived', () => this.connectionManager.getTotalBytesRead());
-        this.registerGauge('tcp.bytesSend', () => this.connectionManager.getTotalBytesWritten());
+        this.registerGauge('tcp.bytesReceived', () => this.connectionManager.getTotalBytesRead(), undefined, ProbeUnit.BYTES);
+        this.registerGauge('tcp.bytesSend', () => this.connectionManager.getTotalBytesWritten(), undefined, ProbeUnit.BYTES);
     }
 
-    private registerGauge(gaugeName: string,
-                          gaugeFn: () => number,
-                          type: ValueType = ValueType.LONG): void {
+    private registerGauge(
+        gaugeName: string,
+        gaugeFn: () => number,
+        type: ValueType = ValueType.LONG,
+        unit?: ProbeUnit
+    ): void {
         try {
             // try a gauge function read, we will register it if it succeeds.
             gaugeFn();
-            this.allGauges[gaugeName] = { gaugeFn, type };
+            this.allGauges[gaugeName] = { gaugeFn, type, unit };
         } catch (err) {
             this.logger.warn('Statistics', 'Could not collect data for gauge '
                 + gaugeName + ', it will not be registered', err);
-            this.allGauges[gaugeName] = { gaugeFn: () => null, type };
+            this.allGauges[gaugeName] = { gaugeFn: () => null, type, unit };
         }
     }
 
@@ -261,7 +256,7 @@ export class Statistics {
             const gauge = this.allGauges[gaugeName];
             try {
                 const value = gauge.gaugeFn();
-                this.addSimpleMetric(compressor, gaugeName, value, gauge.type);
+                this.addSimpleMetric(compressor, gaugeName, value, gauge.type, gauge.unit);
                 // necessary for compatibility with Management Center 4.0
                 this.addAttribute(stats, gaugeName, value);
             } catch (err) {
