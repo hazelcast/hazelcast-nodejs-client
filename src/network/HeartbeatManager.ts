@@ -18,7 +18,7 @@
 import {ClientPingCodec} from '../codec/ClientPingCodec';
 import {Connection} from './Connection';
 import {ILogger} from '../logging/ILogger';
-import {ConnectionRegistry} from './ConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import {TargetDisconnectedError} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
