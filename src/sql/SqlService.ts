@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 import {SqlResult, SqlResultImpl} from './SqlResult';
-import {ConnectionManager, ConnectionRegistry} from '../network/ConnectionManager';
+import {ConnectionManager} from '../network/ConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {SqlExpectedResultType, SqlStatement, SqlStatementOptions} from './SqlStatement';
 import {HazelcastSqlException, IllegalArgumentError} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';

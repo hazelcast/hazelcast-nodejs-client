@@ -24,7 +24,7 @@ const expect = chai.expect;
 const should = chai.should();
 chai.use(sinonChai);
 
-const { ConnectionRegistryImpl } = require('../../../lib/network/ConnectionManager');
+const { ConnectionRegistryImpl } = require('../../../lib/network/ConnectionRegistry');
 const { ReconnectMode } = require('../../../lib/config/ConnectionStrategyConfig');
 const { RoundRobinLB } = require('../../../lib/util/RoundRobinLB');
 const { UuidUtil } = require('../../../lib/util/UuidUtil');
@@ -145,7 +145,7 @@ describe('ConnectionRegistryTest', function () {
                     {}
                 );
 
-                connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
+                connectionRegistry.setClientState(connectionState.INITIALIZED_ON_CLUSTER);
                 connectionRegistry.setConnection(UuidUtil.generate(), {});
 
                 expect(connectionRegistry.checkIfInvocationAllowed()).to.be.equal(null);
@@ -161,7 +161,7 @@ describe('ConnectionRegistryTest', function () {
                 {}
             );
 
-            connectionRegistry.setConnectionState(connectionState.INITIAL);
+            connectionRegistry.setClientState(connectionState.INITIAL);
 
             expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
         });
@@ -175,7 +175,7 @@ describe('ConnectionRegistryTest', function () {
                 {}
             );
 
-            connectionRegistry.setConnectionState(connectionState.INITIAL);
+            connectionRegistry.setClientState(connectionState.INITIAL);
 
             expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(IOError);
         });
@@ -190,7 +190,7 @@ describe('ConnectionRegistryTest', function () {
                     {}
                 );
 
-                connectionRegistry.setConnectionState(connectionState.INITIALIZED_ON_CLUSTER);
+                connectionRegistry.setClientState(connectionState.INITIALIZED_ON_CLUSTER);
 
                 expect(connectionRegistry.checkIfInvocationAllowed()).to.be.instanceof(ClientOfflineError);
             });
