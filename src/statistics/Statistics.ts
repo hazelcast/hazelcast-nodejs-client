@@ -16,7 +16,8 @@
 /** @ignore *//** */
 
 import {Connection} from '../network/Connection';
-import {CLIENT_TYPE, ConnectionRegistry} from '../network/ConnectionManager';
+import {CLIENT_TYPE, ConnectionManager} from '../network/ConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import {
@@ -70,7 +71,8 @@ export class Statistics {
         private readonly clientName: string,
         private readonly invocationService: InvocationService,
         private readonly nearCacheManager: NearCacheManager,
-        private readonly connectionRegistry: ConnectionRegistry
+        private readonly connectionRegistry: ConnectionRegistry,
+        private readonly connectionManager: ConnectionManager
     ) {
         this.properties = properties;
         this.enabled = this.properties[Statistics.ENABLED] as boolean;
@@ -161,6 +163,8 @@ export class Statistics {
         this.registerGauge('runtime.totalMemory', () => process.memoryUsage().heapTotal);
         this.registerGauge('runtime.uptime', () => process.uptime() * 1000);
         this.registerGauge('runtime.usedMemory', () => process.memoryUsage().heapUsed);
+        this.registerGauge('tcp.bytesReceived', () => this.connectionManager.getTotalBytesRead());
+        this.registerGauge('tcp.bytesSend', () => this.connectionManager.getTotalBytesWritten());
     }
 
     private registerGauge(gaugeName: string,

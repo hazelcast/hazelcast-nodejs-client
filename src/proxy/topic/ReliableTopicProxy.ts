@@ -37,7 +37,7 @@ import {ILogger} from '../../logging';
 import {ProxyManager} from '../ProxyManager';
 import {PartitionService} from '../../PartitionService';
 import {InvocationService} from '../../invocation/InvocationService';
-import {ConnectionRegistry} from '../../network/ConnectionManager';
+import {ConnectionRegistry} from '../../network/ConnectionRegistry';
 import {ListenerService} from '../../listener/ListenerService';
 import {Connection} from '../../network/Connection';
 
