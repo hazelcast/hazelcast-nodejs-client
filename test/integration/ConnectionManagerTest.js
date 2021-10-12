@@ -204,7 +204,7 @@ describe('ConnectionManagerTest', function () {
     });
 
     it('should increment read bytes on client message received', async function () {
-        client = await testFactory.newHazelcastClientForSerialTests({ clusterName: cluster.id });
+        client = await Client.newHazelcastClient({ clusterName: cluster.id });
 
         let bytesRead = client.getConnectionManager().getTotalBytesRead();
         // authentication message etc.
