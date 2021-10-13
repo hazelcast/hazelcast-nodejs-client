@@ -8,7 +8,7 @@ jobs:
         name: Pack a release candidate archive from the tag ${{ github.event.tag_name }}
         runs-on: 'ubuntu-latest'
 
-        if: ${{ github.event.tag_name != '' && github.event.draft }}
+        if: ${{ github.event.tag_name != '' && github.event.prerelease }}
 
         steps:
             - name: Checkout to tag ${{ github.event.tag_name }}
