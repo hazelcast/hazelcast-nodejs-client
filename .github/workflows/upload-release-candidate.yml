@@ -1,8 +1,7 @@
 name: Upload Release Candidate to S3 and verify it
 on:
     release:
-        types:
-            - published
+        types: [published]
 jobs:
     pack-from-tag:
         name: Pack a release candidate archive from tag ${{ github.event.payload.release.tag_name }}
