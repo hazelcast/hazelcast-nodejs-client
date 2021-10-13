@@ -52,7 +52,7 @@ jobs:
             - uses: actions/download-artifact@v2
               with:
                   name: release-pack.tgz
-                  path: release-pack.tgz
+                  path: .
             - uses: actions/download-artifact@v2
               with:
                   name: release-pack.sha256
