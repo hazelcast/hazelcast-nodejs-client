@@ -79,4 +79,3 @@ jobs:
                   HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
               run: |
                   npm run coverage
-
