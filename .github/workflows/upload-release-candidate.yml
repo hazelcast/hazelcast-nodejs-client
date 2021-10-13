@@ -7,6 +7,8 @@ jobs:
         name: Pack a release candidate archive from tag
         runs-on: ubuntu-latest
 
+        if: ${{ github.event.payload.release.tag_name != '' && github.event.payload.release.prereleased }}
+
         steps:
             - name: Checkout to tag ${{ github.event.payload.release.tag_name }}
               uses: actions/checkout@v2
