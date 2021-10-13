@@ -1,0 +1,70 @@
+on:
+    release:
+        types:
+            - created
+jobs:
+    pack-from-tag:
+        name: Pack a release candidate archive from the tag ${{ github.event.tag_name }}
+        runs-on: 'ubuntu-latest'
+
+        if: ${{ github.event.tag_name != '' && github.event.draft }}
+
+        steps:
+            - name: Checkout to tag ${{ github.event.tag_name }}
+              uses: actions/checkout@v2
+              with:
+                  ref: ${{ github.event.tag_name }}
+            - name: Setup Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 12
+            - name: Install dependencies
+              run: npm install
+            - name: Compile Typescript to JavaScript
+              run: npm run compile
+            - name: Pack an archive
+              run: npm pack
+
+    upload-to-s3:
+        name: Upload the pack to S3
+        runs-on: ubuntu-latest
+
+        needs: pack-from-tag
+
+        steps:
+            - name: Upload the pack to S3
+              run: aws s3 mv ./hazelcast-client-*.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.tag_name }}.tgz
+            - name: Make uploaded object publicly available
+              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.tag_name }}.tgz --acl public-read
+
+    verify-uploaded-pack:
+        name: Verify the uploaded pack
+        runs-on: ubuntu-latest
+
+        needs: upload-to-s3
+
+        steps:
+            - name: Download the pack
+              run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.tag_name }}.tgz
+            - name: Unarchive the pack
+              run: tar xvzf ${{ github.event.tag_name }}.tgz
+            - name: Setup Java
+              uses: actions/setup-java@v1
+              with:
+                  java-version: 8
+            - name: Replace lib folder
+              run: |
+                  rm -rf lib
+                  mv package/lib .
+            - name: Lint
+              run: |
+                  npm run lint
+            - name: Validate User Code
+              run: |
+                  npm run validate-user-code
+            - name: Run Enterprise tests
+              env:
+                  HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+              run: |
+                  npm run coverage
+
