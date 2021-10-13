@@ -34,9 +34,14 @@ jobs:
         steps:
             - name: Upload the pack to S3
               run: aws s3 mv ./hazelcast-client-*.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.tag_name }}.tgz
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             - name: Make uploaded object publicly available
               run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.tag_name }}.tgz --acl public-read
-
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     verify-uploaded-pack:
         name: Verify the uploaded pack
         runs-on: ubuntu-latest
@@ -62,7 +67,7 @@ jobs:
             - name: Validate User Code
               run: |
                   npm run validate-user-code
-            - name: Run Enterprise tests
+            - name: Run all tests
               env:
                   HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
               run: |
