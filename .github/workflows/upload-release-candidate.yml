@@ -52,9 +52,11 @@ jobs:
             - uses: actions/download-artifact@v2
               with:
                   name: release-pack.tgz
+                  path: release-pack.tgz
             - uses: actions/download-artifact@v2
               with:
                   name: release-pack.sha256
+                  path: release-pack.sha256
             - name: Upload the pack to S3
               run: aws s3 mv release-pack.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.release.tag_name }}.tgz
             - name: Make uploaded object publicly available
