@@ -5,7 +5,7 @@ on:
 jobs:
     pack-from-tag:
         name: Pack a release candidate archive from tag ${{ github.event.payload.release.tag_name }}
-        runs-on: 'ubuntu-latest'
+        runs-on: ubuntu-latest
 
         steps:
             - name: Checkout to tag ${{ github.event.payload.release.tag_name }}
