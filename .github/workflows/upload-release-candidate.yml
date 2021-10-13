@@ -7,14 +7,14 @@ jobs:
         name: Pack a release candidate archive from tag
         runs-on: ubuntu-latest
 
-        if: ${{ github.event.payload.release.prerelease }}
+        if: ${{ github.event.release.prerelease }}
 
         steps:
             - uses: hmarr/debug-action@v2
-            - name: Checkout to tag ${{ github.event.payload.release.tag_name }}
+            - name: Checkout to tag ${{ github.event.release.tag_name }}
               uses: actions/checkout@v2
               with:
-                  ref: ${{ github.event.payload.release.tag_name }}
+                  ref: ${{ github.event.release.tag_name }}
             - name: Setup Node.js
               uses: actions/setup-node@v2
               with:
@@ -53,13 +53,13 @@ jobs:
               with:
                   name: release-pack.sha256
             - name: Upload the pack to S3
-              run: aws s3 mv release-pack.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.payload.release.tag_name }}.tgz
+              run: aws s3 mv release-pack.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.release.tag_name }}.tgz
             - name: Make uploaded object publicly available
-              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.payload.release.tag_name }}.tgz --acl public-read
+              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.release.tag_name }}.tgz --acl public-read
             - name: Upload the sha256sum to S3
-              run: aws s3 mv release-pack.sha256 s3://nodejs-client-release-candidate-packs/${{ github.event.payload.release.tag_name }}.sha256
+              run: aws s3 mv release-pack.sha256 s3://nodejs-client-release-candidate-packs/${{ github.event.release.tag_name }}.sha256
             - name: Make uploaded object publicly available
-              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.payload.release.tag_name }}.sha256 --acl public-read
+              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.release.tag_name }}.sha256 --acl public-read
 
     verify-uploaded-pack:
         name: Verify the uploaded pack
@@ -69,13 +69,13 @@ jobs:
 
         steps:
             - name: Download the pack
-              run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.payload.release.tag_name }}.tgz
+              run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.release.tag_name }}.tgz
             - name: Download the sha256sum
-              run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.payload.release.tag_name }}.sha256sum
+              run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.release.tag_name }}.sha256sum
             - name: Check integrity of the pack
-              run: sha256sum --check ${{ github.event.payload.release.tag_name }}.sha256sum
+              run: sha256sum --check ${{ github.event.release.tag_name }}.sha256sum
             - name: Unarchive the pack
-              run: tar xvzf ${{ github.event.payload.release.tag_name }}.tgz
+              run: tar xvzf ${{ github.event.release.tag_name }}.tgz
             - name: Setup Java
               uses: actions/setup-java@v1
               with:
