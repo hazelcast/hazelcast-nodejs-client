@@ -1,3 +1,4 @@
+name: Upload Release Candidate to S3 and verify it
 on:
     release:
         types:
