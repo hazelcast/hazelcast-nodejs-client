@@ -52,17 +52,17 @@ jobs:
             - uses: actions/download-artifact@v2
               with:
                   name: release-pack.tgz
-                  path: .
+                  path: release-pack-verification
             - uses: actions/download-artifact@v2
               with:
                   name: release-pack.sha256
-                  path: release-pack.sha256
+                  path: release-pack-verification
             - name: Upload the pack to S3
-              run: aws s3 mv release-pack.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.release.tag_name }}.tgz
+              run: aws s3 mv release-pack-verification/*.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.release.tag_name }}.tgz
             - name: Make uploaded object publicly available
               run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.release.tag_name }}.tgz --acl public-read
             - name: Upload the sha256sum to S3
-              run: aws s3 mv release-pack.sha256 s3://nodejs-client-release-candidate-packs/${{ github.event.release.tag_name }}.sha256
+              run: aws s3 mv release-pack-verification/*.sha256 s3://nodejs-client-release-candidate-packs/${{ github.event.release.tag_name }}.sha256
             - name: Make uploaded object publicly available
               run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.release.tag_name }}.sha256 --acl public-read
 
