@@ -7,7 +7,7 @@ jobs:
         name: Pack a release candidate archive from tag
         runs-on: ubuntu-latest
 
-        # if: ${{ github.event.payload.release.tag_name != '' && github.event.payload.release.prerelease }}
+        if: ${{ github.event.payload.release.tag_name != '' && github.event.payload.release.prerelease == true }}
 
         steps:
             - uses: hmarr/debug-action@v2
