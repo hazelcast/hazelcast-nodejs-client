@@ -2,7 +2,7 @@ name: Upload Release Candidate to S3 and verify it
 on:
     release:
         types:
-            - created
+            - published
 jobs:
     pack-from-tag:
         name: Pack a release candidate archive from the tag ${{ github.event.tag_name }}
