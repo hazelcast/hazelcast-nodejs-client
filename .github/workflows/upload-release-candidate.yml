@@ -36,19 +36,19 @@ jobs:
         needs: pack-from-tag
 
         steps:
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: us-east-1
             - uses: actions/download-artifact@v2
               with:
                   name: release-pack.tgz
             - name: Upload the pack to S3
               run: aws s3 mv release-pack.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.payload.release.tag_name }}.tgz
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             - name: Make uploaded object publicly available
               run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.payload.release.tag_name }}.tgz --acl public-read
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     verify-uploaded-pack:
         name: Verify the uploaded pack
         runs-on: ubuntu-latest
