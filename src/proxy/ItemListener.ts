@@ -34,7 +34,7 @@ export interface ItemListener<E> {
 }
 
 /**
- * Item event hander function.
+ * Item event handler function.
  */
 export type ItemEventListener<E> = (itemEvent: ItemEvent<E>) => void;
 
