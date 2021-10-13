@@ -7,7 +7,7 @@ jobs:
         name: Pack a release candidate archive from tag
         runs-on: ubuntu-latest
 
-        if: ${{ github.event.payload.release.tag_name != '' && github.event.payload.release.prereleased }}
+        if: ${{ github.event.payload.release.tag_name != '' && github.event.payload.release.prerelease }}
 
         steps:
             - name: Checkout to tag ${{ github.event.payload.release.tag_name }}
@@ -24,10 +24,16 @@ jobs:
               run: npm run compile
             - name: Pack an archive
               run: npm pack
+            - name: Calculate sha256sum
+              run: sha256sum hazelcast-client-*.tgz > release-pack.sha256
             - uses: actions/upload-artifact@v2
               with:
                   name: release-pack.tgz
                   path: hazelcast-client-*.tgz
+            - uses: actions/upload-artifact@v2
+              with:
+                  name: release-pack.sha256
+                  path: release-pack.sha256
 
     upload-to-s3:
         name: Upload the pack to S3
@@ -45,10 +51,18 @@ jobs:
             - uses: actions/download-artifact@v2
               with:
                   name: release-pack.tgz
+            - uses: actions/download-artifact@v2
+              with:
+                  name: release-pack.sha256
             - name: Upload the pack to S3
               run: aws s3 mv release-pack.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.payload.release.tag_name }}.tgz
             - name: Make uploaded object publicly available
               run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.payload.release.tag_name }}.tgz --acl public-read
+            - name: Upload the sha256sum to S3
+              run: aws s3 mv release-pack.sha256 s3://nodejs-client-release-candidate-packs/${{ github.event.payload.release.tag_name }}.sha256
+            - name: Make uploaded object publicly available
+              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.payload.release.tag_name }}.sha256 --acl public-read
+
     verify-uploaded-pack:
         name: Verify the uploaded pack
         runs-on: ubuntu-latest
@@ -58,6 +72,10 @@ jobs:
         steps:
             - name: Download the pack
               run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.payload.release.tag_name }}.tgz
+            - name: Download the sha256sum
+              run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.payload.release.tag_name }}.sha256sum
+            - name: Check integrity of the pack
+              run: sha256sum --check ${{ github.event.payload.release.tag_name }}.sha256sum
             - name: Unarchive the pack
               run: tar xvzf ${{ github.event.payload.release.tag_name }}.tgz
             - name: Setup Java
