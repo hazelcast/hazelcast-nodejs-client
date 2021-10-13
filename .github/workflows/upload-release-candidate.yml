@@ -5,16 +5,16 @@ on:
             - published
 jobs:
     pack-from-tag:
-        name: Pack a release candidate archive from the tag ${{ github.event.tag_name }}
+        name: Pack a release candidate archive from the tag ${{ github.event.release.tag_name }}
         runs-on: 'ubuntu-latest'
 
-        if: ${{ github.event.tag_name != '' && github.event.prerelease }}
+        if: ${{ github.event.release.tag_name != '' && github.event.release.prerelease }}
 
         steps:
-            - name: Checkout to tag ${{ github.event.tag_name }}
+            - name: Checkout to tag ${{ github.event.release.tag_name }}
               uses: actions/checkout@v2
               with:
-                  ref: ${{ github.event.tag_name }}
+                  ref: ${{ github.event.release.tag_name }}
             - name: Setup Node.js
               uses: actions/setup-node@v2
               with:
@@ -34,12 +34,12 @@ jobs:
 
         steps:
             - name: Upload the pack to S3
-              run: aws s3 mv ./hazelcast-client-*.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.tag_name }}.tgz
+              run: aws s3 mv ./hazelcast-client-*.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.release.tag_name }}.tgz
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             - name: Make uploaded object publicly available
-              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.tag_name }}.tgz --acl public-read
+              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.release.tag_name }}.tgz --acl public-read
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -51,9 +51,9 @@ jobs:
 
         steps:
             - name: Download the pack
-              run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.tag_name }}.tgz
+              run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.release.tag_name }}.tgz
             - name: Unarchive the pack
-              run: tar xvzf ${{ github.event.tag_name }}.tgz
+              run: tar xvzf ${{ github.event.release.tag_name }}.tgz
             - name: Setup Java
               uses: actions/setup-java@v1
               with:
