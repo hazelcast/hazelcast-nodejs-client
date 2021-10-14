@@ -64,7 +64,6 @@ jobs:
               with:
                   name: release-pack-${{ github.event.inputs.tag_name }}
                   path: /tmp/release-pack-verification
-            - run: ls -l release-pack-verification
             - name: Check integrity of the pack
               run: sha256sum --check release-pack.sha256
               working-directory: /tmp/release-pack-verification
@@ -89,3 +88,6 @@ jobs:
               env:
                   HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
               run: npm run coverage
+            - name: Congratulate
+              run: echo "Congratulations, you can now start other release verification. The artifact will be retanined for 90 days.
+                After you verify, you can start the actual release workflow with the right flag."
