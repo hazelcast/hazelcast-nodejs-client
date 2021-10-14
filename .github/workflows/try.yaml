@@ -93,7 +93,7 @@ jobs:
                   path: release-pack-verification
             - run: ls -l release-pack-verification
             - name: Check integrity of the pack
-              run: sha256sum --check release-pack-verification/release-pack.sha256sum
+              run: sha256sum --check release-pack-verification/release-pack.sha256
             - name: Unarchive the pack
               run: tar xvzf release-pack-verification/hazelcast-client-*.tgz
             - name: Setup Java 8
