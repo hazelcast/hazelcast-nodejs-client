@@ -52,26 +52,25 @@ jobs:
         needs: pack-from-tag
 
         steps:
-            - uses: actions/download-artifact@v2
-              with:
-                  name: release-pack-${{ github.event.inputs.tag_name }}
-                  path: release-pack-verification
-            - uses: actions/download-artifact@v2
-              with:
-                  name: release-pack-${{ github.event.inputs.tag_name }}
-                  path: release-pack-verification
-            - run: ls -l release-pack-verification
-            - name: Check integrity of the pack
-              run: sha256sum --check release-pack.sha256
-              working-directory: release-pack-verification
-            - name: Unarchive the pack
-              run: tar xvzf hazelcast-client-*.tgz
-              working-directory: release-pack-verification
-            - run: ls -l release-pack-verification && ls -l && ls -l release-pack-verification/package
             - name: Checkout to tag ${{ github.event.inputs.tag_name }}
               uses: actions/checkout@v2
               with:
                   ref: ${{ github.event.inputs.tag_name }}
+            - uses: actions/download-artifact@v2
+              with:
+                  name: release-pack-${{ github.event.inputs.tag_name }}
+                  path: /tmp/release-pack-verification
+            - uses: actions/download-artifact@v2
+              with:
+                  name: release-pack-${{ github.event.inputs.tag_name }}
+                  path: /tmp/release-pack-verification
+            - run: ls -l release-pack-verification
+            - name: Check integrity of the pack
+              run: sha256sum --check release-pack.sha256
+              working-directory: /tmp/release-pack-verification
+            - name: Unarchive the pack
+              run: tar xvzf hazelcast-client-*.tgz
+              working-directory: /tmp/release-pack-verification
             - name: Setup Java 8
               uses: actions/setup-java@v1
               with:
@@ -79,16 +78,14 @@ jobs:
             - name: Install dependencies
               run: npm install
             - name: Move lib folder
-              run: |
-                  mv release-pack-verification/package/lib .
+              run: mv /tmp/release-pack-verification/package/lib .
             - name: Node version
-              run: |
-                  node -v
+              run: node -v
             - name: Validate User Code
-              run: |
-                  npm run validate-user-code
+              run: npm run validate-user-code
+            - name: Generate docs
+              run: npm run generate-docs
             - name: Run all tests
               env:
                   HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-              run: |
-                  npm run coverage
+              run: npm run coverage
