@@ -38,43 +38,43 @@ jobs:
               run: sha256sum hazelcast-client-*.tgz > release-pack.sha256
             - uses: actions/upload-artifact@v2
               with:
-                  name: release-pack.tgz
+                  name: release-pack-${{ github.event.inputs.tag_name }}
                   path: hazelcast-client-*.tgz
             - uses: actions/upload-artifact@v2
               with:
-                  name: release-pack.sha256
+                  name: release-pack-${{ github.event.inputs.tag_name }}
                   path: release-pack.sha256
 
-    upload-to-s3:
-        name: Upload the pack to S3
-        runs-on: ubuntu-latest
-        env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-        needs: pack-from-tag
-
-        steps:
-            - name: Install python version of awscli
-              run: |
-                  sudo apt-get install python3-setuptools
-                  python3 -m pip install --user awscli
-            - uses: actions/download-artifact@v2
-              with:
-                  name: release-pack.tgz
-                  path: release-pack-verification
-            - uses: actions/download-artifact@v2
-              with:
-                  name: release-pack.sha256
-                  path: release-pack-verification
-            - name: Upload the pack to S3
-              run: aws s3 mv release-pack-verification/*.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.inputs.tag_name }}.tgz
-            - name: Make uploaded object publicly available
-              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.inputs.tag_name }}.tgz --acl public-read
-            - name: Upload the sha256sum to S3
-              run: aws s3 mv release-pack-verification/*.sha256 s3://nodejs-client-release-candidate-packs/${{ github.event.inputs.tag_name }}.sha256
-            - name: Make uploaded object publicly available
-              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.inputs.tag_name }}.sha256 --acl public-read
+#    upload-to-s3:
+#        name: Upload the pack to S3
+#        runs-on: ubuntu-latest
+#        env:
+#            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#
+#        needs: pack-from-tag
+#
+#        steps:
+#            - name: Install python version of awscli
+#              run: |
+#                  sudo apt-get install python3-setuptools
+#                  python3 -m pip install --user awscli
+#            - uses: actions/download-artifact@v2
+#              with:
+#                  name: release-pack.tgz
+#                  path: release-pack-verification
+#            - uses: actions/download-artifact@v2
+#              with:
+#                  name: release-pack.sha256
+#                  path: release-pack-verification
+#            - name: Upload the pack to S3
+#              run: aws s3 mv release-pack-verification/*.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.inputs.tag_name }}.tgz
+#            - name: Make uploaded object publicly available
+#              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.inputs.tag_name }}.tgz --acl public-read
+#            - name: Upload the sha256sum to S3
+#              run: aws s3 mv release-pack-verification/*.sha256 s3://nodejs-client-release-candidate-packs/${{ github.event.inputs.tag_name }}.sha256
+#            - name: Make uploaded object publicly available
+#              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.inputs.tag_name }}.sha256 --acl public-read
 
     verify-uploaded-pack:
         name: Verify the uploaded pack
@@ -83,14 +83,19 @@ jobs:
         needs: upload-to-s3
 
         steps:
-            - name: Download the pack
-              run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.inputs.tag_name }}.tgz
-            - name: Download the sha256sum
-              run: wget https://nodejs-client-release-candidate-packs.s3.amazonaws.com/${{ github.event.inputs.tag_name }}.sha256sum
+            - uses: actions/download-artifact@v2
+              with:
+                  name: release-pack-${{ github.event.inputs.tag_name }}
+                  path: release-pack-verification
+            - uses: actions/download-artifact@v2
+              with:
+                  name: release-pack-${{ github.event.inputs.tag_name }}
+                  path: release-pack-verification
+            - run: ls -l release-pack-verification
             - name: Check integrity of the pack
-              run: sha256sum --check ${{ github.event.inputs.tag_name }}.sha256sum
+              run: sha256sum --check release-pack-verification/*.sha256sum
             - name: Unarchive the pack
-              run: tar xvzf ${{ github.event.inputs.tag_name }}.tgz
+              run: tar xvzf release-pack-verification/*.tgz
             - name: Setup Java 8
               uses: actions/setup-java@v1
               with:
@@ -98,7 +103,7 @@ jobs:
             - name: Replace lib folder
               run: |
                   rm -rf lib
-                  mv package/lib .
+                  mv release-pack-verification/package/lib .
             - name: Lint
               run: |
                   npm run lint
