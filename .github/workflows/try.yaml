@@ -80,7 +80,7 @@ jobs:
         name: Verify the uploaded pack
         runs-on: ubuntu-latest
 
-        needs: upload-to-s3
+        needs: pack-from-tag
 
         steps:
             - uses: actions/download-artifact@v2
