@@ -67,7 +67,7 @@ jobs:
             - name: Unarchive the pack
               run: tar xvzf hazelcast-client-*.tgz
               working-directory: release-pack-verification
-            - run: ls -l release-pack-verification && ls -l
+            - run: ls -l release-pack-verification && ls -l && ls -l release-pack-verification/package
             - name: Checkout to tag ${{ github.event.inputs.tag_name }}
               uses: actions/checkout@v2
               with:
