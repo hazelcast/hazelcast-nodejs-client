@@ -45,37 +45,6 @@ jobs:
                   name: release-pack-${{ github.event.inputs.tag_name }}
                   path: release-pack.sha256
 
-#    upload-to-s3:
-#        name: Upload the pack to S3
-#        runs-on: ubuntu-latest
-#        env:
-#            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#
-#        needs: pack-from-tag
-#
-#        steps:
-#            - name: Install python version of awscli
-#              run: |
-#                  sudo apt-get install python3-setuptools
-#                  python3 -m pip install --user awscli
-#            - uses: actions/download-artifact@v2
-#              with:
-#                  name: release-pack.tgz
-#                  path: release-pack-verification
-#            - uses: actions/download-artifact@v2
-#              with:
-#                  name: release-pack.sha256
-#                  path: release-pack-verification
-#            - name: Upload the pack to S3
-#              run: aws s3 mv release-pack-verification/*.tgz s3://nodejs-client-release-candidate-packs/${{ github.event.inputs.tag_name }}.tgz
-#            - name: Make uploaded object publicly available
-#              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.inputs.tag_name }}.tgz --acl public-read
-#            - name: Upload the sha256sum to S3
-#              run: aws s3 mv release-pack-verification/*.sha256 s3://nodejs-client-release-candidate-packs/${{ github.event.inputs.tag_name }}.sha256
-#            - name: Make uploaded object publicly available
-#              run: aws s3api put-object-acl --bucket nodejs-client-release-candidate-packs --key ${{ github.event.inputs.tag_name }}.sha256 --acl public-read
-
     verify-uploaded-pack:
         name: Verify the uploaded pack
         runs-on: ubuntu-latest
@@ -98,17 +67,22 @@ jobs:
             - name: Unarchive the pack
               run: tar xvzf hazelcast-client-*.tgz
               working-directory: release-pack-verification
+            - name: Checkout to tag ${{ github.event.inputs.tag_name }}
+              uses: actions/checkout@v2
+              with:
+                  ref: ${{ github.event.inputs.tag_name }}
             - name: Setup Java 8
               uses: actions/setup-java@v1
               with:
                   java-version: 8
-            - name: Replace lib folder
+            - name: Install dependencies
+              run: npm install
+            - name: Move lib folder
               run: |
-                  rm -rf lib
                   mv release-pack-verification/package/lib .
-            - name: Lint
+            - name: Node version
               run: |
-                  npm run lint
+                  node -v
             - name: Validate User Code
               run: |
                   npm run validate-user-code
