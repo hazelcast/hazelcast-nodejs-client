@@ -1,29 +1,24 @@
-name: TRIAL of Upload Release Candidate to S3 and verify it
+name: Upload Release Candidate and verify it
 on:
     workflow_dispatch:
         inputs:
-            tag_name:
+            commit_id:
                 required: true
-                description: Tag to build release pack from
+                description: Commit id to build the release pack from
                 default: ''
-            prerelease:
-                required: true
-                default: 'true'
-                description: Whether the release is a prerelease.
-
 
 jobs:
-    pack-from-tag:
-        name: Pack a release candidate archive from tag
+    pack-from-commit:
+        name: Pack a release candidate archive from commit
         runs-on: ubuntu-latest
 
-        if: ${{ github.event.inputs.prerelease == 'true' && github.event.inputs.tag_name != '' }}
+        if: ${{ github.event.inputs.commit_id != '' }}
 
         steps:
-            - name: Checkout to tag ${{ github.event.inputs.tag_name }}
+            - name: Checkout to commit ${{ github.event.inputs.commit_id }}
               uses: actions/checkout@v2
               with:
-                  ref: ${{ github.event.inputs.tag_name }}
+                  ref: ${{ github.event.inputs.commit_id }}
             - name: Setup Node.js 12
               uses: actions/setup-node@v2
               with:
@@ -38,31 +33,35 @@ jobs:
               run: sha256sum hazelcast-client-*.tgz > release-pack.sha256
             - uses: actions/upload-artifact@v2
               with:
-                  name: release-pack-${{ github.event.inputs.tag_name }}
+                  name: release-pack-${{ github.event.inputs.commit_id }}
                   path: hazelcast-client-*.tgz
             - uses: actions/upload-artifact@v2
               with:
-                  name: release-pack-${{ github.event.inputs.tag_name }}
+                  name: release-pack-${{ github.event.inputs.commit_id }}
                   path: release-pack.sha256
 
     verify-uploaded-pack:
         name: Verify the uploaded pack
         runs-on: ubuntu-latest
 
-        needs: pack-from-tag
+        needs: pack-from-commit
 
         steps:
-            - name: Checkout to tag ${{ github.event.inputs.tag_name }}
+            - name: Checkout to commit ${{ github.event.inputs.commit_id }}
               uses: actions/checkout@v2
               with:
-                  ref: ${{ github.event.inputs.tag_name }}
+                  ref: ${{ github.event.inputs.commit_id }}
+            - name: Setup Node.js 12
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 12
             - uses: actions/download-artifact@v2
               with:
-                  name: release-pack-${{ github.event.inputs.tag_name }}
+                  name: release-pack-${{ github.event.inputs.commit_id }}
                   path: /tmp/release-pack-verification
             - uses: actions/download-artifact@v2
               with:
-                  name: release-pack-${{ github.event.inputs.tag_name }}
+                  name: release-pack-${{ github.event.inputs.commit_id }}
                   path: /tmp/release-pack-verification
             - name: Check integrity of the pack
               run: sha256sum --check release-pack.sha256
@@ -89,5 +88,5 @@ jobs:
                   HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
               run: npm run coverage
             - name: Congratulate
-              run: echo "Congratulations, you can now start other release verification. The artifact will be retanined for 90 days.
-                After you verify, you can start the actual release workflow with the right flag."
+              run: |
+                echo "Congratulations, you can now start other release verification steps. The artifact will be retanined for 90 days. After you verify it, you can start the actual release workflow."
