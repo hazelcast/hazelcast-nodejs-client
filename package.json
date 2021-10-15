@@ -16,6 +16,7 @@
         "@types/node": "~10.17.60",
         "@typescript-eslint/eslint-plugin": "~4.32.0",
         "@typescript-eslint/parser": "~4.32.0",
+        "axios": "^0.23.0",
         "chai": "~4.3.4",
         "chai-as-promised": "~7.1.1",
         "eslint": "~7.32.0",
