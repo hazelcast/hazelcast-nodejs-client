@@ -80,7 +80,7 @@ async function findLatestValidArtifact(commitSha) {
     // Could not find any valid artifact, exit
     if (latestValidArtifact === undefined) {
         console.error(`Could not find any valid artifact for the commit ${commitSha}` +
-            `which is the latest commit of the given branch ${branchName}`);
+            ` which is the latest commit of the given branch ${branchName}`);
         process.exit(1);
     }
 
