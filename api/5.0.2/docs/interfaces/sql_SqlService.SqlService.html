@@ -1,0 +1,295 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>SqlService | hazelcast-client</title>
+	<meta name="description" content="Documentation for hazelcast-client">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">hazelcast-client</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">hazelcast-client</a>
+				</li>
+				<li>
+					<a href="../modules/sql_SqlService.html">sql/SqlService</a>
+				</li>
+				<li>
+					<a href="sql_SqlService.SqlService.html">SqlService</a>
+				</li>
+			</ul>
+			<h1>Interface SqlService</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>SQL Service of the client. You can use this service to execute SQL queries.</p>
+					</div>
+					<a href="#enabling-sql-service" id="enabling-sql-service" style="color: inherit; text-decoration: none;">
+						<h2>Enabling SQL Service</h2>
+					</a>
+					<p>To use this service, the Jet engine must be enabled on the members and the <code>hazelcast-sql</code> module must be in the classpath
+						of the members. If you are using the CLI, Docker image, or distributions to start Hazelcast members, then you don&#39;t need to
+					do anything, as the above preconditions are already satisfied for such members.</p>
+					<p>However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that
+						<code>The Jet engine is disabled</code> or <code>Cannot execute SQL query because &quot;hazelcast-sql&quot; module is not in the classpath.</code> while
+						executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the
+					<code>hazelcast-sql</code> module to your member&#39;s classpath.</p>
+					<a href="#overview" id="overview" style="color: inherit; text-decoration: none;">
+						<h2>Overview</h2>
+					</a>
+					<p>Hazelcast is currently able to execute distributed SQL queries using the following connectors:</p>
+					<ul>
+						<li><a href="proxy_IMap.IMap.html">IMap</a></li>
+						<li>Kafka</li>
+						<li>Files</li>
+					</ul>
+					<p>SQL statements are not atomic. <em>INSERT</em>/<em>SINK</em> can fail and commit part of the data.</p>
+					<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+						<h2>Usage</h2>
+					</a>
+					<p>Before you can access any object using SQL, a <em>mapping</em> has to be created. See the documentation for the <code>CREATE MAPPING</code>
+					command.</p>
+					<p>When a query is executed, an <a href="sql_SqlResult.SqlResult.html">SqlResult</a> is returned. The returned result is an async iterable of <a href="../modules/sql_SqlResult.html#SqlRowType">SqlRowType</a>.
+						It can also be iterated using <a href="sql_SqlResult.SqlResult.html#next">SqlResult.next</a> method. The result should be closed at the end to release server
+					resources. Fetching the last page closes the result. The code snippet below demonstrates a typical usage pattern:</p>
+					<pre><code><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">client</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">Client</span><span style="color: #000000">.</span><span style="color: #795E26">newHazelcastClient</span><span style="color: #000000">();</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">result</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">client</span><span style="color: #000000">.</span><span style="color: #795E26">getSql</span><span style="color: #000000">().</span><span style="color: #795E26">execute</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;SELECT * FROM persons&#039;</span><span style="color: #000000">);</span>
+<span style="color: #AF00DB">for</span><span style="color: #000000"> </span><span style="color: #AF00DB">await</span><span style="color: #000000"> (</span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">row</span><span style="color: #000000"> </span><span style="color: #0000FF">of</span><span style="color: #000000"> </span><span style="color: #001080">result</span><span style="color: #000000">) {</span>
+<span style="color: #000000">   </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">row</span><span style="color: #000000">.</span><span style="color: #001080">personId</span><span style="color: #000000">);</span>
+<span style="color: #000000">   </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">row</span><span style="color: #000000">.</span><span style="color: #001080">name</span><span style="color: #000000">);</span>
+<span style="color: #000000">}</span>
+<span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">result</span><span style="color: #000000">.</span><span style="color: #795E26">close</span><span style="color: #000000">();</span>
+<span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">client</span><span style="color: #000000">.</span><span style="color: #795E26">shutdown</span><span style="color: #000000">();</span>
+</code></pre>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">SqlService</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="sql_SqlService.SqlService.html#execute" class="tsd-kind-icon">execute</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="sql_SqlService.SqlService.html#executeStatement" class="tsd-kind-icon">execute<wbr>Statement</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="execute" class="tsd-anchor"></a>
+					<h3>execute</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">execute<span class="tsd-signature-symbol">(</span>sql<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, params<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">SqlStatementOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SqlResult</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/sql/SqlService.ts:97</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Executes SQL and returns an <a href="sql_SqlResult.SqlResult.html">SqlResult</a>.
+									Converts passed SQL string and parameter values into an <a href="sql_SqlStatement.SqlStatement.html">SqlStatement</a> object and invokes <a href="sql_SqlService.SqlService.html#executeStatement">executeStatement</a>.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p><a href="../classes/core_HazelcastError.IllegalArgumentError.html">IllegalArgumentError</a> if arguments are not valid</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../classes/core_HazelcastError.HazelcastSqlException.html">HazelcastSqlException</a> in case of an execution error</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>sql: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>SQL string. SQL string placeholder character is question mark(<code>?</code>)</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> params: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Parameter list. The parameter count must be equal to number of placeholders in the SQL string</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">SqlStatementOptions</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Options that are affecting how the query is executed</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SqlResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="executeStatement" class="tsd-anchor"></a>
+					<h3>execute<wbr>Statement</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">execute<wbr>Statement<span class="tsd-signature-symbol">(</span>sql<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SqlStatement</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SqlResult</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/sql/SqlService.ts:105</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Executes SQL and returns an <a href="sql_SqlResult.SqlResult.html">SqlResult</a>.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p><a href="../classes/core_HazelcastError.IllegalArgumentError.html">IllegalArgumentError</a> if arguments are not valid</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="../classes/core_HazelcastError.HazelcastSqlException.html">HazelcastSqlException</a> in case of an execution error</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>sql: <span class="tsd-signature-type">SqlStatement</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>SQL statement object</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SqlResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Modules</a>
+					</li>
+					<li class="current tsd-kind-module">
+						<a href="../modules/sql_SqlService.html">sql/<wbr>Sql<wbr>Service</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface tsd-parent-kind-module">
+						<a href="sql_SqlService.SqlService.html" class="tsd-kind-icon">Sql<wbr>Service</a>
+						<ul>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="sql_SqlService.SqlService.html#execute" class="tsd-kind-icon">execute</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="sql_SqlService.SqlService.html#executeStatement" class="tsd-kind-icon">execute<wbr>Statement</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

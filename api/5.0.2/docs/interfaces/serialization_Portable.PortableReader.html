@@ -1,0 +1,1475 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>PortableReader | hazelcast-client</title>
+	<meta name="description" content="Documentation for hazelcast-client">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">hazelcast-client</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">hazelcast-client</a>
+				</li>
+				<li>
+					<a href="../modules/serialization_Portable.html">serialization/Portable</a>
+				</li>
+				<li>
+					<a href="serialization_Portable.PortableReader.html">PortableReader</a>
+				</li>
+			</ul>
+			<h1>Interface PortableReader</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Reader helper for <a href="serialization_Portable.Portable.html">Portable</a> objects.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">PortableReader</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#getFieldNames" class="tsd-kind-icon">get<wbr>Field<wbr>Names</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#getFieldType" class="tsd-kind-icon">get<wbr>Field<wbr>Type</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#getVersion" class="tsd-kind-icon">get<wbr>Version</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#hasField" class="tsd-kind-icon">has<wbr>Field</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readBoolean" class="tsd-kind-icon">read<wbr>Boolean</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readBooleanArray" class="tsd-kind-icon">read<wbr>Boolean<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readByte" class="tsd-kind-icon">read<wbr>Byte</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readByteArray" class="tsd-kind-icon">read<wbr>Byte<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readChar" class="tsd-kind-icon">read<wbr>Char</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readCharArray" class="tsd-kind-icon">read<wbr>Char<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readDate" class="tsd-kind-icon">read<wbr>Date</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readDateArray" class="tsd-kind-icon">read<wbr>Date<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readDecimal" class="tsd-kind-icon">read<wbr>Decimal</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readDecimalArray" class="tsd-kind-icon">read<wbr>Decimal<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readDouble" class="tsd-kind-icon">read<wbr>Double</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readDoubleArray" class="tsd-kind-icon">read<wbr>Double<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readFloat" class="tsd-kind-icon">read<wbr>Float</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readFloatArray" class="tsd-kind-icon">read<wbr>Float<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readInt" class="tsd-kind-icon">read<wbr>Int</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readIntArray" class="tsd-kind-icon">read<wbr>Int<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readLong" class="tsd-kind-icon">read<wbr>Long</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readLongArray" class="tsd-kind-icon">read<wbr>Long<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readPortable" class="tsd-kind-icon">read<wbr>Portable</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readPortableArray" class="tsd-kind-icon">read<wbr>Portable<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readShort" class="tsd-kind-icon">read<wbr>Short</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readShortArray" class="tsd-kind-icon">read<wbr>Short<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readString" class="tsd-kind-icon">read<wbr>String</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readStringArray" class="tsd-kind-icon">read<wbr>String<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readTime" class="tsd-kind-icon">read<wbr>Time</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readTimeArray" class="tsd-kind-icon">read<wbr>Time<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readTimestamp" class="tsd-kind-icon">read<wbr>Timestamp</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readTimestampArray" class="tsd-kind-icon">read<wbr>Timestamp<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readTimestampWithTimezone" class="tsd-kind-icon">read<wbr>Timestamp<wbr>With<wbr>Timezone</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readTimestampWithTimezoneArray" class="tsd-kind-icon">read<wbr>Timestamp<wbr>With<wbr>Timezone<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readUTF" class="tsd-kind-icon">readUTF</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="serialization_Portable.PortableReader.html#readUTFArray" class="tsd-kind-icon">readUTFArray</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getFieldNames" class="tsd-anchor"></a>
+					<h3>get<wbr>Field<wbr>Names</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Field<wbr>Names<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:376</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>set of field names on this Portable class</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getFieldType" class="tsd-anchor"></a>
+					<h3>get<wbr>Field<wbr>Type</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Field<wbr>Type<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">FieldType</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:383</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>RangeError if the field does not exist.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">FieldType</span></h4>
+							<p>field type of given fieldName</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getVersion" class="tsd-anchor"></a>
+					<h3>get<wbr>Version</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Version<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:365</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+							<p>global version of Portable classes</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="hasField" class="tsd-anchor"></a>
+					<h3>has<wbr>Field</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">has<wbr>Field<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:371</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field (does not support nested paths)</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+							<p>true if field exist in this class.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readBoolean" class="tsd-anchor"></a>
+					<h3>read<wbr>Boolean</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Boolean<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:424</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a primitive boolean.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+							<p>the boolean value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readBooleanArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Boolean<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Boolean<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:528</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of primitive booleans.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the boolean array value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readByte" class="tsd-anchor"></a>
+					<h3>read<wbr>Byte</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Byte<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:432</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a 8-bit unsigned integer.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+							<p>the byte value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readByteArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Byte<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Byte<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Buffer</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:520</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of bytes.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Buffer</span></h4>
+							<p>the byte array value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readChar" class="tsd-anchor"></a>
+					<h3>read<wbr>Char</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Char<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:440</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a single character string using <code>String.fromCharCode</code> from two bytes of UTF-16 code units.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+							<p>the char value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readCharArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Char<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Char<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:537</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of single character strings.
+									Each of them are read using <code>String.fromCharCode</code> from a two bytes UTF-16 code units.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the char array value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readDate" class="tsd-anchor"></a>
+					<h3>read<wbr>Date</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Date<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">LocalDate</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:496</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a date.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">LocalDate</span></h4>
+							<p>the LocalDate value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readDateArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Date<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Date<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">LocalDate</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:629</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of <code>LocalDate</code>s.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="serialization_Portable.PortableReader.html#readDate">readDate</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">LocalDate</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the LocalDate array read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readDecimal" class="tsd-anchor"></a>
+					<h3>read<wbr>Decimal</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Decimal<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BigDecimal</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:480</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a decimal.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">BigDecimal</span></h4>
+							<p>the BigDecimal value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readDecimalArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Decimal<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Decimal<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BigDecimal</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:611</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of <code>BigDecimal</code>s.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="serialization_Portable.PortableReader.html#readDecimal">readDecimal</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">BigDecimal</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the BigDecimal array read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readDouble" class="tsd-anchor"></a>
+					<h3>read<wbr>Double</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Double<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:448</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a double.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+							<p>the double value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readDoubleArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Double<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Double<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:561</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of doubles.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the double array value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readFloat" class="tsd-anchor"></a>
+					<h3>read<wbr>Float</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Float<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:456</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a float.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+							<p>the float value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readFloatArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Float<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Float<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:569</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of floats.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the float array value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readInt" class="tsd-anchor"></a>
+					<h3>read<wbr>Int</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Int<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:391</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a 32-bit signed integer.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+							<p>the int value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readIntArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Int<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Int<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:545</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of 32-bit signed integers.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the int array value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readLong" class="tsd-anchor"></a>
+					<h3>read<wbr>Long</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Long<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Long</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:399</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a long.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Long</span></h4>
+							<p>the long value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readLongArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Long<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Long<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Long</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:553</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of longs.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Long</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the long array value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readPortable" class="tsd-anchor"></a>
+					<h3>read<wbr>Portable</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Portable<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Portable</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:472</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a Portable.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Portable</span></h4>
+							<p>the Portable value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readPortableArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Portable<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Portable<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Portable</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:602</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of Portables.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Portable</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the Portable array read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readShort" class="tsd-anchor"></a>
+					<h3>read<wbr>Short</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Short<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:464</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a 16-bit signed integer.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+							<p>the short value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readShortArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Short<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Short<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:577</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of 16-bit signed integers.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the short array value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readString" class="tsd-anchor"></a>
+					<h3>read<wbr>String</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>String<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:416</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a string from UTF-8 encoded bytes.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+							<p>the string value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readStringArray" class="tsd-anchor"></a>
+					<h3>read<wbr>String<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>String<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:594</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of strings. Strings are read using UTF-8 encoding.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the string array value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readTime" class="tsd-anchor"></a>
+					<h3>read<wbr>Time</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Time<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/core_DateTimeClasses.LocalTime.html" class="tsd-signature-type" data-tsd-kind="Class">LocalTime</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:488</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a time.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/core_DateTimeClasses.LocalTime.html" class="tsd-signature-type" data-tsd-kind="Class">LocalTime</a></h4>
+							<p>the LocalTime value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readTimeArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Time<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Time<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/core_DateTimeClasses.LocalTime.html" class="tsd-signature-type" data-tsd-kind="Class">LocalTime</a><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:620</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of <code>LocalTime</code>s.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="serialization_Portable.PortableReader.html#readTime">readTime</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/core_DateTimeClasses.LocalTime.html" class="tsd-signature-type" data-tsd-kind="Class">LocalTime</a><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the LocalTime array read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readTimestamp" class="tsd-anchor"></a>
+					<h3>read<wbr>Timestamp</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Timestamp<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/core_DateTimeClasses.LocalDateTime.html" class="tsd-signature-type" data-tsd-kind="Class">LocalDateTime</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:504</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a timestamp.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/core_DateTimeClasses.LocalDateTime.html" class="tsd-signature-type" data-tsd-kind="Class">LocalDateTime</a></h4>
+							<p>the LocalDateTime value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readTimestampArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Timestamp<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Timestamp<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/core_DateTimeClasses.LocalDateTime.html" class="tsd-signature-type" data-tsd-kind="Class">LocalDateTime</a><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:638</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of <code>LocalDateTime</code>s.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="serialization_Portable.PortableReader.html#readTimestamp">readTimestamp</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/core_DateTimeClasses.LocalDateTime.html" class="tsd-signature-type" data-tsd-kind="Class">LocalDateTime</a><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the LocalDateTime array read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readTimestampWithTimezone" class="tsd-anchor"></a>
+					<h3>read<wbr>Timestamp<wbr>With<wbr>Timezone</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Timestamp<wbr>With<wbr>Timezone<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">OffsetDateTime</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:512</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a timestamp with timezone.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OffsetDateTime</span></h4>
+							<p>the OffsetDateTime value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readTimestampWithTimezoneArray" class="tsd-anchor"></a>
+					<h3>read<wbr>Timestamp<wbr>With<wbr>Timezone<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">read<wbr>Timestamp<wbr>With<wbr>Timezone<wbr>Array<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">OffsetDateTime</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:647</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array of <code>OffsetDateTime</code>s.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="serialization_Portable.PortableReader.html#readTimestampWithTimezone">readTimestampWithTimezone</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OffsetDateTime</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the OffsetDateTime array read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readUTF" class="tsd-anchor"></a>
+					<h3>readUTF</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">readUTF<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:408</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads a string from UTF-8 encoded bytes.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>deprecated</dt>
+									<dd><p>since version 4.2 for the sake of better naming. Please use <a href="serialization_Portable.PortableReader.html#readString">readString</a> instead.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+							<p>the UTF string value read</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="readUTFArray" class="tsd-anchor"></a>
+					<h3>readUTFArray</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">readUTFArray<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/serialization/Portable.ts:586</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Reads an array strings. Strings are read using UTF-8 encoding.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>deprecated</dt>
+									<dd><p>since version 4.2 for the sake of better naming. Please use <a href="serialization_Portable.PortableReader.html#readStringArray">readStringArray</a> instead</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the field</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4>
+							<p>the string array value read</p>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Modules</a>
+					</li>
+					<li class="current tsd-kind-module">
+						<a href="../modules/serialization_Portable.html">serialization/<wbr>Portable</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-enum tsd-parent-kind-module">
+						<a href="../enums/serialization_Portable.FieldType.html" class="tsd-kind-icon">Field<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="serialization_Portable.Portable.html" class="tsd-kind-icon">Portable</a>
+					</li>
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface tsd-parent-kind-module">
+						<a href="serialization_Portable.PortableReader.html" class="tsd-kind-icon">Portable<wbr>Reader</a>
+						<ul>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#getFieldNames" class="tsd-kind-icon">get<wbr>Field<wbr>Names</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#getFieldType" class="tsd-kind-icon">get<wbr>Field<wbr>Type</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#getVersion" class="tsd-kind-icon">get<wbr>Version</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#hasField" class="tsd-kind-icon">has<wbr>Field</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readBoolean" class="tsd-kind-icon">read<wbr>Boolean</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readBooleanArray" class="tsd-kind-icon">read<wbr>Boolean<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readByte" class="tsd-kind-icon">read<wbr>Byte</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readByteArray" class="tsd-kind-icon">read<wbr>Byte<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readChar" class="tsd-kind-icon">read<wbr>Char</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readCharArray" class="tsd-kind-icon">read<wbr>Char<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readDate" class="tsd-kind-icon">read<wbr>Date</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readDateArray" class="tsd-kind-icon">read<wbr>Date<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readDecimal" class="tsd-kind-icon">read<wbr>Decimal</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readDecimalArray" class="tsd-kind-icon">read<wbr>Decimal<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readDouble" class="tsd-kind-icon">read<wbr>Double</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readDoubleArray" class="tsd-kind-icon">read<wbr>Double<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readFloat" class="tsd-kind-icon">read<wbr>Float</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readFloatArray" class="tsd-kind-icon">read<wbr>Float<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readInt" class="tsd-kind-icon">read<wbr>Int</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readIntArray" class="tsd-kind-icon">read<wbr>Int<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readLong" class="tsd-kind-icon">read<wbr>Long</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readLongArray" class="tsd-kind-icon">read<wbr>Long<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readPortable" class="tsd-kind-icon">read<wbr>Portable</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readPortableArray" class="tsd-kind-icon">read<wbr>Portable<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readShort" class="tsd-kind-icon">read<wbr>Short</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readShortArray" class="tsd-kind-icon">read<wbr>Short<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readString" class="tsd-kind-icon">read<wbr>String</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readStringArray" class="tsd-kind-icon">read<wbr>String<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readTime" class="tsd-kind-icon">read<wbr>Time</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readTimeArray" class="tsd-kind-icon">read<wbr>Time<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readTimestamp" class="tsd-kind-icon">read<wbr>Timestamp</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readTimestampArray" class="tsd-kind-icon">read<wbr>Timestamp<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readTimestampWithTimezone" class="tsd-kind-icon">read<wbr>Timestamp<wbr>With<wbr>Timezone</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readTimestampWithTimezoneArray" class="tsd-kind-icon">read<wbr>Timestamp<wbr>With<wbr>Timezone<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readUTF" class="tsd-kind-icon">readUTF</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="serialization_Portable.PortableReader.html#readUTFArray" class="tsd-kind-icon">readUTFArray</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="serialization_Portable.PortableWriter.html" class="tsd-kind-icon">Portable<wbr>Writer</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="serialization_Portable.VersionedPortable.html" class="tsd-kind-icon">Versioned<wbr>Portable</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/serialization_Portable.html#PortableFactory" class="tsd-kind-icon">Portable<wbr>Factory</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

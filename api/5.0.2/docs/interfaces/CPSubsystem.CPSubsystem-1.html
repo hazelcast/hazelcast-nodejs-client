@@ -1,0 +1,373 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>CPSubsystem | hazelcast-client</title>
+	<meta name="description" content="Documentation for hazelcast-client">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">hazelcast-client</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">hazelcast-client</a>
+				</li>
+				<li>
+					<a href="../modules/CPSubsystem.html">CPSubsystem</a>
+				</li>
+				<li>
+					<a href="CPSubsystem.CPSubsystem-1.html">CPSubsystem</a>
+				</li>
+			</ul>
+			<h1>Interface CPSubsystem</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>CP Subsystem is a component of Hazelcast that builds a strongly consistent
+							layer for a set of distributed data structures. Its APIs can be used for
+							implementing distributed coordination use cases, such as leader election,
+						distributed locking, synchronization, and metadata management.</p>
+					</div>
+					<p>Its data structures are CP with respect to the CAP principle, i.e., they
+						always maintain linearizability and prefer consistency over availability
+						during network partitions. Besides network partitions, CP Subsystem
+					withstands server and client failures.</p>
+					<p>Data structures in CP Subsystem run in CP groups. Each CP group elects
+					its own Raft leader and runs the Raft consensus algorithm independently.</p>
+					<p>The CP data structures differ from the other Hazelcast data structures
+						in two aspects. First, an internal commit is performed on the METADATA CP
+						group every time you fetch a proxy from this interface. Hence, callers
+						should cache returned proxy objects. Second, if you call
+						<code>DistributedObject.destroy()</code> on a CP data structure proxy, that data
+						structure is terminated on the underlying CP group and cannot be
+						reinitialized until the CP group is force-destroyed. For this
+						reason, please make sure that you are completely done with a CP data
+					structure before destroying its proxy.</p>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">CPSubsystem</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="CPSubsystem.CPSubsystem-1.html#getAtomicLong" class="tsd-kind-icon">get<wbr>Atomic<wbr>Long</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter"><a href="CPSubsystem.CPSubsystem-1.html#getAtomicReference" class="tsd-kind-icon">get<wbr>Atomic<wbr>Reference</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="CPSubsystem.CPSubsystem-1.html#getCountDownLatch" class="tsd-kind-icon">get<wbr>Count<wbr>Down<wbr>Latch</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="CPSubsystem.CPSubsystem-1.html#getLock" class="tsd-kind-icon">get<wbr>Lock</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="CPSubsystem.CPSubsystem-1.html#getSemaphore" class="tsd-kind-icon">get<wbr>Semaphore</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getAtomicLong" class="tsd-anchor"></a>
+					<h3>get<wbr>Atomic<wbr>Long</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Atomic<wbr>Long<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">IAtomicLong</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/CPSubsystem.ts:66</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the distributed AtomicLong instance with given name.
+									The instance is created on CP Subsystem.</p>
+								</div>
+								<p>If no group name is given within the <code>name</code> argument, then the
+									AtomicLong instance will be created on the DEFAULT CP group.
+									If a group name is given, like <code>.getAtomicLong(&#39;myLong@group1&#39;)</code>,
+									the given group will be initialized first, if not initialized
+								already, and then the instance will be created on this group.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">IAtomicLong</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+					<a name="getAtomicReference" class="tsd-anchor"></a>
+					<h3>get<wbr>Atomic<wbr>Reference</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Atomic<wbr>Reference&lt;E&gt;<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="proxy_IAtomicReference.IAtomicReference.html" class="tsd-signature-type" data-tsd-kind="Interface">IAtomicReference</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">E</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/CPSubsystem.ts:78</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the distributed AtomicReference instance with given name.
+									The instance is created on CP Subsystem.</p>
+								</div>
+								<p>If no group name is given within the <code>name</code> argument, then the
+									AtomicLong instance will be created on the DEFAULT CP group.
+									If a group name is given, like <code>.getAtomicReference(&#39;myRef@group1&#39;)</code>,
+									the given group will be initialized first, if not initialized
+								already, and then the instance will be created on this group.</p>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>E</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="proxy_IAtomicReference.IAtomicReference.html" class="tsd-signature-type" data-tsd-kind="Interface">IAtomicReference</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">E</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getCountDownLatch" class="tsd-anchor"></a>
+					<h3>get<wbr>Count<wbr>Down<wbr>Latch</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Count<wbr>Down<wbr>Latch<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ICountDownLatch</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/CPSubsystem.ts:90</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the distributed CountDownLatch instance with given name.
+									The instance is created on CP Subsystem.</p>
+								</div>
+								<p>If no group name is given within the <code>name</code> argument, then the
+									ICountDownLatch instance will be created on the DEFAULT CP group.
+									If a group name is given, like <code>.getCountDownLatch(&#39;myLatch@group1&#39;)</code>,
+									the given group will be initialized first, if not initialized
+								already, and then the instance will be created on this group.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ICountDownLatch</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getLock" class="tsd-anchor"></a>
+					<h3>get<wbr>Lock</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Lock<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="proxy_FencedLock.FencedLock.html" class="tsd-signature-type" data-tsd-kind="Interface">FencedLock</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/CPSubsystem.ts:102</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the distributed FencedLock instance with given name.
+									The instance is created on CP Subsystem.</p>
+								</div>
+								<p>If no group name is given within the <code>name</code> argument, then the
+									FencedLock instance will be created on the DEFAULT CP group.
+									If a group name is given, like <code>.getLock(&#39;myLock@group1&#39;)</code>,
+									the given group will be initialized first, if not initialized
+								already, and then the instance will be created on this group.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="proxy_FencedLock.FencedLock.html" class="tsd-signature-type" data-tsd-kind="Interface">FencedLock</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getSemaphore" class="tsd-anchor"></a>
+					<h3>get<wbr>Semaphore</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Semaphore<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ISemaphore</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/CPSubsystem.ts:114</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the distributed Semaphore instance with given name.
+									The instance is created on CP Subsystem.</p>
+								</div>
+								<p>If no group name is given within the <code>name</code> argument, then the
+									Semaphore instance will be created on the DEFAULT CP group.
+									If a group name is given, like <code>.getSemaphore(&#39;mySemaphore@group1&#39;)</code>,
+									the given group will be initialized first, if not initialized
+								already, and then the instance will be created on this group.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ISemaphore</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Modules</a>
+					</li>
+					<li class="current tsd-kind-module">
+						<a href="../modules/CPSubsystem.html">CPSubsystem</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface tsd-parent-kind-module">
+						<a href="CPSubsystem.CPSubsystem-1.html" class="tsd-kind-icon">CPSubsystem</a>
+						<ul>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="CPSubsystem.CPSubsystem-1.html#getAtomicLong" class="tsd-kind-icon">get<wbr>Atomic<wbr>Long</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+								<a href="CPSubsystem.CPSubsystem-1.html#getAtomicReference" class="tsd-kind-icon">get<wbr>Atomic<wbr>Reference</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="CPSubsystem.CPSubsystem-1.html#getCountDownLatch" class="tsd-kind-icon">get<wbr>Count<wbr>Down<wbr>Latch</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="CPSubsystem.CPSubsystem-1.html#getLock" class="tsd-kind-icon">get<wbr>Lock</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="CPSubsystem.CPSubsystem-1.html#getSemaphore" class="tsd-kind-icon">get<wbr>Semaphore</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
