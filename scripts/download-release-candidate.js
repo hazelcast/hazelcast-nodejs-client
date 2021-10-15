@@ -66,7 +66,7 @@ async function findLatestValidArtifact(commitSha) {
                     latestValidArtifact = artifact;
                     continue;
                 }
-                // Assign only if the found one is created newer.
+                // Assign only if the found one is created earlier.
                 if (new Date(latestValidArtifact.created_at) <= new Date(artifact.created_at)) {
                     latestValidArtifact = artifact;
                 }
