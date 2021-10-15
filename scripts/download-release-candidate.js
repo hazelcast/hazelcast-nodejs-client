@@ -89,7 +89,7 @@ async function findLatestValidArtifact(commitSha) {
 }
 
 async function downloadArtifact(latestValidArtifact) {
-    // This response returns the url to download the artifact in Location header.
+    // Axios follows the url in the location header to download the artifact.
     const res = await axios.get(`${baseURL}/actions/artifacts/${latestValidArtifact.id}/zip`, {
         auth: {
             username: username,
