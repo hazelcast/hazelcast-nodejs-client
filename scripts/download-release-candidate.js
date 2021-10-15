@@ -40,7 +40,7 @@ const username = argv.u;
 const personalAccessToken = argv.p;
 const outputPath = argv.o;
 
-const baseURL = 'https://api.github.com/repos/srknzl/hazelcast-nodejs-client';
+const baseURL = 'https://api.github.com/repos/hazelcast/hazelcast-nodejs-client';
 
 async function findLatestCommitOfBranch(branchName) {
     const res = await axios.get(`${baseURL}/commits/${branchName}`);
