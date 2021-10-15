@@ -19,15 +19,11 @@ baseurl: "/hazelcast-nodejs-client"
 twitter_username: hazelcast
 github_username:  hazelcast
 exclude:
-  - fetch-latest-homepage.sh
   - .idea/
-
 
 # Build settings
 theme: minima
 markdown: kramdown
-header_pages:
-  - index.md
 
 #plugins:
 #  - jekyll-feed
