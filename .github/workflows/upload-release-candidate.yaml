@@ -1,0 +1,54 @@
+name: Upload release candidate package from commit and verify
+on:
+    workflow_dispatch:
+        inputs:
+            commit_id:
+                required: true
+                description: Commit id to build the release pack from
+
+jobs:
+    pack-from-commit-and-verify:
+        name: Pack a release candidate package from commit and verify
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout to commit ${{ github.event.inputs.commit_id }}
+              uses: actions/checkout@v2
+              with:
+                  ref: ${{ github.event.inputs.commit_id }}
+            - name: Setup Node.js 12
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 12
+            - name: Setup Java 8
+              uses: actions/setup-java@v1
+              with:
+                  java-version: 8
+            - name: Install dependencies
+              run: npm install
+            - name: Compile Typescript to JavaScript
+              run: npm run compile
+            - name: Lint
+              run: npm run lint
+            - name: Validate User Code
+              run: npm run validate-user-code
+            - name: Generate docs
+              run: npm run generate-docs
+            - name: Run all tests
+              env:
+                  HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+              run: npm run coverage
+            - name: Pack an archive
+              run: npm pack
+            - name: Calculate sha256sum
+              run: sha256sum hazelcast-client-*.tgz > release-pack.sha256
+            - uses: actions/upload-artifact@v2
+              with:
+                  name: release-pack-${{ github.event.inputs.commit_id }}
+                  path: hazelcast-client-*.tgz
+            - uses: actions/upload-artifact@v2
+              with:
+                  name: release-pack-${{ github.event.inputs.commit_id }}
+                  path: release-pack.sha256
+            - name: Print congratulations message
+              run: echo "Congratulations, you can now start other release verification steps. The artifact will be retanined for 90 days. After you verify it, you can start the actual release workflow."
