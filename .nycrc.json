@@ -1,5 +1,5 @@
 {
     "cache": true,
-    "reporter": "cobertura",
+    "reporter": "lcov",
     "include": ["src", "lib"]
 }
