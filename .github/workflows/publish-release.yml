@@ -4,8 +4,7 @@ on:
         inputs:
             branch_name:
                 required: true
-                description: The branch the release will happen. For example, if you are to release 4.1.5 this would be `4.1.x`
-                maintenance branch. If you are going to release a new minor, this variable would be `master`.
+                description: The branch the release will happen. For example, if you are to release 4.1.5 this would be `4.1.x` maintenance branch. If you are going to release a new minor, this variable would be `master`.
             apidocs_branch_name:
                 required: true
                 description: The branch of the api docs.
