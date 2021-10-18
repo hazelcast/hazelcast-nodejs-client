@@ -545,7 +545,7 @@ That is because our map lives in the cluster and no matter which client we use, 
 See the Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more
 examples.
 
-You can also see the Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
+You can also see the Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client).
 
 
 # 2. Features
@@ -669,7 +669,7 @@ for the Java server side.
 > **NOTE: The `Long` type means the type provided by [long.js library](https://github.com/dcodeIO/long.js).**
 
 > **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `defaultNumberType`
-> serialization config option. See [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/)
+> serialization config option. See [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client)
 > for more information.**
 
 Arrays of the `boolean`, `number`, `BigInt`, `string`, and `Long` types can be serialized as `boolean[]`, `BigInteger[]`,
@@ -705,7 +705,7 @@ Or, if you want to use your own serialization method, you can use [Custom Serial
 > interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an
 > interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file.
 > Also, this object is mentioned as `an instance of the interface`. You can search the
-> [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required
+> [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client) or GitHub repository for a required
 > interface.**
 
 ## 4.1. IdentifiedDataSerializable Serialization
@@ -736,7 +736,7 @@ class Employee {
 ```
 
 > **NOTE: Refer to `DataInput`/`DataOutput` interfaces in the
-> [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on
+> [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client) to understand methods available on
 > the `input`/`output` objects.**
 
 The `IdentifiedDataSerializable` interface uses `classId` and `factoryId` properties to reconstitute the object. To complete the
@@ -818,7 +818,7 @@ class Customer {
 ```
 
 > **NOTE: Refer to `PortableReader`/`PortableWriter` interfaces in the
-> [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on
+> [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client) to understand methods available on
 > the `reader`/`writer` objects.**
 
 Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory function will
@@ -2222,7 +2222,7 @@ You can add event listeners to the distributed data structures.
 > interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an
 > interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file.
 > Also, this object is mentioned as "an instance of the interface". You can search the
-> [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for the
+> [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client) or GitHub repository for the
 > required interface.**
 
 #### 8.5.2.1. Map Listener
@@ -2861,7 +2861,7 @@ The SQL service supports a set of SQL data types. The table below shows SQL data
 | **OBJECT**                   | Any class            |
 | **NULL**                     | `null`               |
 
-See [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for how you can use
+See [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client) for how you can use
 `BigDecimal`, `LocalDate`, `LocalTime`, `LocalDateTime` and `OffsetDateTime` classes.
 
 ### 8.7.9. Casting
@@ -2913,7 +2913,7 @@ SQL has the following limitations. We plan to remove these limitations in future
 * You cannot run SQL queries on lite members.
 * The only supported Hazelcast data structure is map. You cannot query other data structures such as replicated maps.
 * No support for the `CREATE INDEX` statement. To create indexes for maps in Hazelcast, see `addIndex` method of map in
-  [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
+  [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client).
 * No support for the JSON type. You can’t use functions such as `JSON_VALUE` or `JSON_QUERY`.
 * Limited support for joins. See [Join Tables](https://docs.hazelcast.com/hazelcast/latest/sql/select#join-tables).
 * No support for window functions. You cannot group or aggregate results in streaming queries.
@@ -2921,7 +2921,7 @@ SQL has the following limitations. We plan to remove these limitations in future
 ### 8.7.12. Improving the Performance of SQL Queries
 
 You can improve the performance of queries over maps by indexing map entries. To find out more about indexing map entries, see
-`addIndex` method of map in [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
+`addIndex` method of map in [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client).
 
 <!-- markdownlint-disable-next-line MD013 -->
 If you find that your queries lead to out of memory exceptions (OOME), consider decreasing the value of the Jet engine’s [max-processor-accumulated-records](https://docs.hazelcast.com/hazelcast/latest/configuration/jet-configuration#list-of-configuration-options)
