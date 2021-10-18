@@ -31,6 +31,7 @@ describe('PipelinedWriterTest', function () {
 
     let writer;
     let mockSocket;
+    let writtenBytes;
 
     function setUpWriteSuccess(canWrite) {
         mockSocket = new Socket({});
@@ -39,7 +40,9 @@ describe('PipelinedWriterTest', function () {
             process.nextTick(() => mockSocket.emit('data', data));
             return canWrite;
         });
-        writer = new PipelinedWriter(mockSocket, THRESHOLD);
+        writer = new PipelinedWriter(mockSocket, THRESHOLD, numberOfBytes => {
+            writtenBytes += numberOfBytes;
+        });
     }
 
     function setUpWriteFailure(err) {
@@ -48,7 +51,9 @@ describe('PipelinedWriterTest', function () {
             process.nextTick(() => cb(err));
             return false;
         });
-        writer = new PipelinedWriter(mockSocket, THRESHOLD);
+        writer = new PipelinedWriter(mockSocket, THRESHOLD, numberOfBytes => {
+            writtenBytes += numberOfBytes;
+        });
     }
 
     function createMessageFromString(content) {
@@ -62,6 +67,19 @@ describe('PipelinedWriterTest', function () {
         clientMessage.addFrame(new Frame(buffer));
         return clientMessage;
     }
+
+    it('increment written bytes correctly', function(done) {
+        setUpWriteSuccess(true);
+
+        writtenBytes = 0;
+
+        const msg = createMessageFromString('test');
+        writer.write(msg, deferredPromise());
+        mockSocket.on('data', () => {
+            expect(writtenBytes).to.be.equal(msg.toBuffer().length);
+            done();
+        });
+    });
 
     it('writes single small message into socket', function(done) {
         setUpWriteSuccess(true);

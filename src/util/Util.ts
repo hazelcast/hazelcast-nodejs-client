@@ -68,7 +68,6 @@ export function shuffleArray<T>(array: T[]): void {
 
 /** @internal */
 export function getType(obj: any): string {
-    assertNotNull(obj);
     if (Long.isLong(obj)) {
         return 'long';
     } else if (Buffer.isBuffer(obj)) {
