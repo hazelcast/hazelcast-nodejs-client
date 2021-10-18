@@ -4,10 +4,15 @@ on:
         inputs:
             branch_name:
                 required: true
-                description: The release's branch in the form '5.0.x'
+                description: The branch the release will happen. For example, if you are to release 4.1.5 this would be `4.1.x`
+                maintenance branch. If you are going to release a new minor, this variable would be `master`.
+            apidocs_branch_name:
+                required: true
+                description: The branch of the api docs.
+                default: gh-pages
 
 jobs:
-    verify-release-candidate-and-release:
+    verify-release-candidate-and-publish:
         name: Verify release candidate and publish
         runs-on: ubuntu-latest
 
@@ -16,6 +21,9 @@ jobs:
               uses: actions/checkout@v2
               with:
                   ref: ${{ github.event.inputs.branch_name }}
+            - name: Calculate package version
+              run: echo "::set-output name=value::$(cat package.json | jq -r .version)"
+              id: version
             - name: Setup Java 8
               uses: actions/setup-java@v1
               with:
@@ -24,11 +32,12 @@ jobs:
               uses: actions/setup-node@v2
               with:
                   node-version: 12
-            - name: Download release candidate
+            - name: Prepere release candidate for release ${{ steps.version.outputs.value }}
               run: |
-                  todo
-                  todo
-                  todo
+                  node scripts/download-release-candidate.js -b ${{ github.event.inputs.branch_name }} -u devOpsHazelcast -p $GH_PAT -o release-candidate.zip
+                  unzip release-candidate.zip
+              env:
+                  GH_PAT: ${{ secrets.GH_PAT }}
             - name: Check integrity of the pack
               run: sha256sum --check release-pack.sha256
             - name: Unarchive the pack
@@ -38,7 +47,7 @@ jobs:
             - name: Replace lib folder
               run: |
                 rm -rf lib
-                mv release-pack-verification/package/lib .
+                mv package/lib .
             - name: Validate User Code
               run: npm run validate-user-code
             - name: Generate docs
@@ -47,7 +56,38 @@ jobs:
               env:
                   HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
               run: npm run coverage
+            - name: Publish
+              run: npm publish hazelcast-client-${{ steps.version.outputs.value }}.tgz
+            - name: Checkout to branch ${{ github.event.inputs.apidocs_branch_name }}
+              uses: actions/checkout@v2
+              with:
+                  ref: ${{ github.event.inputs.apidocs_branch_name }}
+                  path: apidocs
+            - name: Move docs folder
+              run: |
+                mkdir $GITHUB_WORKSPACE/apidocs/api/$VERSION
+                mv docs $GITHUB_WORKSPACE/apidocs/api/$VERSION
+              env:
+                  VERSION: ${{ steps.version.outputs.value }}
+            - name: Change current version
+              run: "echo 'version: $VERSION' > _data/current.yaml"
+              env:
+                  VERSION: ${{ steps.version.outputs.value }}
+              working-directory: apidocs
+            - name: Push apidocs to ${{ github.event.inputs.apidocs_branch_name }}
+              uses: EndBug/add-and-commit@v7
+              with:
+                  add: api/$VERSION _data/current.yaml
+                  message: Add version $VERSION
+                  cwd: $GITHUB_WORKSPACE/apidocs
+                  default_author: github_actions
+                  branch: ${{ github.event.inputs.apidocs_branch_name }}
+              env:
+                  VERSION: ${{ steps.version.outputs.value }}
             - name: Congratulate
               run: |
-                echo "Congratulations, the package has been released. Don't forget to tag the commit with a tag in the form 'v5.0.2'"
-                echo "You can check the released package with `npm install hazelcast-client@released-version`"
+                echo "Congratulations, Node.js client $VERSION has been released. Don't forget to tag the latest commit on
+                  branch ${{ github.event.inputs.apidocs_branch_name }} with the tag 'v$VERSION'"
+                echo "You can install the released package via `npm install hazelcast-client@$VERSION`"
+              env:
+                  VERSION: ${{ steps.version.outputs.value }}
