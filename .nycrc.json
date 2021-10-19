@@ -1,5 +1,4 @@
 {
-    "cache": true,
-    "reporter": "lcov",
-    "include": ["src", "lib"]
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "reporter": "lcov"
 }
