@@ -13,6 +13,7 @@
         "long": "4.0.0"
     },
     "devDependencies": {
+        "@istanbuljs/nyc-config-typescript": "^1.0.1",
         "@types/node": "~10.17.60",
         "@typescript-eslint/eslint-plugin": "~4.32.0",
         "@typescript-eslint/parser": "~4.32.0",
@@ -34,6 +35,7 @@
         "sinon-chai": "~3.7.0",
         "source-map-support": "~0.5.20",
         "thrift": "~0.15.0",
+        "ts-node": "^10.3.0",
         "typedoc": "~0.21.9",
         "typescript": "~4.4.3",
         "winston": "~3.3.3",
