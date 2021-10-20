@@ -2,14 +2,14 @@ name: Runs the tests nightly
 on:
     workflow_dispatch:
     schedule:
-        - cron: '0 2 * * *'
+        - cron: '0 2 */2 * *'
 jobs:
     run-tests:
         runs-on: ${{ matrix.os }}
         name: Run tests of branch ${{ matrix.branch }} on ${{ matrix.os }} with Node ${{ matrix.nodejs_version }}
         strategy:
             matrix:
-                branch: [ 5.0.x, 4.2.x, 4.1.x, 4.0.x ]
+                branch: [ 5.0.x, 4.2.x, 4.1.x, 4.0.x, master ]
                 os: [ ubuntu-latest, windows-latest ]
                 nodejs_version: [ 10, 11, 12, 13, 14, 15, 16, 17 ]
             fail-fast: false
