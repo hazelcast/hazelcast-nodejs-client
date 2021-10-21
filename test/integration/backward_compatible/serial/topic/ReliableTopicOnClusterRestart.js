@@ -58,7 +58,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         await RC.shutdownCluster(cluster.id);
     });
 
-    const createInvocationTimeoutSetClient = (invocationTimeoutMillis) => {
+    const createClientWithProps = (props) => {
         return testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             connectionStrategy: {
@@ -66,10 +66,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
                     clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
                 }
             },
-            properties: {
-                'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis,
-                'hazelcast.logging.level': 'TRACE'
-            }
+            properties: props
         });
     };
 
@@ -80,9 +77,6 @@ describe('ReliableTopicOnClusterRestartTest', function () {
                 connectionRetry: {
                     clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
                 }
-            },
-            properties: {
-                'hazelcast.logging.level': 'TRACE'
             }
         });
     };
@@ -90,8 +84,15 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     it('should continue on cluster restart when data lost and after invocation timeout', async function () {
         const invocationTimeoutMillis = 2000;
 
-        client1 = await createInvocationTimeoutSetClient(invocationTimeoutMillis);
-        client2 = await createInvocationTimeoutSetClient(invocationTimeoutMillis);
+        client1 = await createClientWithProps({
+            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis,
+            // Heartbeat timeout change is needed to make clients disconnect from member quickly after it is restarted
+            'hazelcast.client.heartbeat.timeout': 3000
+        });
+        client2 = await createClientWithProps({
+            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis,
+            'hazelcast.client.heartbeat.timeout': 3000
+        });
 
         let messageArrived = false;
         let messageCount = 0;
@@ -133,7 +134,11 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     it('should continue on cluster restart after invocation timeout', async function () {
         const invocationTimeoutMillis = 2000;
 
-        client1 = await createInvocationTimeoutSetClient(invocationTimeoutMillis);
+        client1 = await createClientWithProps({
+            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis,
+            // Heartbeat timeout change is needed to make clients disconnect from member quickly after it is restarted
+            'hazelcast.client.heartbeat.timeout': 3000
+        });
 
         let messageArrived = false;
         const topicName = 'topic';
@@ -165,8 +170,13 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     });
 
     it('should continue on cluster restart', async function () {
-        client1 = await createClient();
-        client2 = await createClient();
+        client1 = await createClientWithProps({
+            // Heartbeat timeout change is needed to make clients disconnect from member quickly after it is restarted
+            'hazelcast.client.heartbeat.timeout': 3000
+        });
+        client2 = await createClientWithProps({
+            'hazelcast.client.heartbeat.timeout': 3000
+        });
 
         const topicName = 'topic';
         const topic1 = await client1.getReliableTopic(topicName);
