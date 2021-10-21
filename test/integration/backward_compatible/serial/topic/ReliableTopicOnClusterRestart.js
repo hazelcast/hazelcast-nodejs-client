@@ -67,7 +67,8 @@ describe('ReliableTopicOnClusterRestartTest', function () {
                 }
             },
             properties: {
-                'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
+                'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis,
+                'hazelcast.logging.level': 'TRACE'
             }
         });
     };
@@ -79,6 +80,9 @@ describe('ReliableTopicOnClusterRestartTest', function () {
                 connectionRetry: {
                     clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
                 }
+            },
+            properties: {
+                'hazelcast.logging.level': 'TRACE'
             }
         });
     };
