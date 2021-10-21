@@ -85,13 +85,10 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         const invocationTimeoutMillis = 2000;
 
         client1 = await createClientWithProps({
-            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis,
-            // Heartbeat timeout change is needed to make clients disconnect from member quickly after it is restarted
-            'hazelcast.client.heartbeat.timeout': 3000
+            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
         });
         client2 = await createClientWithProps({
-            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis,
-            'hazelcast.client.heartbeat.timeout': 3000
+            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
         });
 
         let messageArrived = false;
@@ -135,9 +132,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         const invocationTimeoutMillis = 2000;
 
         client1 = await createClientWithProps({
-            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis,
-            // Heartbeat timeout change is needed to make clients disconnect from member quickly after it is restarted
-            'hazelcast.client.heartbeat.timeout': 3000
+            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
         });
 
         let messageArrived = false;
@@ -170,13 +165,8 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     });
 
     it('should continue on cluster restart', async function () {
-        client1 = await createClientWithProps({
-            // Heartbeat timeout change is needed to make clients disconnect from member quickly after it is restarted
-            'hazelcast.client.heartbeat.timeout': 3000
-        });
-        client2 = await createClientWithProps({
-            'hazelcast.client.heartbeat.timeout': 3000
-        });
+        client1 = await createClient();
+        client2 = await createClient();
 
         const topicName = 'topic';
         const topic1 = await client1.getReliableTopic(topicName);
