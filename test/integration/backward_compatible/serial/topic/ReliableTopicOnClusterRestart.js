@@ -58,7 +58,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
         await RC.shutdownCluster(cluster.id);
     });
 
-    const createClientWithProps = (props) => {
+    const createInvocationTimeoutSetClient = (invocationTimeoutMillis) => {
         return testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             connectionStrategy: {
@@ -66,7 +66,9 @@ describe('ReliableTopicOnClusterRestartTest', function () {
                     clusterConnectTimeoutMillis: Number.MAX_SAFE_INTEGER
                 }
             },
-            properties: props
+            properties: {
+                'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
+            }
         });
     };
 
@@ -84,12 +86,8 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     it('should continue on cluster restart when data lost and after invocation timeout', async function () {
         const invocationTimeoutMillis = 2000;
 
-        client1 = await createClientWithProps({
-            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
-        });
-        client2 = await createClientWithProps({
-            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
-        });
+        client1 = await createInvocationTimeoutSetClient(invocationTimeoutMillis);
+        client2 = await createInvocationTimeoutSetClient(invocationTimeoutMillis);
 
         let messageArrived = false;
         let messageCount = 0;
@@ -131,9 +129,7 @@ describe('ReliableTopicOnClusterRestartTest', function () {
     it('should continue on cluster restart after invocation timeout', async function () {
         const invocationTimeoutMillis = 2000;
 
-        client1 = await createClientWithProps({
-            'hazelcast.client.invocation.timeout.millis': invocationTimeoutMillis
-        });
+        client1 = await createInvocationTimeoutSetClient(invocationTimeoutMillis);
 
         let messageArrived = false;
         const topicName = 'topic';
