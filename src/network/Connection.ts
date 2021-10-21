@@ -188,8 +188,13 @@ export class DirectWriter extends Writer {
     constructor(
         private readonly socket: net.Socket,
         private readonly incrementBytesWrittenFn: (numberOfBytes: number) => void,
+        private readonly connCloseFn: (reason: string, cause: Error) => void
     ) {
         super();
+        socket.on('close', () => {
+            connCloseFn('Connection closed by the other side', new IOError('Connection closed by the other side'));
+            this.close();
+        });
     }
 
     write(message: ClientMessage, resolver: DeferredPromise<void>): void {
@@ -365,7 +370,7 @@ export class Connection {
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
         this.writer = enablePipelining ?
             new PipelinedWriter(this.socket, pipeliningThreshold, this.incrementBytesWrittenFn, this.close.bind(this)) :
-            new DirectWriter(this.socket, this.incrementBytesWrittenFn);
+            new DirectWriter(this.socket, this.incrementBytesWrittenFn, this.close.bind(this));
         this.writer.on('write', () => {
             this.lastWriteTimeMillis = Date.now();
         });
