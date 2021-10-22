@@ -68,7 +68,6 @@ export class PipelinedWriter extends Writer {
         // coalescing threshold in bytes
         private readonly threshold: number,
         private readonly incrementBytesWrittenFn: (numberOfBytes: number) => void,
-        private readonly connCloseFn: (reason: string, cause: Error) => void,
     ) {
         super();
         this.coalesceBuf = Buffer.allocUnsafe(threshold);
@@ -77,11 +76,6 @@ export class PipelinedWriter extends Writer {
         socket.on('drain', () => {
             this.canWrite = true;
             this.schedule();
-        });
-
-        socket.on('close', hadError => {
-            const errorString = 'Underlying socket has been closed' + (hadError ? ' due to a transmission error' : '');
-            connCloseFn(errorString, new IOError(errorString));
         });
     }
 
@@ -188,13 +182,8 @@ export class DirectWriter extends Writer {
     constructor(
         private readonly socket: net.Socket,
         private readonly incrementBytesWrittenFn: (numberOfBytes: number) => void,
-        private readonly connCloseFn: (reason: string, cause: Error) => void
     ) {
         super();
-        socket.on('close', hadError => {
-            const errorString = 'Underlying socket has been closed' + (hadError ? ' due to a transmission error' : '');
-            connCloseFn(errorString, new IOError(errorString));
-        });
     }
 
     write(message: ClientMessage, resolver: DeferredPromise<void>): void {
@@ -368,9 +357,8 @@ export class Connection {
         this.lastReadTimeMillis = 0;
         this.closedTime = 0;
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
-        this.writer = enablePipelining ?
-            new PipelinedWriter(this.socket, pipeliningThreshold, this.incrementBytesWrittenFn, this.close.bind(this)) :
-            new DirectWriter(this.socket, this.incrementBytesWrittenFn, this.close.bind(this));
+        this.writer = enablePipelining ? new PipelinedWriter(this.socket, pipeliningThreshold, this.incrementBytesWrittenFn)
+            : new DirectWriter(this.socket, this.incrementBytesWrittenFn);
         this.writer.on('write', () => {
             this.lastWriteTimeMillis = Date.now();
         });
