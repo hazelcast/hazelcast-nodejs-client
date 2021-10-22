@@ -29,7 +29,6 @@ const {Lang} = require('../../../remote_controller/remote_controller_types');
 const fs = require('fs');
 const path = require('path');
 const { isClientVersionAtLeast } = require('../../../../TestUtil');
-const { SqlRowImpl } = require('../../../../../lib/sql/SqlRow');
 
 const getHazelcastSqlException = () => {
     const { HazelcastSqlException } = require('../../../../../lib/core/HazelcastError');
@@ -367,7 +366,7 @@ describe('SqlExecuteTest', function () {
             rows.length.should.be.eq(1);
 
             const row = rows[0];
-            row.should.be.instanceof(SqlRowImpl);
+            row.should.be.instanceof(getSqlRowImpl());
 
             // We should be able to deserialize parts of the response
 
