@@ -31,7 +31,8 @@ import {
     UUID,
     AddressImpl,
     Addresses,
-    MemberImpl, IOError,
+    MemberImpl,
+    IOError,
 } from '../core';
 import {lookupPublicAddress} from '../core/MemberInfo';
 import {Connection} from './Connection';
