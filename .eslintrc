@@ -40,10 +40,6 @@
                 "before": true
             }
         ],
-        "linebreak-style": [
-            "warn",
-            "unix"
-        ],
         "max-len": [
             "warn",
             {
