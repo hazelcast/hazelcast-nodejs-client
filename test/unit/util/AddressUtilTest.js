@@ -150,14 +150,14 @@ describe('AddressUtilTest', function () {
         expect(result).to.be.false;
     });
 
-    it('resolveAddress: returns IPv4 for localhost with port', async function () {
+    it('resolveAddress: returns loopback address for localhost with port', async function () {
         const result = await resolveAddress('localhost:5701');
-        expect(result).to.be.equal('127.0.0.1');
+        expect(result).to.satisfy(ip => ip === '127.0.0.1' || ip === '::1');
     });
 
-    it('resolveAddress: returns IPv4 for localhost without port', async function () {
+    it('resolveAddress: returns loopback address for localhost without port', async function () {
         const result = await resolveAddress('localhost');
-        expect(result).to.be.equal('127.0.0.1');
+        expect(result).to.satisfy(ip => ip === '127.0.0.1' || ip === '::1');
     });
 
     it('resolveAddress: returns IPv4 for IPv4 address with port', async function () {
