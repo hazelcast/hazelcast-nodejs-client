@@ -79,9 +79,9 @@ export class PipelinedWriter extends Writer {
             this.schedule();
         });
 
-        socket.on('close', () => {
-            connCloseFn('Connection closed by the other side', new IOError('Connection closed by the other side'));
-            this.close();
+        socket.on('close', hadError => {
+            const errorString = 'Underlying socket has been closed' + (hadError ? ' due to a transmission error' : '');
+            connCloseFn(errorString, new IOError(errorString));
         });
     }
 
@@ -191,9 +191,9 @@ export class DirectWriter extends Writer {
         private readonly connCloseFn: (reason: string, cause: Error) => void
     ) {
         super();
-        socket.on('close', () => {
-            connCloseFn('Connection closed by the other side', new IOError('Connection closed by the other side'));
-            this.close();
+        socket.on('close', hadError => {
+            const errorString = 'Underlying socket has been closed' + (hadError ? ' due to a transmission error' : '');
+            connCloseFn(errorString, new IOError(errorString));
         });
     }
 
