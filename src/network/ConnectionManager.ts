@@ -311,7 +311,7 @@ export class ConnectionManager extends EventEmitter {
                 });
                 // close the connection if socket is not readable anymore
                 socket.once('end', () => {
-                    const reason = 'Connection might be closed by other side.';
+                    const reason = 'Connection closed by the other side.';
                     connection.close(reason, new IOError(reason));
                 });
                 return this.initiateCommunication(socket);
