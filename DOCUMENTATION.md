@@ -981,9 +981,7 @@ object. Now the last required step is to register the `CustomSerializer` to the 
 ```javascript
 const cfg ={
     serialization: {
-        customSerializers: [
-            10: new CustomSerializer()
-        ]
+        customSerializers: [new CustomSerializer()]
     }
 };
 ```
