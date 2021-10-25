@@ -61,6 +61,8 @@ describe('MigratedDataTest', function () {
     }
 
     before(async function () {
+        // Before https://github.com/hazelcast/hazelcast-nodejs-client/pull/704 this test is flaky.
+        TestUtil.markClientVersionAtLeast(this, '4.0.2');
         cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'));
         member1 = await RC.startMember(cluster.id);
