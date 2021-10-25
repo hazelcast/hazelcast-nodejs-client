@@ -211,11 +211,17 @@ export class ConfigBuilder {
     }
 
     private handleSSLOptionsFactory(sslOptionsFactory: any) {
-        if (sslOptionsFactory
-            && (typeof sslOptionsFactory.init !== 'function' || typeof sslOptionsFactory.getSSLOptions !== 'function')) {
-            throw new RangeError(
-                `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. Check out the API documentation for the expected object.`
-            );
+        if (sslOptionsFactory) {
+            if (typeof sslOptionsFactory.init !== 'function') {
+                throw new RangeError(
+                    `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. Expected a 'init' property that is a function.`
+                );
+            }
+            if (typeof sslOptionsFactory.getSSLOptions !== 'function') {
+                throw new RangeError(
+                    `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. Expected a 'getSSLOptions' that is a function.`
+                );
+            }
         }
         this.effectiveConfig.network.ssl.sslOptionsFactory = sslOptionsFactory;
     }
@@ -329,7 +335,8 @@ export class ConfigBuilder {
         // Throw in case both memberAdded and memberRemoved are invalid.
         if (typeof membershipListener.memberAdded !== 'function' && typeof membershipListener.memberRemoved !== 'function') {
             throw new RangeError(`Invalid membershipListener is given in 'membershipListeners': ${membershipListener}. `
-                                + 'Check out the API documentation for the expected object.');
+                                + 'Expected at least one of \'memberAdded\' and \'memberRemoved\' properties to exist and be a'
+                                + ' function.');
         }
         this.effectiveConfig.membershipListeners.push(membershipListener);
     }
@@ -360,12 +367,25 @@ export class ConfigBuilder {
     }
 
     private handleGlobalSerializer(globalSerializer: any) {
-        if (!globalSerializer || typeof globalSerializer.id !== 'number'
-            || typeof globalSerializer.read !== 'function' || typeof globalSerializer.write !== 'function') {
+        if (!globalSerializer) {
+            throw new RangeError(`Invalid global serializer given: ${globalSerializer}. Expected a truthy value.`)
+        }
+        if (typeof globalSerializer.id !== 'number') {
             throw new RangeError(
-                `Invalid global serializer given: ${globalSerializer}. Check out the API documentation for the expected object.`
+                `Invalid global serializer given: ${globalSerializer}. Expected a 'id' property that is a number.`
             );
         }
+        if (typeof globalSerializer.read !== 'function') {
+            throw new RangeError(
+                `Invalid global serializer given: ${globalSerializer}. Expected a 'read' property that is function.`
+            );
+        }
+        if (typeof globalSerializer.write !== 'function') {
+            throw new RangeError(
+                `Invalid global serializer given: ${globalSerializer}. Expected a 'write' property that is function.`
+            );
+        }
+
         this.effectiveConfig.serialization.globalSerializer = globalSerializer;
     }
 
@@ -409,12 +429,22 @@ export class ConfigBuilder {
         const serializersArray = tryGetArray(jsonObject);
 
         for (const serializer of serializersArray) {
-            if (typeof serializer.id !== 'number'
-                || typeof serializer.read !== 'function' || typeof serializer.write !== 'function') {
+            if (typeof serializer.id !== 'number') {
                 throw new RangeError(
-                    `Invalid custom serializer given: ${serializer}. Check out the API documentation for the expected object.`
+                    `Invalid custom serializer given: ${serializer}. Expected a 'id' property that is a number.`
                 );
             }
+            if (typeof serializer.read !== 'function' || typeof serializer.write !== 'function') {
+                throw new RangeError(
+                    `Invalid custom serializer given: ${serializer}. Expected a 'read' property that is function.`
+                );
+            }
+            if (typeof serializer.write !== 'function') {
+                throw new RangeError(
+                    `Invalid custom serializer given: ${serializer}. Expected a 'write' property that is function.`
+                );
+            }
+
             this.effectiveConfig.serialization.customSerializers.push(serializer);
         }
     }
@@ -516,22 +546,39 @@ export class ConfigBuilder {
     }
 
     private handleCustomLoadBalancer(customLB: any) {
-        if (!customLB || typeof customLB.initLoadBalancer !== 'function' || typeof customLB.next !== 'function') {
+        if (!customLB) {
             throw new RangeError(
-                `Invalid LoadBalancer given: ${customLB}. Check out the API documentation for the expected object.`
+                `Invalid LoadBalancer given: ${customLB}. Expected a truthy value.`
             );
         }
+        if (typeof customLB.initLoadBalancer !== 'function') {
+            throw new RangeError(
+                `Invalid LoadBalancer given: ${customLB}. Expected a 'initLoadBalancer' property to be a function.`
+            );
+        }
+        if (typeof customLB.next !== 'function') {
+            throw new RangeError(
+                `Invalid LoadBalancer given: ${customLB}. Expected a 'next' property to be a function.`
+            );
+        }
+
 
         this.effectiveConfig.loadBalancer.customLoadBalancer = customLB;
     }
 
     private handleLogger(customLogger: any): void {
-        if (!customLogger || typeof customLogger.log !== 'function' || typeof customLogger.error !== 'function' ||
-            typeof customLogger.warn !== 'function' || typeof customLogger.info !== 'function' ||
-            typeof customLogger.debug !== 'function' || typeof customLogger.trace !== 'function') {
+        if (!customLogger) {
             throw new RangeError(
-                `Invalid custom logger given: ${customLogger}. Check out the API documentation for the expected object.`
+                `Invalid custom logger given: ${customLogger}. Expected a truthy value.`
             );
+        }
+        const functionProps = ['log', 'error', 'warn', 'info', 'debug', 'trace'];
+        for (const functionProp of functionProps) {
+            if (typeof customLogger.log !== 'function') {
+                throw new RangeError(
+                    `Invalid custom logger given: ${customLogger}. Expected a ${functionProp} property that is function.`
+                );
+            }
         }
 
         this.effectiveConfig.customLogger = customLogger;
