@@ -574,7 +574,7 @@ export class ConfigBuilder {
         }
         const functionProps = ['log', 'error', 'warn', 'info', 'debug', 'trace'];
         for (const functionProp of functionProps) {
-            if (typeof customLogger.log !== 'function') {
+            if (typeof customLogger[functionProp] !== 'function') {
                 throw new RangeError(
                     `Invalid custom logger given: ${customLogger}. Expected a ${functionProp} property that is function.`
                 );
