@@ -22,7 +22,7 @@ export class ConfigPatternMatcher {
      *
      * @param configPatterns
      * @param itemName
-     * @throws TypeError
+     * @throws TypeError when config patterns create ambiguity for the config item
      * @returns `null` if there is no matching pattern;
      *          the best matching pattern otherwise
      */
