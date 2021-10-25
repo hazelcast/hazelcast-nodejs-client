@@ -201,7 +201,7 @@ export class ConfigBuilder {
         } else if (jsonObject.sslOptionsFactory || jsonObject.sslOptionsFactoryProperties) {
             this.handleSSLOptionsFactory(jsonObject.sslOptionsFactory);
             if (typeof jsonObject.sslOptionsFactoryProperties !== 'object') {
-                throw new RangeError('Expected "sslOptionsFactoryProperties" to be an object but it is a: '
+                throw new RangeError('Expected \'sslOptionsFactoryProperties\' to be an object but it is a: '
                     + typeof jsonObject.sslOptionsFactoryProperties
                 );
             }
@@ -376,7 +376,7 @@ export class ConfigBuilder {
         for (const index in portableFactories) {
             const idx = +index;
             if (!Number.isInteger(idx)) {
-                throw new RangeError(`"portableFactories" should only include integer keys, given key: ${index}`);
+                throw new RangeError(`'portableFactories' should only include integer keys, given key: ${index}`);
             }
             if (typeof portableFactories[index] !== 'function') {
                 throw new RangeError(`Expected the portableFactory to be function but it is not: ${portableFactories[index]}`);
@@ -394,7 +394,7 @@ export class ConfigBuilder {
         for (const index in dataSerializableFactories) {
             const idx = +index;
             if (!Number.isInteger(idx)) {
-                throw new RangeError(`"dataSerializableFactories" should only include integer keys, given key: ${index}`);
+                throw new RangeError(`'dataSerializableFactories' should only include integer keys, given key: ${index}`);
             }
             if (typeof dataSerializableFactories[index] !== 'function') {
                 throw new RangeError(
