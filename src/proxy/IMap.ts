@@ -204,6 +204,7 @@ export interface IMap<K, V> extends DistributedObject {
      * if the write-behind queue has reached its per-node maximum capacity.
      *
      * @param pairs entries to be put
+     * @throws AssertionError if any key or value in the specified array is `null`
      */
     putAll(pairs: Array<[K, V]>): Promise<void>;
 
@@ -235,6 +236,7 @@ export interface IMap<K, V> extends DistributedObject {
      * Works with Hazelcast versions 4.1 and above.
      *
      * @param pairs entries to be put
+     * @throws AssertionError if any key or value in the specified array is `null`
      */
     setAll(pairs: Array<[K, V]>): Promise<void>;
 

@@ -18,7 +18,7 @@
 const RC = require('./remote_controller/Controller');
 const { deferredPromise } = require('../../lib/util/Util');
 
-const controller = new RC('localhost', 9701);
+const controller = new RC();
 
 function createCluster(hzVersion, config) {
     const deferred = deferredPromise();

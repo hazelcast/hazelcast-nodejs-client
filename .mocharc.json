@@ -1,14 +1,17 @@
 {
-    "timeout": 120000,
+    "timeout": 600000,
     "exit": true,
     "exclude": [
         "test/soak_test/**",
-        "test/user_code/**"
+        "test/user_code/**",
+        "scripts"
     ],
     "reporter": "mocha-jenkins-reporter",
     "reporter-option": [
         "junit_report_name=Node.js Client Tests",
         "junit_report_path=report.xml",
         "junit_report_stack=1"
-    ]
+    ],
+    "require": ["source-map-support/register", "ts-node/register/transpile-only"],
+    "recursive": true
 }

@@ -39,7 +39,7 @@ import {
 } from '../core';
 import {MemberInfo} from '../core/MemberInfo';
 import {ClusterFailoverService} from '../ClusterFailoverService';
-import {ConnectionRegistry} from '../network/ConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 class MemberListSnapshot {
     constructor(
@@ -78,7 +78,6 @@ export class ClusterService implements Cluster {
      * @return The member that was found, or undefined if not found.
      */
     getMember(uuid: string): MemberImpl | undefined {
-        assertNotNull(uuid);
         return this.memberListSnapshot.members.get(uuid);
     }
 

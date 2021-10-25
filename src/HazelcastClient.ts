@@ -64,7 +64,7 @@ import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './protocol/ClientMessage';
 import {Connection} from './network/Connection';
-import {ConnectionRegistryImpl} from './network/ConnectionManager';
+import {ConnectionRegistryImpl} from './network/ConnectionRegistry';
 import {SqlService, SqlServiceImpl} from './sql/SqlService';
 
 /**
@@ -218,7 +218,8 @@ export class HazelcastClient {
             this.instanceName,
             this.invocationService,
             this.nearCacheManager,
-            this.connectionRegistry
+            this.connectionRegistry,
+            this.connectionManager
         );
         this.clusterViewListenerService = new ClusterViewListenerService(
             this.loggingService.getLogger(),

@@ -65,7 +65,9 @@ export class PipelinedWriter extends Writer {
 
     constructor(
         private readonly socket: net.Socket,
-        private readonly threshold: number // coalescing threshold in bytes
+        // coalescing threshold in bytes
+        private readonly threshold: number,
+        private readonly incrementBytesWrittenFn: (numberOfBytes: number) => void,
     ) {
         super();
         this.coalesceBuf = Buffer.allocUnsafe(threshold);
@@ -148,6 +150,7 @@ export class PipelinedWriter extends Writer {
             }
 
             this.emit('write');
+            this.incrementBytesWrittenFn(buf.length);
             for (const item of writeBatch) {
                 item.resolver.resolve();
             }
@@ -176,7 +179,10 @@ export class PipelinedWriter extends Writer {
 /** @internal */
 export class DirectWriter extends Writer {
 
-    constructor(private readonly socket: net.Socket) {
+    constructor(
+        private readonly socket: net.Socket,
+        private readonly incrementBytesWrittenFn: (numberOfBytes: number) => void,
+    ) {
         super();
     }
 
@@ -188,6 +194,7 @@ export class DirectWriter extends Writer {
                 return;
             }
             this.emit('write');
+            this.incrementBytesWrittenFn(buffer.length);
             resolver.resolve();
         });
     }
@@ -337,7 +344,9 @@ export class Connection {
         private remoteAddress: AddressImpl,
         private readonly socket: net.Socket,
         private readonly connectionId: number,
-        private readonly lifecycleService: LifecycleService
+        private readonly lifecycleService: LifecycleService,
+        private readonly incrementBytesReadFn: (numberOfBytes: number) => void,
+        private readonly incrementBytesWrittenFn: (numberOfBytes: number) => void,
     ) {
         const enablePipelining = clientConfig.properties[PROPERTY_PIPELINING_ENABLED] as boolean;
         const pipeliningThreshold = clientConfig.properties[PROPERTY_PIPELINING_THRESHOLD] as number;
@@ -348,7 +357,8 @@ export class Connection {
         this.lastReadTimeMillis = 0;
         this.closedTime = 0;
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
-        this.writer = enablePipelining ? new PipelinedWriter(this.socket, pipeliningThreshold) : new DirectWriter(this.socket);
+        this.writer = enablePipelining ? new PipelinedWriter(this.socket, pipeliningThreshold, this.incrementBytesWrittenFn)
+            : new DirectWriter(this.socket, this.incrementBytesWrittenFn);
         this.writer.on('write', () => {
             this.lastWriteTimeMillis = Date.now();
         });
@@ -471,6 +481,7 @@ export class Connection {
                 }
                 clientMessage = this.reader.read();
             }
+            this.incrementBytesReadFn(buffer.length);
         });
     }
 

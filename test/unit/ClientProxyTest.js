@@ -21,7 +21,7 @@ const sandbox = sinon.createSandbox();
 
 const { Client } = require('../../');
 const { MapProxy } = require('../../lib/proxy/MapProxy');
-const { ConnectionRegistryImpl } = require('../../lib/network/ConnectionManager');
+const { ConnectionRegistryImpl } = require('../../lib/network/ConnectionRegistry');
 const { Connection } = require('../../lib/network/Connection');
 const { ProxyManager } = require('../../lib/proxy/ProxyManager');
 
