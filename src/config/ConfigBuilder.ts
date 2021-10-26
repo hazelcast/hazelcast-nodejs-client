@@ -210,7 +210,7 @@ export class ConfigBuilder {
         } else if (jsonObject.sslOptionsFactory || jsonObject.sslOptionsFactoryProperties) {
             this.handleSSLOptionsFactory(jsonObject.sslOptionsFactory);
             const factoryPropsType = typeof jsonObject.sslOptionsFactoryProperties;
-            if (typeof factoryPropsType !== 'object') {
+            if (factoryPropsType !== 'object') {
                 throw new RangeError(`Expected 'sslOptionsFactoryProperties' to be an object but it is a: ${factoryPropsType}`);
             }
             this.effectiveConfig.network.ssl.sslOptionsFactoryProperties = jsonObject.sslOptionsFactoryProperties
