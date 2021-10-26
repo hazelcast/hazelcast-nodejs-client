@@ -225,58 +225,58 @@ export class ConfigBuilder {
     private static validateProperty(property: string, value: any) {
         switch (property) {
             case 'hazelcast.client.heartbeat.interval':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.client.heartbeat.timeout':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.client.invocation.retry.pause.millis':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.client.invocation.timeout.millis':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.client.internal.clean.resources.millis':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.client.cloud.url':
-                value = tryGetString(value);
+                tryGetString(value);
                 break;
             case 'hazelcast.client.statistics.enabled':
-                value = tryGetBoolean(value);
+                tryGetBoolean(value);
                 break;
             case 'hazelcast.client.statistics.period.seconds':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.invalidation.reconciliation.interval.seconds':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.invalidation.max.tolerated.miss.count':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.invalidation.min.reconciliation.interval.seconds':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.logging.level':
                 tryGetEnum(LogLevel, value);
                 break;
             case 'hazelcast.client.autopipelining.enabled':
-                value = tryGetBoolean(value);
+                tryGetBoolean(value);
                 break;
             case 'hazelcast.client.autopipelining.threshold.bytes':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.client.socket.no.delay':
-                value = tryGetBoolean(value);
+                tryGetBoolean(value);
                 break;
             case 'hazelcast.client.shuffle.member.list':
-                value = tryGetBoolean(value);
+                tryGetBoolean(value);
                 break;
             case 'hazelcast.client.operation.backup.timeout.millis':
-                value = tryGetNumber(value);
+                tryGetNumber(value);
                 break;
             case 'hazelcast.client.operation.fail.on.indeterminate.state':
-                value = tryGetBoolean(value);
+                tryGetBoolean(value);
                 break;
             case 'hazelcast.discovery.public.ip.enabled':
                 if (value !== null && typeof value !== 'boolean') {
