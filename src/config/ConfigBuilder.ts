@@ -222,8 +222,8 @@ export class ConfigBuilder {
         }
     }
 
-    private static validateProperty(key: string, value: any) {
-        switch (key) {
+    private static validateProperty(property: string, value: any) {
+        switch (property) {
             case 'hazelcast.client.heartbeat.interval':
                 value = tryGetNumber(value);
                 break;
@@ -284,7 +284,7 @@ export class ConfigBuilder {
                 }
                 break;
             default:
-                throw new RangeError(`Unexpected property '${key}' is passed to the Hazelcast Client`);
+                throw new RangeError(`Unexpected property '${property}' is passed to the Hazelcast Client`);
         }
     }
 
