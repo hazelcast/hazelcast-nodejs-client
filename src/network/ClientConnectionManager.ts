@@ -266,7 +266,7 @@ export class ClientConnectionManager extends EventEmitter {
                     this.client, translatedAddress, socket, this.connectionIdCounter++);
                 // close the connection proactively on errors
                 socket.once('error', (err: NodeJS.ErrnoException) => {
-                        clientConnection.close('Socket error.', err);
+                    clientConnection.close('Socket error.', err);
                 });
                 // close the connection if socket is not readable anymore
                 socket.once('end', () => {
