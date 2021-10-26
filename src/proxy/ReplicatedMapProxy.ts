@@ -51,8 +51,8 @@ import {MapEvent, MapEventListener} from './MapListener';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {deserializeEntryList} from '../serialization/SerializationUtil';
 
-type EntryEventHander = (key: Data, value: Data, oldValue: Data, mergingValue: Data,
-                         eventType: number, uuid: UUID, numberOfAffectedEntries: number) => void
+type EntryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data,
+                          eventType: number, uuid: UUID, numberOfAffectedEntries: number) => void
 
 /** @internal */
 export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements ReplicatedMap<K, V> {
@@ -224,7 +224,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             }
         };
         let listenerHandler: (message: ClientMessage,
-                              handler: EntryEventHander,
+                              handler: EntryEventHandler,
                               toObjectFn: (data: Data) => any) => void;
         let codec: ListenerMessageCodec;
         if (key && predicate) {

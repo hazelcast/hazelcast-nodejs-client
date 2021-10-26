@@ -145,12 +145,12 @@ export class ClusterFailoverServiceBuilder {
         if (discoveryToken != null) {
             const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(config.properties, discoveryToken);
             return new HazelcastCloudAddressProvider(
-                urlEndpoint, this.getConnectionTimeoutMillis(config), this.loggingService.getLogger());
+                urlEndpoint, ClusterFailoverServiceBuilder.getConnectionTimeoutMillis(config), this.loggingService.getLogger());
         }
         return null;
     }
 
-    private getConnectionTimeoutMillis(config: ClientConfigImpl): number {
+    private static getConnectionTimeoutMillis(config: ClientConfigImpl): number {
         const networkConfig = config.network;
         const connTimeout = networkConfig.connectionTimeout;
         return connTimeout === 0 ? Number.MAX_SAFE_INTEGER : connTimeout;

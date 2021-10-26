@@ -161,7 +161,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
     }
 
     unlock(token: Long): Promise<void> {
-        const threadId = this.extractThreadId(token);
+        const threadId = FencedLockProxy.extractThreadId(token);
         const sessionId = this.getSessionId();
 
         // the order of the following checks is important
@@ -227,7 +227,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
         ).then(FencedLockGetLockOwnershipCodec.decodeResponse);
     }
 
-    private extractThreadId(fence: Fence): number {
+    private static extractThreadId(fence: Fence): number {
         if (!Long.isLong(fence)) {
             throw new TypeError('Fencing token should be of type Long');
         }

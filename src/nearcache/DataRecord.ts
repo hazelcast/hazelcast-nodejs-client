@@ -65,18 +65,14 @@ export class DataRecord {
         return x.accessHit - y.accessHit;
     }
 
-    public static randomComp(x: DataRecord, y: DataRecord): number {
+    public static randomComp(_x: DataRecord, _y: DataRecord): number {
         return Math.random() - 0.5;
     }
 
     isExpired(maxIdleSeconds: number): boolean {
         const now = Date.now();
-        if ((this.expirationTime > 0 && this.expirationTime < now) ||
-            (maxIdleSeconds > 0 && this.lastAccessTime + maxIdleSeconds * 1000 < now)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (this.expirationTime > 0 && this.expirationTime < now) ||
+            (maxIdleSeconds > 0 && this.lastAccessTime + maxIdleSeconds * 1000 < now);
     }
 
     setAccessTime(): void {
