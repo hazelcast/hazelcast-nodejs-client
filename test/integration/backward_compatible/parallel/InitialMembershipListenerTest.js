@@ -58,7 +58,9 @@ describe('InitialMembershipListenerTest', function () {
                         } catch (err) {
                             initTriggered.reject(err);
                         }
-                    }
+                    },
+                    memberAdded: () => {},
+                    memberRemoved: () => {}
                 }
             ]
         };

@@ -53,7 +53,7 @@ export enum MemberEvent {
 }
 
 /**
- * Cluster membership listener.
+ * Cluster membership listener. One of {@link memberAdded} or {@link memberRemoved} must exist.
  */
 export interface MembershipListener {
 
