@@ -28,7 +28,7 @@ import {DistributedObject} from '../core';
  * FencedLock works on top of CP sessions. Please refer to Hazelcast CP Session
  * documentation section for more information.
  *
- * Important note: FencedLock is non-reentrant. Once a caller acquires
+ * **Important note:** FencedLock is non-reentrant. Once a caller acquires
  * the lock, it can not acquire the lock reentrantly. So, the next acquire
  * attempt made within the same chain of async calls will lead to a dead lock.
  */
@@ -52,8 +52,10 @@ export interface FencedLock extends DistributedObject {
      * "How to do distributed locking" blog post and Google's Chubby paper.
      *
      * @returns fencing token
-     * @throws LockOwnershipLostError if the underlying CP session was
+     * @throws {@link LockOwnershipLostError} if the underlying CP session was
      *         closed before the client releases the lock
+     * @throws {@link IllegalMonitorStateError} If the caller wants to deal with
+     * its session loss by taking some custom actions, it can handle the thrown
      */
     lock(): Promise<Long>;
 
@@ -70,7 +72,7 @@ export interface FencedLock extends DistributedObject {
      * @returns fencing token (see {@link FencedLock#lock} for more
      *          information on fencing tokens) when lock is acquired;
      *          or `undefined` when attempt failed
-     * @throws LockOwnershipLostError if the underlying CP session was
+     * @throws {@link LockOwnershipLostError} if the underlying CP session was
      *         closed before the client releases the lock
      */
     tryLock(timeout?: number): Promise<Long | undefined>;
@@ -79,9 +81,10 @@ export interface FencedLock extends DistributedObject {
      * Releases the lock if the lock is currently held by the client.
      *
      * @param fence fencing token returned from `lock`/`tryLock` method.
-     * @throws IllegalMonitorStateError if the client does not hold
+     * @throws TypeError if the given `fence` is not a Long or not valid
+     * @throws {@link IllegalMonitorStateError} if the client does not hold
      *         the lock
-     * @throws LockOwnershipLostError if the underlying CP session was
+     * @throws {@link LockOwnershipLostError} if the underlying CP session was
      *         closed before the client releases the lock
      */
     unlock(fence: Long): Promise<void>;
@@ -91,7 +94,7 @@ export interface FencedLock extends DistributedObject {
      *
      * @return `true` if this lock is locked by any caller
      *         in the cluster, `false` otherwise.
-     * @throws LockOwnershipLostError if the underlying CP session was
+     * @throws {@link LockOwnershipLostError} if the underlying CP session was
      *         closed before the client releases the lock
      */
     isLocked(): Promise<boolean>;

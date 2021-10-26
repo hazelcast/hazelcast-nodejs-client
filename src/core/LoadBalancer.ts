@@ -26,11 +26,11 @@ import {
 /**
  * {@link LoadBalancer} allows you to send operations to one of a number of endpoints (Members).
  * It is up to the implementation to use different load balancing policies.
- * <p>
- * If Client is configured with {@link ClientNetworkConfig.smartRouting},
+ *
+ * If the client is configured with {@link ClientNetworkConfig.smartRouting},
  * only the operations that are not key based will be routed to the endpoint
  * returned by the LoadBalancer. If it is not, the LoadBalancer will not be used.
- * <p>
+ *
  */
 export interface LoadBalancer {
 
@@ -58,7 +58,7 @@ export interface LoadBalancer {
     nextDataMember(): Member | null;
 
     /**
-     * Returns whether this instance supports getting data members through a call to {@link nextDataMember()}.
+     * Returns whether this instance supports getting data members through a call to {@link nextDataMember}.
      *
      * @return Returns `true` if this load balancer can get a data member.
      * @deprecated Since 5.0, the method is unused
@@ -67,7 +67,7 @@ export interface LoadBalancer {
 }
 
 /**
- * Abstract Load Balancer to be used in built-in and user-provided
+ * Abstract Load Balancer to be used by built-in and user-provided
  * {@link LoadBalancer} implementations.
  */
 export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembershipListener {
