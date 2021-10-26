@@ -71,7 +71,7 @@ export interface ICountDownLatch extends DistributedObject {
      *                zero, the method will not wait at all
      * @returns `true` if the count reached zero, `false` if the waiting
      *          time elapsed before the count reached zero
-     * @throws IllegalStateError if the Hazelcast instance was shut down
+     * @throws {@link IllegalStateError} if the Hazelcast instance was shut down
      *         while waiting
      */
     await(timeout: number): Promise<boolean>;

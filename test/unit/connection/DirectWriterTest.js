@@ -30,6 +30,7 @@ const { deferredPromise } = require('../../../lib/util/Util');
 describe('DirectWriterTest', function () {
     let queue;
     let mockSocket;
+    let writtenBytes;
 
     function createMessage(content) {
         const clientMessage = ClientMessage.createForEncode();
@@ -43,7 +44,9 @@ describe('DirectWriterTest', function () {
             cb();
             mockSocket.emit('data', data);
         });
-        queue = new DirectWriter(mockSocket);
+        queue = new DirectWriter(mockSocket, numberOfBytes => {
+            writtenBytes += numberOfBytes;
+        });
     };
 
     const setUpWriteFailure = (err) => {
@@ -51,8 +54,24 @@ describe('DirectWriterTest', function () {
         sinon.stub(mockSocket, 'write').callsFake((_, cb) => {
             cb(err);
         });
-        queue = new DirectWriter(mockSocket);
+        queue = new DirectWriter(mockSocket, numberOfBytes => {
+            writtenBytes += numberOfBytes;
+        });
     };
+
+    it('increment written bytes correctly', function(done) {
+        setUpWriteSuccess();
+
+        writtenBytes = 0;
+
+        const msg = createMessage('test');
+        mockSocket.on('data', () => {
+            expect(writtenBytes).to.be.eq(msg.toBuffer().length);
+            done();
+        });
+
+        queue.write(msg, deferredPromise());
+    });
 
     it('writes single message into socket', function(done) {
         setUpWriteSuccess();

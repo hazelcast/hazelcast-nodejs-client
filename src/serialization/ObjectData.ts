@@ -499,7 +499,7 @@ export class ObjectDataInput implements DataInput {
 
     readString(pos?: number): string | null {
         const len = this.readInt(pos);
-        const readPos = this.addOrUndefined(pos, 4) || this.pos;
+        const readPos = ObjectDataInput.addOrUndefined(pos, 4) || this.pos;
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
             return null;
         }
@@ -565,7 +565,7 @@ export class ObjectDataInput implements DataInput {
         assert(pos + numOfBytes <= this.buffer.length);
     }
 
-    private addOrUndefined(base: number, adder: number): number {
+    private static addOrUndefined(base: number, adder: number): number {
         if (base === undefined) {
             return undefined;
         } else {

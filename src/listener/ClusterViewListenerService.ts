@@ -17,10 +17,10 @@
 
 import {
     ConnectionManager,
-    ConnectionRegistry,
     CONNECTION_ADDED_EVENT_NAME,
     CONNECTION_REMOVED_EVENT_NAME
 } from '../network/ConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
 import {ILogger} from '../logging/ILogger';

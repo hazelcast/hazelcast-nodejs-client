@@ -64,7 +64,7 @@ import {RoundRobinLB} from './util/RoundRobinLB';
 import {ClusterViewListenerService} from './listener/ClusterViewListenerService';
 import {ClientMessage} from './protocol/ClientMessage';
 import {Connection} from './network/Connection';
-import {ConnectionRegistryImpl} from './network/ConnectionManager';
+import {ConnectionRegistryImpl} from './network/ConnectionRegistry';
 import {SqlService, SqlServiceImpl} from './sql/SqlService';
 
 /**
@@ -218,7 +218,8 @@ export class HazelcastClient {
             this.instanceName,
             this.invocationService,
             this.nearCacheManager,
-            this.connectionRegistry
+            this.connectionRegistry,
+            this.connectionManager
         );
         this.clusterViewListenerService = new ClusterViewListenerService(
             this.loggingService.getLogger(),
@@ -246,6 +247,7 @@ export class HazelcastClient {
      * Creates a new client object and automatically connects to cluster.
      * @param config Client config. Default client config is used when this parameter
      *               is absent.
+     * @throws {@link InvalidConfigurationError} before returning if `config` is not a valid configuration object.
      * @returns a new client instance
      */
     static newHazelcastClient(config?: ClientConfig): Promise<HazelcastClient> {
@@ -262,7 +264,7 @@ export class HazelcastClient {
      *
      * @param failoverConfig Configuration object describing the failover client configs and try count
      * @returns a new client instance
-     * @throws InvalidConfigurationError if the provided failover configuration is not valid
+     * @throws {@link InvalidConfigurationError} before returning if the provided failover configuration is not valid
      */
     static newHazelcastFailoverClient(failoverConfig?: ClientFailoverConfig): Promise<HazelcastClient> {
         const configBuilder = new FailoverConfigBuilder(failoverConfig);
@@ -293,7 +295,14 @@ export class HazelcastClient {
     }
 
     /**
-     * Gives all known distributed objects in the cluster.
+     * Returns all {@link DistributedObject}s, that is all maps, queues, topics, locks etc.
+     *
+     * The results are returned on a best-effort basis. The result might miss
+     * just-created objects and contain just-deleted objects. An existing
+     * object can also be missing from the list occasionally. One cluster
+     * member is queried to obtain the list.
+     *
+     * @return the collection of all instances in the cluster
      */
     getDistributedObjects(): Promise<DistributedObject[]> {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
@@ -498,7 +507,7 @@ export class HazelcastClient {
 
     /**
      * Registers a distributed object listener to cluster.
-     * @param listener distributed object listener function.
+     * @param listener distributed object listener function. This will be called with {@link DistributedObjectEvent}.
      * @returns registration id of the listener.
      */
     addDistributedObjectListener(listener: DistributedObjectListener): Promise<string> {
@@ -521,6 +530,8 @@ export class HazelcastClient {
 
     /**
      * Shuts down this client instance.
+     *
+     * @return Shutdown promise. Multiple invocations will return the same promise.
      */
     shutdown(): Promise<void> {
         if (this.shutdownPromise) { // return the initiated shutdown promise if it exists.

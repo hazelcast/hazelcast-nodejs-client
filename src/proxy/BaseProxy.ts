@@ -23,7 +23,7 @@ import {ProxyManager} from './ProxyManager';
 import {PartitionService} from '../PartitionService';
 import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ConnectionRegistry} from '../network/ConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
 
@@ -140,9 +140,10 @@ export abstract class BaseProxy {
 
     protected getConnectedServerVersion(): number {
         const activeConnections = this.connectionRegistry.getConnections();
-        for (const address in activeConnections) {
-            return activeConnections[address].getConnectedServerVersion();
+        if (activeConnections.length === 0) {
+            return BuildInfo.UNKNOWN_VERSION_ID;
+        } else {
+            return activeConnections[0].getConnectedServerVersion();
         }
-        return BuildInfo.UNKNOWN_VERSION_ID;
     }
 }

@@ -28,7 +28,7 @@ export interface IQueue<E> extends DistributedObject {
      * Adds given item to the end of the queue. Operation is successful only
      * if queue has required capacity.
      * @param item element to add.
-     * @throws `IllegalStateError` if queue is full.
+     * @throws {@link IllegalStateError} if queue is full.
      * @return `true`.
      */
     add(item: E): Promise<boolean>;
@@ -101,7 +101,8 @@ export interface IQueue<E> extends DistributedObject {
 
     /**
      * Retrieves and removes the top of this queue.
-     * @param time operation waits upto `time` milliseconds if this queue is empty.
+     * @param time operation waits upto `time` milliseconds if this queue is empty. The default value of this parameter is `0`,
+     * which means no waiting.
      * @return the head of this queue or `null` if no element is available.
      */
     poll(time?: number): Promise<E>;

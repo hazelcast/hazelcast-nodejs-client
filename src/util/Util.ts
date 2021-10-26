@@ -68,7 +68,6 @@ export function shuffleArray<T>(array: T[]): void {
 
 /** @internal */
 export function getType(obj: any): string {
-    assertNotNull(obj);
     if (Long.isLong(obj)) {
         return 'long';
     } else if (Buffer.isBuffer(obj)) {
@@ -298,7 +297,7 @@ export function timedPromise<T>(wrapped: Promise<T>, timeout: number, err?: Erro
  * Used for getting an SQL connection for executing SQL.
  *
  * @param members list of all members
- * @throws IllegalStateError If there are more than 2 distinct member versions found
+ * @throws {@link IllegalStateError} If there are more than 2 distinct member versions found
  * @return the chosen member or null, if no data member is found
  */
 export function memberOfLargerSameVersionGroup(members: MemberImpl[]): MemberImpl | null {

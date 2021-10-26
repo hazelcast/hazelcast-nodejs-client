@@ -53,7 +53,7 @@ export class MorphingPortableReader extends DefaultPortableReader {
             case FieldType.SHORT:
                 return super.readShort(fieldName);
             default:
-                throw this.createIncompatibleClassChangeError(fieldDef, FieldType.INT);
+                throw MorphingPortableReader.createIncompatibleClassChangeError(fieldDef, FieldType.INT);
         }
     }
 
@@ -74,7 +74,7 @@ export class MorphingPortableReader extends DefaultPortableReader {
             case FieldType.SHORT:
                 return Long.fromNumber(super.readShort(fieldName));
             default:
-                throw this.createIncompatibleClassChangeError(fieldDef, FieldType.LONG);
+                throw MorphingPortableReader.createIncompatibleClassChangeError(fieldDef, FieldType.LONG);
         }
     }
 
@@ -99,7 +99,7 @@ export class MorphingPortableReader extends DefaultPortableReader {
             case FieldType.SHORT:
                 return super.readShort(fieldName);
             default:
-                throw this.createIncompatibleClassChangeError(fieldDef, FieldType.DOUBLE);
+                throw MorphingPortableReader.createIncompatibleClassChangeError(fieldDef, FieldType.DOUBLE);
         }
     }
 
@@ -120,7 +120,7 @@ export class MorphingPortableReader extends DefaultPortableReader {
             case FieldType.SHORT:
                 return super.readShort(fieldName);
             default:
-                throw this.createIncompatibleClassChangeError(fieldDef, FieldType.FLOAT);
+                throw MorphingPortableReader.createIncompatibleClassChangeError(fieldDef, FieldType.FLOAT);
         }
     }
 
@@ -135,7 +135,7 @@ export class MorphingPortableReader extends DefaultPortableReader {
             case FieldType.SHORT:
                 return super.readShort(fieldName);
             default:
-                throw this.createIncompatibleClassChangeError(fieldDef, FieldType.SHORT);
+                throw MorphingPortableReader.createIncompatibleClassChangeError(fieldDef, FieldType.SHORT);
         }
     }
 
@@ -253,12 +253,12 @@ export class MorphingPortableReader extends DefaultPortableReader {
             return undefined;
         }
         if (fd.getType() !== expectedType) {
-            throw this.createIncompatibleClassChangeError(fd, expectedType);
+            throw MorphingPortableReader.createIncompatibleClassChangeError(fd, expectedType);
         }
         return readFn.call(this, fieldName);
     }
 
-    private createIncompatibleClassChangeError(fd: FieldDefinition, expectedType: FieldType): Error {
+    private static createIncompatibleClassChangeError(fd: FieldDefinition, expectedType: FieldType): Error {
         return new TypeError(`Incompatible to read ${expectedType} from ${fd.getType()} while reading field : ${fd.getName()}`);
     }
 }

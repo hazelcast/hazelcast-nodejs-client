@@ -81,8 +81,8 @@ await client.shutdown();
 ```
 
 > **NOTE: For the sake of brevity we are going to omit boilerplate parts in the above code snippet.
-> Refer to the [Code Samples section](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples)
-> to see samples with the complete code.**
+> Refer to [this code sample](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples/readme_sample.js)
+> to see the complete code.**
 
 If you are using Hazelcast and the Node.js client on the same machine, the default configuration should work
 out-of-the-box. However, you may need to configure the client to connect to cluster nodes that are running on
@@ -134,7 +134,7 @@ You can use the following channels for your questions and development/usage issu
 
 * [GitHub repository](https://github.com/hazelcast/hazelcast-nodejs-client)
 * [Complete documentation](DOCUMENTATION.md)
-* [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/)
+* [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client)
 * [Slack](https://slack.hazelcast.com)
 * [Google Groups](https://groups.google.com/forum/#!forum/hazelcast)
 * [Stack Overflow](https://stackoverflow.com/questions/tagged/hazelcast)

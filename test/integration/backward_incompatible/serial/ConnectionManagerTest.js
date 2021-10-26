@@ -210,4 +210,21 @@ describe('ConnectionManagerTest', function () {
 
         expect(connectionManager.connectionRegistry.activeConnections).to.have.lengthOf(0);
     });
+
+    it('should increment read bytes on client message received', async function () {
+        client = await testFactory.newHazelcastClientForSerialTests({ clusterName: cluster.id });
+
+        let bytesRead = client.getConnectionManager().getTotalBytesRead();
+        // authentication message etc.
+        expect(bytesRead).to.be.greaterThan(0);
+
+        const map = await client.getMap('someMap');
+
+        expect(client.getConnectionManager().getTotalBytesRead()).to.be.greaterThan(bytesRead);
+        bytesRead = client.getConnectionManager().getTotalBytesRead();
+
+        await map.get(1);
+
+        expect(client.getConnectionManager().getTotalBytesRead()).to.be.greaterThan(bytesRead);
+    });
 });

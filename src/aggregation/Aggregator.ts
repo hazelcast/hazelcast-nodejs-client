@@ -250,7 +250,7 @@ export class DistinctValuesAggregator<R> extends AbstractAggregator<Set<R>> {
 
     classId = AggregatorConstants.DISTINCT;
 
-    readData(input: DataInput) {
+    readData(_input: DataInput) {
         // readData is not used on the client side
     }
 
@@ -274,7 +274,7 @@ export class CanonicalizingHashSet<R> extends Set<R> implements IdentifiedDataSe
         }
     }
 
-    writeData(output: DataOutput): void {
+    writeData(_output: DataOutput): void {
         // writeData is not used on the client side
     }
 }
