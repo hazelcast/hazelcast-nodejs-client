@@ -458,7 +458,12 @@ export class ConnectionManager extends EventEmitter {
                 );
                 // close the connection proactively on errors
                 socket.once('error', (err: NodeJS.ErrnoException) => {
-                    connection.close('Socket error. Connection might be closed by other side', err);
+                    connection.close('Socket error.', err);
+                });
+                // close the connection if socket is not readable anymore
+                socket.once('end', () => {
+                    const reason = 'Connection closed by the other side.';
+                    connection.close(reason, new IOError(reason));
                 });
                 return this.initiateCommunication(socket);
             })
