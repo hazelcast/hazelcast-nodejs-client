@@ -33,7 +33,7 @@ export class ClientInfo {
     localAddress: Address;
 
     /**
-     * Type of this client. It is always NodeJS.
+     * Type of this client. It is always `NodeJS`.
      */
     type = 'NodeJS';
 

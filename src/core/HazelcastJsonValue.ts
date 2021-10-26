@@ -40,6 +40,7 @@ export class HazelcastJsonValue {
 
     /**
      * Creates a HazelcastJsonValue from given string.
+     * @throws AssertionError if `jsonString` is not a `string`
      * @param jsonString a non-null Json string
      */
     constructor(jsonString: string) {

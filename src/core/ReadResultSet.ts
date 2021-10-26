@@ -66,7 +66,7 @@ export interface ReadResultSet<T> {
      * this result set.
      *
      * Usually this sequence is equal to the sequence used to retrieve this
-     * result set incremented by the {@link getReadCount()}. In cases when the
+     * result set incremented by the {@link getReadCount}. In cases when the
      * reader tolerates lost items, this is not the case.
      *
      * For instance, if the reader requests an item with a stale sequence (one

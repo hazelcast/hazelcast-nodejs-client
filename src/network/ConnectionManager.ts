@@ -103,7 +103,7 @@ export enum ClientState {
      * it switches to this state. When a client loses all connections to
      * the current cluster and connects to a new cluster, its state goes
      * back to {@link CONNECTED_TO_CLUSTER}.
-     * <p>
+     *
      * Invocations are allowed in this state.
      */
     INITIALIZED_ON_CLUSTER = 2,
