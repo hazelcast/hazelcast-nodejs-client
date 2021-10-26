@@ -209,10 +209,9 @@ export class ConfigBuilder {
             this.effectiveConfig.network.ssl.sslOptions = jsonObject.sslOptions;
         } else if (jsonObject.sslOptionsFactory || jsonObject.sslOptionsFactoryProperties) {
             this.handleSSLOptionsFactory(jsonObject.sslOptionsFactory);
-            if (typeof jsonObject.sslOptionsFactoryProperties !== 'object') {
-                throw new RangeError('Expected \'sslOptionsFactoryProperties\' to be an object but it is a: '
-                    + typeof jsonObject.sslOptionsFactoryProperties
-                );
+            const factoryPropsType = typeof jsonObject.sslOptionsFactoryProperties;
+            if (typeof factoryPropsType !== 'object') {
+                throw new RangeError(`Expected 'sslOptionsFactoryProperties' to be an object but it is a: ${factoryPropsType}`);
             }
             this.effectiveConfig.network.ssl.sslOptionsFactoryProperties = jsonObject.sslOptionsFactoryProperties
                 ? ConfigBuilder.parseProperties(jsonObject.sslOptionsFactoryProperties) : null;
@@ -228,7 +227,8 @@ export class ConfigBuilder {
             }
             if (typeof sslOptionsFactory.getSSLOptions !== 'function') {
                 throw new RangeError(
-                    `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. Expected a 'getSSLOptions' that is a function.`
+                    `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. ` +
+                    'Expected a \'getSSLOptions\' property that is a function.'
                 );
             }
         }
@@ -446,7 +446,7 @@ export class ConfigBuilder {
                     `Invalid custom serializer given: ${serializer}. Expected a 'id' property that is a number.`
                 );
             }
-            if (typeof serializer.read !== 'function' || typeof serializer.write !== 'function') {
+            if (typeof serializer.read !== 'function') {
                 throw new RangeError(
                     `Invalid custom serializer given: ${serializer}. Expected a 'read' property that is function.`
                 );
@@ -588,7 +588,7 @@ export class ConfigBuilder {
         for (const functionProp of functionProps) {
             if (typeof customLogger[functionProp] !== 'function') {
                 throw new RangeError(
-                    `Invalid custom logger given: ${customLogger}. Expected a ${functionProp} property that is function.`
+                    `Invalid custom logger given: ${customLogger}. Expected a '${functionProp}' property that is function.`
                 );
             }
         }
