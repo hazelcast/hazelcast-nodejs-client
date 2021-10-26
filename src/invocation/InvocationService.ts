@@ -224,7 +224,7 @@ export class Invocation {
 }
 
 const backupListenerCodec: ListenerMessageCodec = {
-    encodeAddRequest(localOnly: boolean): ClientMessage {
+    encodeAddRequest(_localOnly: boolean): ClientMessage {
         return ClientLocalBackupListenerCodec.encodeRequest();
     },
 
@@ -232,7 +232,7 @@ const backupListenerCodec: ListenerMessageCodec = {
         return ClientLocalBackupListenerCodec.decodeResponse(msg);
     },
 
-    encodeRemoveRequest(listenerId: UUID): ClientMessage {
+    encodeRemoveRequest(_listenerId: UUID): ClientMessage {
         return null;
     }
 }

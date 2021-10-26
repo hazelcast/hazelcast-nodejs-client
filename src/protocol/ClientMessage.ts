@@ -78,46 +78,46 @@ export class Frame {
     }
 
     isBeginFrame(): boolean {
-        return this.isFlagSet(this.flags, BEGIN_DATA_STRUCTURE_FLAG);
+        return Frame.isFlagSet(this.flags, BEGIN_DATA_STRUCTURE_FLAG);
     }
 
     isEndFrame(): boolean {
-        return this.isFlagSet(this.flags, END_DATA_STRUCTURE_FLAG);
+        return Frame.isFlagSet(this.flags, END_DATA_STRUCTURE_FLAG);
     }
 
     isNullFrame(): boolean {
-        return this.isFlagSet(this.flags, IS_NULL_FLAG);
+        return Frame.isFlagSet(this.flags, IS_NULL_FLAG);
     }
 
     hasEventFlag(): boolean {
-        return this.isFlagSet(this.flags, IS_EVENT_FLAG);
+        return Frame.isFlagSet(this.flags, IS_EVENT_FLAG);
     }
 
     hasBackupEventFlag(): boolean {
-        return this.isFlagSet(this.flags, IS_BACKUP_EVENT_FLAG);
+        return Frame.isFlagSet(this.flags, IS_BACKUP_EVENT_FLAG);
     }
 
     isFinalFrame(): boolean {
-        return this.isFlagSet(this.flags, IS_FINAL_FLAG);
+        return Frame.isFlagSet(this.flags, IS_FINAL_FLAG);
     }
 
     hasUnfragmentedMessageFlag(): boolean {
-        return this.isFlagSet(this.flags, UNFRAGMENTED_MESSAGE);
+        return Frame.isFlagSet(this.flags, UNFRAGMENTED_MESSAGE);
     }
 
     hasBeginFragmentFlag(): boolean {
-        return this.isFlagSet(this.flags, BEGIN_FRAGMENT_FLAG);
+        return Frame.isFlagSet(this.flags, BEGIN_FRAGMENT_FLAG);
     }
 
     hasEndFragmentFlag(): boolean {
-        return this.isFlagSet(this.flags, END_FRAGMENT_FLAG);
+        return Frame.isFlagSet(this.flags, END_FRAGMENT_FLAG);
     }
 
     addFlag(flag: number): void {
         this.flags |= flag;
     }
 
-    private isFlagSet(flags: number, flagMask: number): boolean {
+    private static isFlagSet(flags: number, flagMask: number): boolean {
         const i = flags & flagMask;
         return i === flagMask;
     }

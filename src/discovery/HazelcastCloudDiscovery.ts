@@ -78,7 +78,7 @@ export class HazelcastCloudDiscovery {
                 dataAsAString += chunk;
             });
             res.on('end', () => {
-                deferred.resolve(this.parseResponse(dataAsAString));
+                deferred.resolve(HazelcastCloudDiscovery.parseResponse(dataAsAString));
             });
         });
 
@@ -92,7 +92,7 @@ export class HazelcastCloudDiscovery {
         return deferred.promise;
     }
 
-    private parseResponse(data: string): Map<string, AddressImpl> {
+    private static parseResponse(data: string): Map<string, AddressImpl> {
         const jsonValue = JSON.parse(data);
 
         const privateToPublicAddresses: Map<string, AddressImpl> = new Map<string, AddressImpl>();

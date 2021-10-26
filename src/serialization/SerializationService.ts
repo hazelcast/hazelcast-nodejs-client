@@ -108,11 +108,7 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     public isData(object: any): boolean {
-        if (object instanceof HeapData) {
-            return true;
-        } else {
-            return false;
-        }
+        return object instanceof HeapData;
     }
 
     /**
