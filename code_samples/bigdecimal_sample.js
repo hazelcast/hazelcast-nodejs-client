@@ -67,8 +67,7 @@ function portableFactory(classId) {
                 'valueFormat' = 'decimal'
             )
         `;
-        // executions are async, await on update count to wait for execution.
-        await client.getSql().execute(createMappingQuery).getUpdateCount();
+        await client.getSql().execute(createMappingQuery);
 
         // You can use BigDecimals for any operation
         // Let's add some BigDecimals:
@@ -91,7 +90,7 @@ function portableFactory(classId) {
 
         // You can run an SQL query with a BigDecimal:
 
-        const result = client.getSql().execute(
+        const result = await client.getSql().execute(
             'SELECT * FROM decimalMap WHERE this > ?',
             [BigDecimal.fromString('2.22222222222222222')]
         );

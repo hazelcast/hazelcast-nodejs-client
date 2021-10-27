@@ -91,7 +91,7 @@ export class ConfigBuilder {
             } else if (key === 'customLogger') {
                 this.handleLogger(value);
             } else if (key === 'customCredentials') {
-                this.handleCredentials(value);
+                this.effectiveConfig.customCredentials = jsonObject;
             } else if (key === 'backupAckToClientEnabled') {
                 this.effectiveConfig.backupAckToClientEnabled = tryGetBoolean(value);
             } else {
@@ -183,7 +183,7 @@ export class ConfigBuilder {
         }
     }
 
-    private parseProperties(jsonObject: any): Properties {
+    private static parseProperties(jsonObject: any): Properties {
         const props: Properties = {} as Properties;
         for (const key in jsonObject) {
             props[key] = jsonObject[key];
@@ -208,10 +208,31 @@ export class ConfigBuilder {
             }
             this.effectiveConfig.network.ssl.sslOptions = jsonObject.sslOptions;
         } else if (jsonObject.sslOptionsFactory || jsonObject.sslOptionsFactoryProperties) {
-            this.effectiveConfig.network.ssl.sslOptionsFactory = jsonObject.sslOptionsFactory;
+            this.handleSSLOptionsFactory(jsonObject.sslOptionsFactory);
+            const factoryPropsType = typeof jsonObject.sslOptionsFactoryProperties;
+            if (factoryPropsType !== 'object') {
+                throw new RangeError(`Expected 'sslOptionsFactoryProperties' to be an object but it is a: ${factoryPropsType}`);
+            }
             this.effectiveConfig.network.ssl.sslOptionsFactoryProperties = jsonObject.sslOptionsFactoryProperties
-                ? this.parseProperties(jsonObject.sslOptionsFactoryProperties) : null;
+                ? ConfigBuilder.parseProperties(jsonObject.sslOptionsFactoryProperties) : null;
         }
+    }
+
+    private handleSSLOptionsFactory(sslOptionsFactory: any) {
+        if (sslOptionsFactory) {
+            if (typeof sslOptionsFactory.init !== 'function') {
+                throw new RangeError(
+                    `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. Expected a 'init' property that is a function.`
+                );
+            }
+            if (typeof sslOptionsFactory.getSSLOptions !== 'function') {
+                throw new RangeError(
+                    `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. ` +
+                    'Expected a \'getSSLOptions\' property that is a function.'
+                );
+            }
+        }
+        this.effectiveConfig.network.ssl.sslOptionsFactory = sslOptionsFactory;
     }
 
     private handleClusterMembers(jsonObject: any): void {
@@ -222,77 +243,83 @@ export class ConfigBuilder {
         }
     }
 
-    private handleProperties(jsonObject: any): void {
-        for (const key in jsonObject) {
-            let value = jsonObject[key];
-            try {
-                switch (key) {
-                    case 'hazelcast.client.heartbeat.interval':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.client.heartbeat.timeout':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.client.invocation.retry.pause.millis':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.client.invocation.timeout.millis':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.client.internal.clean.resources.millis':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.client.cloud.url':
-                        value = tryGetString(value);
-                        break;
-                    case 'hazelcast.client.statistics.enabled':
-                        value = tryGetBoolean(value);
-                        break;
-                    case 'hazelcast.client.statistics.period.seconds':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.invalidation.reconciliation.interval.seconds':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.invalidation.max.tolerated.miss.count':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.invalidation.min.reconciliation.interval.seconds':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.logging.level':
-                        tryGetEnum(LogLevel, value);
-                        break;
-                    case 'hazelcast.client.autopipelining.enabled':
-                        value = tryGetBoolean(value);
-                        break;
-                    case 'hazelcast.client.autopipelining.threshold.bytes':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.client.socket.no.delay':
-                        value = tryGetBoolean(value);
-                        break;
-                    case 'hazelcast.client.shuffle.member.list':
-                        value = tryGetBoolean(value);
-                        break;
-                    case 'hazelcast.client.operation.backup.timeout.millis':
-                        value = tryGetNumber(value);
-                        break;
-                    case 'hazelcast.client.operation.fail.on.indeterminate.state':
-                        value = tryGetBoolean(value);
-                        break;
-                    case 'hazelcast.discovery.public.ip.enabled':
-                        if (value !== null && typeof value !== 'boolean') {
-                            throw new RangeError(`${value} is not null or a boolean.`);
-                        }
-                        break;
-                    default:
-                        throw new RangeError(`Unexpected property '${key}' is passed to the Hazelcast Client`);
+    private static validateProperty(property: string, value: any) {
+        switch (property) {
+            case 'hazelcast.client.heartbeat.interval':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.client.heartbeat.timeout':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.client.invocation.retry.pause.millis':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.client.invocation.timeout.millis':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.client.internal.clean.resources.millis':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.client.cloud.url':
+                tryGetString(value);
+                break;
+            case 'hazelcast.client.statistics.enabled':
+                tryGetBoolean(value);
+                break;
+            case 'hazelcast.client.statistics.period.seconds':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.invalidation.reconciliation.interval.seconds':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.invalidation.max.tolerated.miss.count':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.invalidation.min.reconciliation.interval.seconds':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.logging.level':
+                tryGetEnum(LogLevel, value);
+                break;
+            case 'hazelcast.client.autopipelining.enabled':
+                tryGetBoolean(value);
+                break;
+            case 'hazelcast.client.autopipelining.threshold.bytes':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.client.socket.no.delay':
+                tryGetBoolean(value);
+                break;
+            case 'hazelcast.client.shuffle.member.list':
+                tryGetBoolean(value);
+                break;
+            case 'hazelcast.client.operation.backup.timeout.millis':
+                tryGetNumber(value);
+                break;
+            case 'hazelcast.client.operation.fail.on.indeterminate.state':
+                tryGetBoolean(value);
+                break;
+            case 'hazelcast.discovery.public.ip.enabled':
+                if (value !== null && typeof value !== 'boolean') {
+                    throw new RangeError(`${value} is not null or a boolean.`);
                 }
+                break;
+            default:
+                throw new RangeError(`Unexpected property '${property}' is passed to the Hazelcast Client`);
+        }
+    }
+
+    private handleProperties(jsonObject: any): void {
+        if (typeof jsonObject !== 'object') {
+            throw new RangeError(`Expected 'properties' to be an object but it is a: ${typeof jsonObject}`);
+        }
+        for (const key in jsonObject) {
+            const value = jsonObject[key];
+            try {
+                ConfigBuilder.validateProperty(key, value);
             } catch (e) {
                 throw new RangeError(`Property validation error: Property: ${key}, value: ${value}. Error: ${e}`);
             }
-
             this.effectiveConfig.properties[key] = value;
         }
     }
@@ -300,6 +327,11 @@ export class ConfigBuilder {
     private handleLifecycleListeners(jsonObject: any): void {
         const listenersArray = tryGetArray(jsonObject);
         for (const listener of listenersArray) {
+            if (typeof listener !== 'function') {
+                throw new RangeError(
+                    `Lifecycle listener given in 'lifecycleListeners' is not a function, but a: ${typeof listener}`
+                );
+            }
             this.effectiveConfig.lifecycleListeners.push(listener);
         }
     }
@@ -307,8 +339,18 @@ export class ConfigBuilder {
     private handleMembershipListeners(jsonObject: any): void {
         const listenersArray = tryGetArray(jsonObject);
         for (const listener of listenersArray) {
-            this.effectiveConfig.membershipListeners.push(listener);
+            this.handleMembershipListener(listener);
         }
+    }
+
+    private handleMembershipListener(membershipListener: any) {
+        // Throw in case both memberAdded and memberRemoved are invalid.
+        if (typeof membershipListener.memberAdded !== 'function' && typeof membershipListener.memberRemoved !== 'function') {
+            throw new RangeError(`Invalid membershipListener is given in 'membershipListeners': ${membershipListener}. `
+                                + 'Expected at least one of \'memberAdded\' and \'memberRemoved\' properties to exist and be a'
+                                + ' function.');
+        }
+        this.effectiveConfig.membershipListeners.push(membershipListener);
     }
 
     private handleSerialization(jsonObject: any): void {
@@ -320,20 +362,11 @@ export class ConfigBuilder {
             } else if (key === 'portableVersion') {
                 this.effectiveConfig.serialization.portableVersion = tryGetNumber(jsonObject[key]);
             } else if (key === 'dataSerializableFactories') {
-                for (const index in jsonObject[key]) {
-                    const idx = Number.parseInt(index);
-                    this.effectiveConfig.serialization
-                        .dataSerializableFactories[idx] = jsonObject[key][index];
-                }
+                this.handleDataSerializableFactories(jsonObject[key]);
             } else if (key === 'portableFactories') {
-                for (const index in jsonObject[key]) {
-                    const idx = Number.parseInt(index);
-                    this.effectiveConfig.serialization
-                        .portableFactories[idx] = jsonObject[key][index];
-                }
+                this.handlePortableFactories(jsonObject[key]);
             } else if (key === 'globalSerializer') {
-                const globalSerializer = jsonObject[key];
-                this.effectiveConfig.serialization.globalSerializer = globalSerializer;
+                this.handleGlobalSerializer(jsonObject[key]);
             } else if (key === 'customSerializers') {
                 this.handleCustomSerializers(jsonObject[key]);
             } else if (key === 'jsonStringDeserializationPolicy') {
@@ -345,14 +378,95 @@ export class ConfigBuilder {
         }
     }
 
+    private handleGlobalSerializer(globalSerializer: any) {
+        if (!globalSerializer) {
+            throw new RangeError(`Invalid global serializer given: ${globalSerializer}. Expected a truthy value.`)
+        }
+        if (typeof globalSerializer.id !== 'number') {
+            throw new RangeError(
+                `Invalid global serializer given: ${globalSerializer}. Expected a 'id' property that is a number.`
+            );
+        }
+        if (typeof globalSerializer.read !== 'function') {
+            throw new RangeError(
+                `Invalid global serializer given: ${globalSerializer}. Expected a 'read' property that is function.`
+            );
+        }
+        if (typeof globalSerializer.write !== 'function') {
+            throw new RangeError(
+                `Invalid global serializer given: ${globalSerializer}. Expected a 'write' property that is function.`
+            );
+        }
+
+        this.effectiveConfig.serialization.globalSerializer = globalSerializer;
+    }
+
+    private handlePortableFactories(portableFactories: any) {
+        if (typeof portableFactories !== 'object') {
+            throw new RangeError(`Expected 'portableFactories' to be an object but it is a: ${typeof portableFactories}`);
+        }
+        for (const index in portableFactories) {
+            const idx = +index;
+            if (!Number.isInteger(idx)) {
+                throw new RangeError(`'portableFactories' should only include integer keys, given key: ${index}`);
+            }
+            if (typeof portableFactories[index] !== 'function') {
+                throw new RangeError(`Expected the portableFactory to be function but it is not: ${portableFactories[index]}`);
+            }
+            this.effectiveConfig.serialization.portableFactories[idx] = portableFactories[index];
+        }
+    }
+
+    private handleDataSerializableFactories(dataSerializableFactories: any) {
+        if (typeof dataSerializableFactories !== 'object') {
+            throw new RangeError(
+                `Expected 'dataSerializableFactories' to be an object but it is a: ${typeof dataSerializableFactories}`
+            );
+        }
+        for (const index in dataSerializableFactories) {
+            const idx = +index;
+            if (!Number.isInteger(idx)) {
+                throw new RangeError(`'dataSerializableFactories' should only include integer keys, given key: ${index}`);
+            }
+            if (typeof dataSerializableFactories[index] !== 'function') {
+                throw new RangeError(
+                    `Expected the dataSerializableFactory to be function but it is not: ${dataSerializableFactories[index]}`
+                );
+            }
+            this.effectiveConfig.serialization.dataSerializableFactories[idx] = dataSerializableFactories[index];
+        }
+    }
+
     private handleCustomSerializers(jsonObject: any): void {
         const serializersArray = tryGetArray(jsonObject);
+
         for (const serializer of serializersArray) {
+            if (typeof serializer.id !== 'number') {
+                throw new RangeError(
+                    `Invalid custom serializer given: ${serializer}. Expected a 'id' property that is a number.`
+                );
+            }
+            if (typeof serializer.read !== 'function') {
+                throw new RangeError(
+                    `Invalid custom serializer given: ${serializer}. Expected a 'read' property that is function.`
+                );
+            }
+            if (typeof serializer.write !== 'function') {
+                throw new RangeError(
+                    `Invalid custom serializer given: ${serializer}. Expected a 'write' property that is function.`
+                );
+            }
+
             this.effectiveConfig.serialization.customSerializers.push(serializer);
         }
     }
 
     private handleNearCaches(jsonObject: any): void {
+        if (typeof jsonObject !== 'object') {
+            throw new RangeError(
+                `Expected 'nearCaches' to be an object but it is a: ${typeof jsonObject}`
+            );
+        }
         for (const name in jsonObject) {
             const ncConfig = jsonObject[name];
             const nearCacheConfig = new NearCacheConfigImpl();
@@ -384,6 +498,11 @@ export class ConfigBuilder {
     }
 
     private handleReliableTopics(jsonObject: any): void {
+        if (typeof jsonObject !== 'object') {
+            throw new RangeError(
+                `Expected 'reliableTopics' to be an object but it is a: ${typeof jsonObject}`
+            );
+        }
         for (const name in jsonObject) {
             const jsonRtCfg = jsonObject[name];
             const reliableTopicConfig = new ReliableTopicConfigImpl();
@@ -403,6 +522,11 @@ export class ConfigBuilder {
     }
 
     private handleFlakeIdGenerators(jsonObject: any): void {
+        if (typeof jsonObject !== 'object') {
+            throw new RangeError(
+                `Expected 'flakeIdGenerators' to be an object but it is a: ${typeof jsonObject}`
+            );
+        }
         for (const name in jsonObject) {
             const fidConfig = jsonObject[name];
             const flakeIdConfig = new FlakeIdGeneratorConfigImpl();
@@ -426,18 +550,49 @@ export class ConfigBuilder {
             if (key === 'type') {
                 this.effectiveConfig.loadBalancer.type = tryGetEnum(LoadBalancerType, jsonObject[key]);
             } else if (key === 'customLoadBalancer') {
-                this.effectiveConfig.loadBalancer.customLoadBalancer = jsonObject[key];
+                this.handleCustomLoadBalancer(jsonObject[key]);
             } else {
                 throw new RangeError(`Unexpected load balancer config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
 
-    private handleLogger(jsonObject: any): void {
-        this.effectiveConfig.customLogger = jsonObject;
+    private handleCustomLoadBalancer(customLB: any) {
+        if (!customLB) {
+            throw new RangeError(
+                `Invalid LoadBalancer given: ${customLB}. Expected a truthy value.`
+            );
+        }
+        if (typeof customLB.initLoadBalancer !== 'function') {
+            throw new RangeError(
+                `Invalid LoadBalancer given: ${customLB}. Expected a 'initLoadBalancer' property to be a function.`
+            );
+        }
+        if (typeof customLB.next !== 'function') {
+            throw new RangeError(
+                `Invalid LoadBalancer given: ${customLB}. Expected a 'next' property to be a function.`
+            );
+        }
+
+
+        this.effectiveConfig.loadBalancer.customLoadBalancer = customLB;
     }
 
-    private handleCredentials(jsonObject: any): void {
-        this.effectiveConfig.customCredentials = jsonObject;
+    private handleLogger(customLogger: any): void {
+        if (!customLogger) {
+            throw new RangeError(
+                `Invalid custom logger given: ${customLogger}. Expected a truthy value.`
+            );
+        }
+        const functionProps = ['log', 'error', 'warn', 'info', 'debug', 'trace'];
+        for (const functionProp of functionProps) {
+            if (typeof customLogger[functionProp] !== 'function') {
+                throw new RangeError(
+                    `Invalid custom logger given: ${customLogger}. Expected a '${functionProp}' property that is function.`
+                );
+            }
+        }
+
+        this.effectiveConfig.customLogger = customLogger;
     }
 }

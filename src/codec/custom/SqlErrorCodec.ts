@@ -37,6 +37,7 @@ export class SqlErrorCodec {
         clientMessage.addFrame(initialFrame);
 
         CodecUtil.encodeNullable(clientMessage, sqlError.message, StringCodec.encode);
+        CodecUtil.encodeNullable(clientMessage, sqlError.suggestion, StringCodec.encode);
 
         clientMessage.addFrame(END_FRAME.copy());
     }
@@ -50,9 +51,15 @@ export class SqlErrorCodec {
         const originatingMemberId = FixSizedTypesCodec.decodeUUID(initialFrame.content, ORIGINATING_MEMBER_ID_OFFSET);
 
         const message = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
+        let isSuggestionExists = false;
+        let suggestion = null;
+        if (!clientMessage.peekNextFrame().isEndFrame()) {
+            suggestion = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
+            isSuggestionExists = true;
+        }
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return new SqlError(code, message, originatingMemberId);
+        return new SqlError(code, message, originatingMemberId, isSuggestionExists, suggestion);
     }
 }

@@ -129,7 +129,7 @@ export interface Ringbuffer<E> extends DistributedObject {
      *
      * @param sequence the sequence number of the item to read
      * @return the item that was read
-     * @throws `RangeError` if `sequence` is:
+     * @throws RangeError if `sequence` is:
      *                      smaller than `0`,
      *                      or smaller than `headSequence`,
      *                      or greater than `tailSequence + 1`
@@ -159,7 +159,7 @@ export interface Ringbuffer<E> extends DistributedObject {
      * @param startSequence sequence number of the first item to be read.
      * @param minCount minimum number of items to be read.
      * @param maxCount maximum number of items to be read.
-     * @throws `RangeError` if `startSequence` is smaller than `0`,
+     * @throws RangeError if `startSequence` is smaller than `0`,
      *                      or if `minCount` smaller than `0`,
      *                      or if `minCount` larger than `maxCount`,
      *                      or if `maxCount` larger than `1000` (to prevent overloading)

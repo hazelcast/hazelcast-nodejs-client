@@ -45,12 +45,10 @@ describe('HazelcastCloudDiscoveryTest', function () {
     });
 
     it('should parse response', function () {
-        const discovery = new HazelcastCloudDiscovery();
-
         const response = '[{"private-address":"100.96.5.1","public-address":"10.113.44.139:31115"},'
             + '{"private-address":"100.96.4.2","public-address":"10.113.44.130:31115"}]';
 
-        const privateToPublicAddresses = discovery.parseResponse(response);
+        const privateToPublicAddresses = HazelcastCloudDiscovery.parseResponse(response);
 
         expect(privateToPublicAddresses.size).to.equal(2);
         expect(new AddressImpl('10.113.44.139', 31115))
@@ -60,12 +58,10 @@ describe('HazelcastCloudDiscoveryTest', function () {
     });
 
     it('should parse response with different port on private address', function () {
-        const discovery = new HazelcastCloudDiscovery();
-
         const response = '[{"private-address":"100.96.5.1:5701","public-address":"10.113.44.139:31115"},'
             + '{"private-address":"100.96.4.2:5701","public-address":"10.113.44.130:31115"}]';
 
-        const privateToPublicAddresses = discovery.parseResponse(response);
+        const privateToPublicAddresses = HazelcastCloudDiscovery.parseResponse(response);
 
         expect(privateToPublicAddresses.size).to.equal(2);
         expect(new AddressImpl('10.113.44.139', 31115))
@@ -75,10 +71,10 @@ describe('HazelcastCloudDiscoveryTest', function () {
     });
 
     it('should cancel request on timeout', async function () {
-        await startUnresponsiveServer(9999);
+        await startUnresponsiveServer(10000);
 
         const connectionTimeoutMs = 100;
-        const discovery = new HazelcastCloudDiscovery('https://localhost:9999', connectionTimeoutMs);
+        const discovery = new HazelcastCloudDiscovery('https://localhost:10000', connectionTimeoutMs);
 
         await expect(discovery.discoverNodes()).to.be.rejectedWith(HazelcastError);
     });

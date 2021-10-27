@@ -23,11 +23,11 @@ import {ClientMessageHandler} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {
     CONNECTION_ADDED_EVENT_NAME,
     CONNECTION_REMOVED_EVENT_NAME,
-    ConnectionManager,
-    ConnectionRegistry
+    ConnectionManager
 } from '../network/ConnectionManager';
 import {ConnectionRegistration} from '../invocation/ConnectionRegistration';
 

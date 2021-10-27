@@ -55,5 +55,4 @@ jobs:
               if: ${{ matrix.os == 'ubuntu-latest' }}
               uses: codecov/codecov-action@v2
               with:
-                files: coverage/cobertura-coverage.xml
-                
+                files: coverage/lcov.info

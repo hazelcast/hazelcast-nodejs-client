@@ -47,7 +47,7 @@ import {DistributedObject} from '../core/DistributedObject';
  * the `reset()` method. If you have called the `reset()` method,
  * a new session is started with the next invocation to a CRDT replica.
  *
- * <b>NOTE:</b>
+ * **NOTE:**
  * The CRDT state is kept entirely on non-lite (data) members. If there
  * aren't any and the methods here are invoked, they will
  * fail with a `NoDataMemberInClusterError`.
@@ -56,11 +56,11 @@ export interface PNCounter extends DistributedObject {
     /**
      * Returns the current value of the counter.
      *
-     * @throws `NoDataMemberInClusterError` if the cluster does not contain
+     * @throws {@link NoDataMemberInClusterError} if the cluster does not contain
      *                                        any data members
-     * @throws `UnsupportedOperationError`  if the cluster version is less
+     * @throws {@link UnsupportedOperationError}  if the cluster version is less
      *                                        than 3.10
-     * @throws `ConsistencyLostError`       if the session guarantees have
+     * @throws {@link ConsistencyLostError}       if the session guarantees have
      *                                        been lost
      * @returns the current value of the counter
      */
@@ -71,11 +71,11 @@ export interface PNCounter extends DistributedObject {
      *
      * @param delta the value to add
      * @return the previous value
-     * @throws `NoDataMemberInClusterError` if the cluster does not contain
+     * @throws {@link NoDataMemberInClusterError} if the cluster does not contain
      *                                        any data members
-     * @throws `UnsupportedOperationError`  if the cluster version is less
+     * @throws {@link UnsupportedOperationError}  if the cluster version is less
      *                                        than 3.10
-     * @throws `ConsistencyLostError`       if the session guarantees have
+     * @throws {@link ConsistencyLostError}       if the session guarantees have
      *                                        been lost
      */
     getAndAdd(delta: Long | number): Promise<Long>;
@@ -85,11 +85,11 @@ export interface PNCounter extends DistributedObject {
      *
      * @param delta the value to add
      * @return the updated value
-     * @throws `NoDataMemberInClusterError` if the cluster does not contain
+     * @throws {@link NoDataMemberInClusterError} if the cluster does not contain
      *                                        any data members
-     * @throws `UnsupportedOperationError`  if the cluster version is less
+     * @throws {@link UnsupportedOperationError}  if the cluster version is less
      *                                        than 3.10
-     * @throws `ConsistencyLostError`       if the session guarantees have
+     * @throws {@link ConsistencyLostError}       if the session guarantees have
      *                                        been lost
      */
     addAndGet(delta: Long | number): Promise<Long>;
@@ -99,11 +99,11 @@ export interface PNCounter extends DistributedObject {
      *
      * @param delta the value to add
      * @return the previous value
-     * @throws `NoDataMemberInClusterError` if the cluster does not contain
+     * @throws {@link NoDataMemberInClusterError} if the cluster does not contain
      *                                        any data members
-     * @throws `UnsupportedOperationError`  if the cluster version is less
+     * @throws {@link UnsupportedOperationError}  if the cluster version is less
      *                                        than 3.10
-     * @throws `ConsistencyLostError`       if the session guarantees have
+     * @throws {@link ConsistencyLostError}       if the session guarantees have
      *                                        been lost
      */
     getAndSubtract(delta: Long | number): Promise<Long>;
@@ -113,11 +113,11 @@ export interface PNCounter extends DistributedObject {
      *
      * @param delta the value to subtract
      * @return the updated value
-     * @throws `NoDataMemberInClusterError` if the cluster does not contain
+     * @throws {@link NoDataMemberInClusterError} if the cluster does not contain
      *                                        any data members
-     * @throws `UnsupportedOperationError`  if the cluster version is less
+     * @throws {@link UnsupportedOperationError}  if the cluster version is less
      *                                        than 3.10
-     * @throws `ConsistencyLostError`       if the session guarantees have
+     * @throws {@link ConsistencyLostError}       if the session guarantees have
      *                                        been lost
      */
     subtractAndGet(delta: Long | number): Promise<Long>;
@@ -126,11 +126,11 @@ export interface PNCounter extends DistributedObject {
      * Decrements by one the current value.
      *
      * @return the updated value
-     * @throws `NoDataMemberInClusterError` if the cluster does not contain
+     * @throws {@link NoDataMemberInClusterError} if the cluster does not contain
      *                                        any data members
-     * @throws `UnsupportedOperationError`  if the cluster version is less
+     * @throws {@link UnsupportedOperationError}  if the cluster version is less
      *                                        than 3.10
-     * @throws `ConsistencyLostError`       if the session guarantees have
+     * @throws {@link ConsistencyLostError}       if the session guarantees have
      *                                        been lost
      */
     decrementAndGet(): Promise<Long>;
@@ -139,11 +139,11 @@ export interface PNCounter extends DistributedObject {
      * Increments by one the current value.
      *
      * @return the updated value
-     * @throws `NoDataMemberInClusterError` if the cluster does not contain
+     * @throws {@link NoDataMemberInClusterError} if the cluster does not contain
      *                                        any data members
-     * @throws `UnsupportedOperationError`  if the cluster version is less
+     * @throws {@link UnsupportedOperationError}  if the cluster version is less
      *                                        than 3.10
-     * @throws `ConsistencyLostError`       if the session guarantees have
+     * @throws {@link ConsistencyLostError}       if the session guarantees have
      *                                        been lost
      */
     incrementAndGet(): Promise<Long>;
@@ -152,11 +152,11 @@ export interface PNCounter extends DistributedObject {
      * Decrements by one the current value.
      *
      * @return the previous value
-     * @throws `NoDataMemberInClusterError` if the cluster does not contain
+     * @throws {@link NoDataMemberInClusterError} if the cluster does not contain
      *                                        any data members
-     * @throws `UnsupportedOperationError`  if the cluster version is less
+     * @throws {@link UnsupportedOperationError}  if the cluster version is less
      *                                        than 3.10
-     * @throws `ConsistencyLostError`       if the session guarantees have
+     * @throws {@link ConsistencyLostError}       if the session guarantees have
      *                                        been lost
      */
     getAndDecrement(): Promise<Long>;
@@ -165,12 +165,12 @@ export interface PNCounter extends DistributedObject {
      * Increments by one the current value.
      *
      * @return the previous value
-     * @throws `NoDataMemberInClusterError` if the cluster does not contain
+     * @throws {@link NoDataMemberInClusterError} if the cluster does not contain
      *                                        any data members
-     * @throws `UnsupportedOperationError`  if the cluster version is less
+     * @throws {@link UnsupportedOperationError}  if the cluster version is less
      *                                        than 3.10
-     * @throws `ConsistencyLostError`       if the session guarantees have
-     *                                        beenlost
+     * @throws {@link ConsistencyLostError}       if the session guarantees have
+     *                                        been lost
      */
     getAndIncrement(): Promise<Long>;
 

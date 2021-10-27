@@ -62,6 +62,8 @@ export interface CPSubsystem {
      * If a group name is given, like `.getAtomicLong('myLong@group1')`,
      * the given group will be initialized first, if not initialized
      * already, and then the instance will be created on this group.
+     *
+     * @throws AssertionError if `name` is not a `string`
      */
     getAtomicLong(name: string): Promise<IAtomicLong>;
 
@@ -74,6 +76,8 @@ export interface CPSubsystem {
      * If a group name is given, like `.getAtomicReference('myRef@group1')`,
      * the given group will be initialized first, if not initialized
      * already, and then the instance will be created on this group.
+     *
+     * @throws AssertionError if `name` is not a `string`
      */
     getAtomicReference<E>(name: string): Promise<IAtomicReference<E>>;
 
@@ -86,6 +90,8 @@ export interface CPSubsystem {
      * If a group name is given, like `.getCountDownLatch('myLatch@group1')`,
      * the given group will be initialized first, if not initialized
      * already, and then the instance will be created on this group.
+     *
+     * @throws AssertionError if `name` is not a `string`
      */
     getCountDownLatch(name: string): Promise<ICountDownLatch>;
 
@@ -98,6 +104,8 @@ export interface CPSubsystem {
      * If a group name is given, like `.getLock('myLock@group1')`,
      * the given group will be initialized first, if not initialized
      * already, and then the instance will be created on this group.
+     *
+     * @throws AssertionError if `name` is not a `string`
      */
     getLock(name: string): Promise<FencedLock>;
 
@@ -110,6 +118,8 @@ export interface CPSubsystem {
      * If a group name is given, like `.getSemaphore('mySemaphore@group1')`,
      * the given group will be initialized first, if not initialized
      * already, and then the instance will be created on this group.
+     *
+     * @throws AssertionError if `name` is not a `string`
      */
     getSemaphore(name: string): Promise<ISemaphore>;
 
