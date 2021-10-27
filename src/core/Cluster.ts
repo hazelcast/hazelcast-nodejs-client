@@ -65,6 +65,7 @@ export interface Cluster {
      *
      * @param memberSelector optional {@link MemberSelector} instance to filter members to return.
      *                       If not provided, the returned list will contain all the available cluster members.
+     * @throws TypeError if memberSelector is not a function.
      * @return current members in the cluster
      */
     getMembers(memberSelector?: MemberSelector): Member[];

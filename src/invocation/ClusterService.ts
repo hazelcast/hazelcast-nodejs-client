@@ -83,7 +83,7 @@ export class ClusterService implements Cluster {
 
     getMembers(selector?: MemberSelector): MemberImpl[] {
         const members = this.getMemberList();
-        if (selector == null) {
+        if (selector === undefined) {
             return members;
         }
 
