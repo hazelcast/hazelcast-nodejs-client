@@ -15,7 +15,13 @@
  */
 /** @ignore *//** */
 
-import {ClientNotActiveError, HazelcastError, IOError, TargetDisconnectedError, UUID} from '../core';
+import {
+    ClientNotActiveError,
+    HazelcastError,
+    IOError,
+    TargetDisconnectedError,
+    UUID
+} from '../core';
 import {Connection} from '../network/Connection';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {ListenerRegistration} from '../invocation/ListenerRegistration';
@@ -25,9 +31,9 @@ import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {
+    ConnectionManager,
     CONNECTION_ADDED_EVENT_NAME,
-    CONNECTION_REMOVED_EVENT_NAME,
-    ConnectionManager
+    CONNECTION_REMOVED_EVENT_NAME
 } from '../network/ConnectionManager';
 import {ConnectionRegistration} from '../invocation/ConnectionRegistration';
 
