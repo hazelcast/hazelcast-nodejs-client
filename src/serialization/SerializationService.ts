@@ -314,9 +314,8 @@ export class SerializationServiceV1 implements SerializationService {
 
     private registerCustomSerializers(): void {
         const customSerializers = this.serializationConfig.customSerializers;
-        for (const key in customSerializers) {
-            const candidate = customSerializers[key];
-            this.registerSerializer('!custom' + candidate.id, candidate);
+        for (const customSerializer of customSerializers) {
+            this.registerSerializer('!custom' + customSerializer.id, customSerializer);
         }
     }
 
