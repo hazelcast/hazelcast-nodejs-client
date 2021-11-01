@@ -51,7 +51,7 @@ export interface Cluster {
      * This method can safely be called multiple times for the same registration ID; subsequent calls are ignored.
      *
      * @param listenerId the registration ID of MembershipListener to remove
-     * @return true if the registration is removed, false otherwise
+     * @return `true` if the registration is removed, `false` otherwise
      * @throws AssertionError if the registration ID is `null`
      * @see {@link addMembershipListener}
      */
@@ -65,6 +65,7 @@ export interface Cluster {
      *
      * @param memberSelector optional {@link MemberSelector} instance to filter members to return.
      *                       If not provided, the returned list will contain all the available cluster members.
+     * @throws TypeError if memberSelector is not a function.
      * @return current members in the cluster
      */
     getMembers(memberSelector?: MemberSelector): Member[];

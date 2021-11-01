@@ -55,15 +55,15 @@ export class StaleReadDetectorImpl implements StaleReadDetector {
 }
 
 class AlwaysFreshStaleReadDetectorImpl implements StaleReadDetector {
-    isStaleRead(key: any, record: DataRecord): boolean {
+    isStaleRead(_key: any, _record: DataRecord): boolean {
         return false;
     }
 
-    getPartitionId(key: any): number {
+    getPartitionId(_key: any): number {
         return 0;
     }
 
-    getMetadataContainer(partitionId: number): MetadataContainer {
+    getMetadataContainer(_partitionId: number): MetadataContainer {
         return null;
     }
 }

@@ -23,10 +23,10 @@ export class VectorClock {
     isAfter(other: VectorClock): boolean {
         let atLeastOneBigger = false;
         other.replicaTimestamps.forEach((otherTimestamp: Long, replicaId: string) => {
-            const thisTimetamp = this.replicaTimestamps.get(replicaId);
-            if (thisTimetamp == null || otherTimestamp.greaterThan(thisTimetamp)) {
+            const thisTimestamp = this.replicaTimestamps.get(replicaId);
+            if (thisTimestamp == null || otherTimestamp.greaterThan(thisTimestamp)) {
                 return false;
-            } else if (otherTimestamp.lessThan(thisTimetamp)) {
+            } else if (otherTimestamp.lessThan(thisTimestamp)) {
                 atLeastOneBigger = true;
             }
         });

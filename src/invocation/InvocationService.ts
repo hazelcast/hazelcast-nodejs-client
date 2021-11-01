@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
 import {
     ClientNotActiveError,
     HazelcastInstanceNotActiveError,
@@ -45,7 +44,7 @@ import {ClientConfig} from '../config';
 import {ListenerService} from '../listener/ListenerService';
 import {ClientErrorFactory} from '../protocol/ErrorFactory';
 import {LifecycleService} from '../LifecycleService';
-import {ConnectionRegistry} from '../network/ConnectionManager';
+import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -172,7 +171,6 @@ export class Invocation {
     }
 
     notify(clientMessage: ClientMessage): void {
-        assert(clientMessage != null, 'Response can not be null');
         const expectedBackups = clientMessage.getNumberOfBackupAcks();
         if (expectedBackups > this.backupsAcksReceived) {
             this.pendingResponseReceivedMillis = Date.now();
@@ -226,7 +224,7 @@ export class Invocation {
 }
 
 const backupListenerCodec: ListenerMessageCodec = {
-    encodeAddRequest(localOnly: boolean): ClientMessage {
+    encodeAddRequest(_localOnly: boolean): ClientMessage {
         return ClientLocalBackupListenerCodec.encodeRequest();
     },
 
@@ -234,7 +232,7 @@ const backupListenerCodec: ListenerMessageCodec = {
         return ClientLocalBackupListenerCodec.decodeResponse(msg);
     },
 
-    encodeRemoveRequest(listenerId: UUID): ClientMessage {
+    encodeRemoveRequest(_listenerId: UUID): ClientMessage {
         return null;
     }
 }
@@ -529,7 +527,6 @@ export class InvocationService {
     }
 
     private send(invocation: Invocation, connection: Connection): Promise<void> {
-        assert(connection != null);
         if (this.isShutdown) {
             return Promise.reject(new ClientNotActiveError('Client is shutting down.'));
         }

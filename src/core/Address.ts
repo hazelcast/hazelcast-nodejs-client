@@ -82,12 +82,10 @@ export class AddressImpl implements Address, IdentifiedDataSerializable {
         if (other == null) {
             return false;
         }
-        if (other.host === this.host &&
+        return other.host === this.host &&
             other.port === this.port &&
-            other.type === this.type) {
-            return true;
-        }
-        return false;
+            other.type === this.type;
+
     }
 
     toString(): string {

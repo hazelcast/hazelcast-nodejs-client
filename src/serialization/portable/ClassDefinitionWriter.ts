@@ -40,15 +40,15 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder = builder;
     }
 
-    writeInt(fieldName: string, value: number): void {
+    writeInt(fieldName: string, _value: number): void {
         this.builder.addIntField(fieldName);
     }
 
-    writeLong(fieldName: string, long: Long): void {
+    writeLong(fieldName: string, _value: Long): void {
         this.builder.addLongField(fieldName);
     }
 
-    writeString(fieldName: string, str: string): void {
+    writeString(fieldName: string, _value: string): void {
         this.builder.addStringField(fieldName);
     }
 
@@ -56,27 +56,27 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.writeString(fieldName, str);
     }
 
-    writeBoolean(fieldName: string, value: boolean): void {
+    writeBoolean(fieldName: string, _value: boolean): void {
         this.builder.addBooleanField(fieldName);
     }
 
-    writeByte(fieldName: string, value: number): void {
+    writeByte(fieldName: string, _value: number): void {
         this.builder.addByteField(fieldName);
     }
 
-    writeChar(fieldName: string, char: string): void {
+    writeChar(fieldName: string, _value: string): void {
         this.builder.addCharField(fieldName);
     }
 
-    writeDouble(fieldName: string, double: number): void {
+    writeDouble(fieldName: string, _value: number): void {
         this.builder.addDoubleField(fieldName);
     }
 
-    writeFloat(fieldName: string, float: number): void {
+    writeFloat(fieldName: string, _value: number): void {
         this.builder.addFloatField(fieldName);
     }
 
-    writeShort(fieldName: string, value: number): void {
+    writeShort(fieldName: string, _value: number): void {
         this.builder.addShortField(fieldName);
     }
 
@@ -100,59 +100,59 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addPortableField(fieldName, nestedClassDef);
     }
 
-    writeDecimal(fieldName: string, value: BigDecimal): void {
+    writeDecimal(fieldName: string, _value: BigDecimal): void {
         this.builder.addDecimalField(fieldName);
     }
 
-    writeTime(fieldName: string, value: LocalTime): void {
+    writeTime(fieldName: string, _value: LocalTime): void {
         this.builder.addTimeField(fieldName);
     }
 
-    writeDate(fieldName: string, value: LocalDate): void {
+    writeDate(fieldName: string, _value: LocalDate): void {
         this.builder.addDateField(fieldName);
     }
 
-    writeTimestamp(fieldName: string, value: LocalDateTime): void {
+    writeTimestamp(fieldName: string, _value: LocalDateTime): void {
         this.builder.addTimestampField(fieldName);
     }
 
-    writeTimestampWithTimezone(fieldName: string, value: OffsetDateTime): void {
+    writeTimestampWithTimezone(fieldName: string, _value: OffsetDateTime): void {
         this.builder.addTimestampWithTimezoneField(fieldName);
     }
 
-    writeByteArray(fieldName: string, bytes: Buffer): void {
+    writeByteArray(fieldName: string, _value: Buffer): void {
         this.builder.addByteArrayField(fieldName);
     }
 
-    writeBooleanArray(fieldName: string, booleans: boolean[]): void {
+    writeBooleanArray(fieldName: string, _value: boolean[]): void {
         this.builder.addBooleanArrayField(fieldName);
     }
 
-    writeCharArray(fieldName: string, chars: string[]): void {
+    writeCharArray(fieldName: string, _value: string[]): void {
         this.builder.addCharArrayField(fieldName);
     }
 
-    writeIntArray(fieldName: string, ints: number[]): void {
+    writeIntArray(fieldName: string, _value: number[]): void {
         this.builder.addIntArrayField(fieldName);
     }
 
-    writeLongArray(fieldName: string, longs: Long[]): void {
+    writeLongArray(fieldName: string, _value: Long[]): void {
         this.builder.addLongArrayField(fieldName);
     }
 
-    writeDoubleArray(fieldName: string, doubles: number[]): void {
+    writeDoubleArray(fieldName: string, _value: number[]): void {
         this.builder.addDoubleArrayField(fieldName);
     }
 
-    writeFloatArray(fieldName: string, floats: number[]): void {
+    writeFloatArray(fieldName: string, _value: number[]): void {
         this.builder.addFloatArrayField(fieldName);
     }
 
-    writeShortArray(fieldName: string, shorts: number[]): void {
+    writeShortArray(fieldName: string, _value: number[]): void {
         this.builder.addShortArrayField(fieldName);
     }
 
-    writeStringArray(fieldName: string, val: string[]): void {
+    writeStringArray(fieldName: string, _value: string[]): void {
         this.builder.addStringArrayField(fieldName);
     }
 
@@ -179,23 +179,23 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addPortableArrayField(fieldName, nestedClassDef);
     }
 
-    writeDecimalArray(fieldName: string, values: BigDecimal[]): void {
+    writeDecimalArray(fieldName: string, _value: BigDecimal[]): void {
         this.builder.addDecimalArrayField(fieldName);
     }
 
-    writeTimeArray(fieldName: string, values: LocalTime[]): void {
+    writeTimeArray(fieldName: string, _value: LocalTime[]): void {
         this.builder.addTimeArrayField(fieldName);
     }
 
-    writeDateArray(fieldName: string, values: LocalDate[]): void {
+    writeDateArray(fieldName: string, _value: LocalDate[]): void {
         this.builder.addDateArrayField(fieldName);
     }
 
-    writeTimestampArray(fieldName: string, values: LocalDateTime[]): void {
+    writeTimestampArray(fieldName: string, _value: LocalDateTime[]): void {
         this.builder.addTimestampArrayField(fieldName);
     }
 
-    writeTimestampWithTimezoneArray(fieldName: string, values: OffsetDateTime[]): void {
+    writeTimestampWithTimezoneArray(fieldName: string, _value: OffsetDateTime[]): void {
         this.builder.addTimestampWithTimezoneArrayField(fieldName);
     }
 

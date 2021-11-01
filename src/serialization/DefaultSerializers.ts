@@ -85,11 +85,11 @@ export class NullSerializer implements Serializer<null> {
 
     id = NULL_TYPE_ID;
 
-    read(input: DataInput): null {
+    read(_input: DataInput): null {
         return null;
     }
 
-    write(output: DataOutput, object: any): void {
+    write(_output: DataOutput, _object: any): void {
         // no-op
     }
 }
@@ -349,7 +349,7 @@ export class LinkedListSerializer implements Serializer<any[]> {
         return result;
     }
 
-    write(output: DataOutput, object: any[]): void {
+    write(_output: DataOutput, _object: any[]): void {
         // no-op
     }
 }

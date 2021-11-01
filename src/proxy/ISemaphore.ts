@@ -121,7 +121,7 @@ export interface ISemaphore extends DistributedObject {
      * by programming convention in the application.
      *
      * @param permits the number of permits to release
-     * @throws IllegalStateError if the Semaphore is non-JDK-compatible
+     * @throws {@link IllegalStateError} if the Semaphore is non-JDK-compatible
      *         and the caller does not have a permit
      */
     release(permits?: number): Promise<void>;
