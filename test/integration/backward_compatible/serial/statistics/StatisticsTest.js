@@ -97,7 +97,7 @@ describe('StatisticsTest (default period)', function () {
         await map.destroy();
     });
 
-    function contains(base, search) {
+    function containsOnce(base, search) {
         const firstIndex = base.indexOf(search);
         return firstIndex > -1 && firstIndex === base.lastIndexOf(search);
     }
@@ -139,10 +139,10 @@ describe('StatisticsTest (default period)', function () {
         await TestUtil.promiseWaitMilliseconds(5000);
         const stats = await getClientStatisticsFromServer(cluster, client);
         const nearCacheStats = 'nc.' + map.getName();
-        expect(contains(stats, nearCacheStats + '.hits=1')).to.be.true;
-        expect(contains(stats, nearCacheStats + '.creationTime=')).to.be.true;
-        expect(contains(stats, nearCacheStats + '.misses=1')).to.be.true;
-        expect(contains(stats, nearCacheStats + '.ownedEntryCount=1')).to.be.true;
+        expect(containsOnce(stats, nearCacheStats + '.hits=1')).to.be.true;
+        expect(containsOnce(stats, nearCacheStats + '.creationTime=')).to.be.true;
+        expect(containsOnce(stats, nearCacheStats + '.misses=1')).to.be.true;
+        expect(containsOnce(stats, nearCacheStats + '.ownedEntryCount=1')).to.be.true;
     });
 });
 
