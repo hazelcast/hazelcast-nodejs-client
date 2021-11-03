@@ -31,13 +31,13 @@ export class BuildInfo {
             return BuildInfo.UNKNOWN_VERSION_ID;
         }
         const info = BuildInfo.PATTERN.exec(versionString);
-        if (info == null) {
-            return -1;
+        if (info === null) {
+            return BuildInfo.UNKNOWN_VERSION_ID;
         }
         const major = Number.parseInt(info[1]);
         const minor = Number.parseInt(info[2]);
         let patch: number;
-        if (info[3] == null) {
+        if (info[3] === undefined) {
             patch = 0;
         } else {
             patch = Number.parseInt(info[3]);
