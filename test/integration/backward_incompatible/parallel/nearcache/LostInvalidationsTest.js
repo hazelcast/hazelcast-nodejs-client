@@ -33,9 +33,9 @@ describe('LostInvalidationTest', function () {
 
     function blockInvalidationEvents(client, nearCachedMap, notifyAfterNumberOfEvents) {
         const listenerId = nearCachedMap.invalidationListenerId;
-        const clientRegistrationKey = client.getListenerService().activeRegistrations
-            .get(listenerId).get(client.connectionRegistry.getRandomConnection());
-        const correlationId = clientRegistrationKey.correlationId;
+        const connectionRegistration = client.getListenerService().registrations
+            .get(listenerId).connectionRegistrations.get(client.connectionRegistry.getRandomConnection());
+        const correlationId = connectionRegistration.correlationId;
         const handler = client.getInvocationService().eventHandlers.get(correlationId).handler;
         const deferred = deferredPromise();
         let numberOfBlockedInvalidations = 0;

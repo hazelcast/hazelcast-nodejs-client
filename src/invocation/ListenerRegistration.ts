@@ -17,23 +17,14 @@
 
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {Connection} from '../network/Connection';
-import {UUID} from '../core/UUID';
+import {ClientMessageHandler} from '../protocol/ClientMessage';
+import {ConnectionRegistration} from './ConnectionRegistration';
 
 /** @internal */
-export class ClientEventRegistration {
-    readonly serverRegistrationId: UUID;
-    readonly correlationId: number;
-    readonly subscriber: Connection;
-    readonly codec: ListenerMessageCodec;
+export class ListenerRegistration {
+    readonly connectionRegistrations: Map<Connection, ConnectionRegistration>;
 
-    constructor(serverRegistrationId: UUID, correlationId: number, subscriber: Connection, codec: ListenerMessageCodec) {
-        this.serverRegistrationId = serverRegistrationId;
-        this.correlationId = correlationId;
-        this.subscriber = subscriber;
-        this.codec = codec;
-    }
-
-    toString(): string {
-        return this.serverRegistrationId.toString();
+    constructor(readonly handler: ClientMessageHandler, readonly codec: ListenerMessageCodec) {
+        this.connectionRegistrations = new Map();
     }
 }
