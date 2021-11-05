@@ -23,12 +23,8 @@ import {ConnectionRegistration} from './ConnectionRegistration';
 /** @internal */
 export class ListenerRegistration {
     readonly connectionRegistrations: Map<Connection, ConnectionRegistration>;
-    readonly handler: ClientMessageHandler;
-    readonly codec: ListenerMessageCodec;
 
-    constructor(handler: ClientMessageHandler, codec: ListenerMessageCodec) {
-        this.handler = handler;
-        this.codec = codec;
+    constructor(readonly handler: ClientMessageHandler, readonly codec: ListenerMessageCodec) {
         this.connectionRegistrations = new Map();
     }
 }

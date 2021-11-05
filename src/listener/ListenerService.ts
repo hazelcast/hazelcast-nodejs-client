@@ -170,11 +170,11 @@ export class ListenerService {
         const clientMessage = eventRegistration.codec.encodeRemoveRequest(serverRegistrationId);
         // null message means no remote registration (e.g. for backup acks)
         if (clientMessage === null) {
-            return;
+            return Promise.resolve();
         }
         const invocation = new Invocation(this.invocationService, clientMessage, Number.MAX_SAFE_INTEGER);
         invocation.connection = connection;
-        this.invocationService.invoke(invocation).catch((err) => {
+        return this.invocationService.invoke(invocation).then(() => {}).catch((err) => {
             if (err instanceof ClientNotActiveError
                     || err instanceof IOError
                     || err instanceof TargetDisconnectedError) {
