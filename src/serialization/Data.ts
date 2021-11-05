@@ -149,6 +149,8 @@ export interface PositionalDataOutput extends DataOutput {
 
     pwriteBoolean(position: number, val: boolean): void;
 
+    pwriteBooleanBit(position: number, bitIndex: number, val: boolean): void;
+
     pwriteByte(position: number, byte: number): void;
 
     pwriteChar(position: number, char: string): void;

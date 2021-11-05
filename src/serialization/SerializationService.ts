@@ -67,6 +67,9 @@ import {PortableSerializer} from './portable/PortableSerializer';
 import {PREDICATE_FACTORY_ID, predicateFactory} from './DefaultPredicates';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
 import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
+import {CompactStreamSerializerAdapter} from './compact/CompactStreamSerializerAdapter';
+import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
+import {SchemaService} from './compact/SchemaService';
 
 /** @internal */
 export interface SerializationService {
@@ -97,13 +100,16 @@ export class SerializationServiceV1 implements SerializationService {
     private readonly registry: { [id: number]: Serializer };
     private readonly serializerNameToId: { [name: string]: number };
     private readonly serializationConfig: SerializationConfigImpl;
+    private readonly compactStreamSerializer: CompactStreamSerializer;
 
-    constructor(serializationConfig: SerializationConfigImpl) {
+    constructor(serializationConfig: SerializationConfigImpl, schemaService: SchemaService) {
         this.serializationConfig = serializationConfig;
         this.registry = {};
         this.serializerNameToId = {};
+        this.compactStreamSerializer = new CompactStreamSerializer(schemaService);
         this.registerDefaultSerializers();
         this.registerCustomSerializers();
+        this.registerCompactSerializers();
         this.registerGlobalSerializer();
     }
 
@@ -186,7 +192,8 @@ export class SerializationServiceV1 implements SerializationService {
      *      * Java types [Date, BigInteger, BigDecimal, Class, Enum]
      *  5. Custom serializers
      *  6. Global Serializer
-     *  7. Fallback (JSON)
+     *  7. Compact Serializer
+     *  8. Fallback (JSON)
      * @param obj
      * @returns
      */
@@ -211,20 +218,27 @@ export class SerializationServiceV1 implements SerializationService {
             serializer = this.findSerializerByName('!json', false);
         }
         if (serializer === null) {
+            serializer = this.findSerializerByName('!compact', false);
+        }
+        if (serializer === null) {
             throw new RangeError('There is no suitable serializer for ' + obj + '.');
         }
         return serializer;
 
     }
 
-    protected lookupDefaultSerializer(obj: any): Serializer {
+    private lookupDefaultSerializer(obj: any): Serializer {
         let serializer: Serializer = null;
-        if (this.isIdentifiedDataSerializable(obj)) {
+        if (this.isCompactSerializable(obj)) {
+            return this.findSerializerByName('!compact', false);
+        }
+        if (SerializationServiceV1.isIdentifiedDataSerializable(obj)) {
             return this.findSerializerByName('identified', false);
         }
-        if (this.isPortableSerializable(obj)) {
+        if (SerializationServiceV1.isPortableSerializable(obj)) {
             return this.findSerializerByName('!portable', false);
         }
+
         const objectType = Util.getType(obj);
         if (objectType === 'array') {
             if (obj.length === 0) {
@@ -238,28 +252,36 @@ export class SerializationServiceV1 implements SerializationService {
         return serializer;
     }
 
-    protected lookupCustomSerializer(obj: any): Serializer {
-        if (this.isCustomSerializable(obj)) {
+    private lookupCustomSerializer(obj: any): Serializer {
+        if (SerializationServiceV1.isCustomSerializable(obj)) {
             return this.findSerializerById(obj.hzCustomId);
         }
         return null;
     }
 
-    protected lookupGlobalSerializer(): Serializer {
+    private lookupGlobalSerializer(): Serializer {
         return this.findSerializerByName('!global', false);
     }
 
-    protected isIdentifiedDataSerializable(obj: any): boolean {
+    private static isIdentifiedDataSerializable(obj: any): boolean {
         return (obj.readData && obj.writeData
             && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
-    protected isPortableSerializable(obj: any): boolean {
+    private static isPortableSerializable(obj: any): boolean {
         return (obj.readPortable && obj.writePortable
             && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
-    protected registerDefaultSerializers(): void {
+    private isCompactSerializable(obj: any): boolean {
+        // Null object case: Object.create(null)
+        if (!obj.constructor) {
+            return false;
+        }
+        return this.compactStreamSerializer.isRegisteredAsCompact(obj.constructor.name);
+    }
+
+    private registerDefaultSerializers(): void {
         this.registerSerializer('string', new StringSerializer());
         this.registerSerializer('double', new DoubleSerializer());
         this.registerSerializer('byte', new ByteSerializer());
@@ -292,6 +314,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('bigint', new BigIntSerializer());
         this.registerIdentifiedFactories();
         this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
+        this.registerSerializer('!compact', new CompactStreamSerializerAdapter(this.compactStreamSerializer));
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
             this.registerSerializer('!json', new JsonSerializer());
         } else {
@@ -299,7 +322,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
-    protected registerIdentifiedFactories(): void {
+    private registerIdentifiedFactories(): void {
         const factories: { [id: number]: IdentifiedDataSerializableFactory } = {};
         for (const id in this.serializationConfig.dataSerializableFactories) {
             factories[id] = this.serializationConfig.dataSerializableFactories[id];
@@ -312,25 +335,32 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 
-    protected registerCustomSerializers(): void {
+    private registerCustomSerializers(): void {
         const customSerializers = this.serializationConfig.customSerializers;
         for (const key in customSerializers) {
             const candidate = customSerializers[key];
-            this.assertValidCustomSerializer(candidate);
+            SerializationServiceV1.assertValidCustomSerializer(candidate);
             this.registerSerializer('!custom' + candidate.id, candidate);
         }
     }
 
-    protected registerGlobalSerializer(): void {
+    private registerCompactSerializers(): void {
+        const compactSerializers = this.serializationConfig.compactSerializers;
+        for (const compactSerializer of compactSerializers) {
+            this.compactStreamSerializer.registerSerializer(compactSerializer);
+        }
+    }
+
+    private registerGlobalSerializer(): void {
         const candidate: any = this.serializationConfig.globalSerializer;
         if (candidate == null) {
             return;
         }
-        this.assertValidCustomSerializer(candidate);
+        SerializationServiceV1.assertValidCustomSerializer(candidate);
         this.registerSerializer('!global', candidate);
     }
 
-    protected assertValidCustomSerializer(candidate: any): void {
+    private static assertValidCustomSerializer(candidate: any): void {
         const idProp = 'id';
         const fRead = 'read';
         const fWrite = 'write';
@@ -346,12 +376,12 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
-    protected isCustomSerializable(object: any): boolean {
+    private static isCustomSerializable(object: any): boolean {
         const prop = 'hzCustomId';
         return (typeof object[prop] === 'number' && object[prop] >= 1);
     }
 
-    protected findSerializerByName(name: string, isArray: boolean): Serializer {
+    private findSerializerByName(name: string, isArray: boolean): Serializer {
         let convertedName: string;
         if (name === 'number') {
             convertedName = this.serializationConfig.defaultNumberType;
@@ -368,12 +398,12 @@ export class SerializationServiceV1 implements SerializationService {
         return this.findSerializerById(serializerId);
     }
 
-    protected findSerializerById(id: number): Serializer {
+    private findSerializerById(id: number): Serializer {
         const serializer = this.registry[id];
         return serializer;
     }
 
-    protected calculatePartitionHash(object: any, strategy: PartitionStrategy): number {
+    private calculatePartitionHash(object: any, strategy: PartitionStrategy): number {
         return strategy(object);
     }
 }

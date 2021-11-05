@@ -369,6 +369,8 @@ export class ConfigBuilder {
                 this.handleGlobalSerializer(jsonObject[key]);
             } else if (key === 'customSerializers') {
                 this.handleCustomSerializers(jsonObject[key]);
+            } else if (key === 'compactSerializers') {
+                this.handleCompactSerializers(jsonObject[key]);
             } else if (key === 'jsonStringDeserializationPolicy') {
                 this.effectiveConfig.serialization
                     .jsonStringDeserializationPolicy = tryGetEnum(JsonStringDeserializationPolicy, jsonObject[key]);
@@ -377,6 +379,31 @@ export class ConfigBuilder {
             }
         }
     }
+
+    private handleCompactSerializers(customSerializers: any) {
+        const serializersArray = tryGetArray(customSerializers);
+
+        for (const serializer of serializersArray) {
+            if (typeof serializer.hzClassName !== 'string') {
+                throw new RangeError(
+                    `Invalid compact serializer given: ${serializer}. Expected a 'hzClassName' property that is a string.`
+                );
+            }
+            if (typeof serializer.read !== 'function') {
+                throw new RangeError(
+                    `Invalid compact serializer given: ${serializer}. Expected a 'read' property that is function.`
+                );
+            }
+            if (typeof serializer.write !== 'function') {
+                throw new RangeError(
+                    `Invalid compact serializer given: ${serializer}. Expected a 'write' property that is function.`
+                );
+            }
+
+            this.effectiveConfig.serialization.compactSerializers.push(serializer);
+        }
+    }
+
 
     private handleGlobalSerializer(globalSerializer: any) {
         if (!globalSerializer) {

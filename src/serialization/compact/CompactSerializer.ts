@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @ignore *//** */
 
-/**
- * Public API re-exports.
- */
+import {CompactReader} from './CompactReader';
+import {CompactWriter} from './CompactWriter';
 
-export * from './Data';
-export * from './Portable';
-export * from './Serializable';
-export * from './compact'
+export interface CompactSerializer<C> {
+    hzClassName: string;
+    hzTypeName?: string;
+    read(reader: CompactReader): C;
+    write(writer: CompactWriter, instance: C): void;
+}

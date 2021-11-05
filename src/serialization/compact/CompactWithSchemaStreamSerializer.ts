@@ -15,11 +15,25 @@
  */
 /** @ignore *//** */
 
-/**
- * Public API re-exports.
- */
+import {SerializerAdapter} from '../SerializerAdapter';
+import {ObjectDataInput, ObjectDataOutput} from '../ObjectData';
+import {CompactStreamSerializer} from './CompactStreamSerializer';
 
-export * from './Data';
-export * from './Portable';
-export * from './Serializable';
-export * from './compact'
+/**
+ * @internal
+ */
+export class CompactWithSchemaStreamSerializer implements SerializerAdapter {
+
+    id = -56;
+
+    constructor(private readonly serializer: CompactStreamSerializer) {
+    }
+
+    read(input: ObjectDataInput): any {
+        return this.serializer.read(input, true);
+    }
+
+    write(output: ObjectDataOutput, object: any): void {
+        this.serializer.write(output, object, true);
+    }
+}

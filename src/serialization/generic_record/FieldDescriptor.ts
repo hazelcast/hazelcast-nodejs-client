@@ -15,11 +15,16 @@
  */
 /** @ignore *//** */
 
-/**
- * Public API re-exports.
+/*
+ * @internal
  */
+import {FieldKind} from './FieldKind';
 
-export * from './Data';
-export * from './Portable';
-export * from './Serializable';
-export * from './compact'
+export class FieldDescriptor {
+    index = -1;
+    offset = -1;
+    bitOffset = -1;
+
+    constructor(public fieldName: string, public kind: FieldKind) {
+    }
+}

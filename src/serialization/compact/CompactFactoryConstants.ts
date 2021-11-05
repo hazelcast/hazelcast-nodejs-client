@@ -15,11 +15,8 @@
  */
 /** @ignore *//** */
 
-/**
- * Public API re-exports.
- */
+/** @internal */
+export const COMPACT_FACTORY_ID = -42;
 
-export * from './Data';
-export * from './Portable';
-export * from './Serializable';
-export * from './compact'
+/** @internal */
+export const SCHEMA = 1;

@@ -295,6 +295,16 @@ export class PositionalObjectDataOutput extends ObjectDataOutput implements Posi
     pwriteShort(position: number, short: number): void {
         BitsUtil.writeInt16(this.buffer, position, short, this.isBigEndian());
     }
+
+    pwriteBooleanBit(position: number, bitIndex: number, val: boolean): void {
+        let b = this.buffer[position];
+        if (val) {
+            b = b | (1 << bitIndex);
+        } else {
+            b = b & ~(1 << bitIndex);
+        }
+        this.buffer[position] = b;
+    }
 }
 
 /** @internal */
