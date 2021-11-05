@@ -128,9 +128,9 @@ export class SerializationServiceV1 implements SerializationService {
         if (object != null && object.partitionKey != null) {
             const partitionKey = object.partitionKey;
             const serializedPartitionKey = this.toData(partitionKey);
-            dataOutput.writeIntBE(this.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
+            dataOutput.writeIntBE(SerializationServiceV1.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
         } else {
-            dataOutput.writeIntBE(this.calculatePartitionHash(object, partitioningStrategy));
+            dataOutput.writeIntBE(SerializationServiceV1.calculatePartitionHash(object, partitioningStrategy));
         }
         dataOutput.writeIntBE(serializer.id);
         serializer.write(dataOutput, object);
@@ -217,12 +217,12 @@ export class SerializationServiceV1 implements SerializationService {
 
     }
 
-    protected lookupDefaultSerializer(obj: any): Serializer {
+    private lookupDefaultSerializer(obj: any): Serializer {
         let serializer: Serializer = null;
-        if (this.isIdentifiedDataSerializable(obj)) {
+        if (SerializationServiceV1.isIdentifiedDataSerializable(obj)) {
             return this.findSerializerByName('identified', false);
         }
-        if (this.isPortableSerializable(obj)) {
+        if (SerializationServiceV1.isPortableSerializable(obj)) {
             return this.findSerializerByName('!portable', false);
         }
         const objectType = Util.getType(obj);
@@ -238,28 +238,28 @@ export class SerializationServiceV1 implements SerializationService {
         return serializer;
     }
 
-    protected lookupCustomSerializer(obj: any): Serializer {
-        if (this.isCustomSerializable(obj)) {
+    private lookupCustomSerializer(obj: any): Serializer {
+        if (SerializationServiceV1.isCustomSerializable(obj)) {
             return this.findSerializerById(obj.hzCustomId);
         }
         return null;
     }
 
-    protected lookupGlobalSerializer(): Serializer {
+    private lookupGlobalSerializer(): Serializer {
         return this.findSerializerByName('!global', false);
     }
 
-    protected isIdentifiedDataSerializable(obj: any): boolean {
+    private static isIdentifiedDataSerializable(obj: any): boolean {
         return (obj.readData && obj.writeData
             && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
-    protected isPortableSerializable(obj: any): boolean {
+    private static isPortableSerializable(obj: any): boolean {
         return (obj.readPortable && obj.writePortable
             && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
-    protected registerDefaultSerializers(): void {
+    private registerDefaultSerializers(): void {
         this.registerSerializer('string', new StringSerializer());
         this.registerSerializer('double', new DoubleSerializer());
         this.registerSerializer('byte', new ByteSerializer());
@@ -299,7 +299,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
-    protected registerIdentifiedFactories(): void {
+    private registerIdentifiedFactories(): void {
         const factories: { [id: number]: IdentifiedDataSerializableFactory } = {};
         for (const id in this.serializationConfig.dataSerializableFactories) {
             factories[id] = this.serializationConfig.dataSerializableFactories[id];
@@ -312,46 +312,27 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
     }
 
-    protected registerCustomSerializers(): void {
+    private registerCustomSerializers(): void {
         const customSerializers = this.serializationConfig.customSerializers;
-        for (const key in customSerializers) {
-            const candidate = customSerializers[key];
-            this.assertValidCustomSerializer(candidate);
-            this.registerSerializer('!custom' + candidate.id, candidate);
+        for (const customSerializer of customSerializers) {
+            this.registerSerializer('!custom' + customSerializer.id, customSerializer);
         }
     }
 
-    protected registerGlobalSerializer(): void {
+    private registerGlobalSerializer(): void {
         const candidate: any = this.serializationConfig.globalSerializer;
         if (candidate == null) {
             return;
         }
-        this.assertValidCustomSerializer(candidate);
         this.registerSerializer('!global', candidate);
     }
 
-    protected assertValidCustomSerializer(candidate: any): void {
-        const idProp = 'id';
-        const fRead = 'read';
-        const fWrite = 'write';
-        if (typeof candidate[idProp] !== 'number') {
-            throw new TypeError('Custom serializer should have ' + idProp + ' property.');
-        }
-        if (typeof candidate[fRead] !== 'function' || typeof candidate[fWrite] !== 'function') {
-            throw new TypeError('Custom serializer should have ' + fRead + ' and ' + fWrite + ' methods.');
-        }
-        const typeId = candidate[idProp];
-        if (!Number.isInteger(typeId) || typeId < 1) {
-            throw new TypeError('Custom serializer should have its typeId greater than or equal to 1.');
-        }
-    }
-
-    protected isCustomSerializable(object: any): boolean {
+    private static isCustomSerializable(object: any): boolean {
         const prop = 'hzCustomId';
         return (typeof object[prop] === 'number' && object[prop] >= 1);
     }
 
-    protected findSerializerByName(name: string, isArray: boolean): Serializer {
+    private findSerializerByName(name: string, isArray: boolean): Serializer {
         let convertedName: string;
         if (name === 'number') {
             convertedName = this.serializationConfig.defaultNumberType;
@@ -368,12 +349,11 @@ export class SerializationServiceV1 implements SerializationService {
         return this.findSerializerById(serializerId);
     }
 
-    protected findSerializerById(id: number): Serializer {
-        const serializer = this.registry[id];
-        return serializer;
+    private findSerializerById(id: number): Serializer {
+        return this.registry[id];
     }
 
-    protected calculatePartitionHash(object: any, strategy: PartitionStrategy): number {
+    private static calculatePartitionHash(object: any, strategy: PartitionStrategy): number {
         return strategy(object);
     }
 }
