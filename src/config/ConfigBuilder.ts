@@ -387,6 +387,10 @@ export class ConfigBuilder {
                 `Invalid global serializer given: ${globalSerializer}. Expected a 'id' property that is a number.`
             );
         }
+        if (!Number.isInteger(globalSerializer.id) || globalSerializer.id < 1) {
+            throw new RangeError(`Invalid global serializer given: ${globalSerializer}`
+                + 'Expected the \'id\' property to be an integer greater or equal to 1.');
+        }
         if (typeof globalSerializer.read !== 'function') {
             throw new RangeError(
                 `Invalid global serializer given: ${globalSerializer}. Expected a 'read' property that is function.`
@@ -445,6 +449,10 @@ export class ConfigBuilder {
                 throw new RangeError(
                     `Invalid custom serializer given: ${serializer}. Expected a 'id' property that is a number.`
                 );
+            }
+            if (!Number.isInteger(serializer.id) || serializer.id < 1) {
+                throw new RangeError(`Invalid custom serializer given: ${serializer}`
+                    + 'Expected the \'id\' property to be an integer greater or equal to 1.');
             }
             if (typeof serializer.read !== 'function') {
                 throw new RangeError(
