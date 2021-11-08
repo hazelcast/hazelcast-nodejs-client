@@ -20,8 +20,9 @@ import {CompactReader} from './CompactReader';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 import * as Long from 'long';
 import {CompactStreamSerializer} from './CompactStreamSerializer';
-import {DataInput} from '../Data';
 import {Schema} from './Schema';
+import {ObjectDataInput} from '../ObjectData';
+import {FieldKind} from '../generic_record/FieldKind';
 
 /**
  * @internal
@@ -29,7 +30,7 @@ import {Schema} from './Schema';
 export class DefaultCompactReader extends CompactInternalGenericRecord implements CompactReader {
     constructor(
         serializer: CompactStreamSerializer,
-        input: DataInput,
+        input: ObjectDataInput,
         schema: Schema,
         className: string | null,
         schemaIncludedInBinary: boolean
@@ -38,7 +39,11 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
     }
 
     readArrayOfBooleans(fieldName: string, defaultValue?: boolean[] | null): boolean[] | null {
-        return undefined;
+        if (defaultValue === undefined) {
+            return this.getArrayOfBooleans(fieldName);
+        } else {
+            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_BOOLEANS) ? this.getArrayOfBooleans(fieldName) : defaultValue;
+        }
     }
 
     readArrayOfBytes(fieldName: string, defaultValue?: Buffer | null): Buffer | null {

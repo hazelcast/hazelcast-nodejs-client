@@ -35,36 +35,12 @@ import {FieldKind} from '../generic_record/FieldKind';
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
 import {IOUtil} from '../../util/IOUtil';
 import {CompactGenericRecord} from '../generic_record/CompactGenericRecord';
+import {BYTE_OFFSET_READER_RANGE, NULL_OFFSET, SHORT_OFFSET_READER_RANGE} from './OffsetConstants';
 
 /**
  * @internal
  */
 export class DefaultCompactWriter implements CompactWriter {
-
-    private static readonly BYTE_MAX_VALUE = 127;
-    private static readonly BYTE_MIN_VALUE = -128;
-
-    private static readonly SHORT_MAX_VALUE = 32767;
-    private static readonly SHORT_MIN_VALUE = -32768;
-
-    /**
-     * Range of the offsets that can be represented by a single byte
-     * and can be read with BYTE_OFFSET_READER.
-     */
-    private static readonly BYTE_OFFSET_READER_RANGE = DefaultCompactWriter.BYTE_MAX_VALUE - DefaultCompactWriter.BYTE_MIN_VALUE;
-
-    /**
-     * Offset of the null fields.
-     */
-    private static readonly NULL_OFFSET = -1;
-
-    /**
-     * Range of the offsets that can be represented by two bytes
-     * and can be read with SHORT_OFFSET_READER.
-     */
-    private static readonly SHORT_OFFSET_READER_RANGE
-        = DefaultCompactWriter.SHORT_MAX_VALUE - DefaultCompactWriter.SHORT_MIN_VALUE
-
     private readonly dataStartPosition : number;
     private readonly fieldOffsets: Array<number> | null;
 
@@ -99,20 +75,20 @@ export class DefaultCompactWriter implements CompactWriter {
             // write dataLength
             this.out.pwriteInt(this.dataStartPosition - BitsUtil.INT_SIZE_IN_BYTES, dataLength);
         } catch (e) {
-            throw DefaultCompactWriter.illegalStateException(e);
+            throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
 
-    private static illegalStateException(e : Error) {
+    private static toIllegalStateException(e : Error) {
         return new IllegalStateError('IOException is not expected from BufferObjectDataOutput ', e);
     }
 
     private writeOffsets(dataLength: number, offsets: Array<number>) {
-        if (dataLength < DefaultCompactWriter.BYTE_OFFSET_READER_RANGE) {
+        if (dataLength < BYTE_OFFSET_READER_RANGE) {
             for (const offset of offsets) {
                 this.out.writeByte(offset);
             }
-        } else if (dataLength < DefaultCompactWriter.SHORT_OFFSET_READER_RANGE) {
+        } else if (dataLength < SHORT_OFFSET_READER_RANGE) {
             for (const offset of offsets) {
                 this.out.writeShort(offset);
             }
@@ -137,7 +113,7 @@ export class DefaultCompactWriter implements CompactWriter {
                 writeFn(this.out, object);
             }
         } catch (e) {
-            throw DefaultCompactWriter.illegalStateException(e);
+            throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
 
@@ -165,14 +141,14 @@ export class DefaultCompactWriter implements CompactWriter {
                     offsets[i] = this.out.position() - offset;
                     writeFn(this.out, values[i]);
                 } else {
-                    offsets[i] = DefaultCompactWriter.NULL_OFFSET;
+                    offsets[i] = NULL_OFFSET;
                 }
             }
             const dataLength = this.out.position() - offset;
             this.out.pwriteInt(dataLengthOffset, dataLength);
             this.writeOffsets(dataLength, offsets);
         } catch (e) {
-            throw DefaultCompactWriter.illegalStateException(e);
+            throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
 
@@ -347,7 +323,7 @@ export class DefaultCompactWriter implements CompactWriter {
         try {
             this.out.pwriteBooleanBit(writeOffset, offsetInBits, value);
         } catch (e) {
-            throw DefaultCompactWriter.illegalStateException(e);
+            throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
 
@@ -356,7 +332,7 @@ export class DefaultCompactWriter implements CompactWriter {
         try {
             this.out.pwriteByte(position, value);
         } catch (e) {
-            throw DefaultCompactWriter.illegalStateException(e);
+            throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
 
@@ -379,7 +355,7 @@ export class DefaultCompactWriter implements CompactWriter {
         try {
             this.out.pwriteDouble(position, value);
         } catch (e) {
-            throw DefaultCompactWriter.illegalStateException(e);
+            throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
 
@@ -388,7 +364,7 @@ export class DefaultCompactWriter implements CompactWriter {
         try {
             this.out.pwriteFloat(position, value);
         } catch (e) {
-            throw DefaultCompactWriter.illegalStateException(e);
+            throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
 
@@ -397,7 +373,7 @@ export class DefaultCompactWriter implements CompactWriter {
         try {
             this.out.pwriteInt(position, value);
         } catch (e) {
-            throw DefaultCompactWriter.illegalStateException(e);
+            throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
 
@@ -406,7 +382,7 @@ export class DefaultCompactWriter implements CompactWriter {
         try {
             this.out.pwriteLong(position, value);
         } catch (e) {
-            throw DefaultCompactWriter.illegalStateException(e);
+            throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
 
@@ -457,7 +433,7 @@ export class DefaultCompactWriter implements CompactWriter {
         try {
             this.out.pwriteShort(position, value);
         } catch (e) {
-            throw DefaultCompactWriter.illegalStateException(e);
+            throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
 

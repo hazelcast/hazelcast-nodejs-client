@@ -9,6 +9,10 @@ import {BitsUtil} from '../../util/BitsUtil';
 export class FieldOperations {
     static readonly VARIABLE_SIZE = -1;
 
+    static getSingleKind(fieldKind: FieldKind): FieldKind {
+        return fieldKind - 1;
+    }
+
     static notArrayKindException(fieldName: string): UnsupportedOperationError {
         return new UnsupportedOperationError(`'${fieldName}' is not an array kind. It does not support indexed reads.`);
     }
