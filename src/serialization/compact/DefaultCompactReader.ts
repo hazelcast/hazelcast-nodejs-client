@@ -15,7 +15,6 @@
  */
 /** @ignore *//** */
 
-import {CompactGenericRecord} from '../generic_record/CompactGenericRecord';
 import {CompactReader} from './CompactReader';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 import * as Long from 'long';
@@ -23,11 +22,12 @@ import {CompactStreamSerializer} from './CompactStreamSerializer';
 import {Schema} from './Schema';
 import {ObjectDataInput} from '../ObjectData';
 import {FieldKind} from '../generic_record/FieldKind';
+import {CompactInternalGenericRecord} from '../generic_record/CompactInternalGenericRecord';
 
 /**
  * @internal
  */
-export class DefaultCompactReader extends CompactGenericRecord implements CompactReader {
+export class DefaultCompactReader extends CompactInternalGenericRecord implements CompactReader {
     constructor(
         serializer: CompactStreamSerializer,
         input: ObjectDataInput,

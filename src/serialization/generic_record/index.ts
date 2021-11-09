@@ -19,8 +19,8 @@
  * Public API re-exports.
  */
 
-export * from './Data';
-export * from './Portable';
-export * from './Serializable';
-export * from './compact';
-export * from './generic_record'
+export * from './CompactGenericRecord';
+export * as Fields from './Field';
+export * from './FieldKind';
+export * from './GenericRecordBuilder';
+export * from './GenericRecord';

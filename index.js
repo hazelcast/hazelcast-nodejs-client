@@ -75,6 +75,10 @@ function main() {
                     })];
                 case 1:
                     client = _a.sent();
+                    new lib_1.GenericRecordBuilder({
+                        name: 'a',
+                        age: 1
+                    }, {});
                     return [4 /*yield*/, client.getMap('test')];
                 case 2:
                     map = _a.sent();

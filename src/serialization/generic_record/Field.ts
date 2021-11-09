@@ -1,15 +1,27 @@
 import {FieldKind} from './FieldKind';
+import * as Long from 'long';
 
-export type FieldBuilder<T> = ((value: T) => Field<T>);
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Field<T> {
-    kind: FieldKind;
-    value: T;
+    kind: FieldKind
 }
 
-export const stringField : FieldBuilder<string>  = (value: string) => {
-    return {
-        kind: FieldKind.STRING,
-        value
-    };
+export const string: Field<string> = {
+    kind: FieldKind.STRING
+};
+
+export const int: Field<number> = {
+    kind: FieldKind.INT
+};
+
+export const long: Field<Long> = {
+    kind: FieldKind.LONG
+};
+
+export const float: Field<number> = {
+    kind: FieldKind.FLOAT
+};
+
+export const double: Field<number> = {
+    kind: FieldKind.DOUBLE
 };

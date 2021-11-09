@@ -34,8 +34,8 @@ import {BitsUtil} from '../../util/BitsUtil';
 import {FieldKind} from '../generic_record/FieldKind';
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
 import {IOUtil} from '../../util/IOUtil';
-import {CompactGenericRecord} from '../generic_record/CompactGenericRecord';
 import {BYTE_OFFSET_READER_RANGE, NULL_OFFSET, SHORT_OFFSET_READER_RANGE} from './OffsetConstants';
+import {AbstractCompactGenericRecord} from '../generic_record/AbstractCompactGenericRecord';
 
 /**
  * @internal
@@ -457,13 +457,13 @@ export class DefaultCompactWriter implements CompactWriter {
 
     writeGenericRecord(fieldName: string, value: GenericRecord): void {
         this.writeVariableSizeField(fieldName, FieldKind.COMPACT, value, (out, value) => {
-            this.serializer.writeGenericRecord(out, value as CompactGenericRecord, this.includeSchemaOnBinary);
+            this.serializer.writeGenericRecord(out, value as AbstractCompactGenericRecord, this.includeSchemaOnBinary);
         });
 
     }
     writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[]) : void {
         this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACTS, value, (out, value) => {
-            this.serializer.writeGenericRecord(out, value as CompactGenericRecord, this.includeSchemaOnBinary);
+            this.serializer.writeGenericRecord(out, value as AbstractCompactGenericRecord, this.includeSchemaOnBinary);
         });
     }
 }
