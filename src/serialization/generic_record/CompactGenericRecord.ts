@@ -15,121 +15,636 @@
  */
 /** @ignore *//** */
 
-import {Schema} from '../compact/Schema';
+import {
+    BigDecimal,
+    HazelcastSerializationError,
+    IllegalArgumentError,
+    IllegalStateError,
+    LocalDate,
+    LocalDateTime,
+    LocalTime,
+    OffsetDateTime,
+    UnsupportedOperationError
+} from '../../core';
 import {GenericRecord} from './GenericRecord';
-import {GenericRecordBuilder} from './GenericRecordBuilder';
-import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 import * as Long from 'long';
 import {FieldKind} from './FieldKind';
+import {Schema} from '../compact/Schema';
+import {CompactStreamSerializer} from '../compact/CompactStreamSerializer';
+import {ObjectDataInput} from '../ObjectData';
+import {OffsetReader} from '../compact/OffsetReader';
+import {FieldDescriptor} from './FieldDescriptor';
+import {BitsUtil} from '../../util/BitsUtil';
+import {
+    BYTE_OFFSET_READER,
+    BYTE_OFFSET_READER_RANGE,
+    INT_OFFSET_READER,
+    NULL_OFFSET,
+    SHORT_OFFSET_READER,
+    SHORT_OFFSET_READER_RANGE
+} from '../compact/OffsetConstants';
+import {CompactUtil} from '../compact/CompactUtil';
 import {FieldOperations} from './FieldOperations';
+import {IOUtil} from '../../util/IOUtil';
 
 /**
  *
  * @internal
  */
-export abstract class CompactGenericRecord implements GenericRecord {
-    protected abstract getClassIdentifier() : any;
-    abstract getSchema(): Schema;
-    readAny<T>(fieldName: string): T {
-        const fieldKind = this.getFieldKind(fieldName);
-        return FieldOperations.fieldOperations(fieldKind).readGenericRecordOrPrimitive(this, fieldName) as T;
+export class CompactGenericRecord implements GenericRecord {
+    protected readonly offsetReader: OffsetReader;
+    protected readonly variableOffsetsPosition: number;
+    protected readonly dataStartPosition: number;
+
+    constructor(
+        private readonly serializer: CompactStreamSerializer,
+        protected readonly input: ObjectDataInput,
+        protected readonly schema: Schema,
+        private readonly className: string | null,
+        private readonly schemaIncludedInBinary: boolean
+    ) {
     }
 
-    abstract cloneWithBuilder(): GenericRecordBuilder;
+    private static toUnknownFieldException(fieldName: string, schema: Schema) : Error {
+        return new HazelcastSerializationError(`Unknown field name: '${fieldName}' for schema ${JSON.stringify(schema)}`);
+    }
 
-    abstract getArrayOfBooleans(fieldName: string): boolean[];
+    private static toIllegalStateException(e : Error) {
+        return new IllegalStateError('IOException is not expected since we get from a well known format and position', e);
+    }
 
-    abstract getArrayOfBytes(fieldName: string): Buffer;
+    private static toUnexpectedFieldKind(fieldKind: FieldKind, fieldName: string) : Error {
+        return new HazelcastSerializationError(`Unknown fieldKind: '${fieldKind}' for field: ${fieldName}`);
+    }
 
-    abstract getArrayOfChars(fieldName: string): string[];
+    private readVariableSizeFieldPosition(fieldDescriptor: FieldDescriptor) : number {
+        try {
+            const index = fieldDescriptor.index;
+            const offset = this.offsetReader.getOffset(this.input, this.variableOffsetsPosition, index);
+            return offset === NULL_OFFSET ? NULL_OFFSET : offset + this.dataStartPosition;
+        } catch (e) {
+            throw CompactGenericRecord.toIllegalStateException(e);
+        }
+    }
 
-    abstract getArrayOfDates(fieldName: string): LocalDate[];
+    private readVariableSizeFieldPositionByNameAndKind(fieldName: string, fieldKind: FieldKind) : number {
+        try {
+            const fd = this.getFieldDefinition(fieldName);
+            const index = fd.index;
+            const offset = this.offsetReader.getOffset(this.input, this.variableOffsetsPosition, index);
+            return offset === NULL_OFFSET ? NULL_OFFSET : offset + this.dataStartPosition;
+        } catch (e) {
+            throw CompactGenericRecord.toIllegalStateException(e);
+        }
+    }
 
-    abstract getArrayOfDecimals(fieldName: string): BigDecimal[];
+    private getVariableSize<R>(fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => R) : R {
+        const currentPos = this.input.position();
+        try {
+            const pos = this.readVariableSizeFieldPosition(fieldDescriptor);
+            if (pos === NULL_OFFSET) {
+                return null;
+            }
+            this.input.position(pos);
+            return readFn(this.input);
+        } catch (e) {
+            throw CompactGenericRecord.toIllegalStateException(e);
+        } finally {
+            this.input.position(currentPos);
+        }
+    }
 
-    abstract getArrayOfDoubles(fieldName: string): number[];
+    private static getOffsetReader(dataLength: number) : OffsetReader {
+        if (dataLength < BYTE_OFFSET_READER_RANGE) {
+            return BYTE_OFFSET_READER;
+        } else if (dataLength < SHORT_OFFSET_READER_RANGE) {
+            return SHORT_OFFSET_READER;
+        } else {
+            return INT_OFFSET_READER;
+        }
+    }
 
-    abstract getArrayOfFloats(fieldName: string): number[];
+    private getNullableArrayAsPrimitiveArray<T>(
+        fd: FieldDescriptor, readFn: (reader: ObjectDataInput) => T, methodSuffix: string
+    ) : T {
+        const currentPos = this.input.position();
+        try {
+            const position = this.readVariableSizeFieldPosition(fd);
+            if (position === BitsUtil.NULL_ARRAY_LENGTH) {
+                return null;
+            }
+            this.input.position(position);
 
-    abstract getArrayOfGenericRecords(fieldName: string): GenericRecord[];
+            const dataLen = this.input.readInt();
+            const itemCount = this.input.readInt();
+            const dataStartPosition = this.input.position();
 
-    abstract getArrayOfInts(fieldName: string): number[];
+            const offsetReader = CompactGenericRecord.getOffsetReader(dataLen);
+            const offsetsPosition = dataStartPosition + dataLen;
+            for (let i = 0; i < itemCount; i++) {
+                const offset = offsetReader.getOffset(this.input, offsetsPosition, i);
+                if (offset === BitsUtil.NULL_ARRAY_LENGTH) {
+                    throw CompactUtil.toExceptionForUnexpectedNullValueInArray(fd.fieldName, methodSuffix);
+                }
+            }
+            this.input.position(dataStartPosition - BitsUtil.INT_SIZE_IN_BYTES);
+            return readFn(this.input);
+        } catch (e) {
+            throw CompactGenericRecord.toIllegalStateException(e);
+        } finally {
+            this.input.position(currentPos);
+        }
+    }
 
-    abstract getArrayOfLongs(fieldName: string): Long[];
+    private getFieldDefinition(fieldName: string) : FieldDescriptor {
+        const fd = this.schema.fieldDefinitionMap.get(fieldName);
+        if (fd === null) {
+            throw CompactGenericRecord.toUnknownFieldException(fieldName, this.schema);
+        }
+        return fd;
+    }
 
-    abstract getArrayOfNullableBooleans(fieldName: string): (boolean | null)[];
+    private getFieldDefinitionChecked(fieldName: string, fieldKind: FieldKind) : FieldDescriptor {
+        const fd = this.schema.fieldDefinitionMap.get(fieldName);
+        if (fd.kind !== fieldKind) {
+            throw CompactGenericRecord.toUnexpectedFieldKind(fd.kind, fieldName);
+        }
+        return fd;
+    }
 
-    abstract getArrayOfNullableBytes(fieldName: string): (number | null)[];
+    private static readBooleanBits(input: ObjectDataInput) : boolean[] | null {
+        const len = input.readInt();
+        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+            return null;
+        }
+        if (len === 0) {
+            return [];
+        }
+        const values = new Array<boolean>(len);
+        let index = 0;
+        let currentByte = input.readByte();
+        for (let i = 0; i < len; i++) {
+            if (index === BitsUtil.BITS_IN_A_BYTE) {
+                index = 0;
+                currentByte = input.readByte();
+            }
+            const result = ((currentByte >>> index) & 1) !== 0;
+            index++;
+            values[i] = result;
+        }
+        return values;
+    }
 
-    abstract getArrayOfNullableDoubles(fieldName: string): (number | null)[];
+    private readLength(beginPosition: number) : number {
+        try {
+            return this.input.readInt(beginPosition);
+        } catch (e) {
+            throw CompactGenericRecord.toIllegalStateException(e);
+        }
+    }
 
-    abstract getArrayOfNullableFloats(fieldName: string): (number | null)[];
+    private static checkArrayIndexNotNegative(index: number): number {
+        if (index < 0) {
+            throw new IllegalArgumentError(`Array index must be non-negative: ${index}`);
+        }
+        return index;
+    }
 
-    abstract getArrayOfNullableInts(fieldName: string): (number | null)[];
+    private getFixedSizeFieldFromArray<T>(
+        fieldName: string, fieldKind: FieldKind, readFn: (reader: ObjectDataInput) => T, index: number
+    ) : T {
+        CompactGenericRecord.checkArrayIndexNotNegative(index);
 
-    abstract getArrayOfNullableLongs(fieldName: string): (Long | null)[];
+        const position = this.readVariableSizeFieldPositionByNameAndKind(fieldName, fieldKind);
+        if (position === BitsUtil.NULL_ARRAY_LENGTH) {
+            return null;
+        }
+        if (this.readLength(position) <= index) {
+            return null;
+        }
 
-    abstract getArrayOfNullableShorts(fieldName: string): (number | null)[];
+        const currentPos = this.input.position();
+        try {
+            const singleKind = FieldOperations.getSingleKind(fieldKind);
+            const kindSize = FieldOperations.fieldOperations(singleKind).kindSizeInBytes();
+            this.input.position(BitsUtil.INT_SIZE_IN_BYTES + position + index * kindSize);
+            return readFn(this.input);
+        } catch (e) {
+            throw CompactGenericRecord.toIllegalStateException(e);
+        } finally {
+            this.input.position(currentPos);
+        }
+    }
 
-    abstract getArrayOfShorts(fieldName: string): number[];
+    private getVariableSizeFromArray<T>(
+        fieldName: string, fieldKind: FieldKind, readFn: (reader: ObjectDataInput) => T, index: number
+    ) : T {
+        const currentPos = this.input.position();
+        try {
+            const pos = this.readVariableSizeFieldPositionByNameAndKind(fieldName, fieldKind);
+            if (pos === NULL_OFFSET) {
+                return null;
+            }
+            const dataLength = this.input.readInt(pos);
+            const itemCount = this.input.readInt(pos + BitsUtil.INT_SIZE_IN_BYTES);
 
-    abstract getArrayOfStrings(fieldName: string): string[];
+            CompactGenericRecord.checkArrayIndexNotNegative(index);
 
-    abstract getArrayOfTimes(fieldName: string): LocalTime[];
+            if (itemCount <= index) {
+                return null;
+            }
 
-    abstract getArrayOfTimestampWithTimezones(fieldName: string): OffsetDateTime[];
+            const dataStartPosition = pos + 2 * BitsUtil.INT_SIZE_IN_BYTES;
+            const offsetReader = CompactGenericRecord.getOffsetReader(dataLength);
+            const offsetsPosition = dataStartPosition + dataLength;
+            const indexedItemOffset = offsetReader.getOffset(this.input, offsetsPosition, index);
+            if (indexedItemOffset === NULL_OFFSET) {
+                return null;
+            }
+            this.input.position(indexedItemOffset + dataStartPosition);
+            return readFn(this.input);
+        } catch (e) {
+            throw CompactGenericRecord.toIllegalStateException(e);
+        } finally {
+            this.input.position(currentPos);
+        }
+    }
 
-    abstract getArrayOfTimestamps(fieldName: string): LocalDateTime[];
+    private getArrayOfVariableSizesWithFieldDescriptor<T> (
+        fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => T
+    ) {
+        const currentPos = this.input.position();
+        try {
+            const pos = this.readVariableSizeFieldPosition(fieldDescriptor);
+            if (pos === BitsUtil.NULL_ARRAY_LENGTH) {
+                return null;
+            }
+            this.input.position(pos);
+            const dataLength = this.input.readInt();
+            const itemCount = this.input.readInt();
 
-    abstract getBoolean(fieldName: string): boolean;
+            const dataStartPosition = this.input.position();
+            const values = new Array<T>(itemCount);
 
-    abstract getByte(fieldName: string): number;
+            const offsetReader = CompactGenericRecord.getOffsetReader(dataLength);
+            const offsetsPosition = dataStartPosition + dataLength;
+            for (let i = 0; i < itemCount; i++) {
+                const offset = offsetReader.getOffset(this.input, offsetsPosition, i);
+                if (offset !== BitsUtil.NULL_ARRAY_LENGTH) {
+                    this.input.position(offset + dataStartPosition);
+                    values[i] = readFn(this.input);
+                }
+            }
+            return values;
+        } catch (e) {
+            throw CompactGenericRecord.toIllegalStateException(e);
+        } finally {
+            this.input.position(currentPos);
+        }
+    }
 
-    abstract getChar(fieldName: string): string;
+    private getArrayOfVariableSizes<T>(
+        fieldName: string,
+        fieldKind: FieldKind,
+        readFn: (reader: ObjectDataInput) => T
+    ) {
+        const fieldDefinition = this.getFieldDefinitionChecked(fieldName, fieldKind);
+        return this.getArrayOfVariableSizesWithFieldDescriptor(fieldDefinition, readFn);
+    }
 
-    abstract getDate(fieldName: string): LocalDate;
+    getBooleanFromArray(fieldName: string, index: number): boolean {
+        const position = this.readVariableSizeFieldPositionByNameAndKind(fieldName, FieldKind.ARRAY_OF_BOOLEANS);
+        if (position === NULL_OFFSET) {
+            return null;
+        }
+        if (this.readLength(position) <= index) {
+            return null;
+        }
 
-    abstract getDecimal(fieldName: string): BigDecimal;
+        const currentPos = this.input.position();
+        try {
+            const booleanOffsetInBytes = Math.trunc(index / BitsUtil.BITS_IN_A_BYTE);
+            const booleanOffsetWithinLastByte = index % BitsUtil.BITS_IN_A_BYTE;
+            const b = this.input.readByte(BitsUtil.INT_SIZE_IN_BYTES + position + booleanOffsetInBytes);
+            return ((b >>> booleanOffsetWithinLastByte) & 1) !== 0;
+        } catch (e) {
+            throw CompactGenericRecord.toIllegalStateException(e);
+        } finally {
+            this.input.position(currentPos);
+        }
+    }
 
-    abstract getDouble(fieldName: string): number;
+    getByteFromArray(fieldName: string, index: number): number {
+        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_BYTES, reader => reader.readByte(), index);
+    }
+    getCharFromArray(fieldName: string, index: number): string {
+        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_CHARS, reader => reader.readChar(), index);
+    }
+    getShortFromArray(fieldName: string, index: number): number {
+        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_SHORTS, reader => reader.readShort(), index);
+    }
+    getIntFromArray(fieldName: string, index: number): number {
+        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_INTS, reader => reader.readInt(), index);
+    }
+    getLongFromArray(fieldName: string, index: number): Long {
+        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_LONGS, reader => reader.readLong(), index);
+    }
+    getFloatFromArray(fieldName: string, index: number): number {
+        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_FLOATS, reader => reader.readFloat(), index);
+    }
+    getDoubleFromArray(fieldName: string, index: number): number {
+        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_DOUBLES, reader => reader.readDouble(), index);
+    }
+    getStringFromArray(fieldName: string, index: number): string {
+        return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_STRINGS, reader => reader.readString(), index);
+    }
+    getGenericRecordFromArray(fieldName: string, index: number): GenericRecord {
+        return this.getVariableSizeFromArray(
+            fieldName,
+            FieldKind.ARRAY_OF_COMPACTS,
+            reader => this.serializer.readGenericRecord(reader, this.schemaIncludedInBinary),
+            index
+        );
+    }
+    getObjectFromArray<T>(fieldName: string, index: number): T {
+        return this.getVariableSizeFromArray(
+            fieldName, FieldKind.ARRAY_OF_COMPACTS, reader => this.serializer.read(reader, this.schemaIncludedInBinary), index
+        );
+    }
+    getArrayOfObjects<T>(fieldName: string, componentType: new () => T): T[] {
+        return this.getArrayOfVariableSizes(
+            fieldName,
+            FieldKind.ARRAY_OF_COMPACTS,
+            reader => this.serializer.read(reader, this.schemaIncludedInBinary)
+        );
+    }
 
-    abstract getFieldKind(fieldName: string): FieldKind;
+    getDecimalFromArray(fieldName: string, index: number): BigDecimal {
+        return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_DECIMALS, IOUtil.readDecimal, index);
+    }
+    getTimeFromArray(fieldName: string, index: number): LocalTime {
+        return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_TIMES, IOUtil.readLocalTime, index);
+    }
+    getDateFromArray(fieldName: string, index: number): LocalDate {
+        return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_DATES, IOUtil.readLocalDate, index);
+    }
+    getTimestampFromArray(fieldName: string, index: number): LocalDateTime {
+        return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_TIMESTAMPS, IOUtil.readLocalDateTime, index);
+    }
+    getTimestampWithTimezoneFromArray(fieldName: string, index: number): OffsetDateTime {
+        return this.getVariableSizeFromArray(
+            fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONES, IOUtil.readOffsetDateTime, index
+        );
+    }
+    getNullableBooleanFromArray(fieldName: string, index: number): boolean {
+        return this.getVariableSizeFromArray(
+            fieldName, FieldKind.ARRAY_OF_NULLABLE_BOOLEANS, reader => reader.readBoolean(), index
+        );
+    }
+    getNullableByteFromArray(fieldName: string, index: number): number {
+        return this.getVariableSizeFromArray(
+            fieldName, FieldKind.ARRAY_OF_NULLABLE_BYTES, reader => reader.readByte(), index
+        );
+    }
+    getNullableShortFromArray(fieldName: string, index: number): number {
+        return this.getVariableSizeFromArray(
+            fieldName, FieldKind.ARRAY_OF_NULLABLE_SHORTS, reader => reader.readShort(), index
+        );
+    }
+    getNullableIntFromArray(fieldName: string, index: number): number {
+        return this.getVariableSizeFromArray(
+            fieldName, FieldKind.ARRAY_OF_NULLABLE_INTS, reader => reader.readInt(), index
+        );
+    }
+    getNullableLongFromArray(fieldName: string, index: number): Long {
+        return this.getVariableSizeFromArray(
+            fieldName, FieldKind.ARRAY_OF_NULLABLE_LONGS, reader => reader.readLong(), index
+        );
+    }
+    getNullableFloatFromArray(fieldName: string, index: number): number {
+        return this.getVariableSizeFromArray(
+            fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOATS, reader => reader.readFloat(), index
+        );
+    }
+    getNullableDoubleFromArray(fieldName: string, index: number): number {
+        return this.getVariableSizeFromArray(
+            fieldName, FieldKind.ARRAY_OF_NULLABLE_DOUBLES, reader => reader.readDouble(), index
+        );
+    }
 
-    abstract getFieldNames(): Set<string>;
+    protected isFieldExists(fieldName: string, kind: FieldKind) : boolean {
+        const field = this.schema.fieldDefinitionMap.get(fieldName);
+        if (field === undefined) {
+            return false;
+        }
+        return field.kind === kind;
+    }
 
-    abstract getFloat(fieldName: string): number;
+    getArrayOfBooleans(fieldName: string): boolean[] {
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.ARRAY_OF_BOOLEANS:
+                return this.getVariableSize(fd, CompactGenericRecord.readBooleanBits);
+            case FieldKind.ARRAY_OF_NULLABLE_BOOLEANS:
+                return this.getNullableArrayAsPrimitiveArray(fd, (input) => input.readBooleanArray(), 'Booleans');
+            default:
+                throw CompactGenericRecord.toUnexpectedFieldKind(fieldKind, fieldName);
+        }
+    }
 
-    abstract getGenericRecord(fieldName: string): GenericRecord;
+    getArrayOfBytes(fieldName: string): Buffer {
+        return undefined;
+    }
 
-    abstract getInt(fieldName: string): number;
+    getArrayOfChars(fieldName: string): string[] {
+        throw new UnsupportedOperationError('Compact format does not support reading an array of chars field.');
+    }
 
-    abstract getLong(fieldName: string): Long;
+    getArrayOfDates(fieldName: string): LocalDate[] {
+        return [];
+    }
 
-    abstract getNullableBoolean(fieldName: string): boolean | null;
+    getArrayOfDecimals(fieldName: string): BigDecimal[] {
+        return [];
+    }
 
-    abstract getNullableByte(fieldName: string): number | null;
+    getArrayOfDoubles(fieldName: string): number[] {
+        return [];
+    }
 
-    abstract getNullableDouble(fieldName: string): number | null;
+    getArrayOfFloats(fieldName: string): number[] {
+        return [];
+    }
 
-    abstract getNullableFloat(fieldName: string): number | null;
+    getArrayOfGenericRecords(fieldName: string): GenericRecord[] {
+        return [];
+    }
 
-    abstract getNullableInt(fieldName: string): number | null;
+    getArrayOfInts(fieldName: string): number[] {
+        return [];
+    }
 
-    abstract getNullableLong(fieldName: string): Long | null;
+    getArrayOfLongs(fieldName: string): Long[] {
+        return [];
+    }
 
-    abstract getNullableShort(fieldName: string): number | null;
+    getArrayOfNullableBooleans(fieldName: string): (boolean | null)[] {
+        return [];
+    }
 
-    abstract getShort(fieldName: string): number;
+    getArrayOfNullableBytes(fieldName: string): (number | null)[] {
+        return [];
+    }
 
-    abstract getString(fieldName: string): string;
+    getArrayOfNullableDoubles(fieldName: string): (number | null)[] {
+        return [];
+    }
 
-    abstract getTime(fieldName: string): LocalTime;
+    getArrayOfNullableFloats(fieldName: string): (number | null)[] {
+        return [];
+    }
 
-    abstract getTimestamp(fieldName: string): LocalDateTime;
+    getArrayOfNullableInts(fieldName: string): (number | null)[] {
+        return [];
+    }
 
-    abstract getTimestampWithTimezone(fieldName: string): OffsetDateTime;
+    getArrayOfNullableLongs(fieldName: string): (Long | null)[] {
+        return [];
+    }
 
-    abstract hasField(fieldName: string): boolean;
+    getArrayOfNullableShorts(fieldName: string): (number | null)[] {
+        return [];
+    }
 
-    abstract newBuilder(): GenericRecordBuilder;
+    getArrayOfShorts(fieldName: string): number[] {
+        return [];
+    }
+
+    getArrayOfStrings(fieldName: string): string[] {
+        return [];
+    }
+
+    getArrayOfTimes(fieldName: string): LocalTime[] {
+        return [];
+    }
+
+    getArrayOfTimestampWithTimezones(fieldName: string): OffsetDateTime[] {
+        return [];
+    }
+
+    getArrayOfTimestamps(fieldName: string): LocalDateTime[] {
+        return [];
+    }
+
+    getBoolean(fieldName: string): boolean {
+        return false;
+    }
+
+    getByte(fieldName: string): number {
+        return 0;
+    }
+
+    getChar(fieldName: string): string {
+        throw new UnsupportedOperationError('Compact format does not support reading a char field.');
+    }
+
+    protected getClassIdentifier(): any {
+    }
+
+    getDate(fieldName: string): LocalDate {
+        return undefined;
+    }
+
+    getDecimal(fieldName: string): BigDecimal {
+        return undefined;
+    }
+
+    getDouble(fieldName: string): number {
+        return 0;
+    }
+
+    getFieldKind(fieldName: string): FieldKind {
+        return undefined;
+    }
+
+    getFieldNames(): Set<string> {
+        return undefined;
+    }
+
+    getFloat(fieldName: string): number {
+        return 0;
+    }
+
+    getGenericRecord(fieldName: string): GenericRecord {
+        return undefined;
+    }
+
+    getInt(fieldName: string): number {
+        return 0;
+    }
+
+    getLong(fieldName: string): Long {
+        return undefined;
+    }
+
+    getNullableBoolean(fieldName: string): boolean | null {
+        return undefined;
+    }
+
+    getNullableByte(fieldName: string): number | null {
+        return undefined;
+    }
+
+    getNullableDouble(fieldName: string): number | null {
+        return undefined;
+    }
+
+    getNullableFloat(fieldName: string): number | null {
+        return undefined;
+    }
+
+    getNullableInt(fieldName: string): number | null {
+        return undefined;
+    }
+
+    getNullableLong(fieldName: string): Long | null {
+        return undefined;
+    }
+
+    getNullableShort(fieldName: string): number | null {
+        return undefined;
+    }
+
+    getSchema(): Schema {
+        return undefined;
+    }
+
+    getShort(fieldName: string): number {
+        return 0;
+    }
+
+    getString(fieldName: string): string {
+        return '';
+    }
+
+    getTime(fieldName: string): LocalTime {
+        return undefined;
+    }
+
+    getTimestamp(fieldName: string): LocalDateTime {
+        return undefined;
+    }
+
+    getTimestampWithTimezone(fieldName: string): OffsetDateTime {
+        return undefined;
+    }
+
+    hasField(fieldName: string): boolean {
+        return false;
+    }
+
+    getObject<T>(fieldName: string): T {
+        throw new Error('Method not implemented.');
+    }
 }

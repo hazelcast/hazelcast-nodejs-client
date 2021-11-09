@@ -25,6 +25,7 @@ import {FieldOperations} from '../generic_record/FieldOperations';
 import {SchemaWriter} from './SchemaWriter';
 import {HazelcastSerializationError} from '../../core';
 import {ObjectDataInput, ObjectDataOutput, PositionalObjectDataOutput} from '../ObjectData';
+import {GenericRecord} from '../generic_record/GenericRecord';
 
 /**
  * @internal
@@ -177,4 +178,8 @@ export class CompactStreamSerializer {
         }
     }
 
+    readGenericRecord(input: ObjectDataInput, schemaIncludedInBinary: boolean): GenericRecord {
+        const schema = this.getOrReadSchema(input, schemaIncludedInBinary);
+        return new DefaultCompactReader(this, input, schema, null, schemaIncludedInBinary);
+    }
 }
