@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {FieldKind} from './FieldKind';
 import * as Long from 'long';
+import {FieldKind} from './FieldKind';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Field<T> {

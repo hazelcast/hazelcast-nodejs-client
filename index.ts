@@ -1,6 +1,6 @@
 'use strict';
 
-import {Client, CompactReader, CompactSerializer, CompactWriter, GenericRecords, Fields} from './lib'
+import {Client, CompactReader, CompactSerializer, CompactWriter, GenericRecords, Fields, FieldKind} from './lib'
 import * as Long from 'long';
 
 class EmployeeDTO {
@@ -50,8 +50,8 @@ async function main() {
         long: Fields.long
     };
 
-    GenericRecords.compact(fields, {
-        name: 'employee',
+    GenericRecords.compact('employee', fields, {
+        name: 'John',
         age: 1,
         long: Long.ONE
     })

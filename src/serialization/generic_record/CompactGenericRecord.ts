@@ -15,23 +15,31 @@
  */
 /** @ignore *//** */
 
-import {GenericRecord} from './GenericRecord';
+import {GenericRecord, IS_GENERIC_RECORD_SYMBOL} from './GenericRecord';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 import {FieldKind} from './FieldKind';
-import {AbstractCompactGenericRecord} from './AbstractCompactGenericRecord';
-import { Schema } from '../compact/Schema';
 import {Field} from './Field';
-
+import {Schema} from '../compact/Schema';
 
 /**
  * @internal
  */
-export class CompactGenericRecord extends AbstractCompactGenericRecord {
+export interface CompactGenericRecord extends GenericRecord {
+    getSchema(): Schema;
+}
+
+/**
+ * @internal
+ */
+export class CompactGenericRecordImpl implements CompactGenericRecord {
+
+    private readonly [IS_GENERIC_RECORD_SYMBOL] = true;
+
     constructor(
+        className: string,
         fields: {[name: string]: Field<any>},
         values: {[name: string]: any}
     ) {
-        super();
     }
 
     getSchema(): Schema {
@@ -106,10 +114,6 @@ export class CompactGenericRecord extends AbstractCompactGenericRecord {
         return [];
     }
 
-    getArrayOfObjects<T>(fieldName: string, componentType: { new(): T }): T[] {
-        return [];
-    }
-
     getArrayOfShorts(fieldName: string): number[] {
         return [];
     }
@@ -134,31 +138,15 @@ export class CompactGenericRecord extends AbstractCompactGenericRecord {
         return false;
     }
 
-    getBooleanFromArray(fieldName: string, index: number): boolean | null {
-        return undefined;
-    }
-
     getByte(fieldName: string): number {
         return 0;
-    }
-
-    getByteFromArray(fieldName: string, index: number): number | null {
-        return undefined;
     }
 
     getChar(fieldName: string): string {
         return '';
     }
 
-    getCharFromArray(fieldName: string, index: number): string | null {
-        return undefined;
-    }
-
     getDate(fieldName: string): LocalDate {
-        return undefined;
-    }
-
-    getDateFromArray(fieldName: string, index: number): LocalDate | null {
         return undefined;
     }
 
@@ -166,16 +154,8 @@ export class CompactGenericRecord extends AbstractCompactGenericRecord {
         return undefined;
     }
 
-    getDecimalFromArray(fieldName: string, index: number): BigDecimal | null {
-        return undefined;
-    }
-
     getDouble(fieldName: string): number {
         return 0;
-    }
-
-    getDoubleFromArray(fieldName: string, index: number): number | null {
-        return undefined;
     }
 
     getFieldKind(fieldName: string): FieldKind {
@@ -190,15 +170,7 @@ export class CompactGenericRecord extends AbstractCompactGenericRecord {
         return 0;
     }
 
-    getFloatFromArray(fieldName: string, index: number): number | null {
-        return undefined;
-    }
-
     getGenericRecord(fieldName: string): GenericRecord {
-        return undefined;
-    }
-
-    getGenericRecordFromArray(fieldName: string, index: number): GenericRecord | null {
         return undefined;
     }
 
@@ -206,15 +178,7 @@ export class CompactGenericRecord extends AbstractCompactGenericRecord {
         return 0;
     }
 
-    getIntFromArray(fieldName: string, index: number): number | null {
-        return undefined;
-    }
-
     getLong(fieldName: string): Long {
-        return undefined;
-    }
-
-    getLongFromArray(fieldName: string, index: number): Long | null {
         return undefined;
     }
 
@@ -222,15 +186,7 @@ export class CompactGenericRecord extends AbstractCompactGenericRecord {
         return undefined;
     }
 
-    getNullableBooleanFromArray(fieldName: string, index: number): boolean | null {
-        return undefined;
-    }
-
     getNullableByte(fieldName: string): number | null {
-        return undefined;
-    }
-
-    getNullableByteFromArray(fieldName: string, index: number): number | null {
         return undefined;
     }
 
@@ -238,15 +194,7 @@ export class CompactGenericRecord extends AbstractCompactGenericRecord {
         return undefined;
     }
 
-    getNullableDoubleFromArray(fieldName: string, index: number): number | null {
-        return undefined;
-    }
-
     getNullableFloat(fieldName: string): number | null {
-        return undefined;
-    }
-
-    getNullableFloatFromArray(fieldName: string, index: number): number | null {
         return undefined;
     }
 
@@ -254,15 +202,7 @@ export class CompactGenericRecord extends AbstractCompactGenericRecord {
         return undefined;
     }
 
-    getNullableIntFromArray(fieldName: string, index: number): number | null {
-        return undefined;
-    }
-
     getNullableLong(fieldName: string): Long | null {
-        return undefined;
-    }
-
-    getNullableLongFromArray(fieldName: string, index: number): Long | null {
         return undefined;
     }
 
@@ -270,39 +210,15 @@ export class CompactGenericRecord extends AbstractCompactGenericRecord {
         return undefined;
     }
 
-    getNullableShortFromArray(fieldName: string, index: number): number | null {
-        return undefined;
-    }
-
-    getObject<T>(fieldName: string): T {
-        return undefined;
-    }
-
-    getObjectFromArray<T>(fieldName: string, index: number): T | null {
-        return undefined;
-    }
-
     getShort(fieldName: string): number {
         return 0;
-    }
-
-    getShortFromArray(fieldName: string, index: number): number | null {
-        return undefined;
     }
 
     getString(fieldName: string): string {
         return '';
     }
 
-    getStringFromArray(fieldName: string, index: number): string | null {
-        return undefined;
-    }
-
     getTime(fieldName: string): LocalTime {
-        return undefined;
-    }
-
-    getTimeFromArray(fieldName: string, index: number): LocalTime | null {
         return undefined;
     }
 
@@ -310,22 +226,13 @@ export class CompactGenericRecord extends AbstractCompactGenericRecord {
         return undefined;
     }
 
-    getTimestampFromArray(fieldName: string, index: number): LocalDateTime | null {
-        return undefined;
-    }
-
     getTimestampWithTimezone(fieldName: string): OffsetDateTime {
-        return undefined;
-    }
-
-    getTimestampWithTimezoneFromArray(fieldName: string, index: number): OffsetDateTime | null {
         return undefined;
     }
 
     hasField(fieldName: string): boolean {
         return false;
     }
-
 }
 
 

@@ -24,8 +24,8 @@ import {FieldOperations} from '../generic_record/FieldOperations';
 import {SchemaWriter} from './SchemaWriter';
 import {HazelcastSerializationError} from '../../core';
 import {ObjectDataInput, ObjectDataOutput, PositionalObjectDataOutput} from '../ObjectData';
-import {GenericRecord} from '../generic_record/GenericRecord';
-import {AbstractCompactGenericRecord} from '../generic_record/AbstractCompactGenericRecord';
+import {GenericRecord, IS_GENERIC_RECORD_SYMBOL} from '../generic_record/GenericRecord';
+import {CompactGenericRecord} from '../generic_record/CompactGenericRecord';
 
 /**
  * @internal
@@ -91,7 +91,7 @@ export class CompactStreamSerializer {
         if (!(output instanceof PositionalObjectDataOutput)) {
             throw new HazelcastSerializationError('Expected a positional object data output.')
         }
-        if (object instanceof AbstractCompactGenericRecord) {
+        if (object && object[IS_GENERIC_RECORD_SYMBOL] === true) {
             this.writeGenericRecord(output, object, schemaIncludedInBinary);
         } else {
             this.writeObject(output, object, schemaIncludedInBinary);
@@ -134,7 +134,7 @@ export class CompactStreamSerializer {
     }
 
     writeGenericRecord(
-        output: PositionalObjectDataOutput, record: AbstractCompactGenericRecord, includeSchemaOnBinary: boolean
+        output: PositionalObjectDataOutput, record: CompactGenericRecord, includeSchemaOnBinary: boolean
     ) : void {
         const schema: Schema = record.getSchema();
         this.putToSchemaService(includeSchemaOnBinary, schema);
