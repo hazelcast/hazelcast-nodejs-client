@@ -48,7 +48,7 @@ export interface CompactReader {
     readArrayOfCompacts<T>(fieldName: string, componentType: new() => T, defaultValue?: T[] | null): T[] | null;
     readNullableBoolean(fieldName : string, defaultValue?: boolean | null) : boolean | null;
     readNullableByte(fieldName : string, defaultValue?: number | null) : number | null;
-    readNullableShort(fieldName : number, defaultValue?: number | null) : number | null ;
+    readNullableShort(fieldName : string, defaultValue?: number | null) : number | null ;
     readNullableInt(fieldName : string, defaultValue?: number | null) : number | null;
     readNullableLong(fieldName : string, defaultValue?: Long | null) : Long | null;
     readNullableFloat(fieldName : string, defaultValue?: number | null) : number | null;
