@@ -22,5 +22,5 @@
 export * from './CompactGenericRecord';
 export * as Fields from './Field';
 export * from './FieldKind';
-export * from './GenericRecordBuilder';
+export * from './GenericRecords';
 export * from './GenericRecord';

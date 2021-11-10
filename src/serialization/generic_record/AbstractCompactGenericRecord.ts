@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 /** @ignore *//** */
 
 import {GenericRecord} from './GenericRecord';
@@ -99,5 +98,4 @@ export abstract class AbstractCompactGenericRecord implements GenericRecord {
     abstract getTimestampWithTimezone(fieldName: string): OffsetDateTime;
     abstract getTimestampWithTimezoneFromArray(fieldName: string, index: number): OffsetDateTime | null;
     abstract hasField(fieldName: string): boolean;
-
 }

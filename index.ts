@@ -1,6 +1,6 @@
 'use strict';
 
-import {Client, CompactReader, CompactSerializer, CompactWriter, GenericRecordBuilder, Fields} from './lib'
+import {Client, CompactReader, CompactSerializer, CompactWriter, GenericRecords, Fields} from './lib'
 import * as Long from 'long';
 
 class EmployeeDTO {
@@ -50,12 +50,11 @@ async function main() {
         long: Fields.long
     };
 
-    GenericRecordBuilder.compact(fields, {
-        name: 'a',
+    GenericRecords.compact(fields, {
+        name: 'employee',
         age: 1,
-        long: Long.fromNumber(1)
+        long: Long.ONE
     })
-
 
     const map = await client.getMap('test');
     await map.delete(Long.fromNumber(1));

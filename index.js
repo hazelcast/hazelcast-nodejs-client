@@ -65,7 +65,7 @@ var EmployeeDTOSerializer = /** @class */ (function () {
 }());
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var client, map;
+        var client, fields, map;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, lib_1.Client.newHazelcastClient({
@@ -75,10 +75,16 @@ function main() {
                     })];
                 case 1:
                     client = _a.sent();
-                    new lib_1.GenericRecordBuilder({
-                        name: 'a',
-                        age: 1
-                    }, {});
+                    fields = {
+                        name: lib_1.Fields.string,
+                        age: lib_1.Fields.int,
+                        long: lib_1.Fields.long
+                    };
+                    lib_1.GenericRecords.compact(fields, {
+                        name: 'employee',
+                        age: 1,
+                        long: Long.ONE
+                    });
                     return [4 /*yield*/, client.getMap('test')];
                 case 2:
                     map = _a.sent();

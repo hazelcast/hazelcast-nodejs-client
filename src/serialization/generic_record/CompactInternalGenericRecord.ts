@@ -48,6 +48,9 @@ import {IOUtil} from '../../util/IOUtil';
 import {CompactStreamSerializer} from '../compact/CompactStreamSerializer';
 import {AbstractCompactGenericRecord} from './AbstractCompactGenericRecord';
 
+/**
+ * @internal
+ */
 export class CompactInternalGenericRecord extends AbstractCompactGenericRecord {
     protected readonly offsetReader: OffsetReader;
     protected readonly variableOffsetsPosition: number;

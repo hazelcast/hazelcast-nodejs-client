@@ -15,11 +15,11 @@
  */
 /** @ignore *//** */
 
+import {FieldKind} from './FieldKind';
+
 /*
  * @internal
  */
-import {FieldKind} from './FieldKind';
-
 export class FieldDescriptor {
     index = -1;
     offset = -1;
