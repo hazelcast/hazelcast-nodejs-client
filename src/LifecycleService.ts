@@ -62,13 +62,13 @@ export enum LifecycleState {
 const LIFECYCLE_EVENT_NAME = 'lifecycleEvent';
 
 /**
- * Allows to determine if the client is active and emits client state events.
+ * Allows determining whether the client is active and emits client state events.
  * To register lifecycle listeners, use {@link ClientConfig.lifecycleListeners} config.
  */
 export interface LifecycleService {
 
     /**
-     * Returns if the client is running or not. This will be true between the time the client is initialized
+     * Returns true if the client is running. The client is considered to be running between the time it is initialized
      * and it's shutdown process is started.
      */
     isRunning(): boolean;
