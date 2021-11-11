@@ -19,7 +19,6 @@ const { expect } = require('chai');
 
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
-const { promiseWaitMilliseconds } = require('../../../../TestUtil');
 
 /**
  * Verifies lock operations behavior in advanced scenarios,
@@ -40,7 +39,7 @@ describe('MapLockTest', function () {
             if (uuid.toString() === member.uuid) {
                 return key;
             }
-            await promiseWaitMilliseconds(1000);
+            await TestUtil.promiseWaitMilliseconds(1000);
         }
         throw new Error('Could not generate key in ' + MAX_ATTEMPTS + ' seconds');
     }
