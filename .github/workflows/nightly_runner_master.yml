@@ -13,6 +13,9 @@ jobs:
                 nodejs_version: [ 10, 11, 12, 13, 14, 15, 16, 17 ]
             fail-fast: false
         steps:
+            - name: Get current date
+              id: date
+              run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
             - name: Setup Java
               uses: actions/setup-java@v2
               with:
@@ -35,6 +38,11 @@ jobs:
               run: npm run lint
             - name: Validate User Code
               run: npm run validate-user-code
+            - name: Cache/Restore Dependencies
+              uses: actions/cache@v2
+              with:
+                  path: ~/.m2/repository
+                  key: ${{ runner.os }}-enterprise-${{ hashFiles('**/download-rc*') }}-${{ steps.date.outputs.date }}
             - name: Run tests
               env:
                   HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
