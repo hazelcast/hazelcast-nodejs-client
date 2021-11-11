@@ -2,7 +2,7 @@ name: Runs nightly tests on maintenance branches
 on:
     workflow_dispatch:
     schedule:
-        - cron: '0 2 */2 * *'
+        - cron: '0 5 */2 * *'
 jobs:
     run-tests:
         runs-on: ${{ matrix.os }}
