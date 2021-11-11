@@ -19,6 +19,7 @@ const { expect } = require('chai');
 
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
+const { promiseWaitMilliseconds } = require('../../../../TestUtil');
 
 /**
  * Verifies lock operations behavior in advanced scenarios,
@@ -28,19 +29,20 @@ describe('MapLockTest', function () {
     const INVOCATION_TIMEOUT_FOR_TWO = 1000;
     const testFactory = new TestUtil.TestFactory();
 
-    function generateKeyOwnedBy(client, member) {
+    async function generateKeyOwnedBy(client, member) {
         const partitionService = client.getPartitionService();
-        const MAX_ATTEMPTS = 10000;
+        const MAX_ATTEMPTS = 20;
         let attempt = 0;
-        while (attempt ++ < MAX_ATTEMPTS) {
+        while (attempt++ < MAX_ATTEMPTS) {
             const key = TestUtil.getRandomInt(0, 1000);
             const partition = partitionService.getPartitionId(key);
             const uuid = partitionService.getPartitionOwner(partition);
             if (uuid.toString() === member.uuid) {
                 return key;
             }
+            await promiseWaitMilliseconds(1000);
         }
-        throw new Error('Could not generate key in ' + MAX_ATTEMPTS + ' attempts');
+        throw new Error('Could not generate key in ' + MAX_ATTEMPTS + ' seconds');
     }
 
     let cluster;
@@ -85,7 +87,10 @@ describe('MapLockTest', function () {
             }, [member, m]);
         }).then((c) => {
             clientTwo = c;
-            key = generateKeyOwnedBy(client, keyOwner);
+        }).then(() => {
+            return generateKeyOwnedBy(client, keyOwner);
+        }).then(k => {
+            key = k;
             return map.lock(key);
         }).then(() => {
             return clientTwo.getMap('test');
