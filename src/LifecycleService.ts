@@ -62,14 +62,14 @@ export enum LifecycleState {
 const LIFECYCLE_EVENT_NAME = 'lifecycleEvent';
 
 /**
- * Lifecycle service for Hazelcast clients. Allows to determine lifecycle
- * state of the client and shut it down.
+ * Allows to determine if the client is active and emits client state events.
+ * To register lifecycle listeners, use {@link ClientConfig.lifecycleListeners} config.
  */
 export interface LifecycleService {
 
     /**
-     * Returns the active state of the client.
-     * @returns {boolean}
+     * Returns if the client is running or not. This will be true between the time the client is initialized
+     * and it's shutdown process is started.
      */
     isRunning(): boolean;
 

@@ -511,7 +511,7 @@ export class HazelcastClient {
      * @returns registration id of the listener.
      */
     addDistributedObjectListener(listener: DistributedObjectListener): Promise<string> {
-        return this.proxyManager.addDistributedObjectListener(listener);
+        return this.listenerService.addDistributedObjectListener(listener);
     }
 
     /**
@@ -520,7 +520,7 @@ export class HazelcastClient {
      * @returns `true` if registration was removed, `false` otherwise.
      */
     removeDistributedObjectListener(listenerId: string): Promise<boolean> {
-        return this.proxyManager.removeDistributedObjectListener(listenerId);
+        return this.listenerService.deregisterListener(listenerId);
     }
 
     /** @internal */

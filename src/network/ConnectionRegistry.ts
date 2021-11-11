@@ -30,12 +30,6 @@ const SQL_CONNECTION_RANDOM_ATTEMPTS = 10;
  */
 export interface ConnectionRegistry {
     /**
-     * Returns if the registry active
-     * @return Return true if the registry is active, false otherwise
-     */
-    isActive(): boolean;
-
-    /**
      * Returns connection by UUID
      * @param uuid UUID that identifies the connection
      * @return Connection if there is a connection with the UUID, undefined otherwise
@@ -79,7 +73,6 @@ export interface ConnectionRegistry {
  */
 export class ConnectionRegistryImpl implements ConnectionRegistry {
 
-    private active = false;
     private readonly activeConnections = new Map<string, Connection>();
     private clientState = ClientState.INITIAL;
 
@@ -90,10 +83,6 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
         private readonly loadBalancer: LoadBalancer,
         private readonly clusterService: ClusterService
     ) {
-    }
-
-    isActive(): boolean {
-        return this.active;
     }
 
     getClientState(): ClientState {
@@ -210,13 +199,5 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
 
     setClientState(clientState: ClientState): void {
         this.clientState = clientState;
-    }
-
-    activate(): void {
-        this.active = true;
-    }
-
-    deactivate(): void {
-        this.active = false;
     }
 }

@@ -19,7 +19,10 @@ import {NearCache, NearCacheImpl} from './NearCache';
 import {SerializationService} from '../serialization/SerializationService';
 import {ClientConfig, ClientConfigImpl} from '../config';
 
-/** @internal */
+/**
+ * Gets, creates, and destroys Near Caches.
+ * @internal
+ */
 export class NearCacheManager {
 
     private readonly caches: Map<string, NearCache> = new Map();

@@ -68,7 +68,7 @@ import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {AddressProvider} from '../connection/AddressProvider';
 import {ClusterService} from '../invocation/ClusterService';
 import {SerializationService} from '../serialization/SerializationService';
-import {ConnectionRegistryImpl} from './ConnectionRegistry';
+import {ConnectionRegistry, ConnectionRegistryImpl} from './ConnectionRegistry';
 
 /** @internal */
 export const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
@@ -120,11 +120,12 @@ interface ClientForConnectionManager {
 }
 
 /**
- * Maintains connections between the client and members of the cluster.
+ * Maintains connections between the client and the members.
  * @internal
  */
 export class ConnectionManager extends EventEmitter {
 
+    private active = false;
     private connectionIdCounter = 0;
     private readonly labels: string[];
     private readonly shuffleMemberList: boolean;
@@ -174,7 +175,7 @@ export class ConnectionManager extends EventEmitter {
         this.heartbeatManager = new HeartbeatManager(
             this.clientConfig.properties,
             this.logger,
-            this.connectionRegistry
+            this
         );
         this.authenticationTimeout = this.heartbeatManager.getHeartbeatTimeout();
         this.shuffleMemberList = this.clientConfig.properties['hazelcast.client.shuffle.member.list'] as boolean;
@@ -187,11 +188,19 @@ export class ConnectionManager extends EventEmitter {
         this.totalBytesRead = 0;
     }
 
+    isActive() : boolean {
+        return this.active;
+    }
+
+    getConnectionRegistry(): ConnectionRegistry {
+        return this.connectionRegistry;
+    }
+
     start(): Promise<void> {
-        if (this.connectionRegistry.isActive()) {
+        if (this.active) {
             return Promise.resolve();
         }
-        this.connectionRegistry.activate();
+        this.active = true;
 
         this.heartbeatManager.start(this.invocationService);
         return this.connectToCluster();
@@ -210,11 +219,11 @@ export class ConnectionManager extends EventEmitter {
     }
 
     shutdown(): void {
-        if (!this.connectionRegistry.isActive()) {
+        if (!this.active) {
             return;
         }
 
-        this.connectionRegistry.deactivate();
+        this.active = false;
         if (this.reconnectToMembersTask !== undefined) {
             cancelRepetitionTask(this.reconnectToMembersTask);
         }
