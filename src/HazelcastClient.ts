@@ -195,8 +195,7 @@ export class HazelcastClient {
             this.loggingService.getLogger(),
             this.config.network.smartRouting,
             this.connectionManager,
-            this.invocationService,
-            this.connectionRegistry
+            this.invocationService
         );
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
         this.proxyManager = new ProxyManager(
@@ -218,7 +217,6 @@ export class HazelcastClient {
             this.instanceName,
             this.invocationService,
             this.nearCacheManager,
-            this.connectionRegistry,
             this.connectionManager
         );
         this.clusterViewListenerService = new ClusterViewListenerService(
@@ -226,8 +224,7 @@ export class HazelcastClient {
             this.connectionManager,
             this.partitionService as PartitionServiceImpl,
             this.clusterService,
-            this.invocationService,
-            this.connectionRegistry
+            this.invocationService
         );
         this.cpSubsystem = new CPSubsystemImpl(
             this.loggingService.getLogger(),
@@ -236,7 +233,6 @@ export class HazelcastClient {
             this.serializationService
         );
         this.sqlService = new SqlServiceImpl(
-            this.connectionRegistry,
             this.serializationService,
             this.invocationService,
             this.connectionManager

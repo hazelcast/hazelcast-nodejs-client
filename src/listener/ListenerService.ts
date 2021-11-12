@@ -29,7 +29,6 @@ import {ClientMessage, ClientMessageHandler} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {
     ConnectionManager,
     CONNECTION_ADDED_EVENT_NAME,
@@ -52,7 +51,6 @@ export class ListenerService {
         private readonly isSmartService: boolean,
         private readonly connectionManager: ConnectionManager,
         private readonly invocationService: InvocationService,
-        private readonly connectionRegistry: ConnectionRegistry
     ) {
         this.registrations = new Map();
     }
@@ -131,7 +129,7 @@ export class ListenerService {
 
         const listenerRegistration = new ListenerRegistration(listenerHandlerFn, codec);
         this.registrations.set(userRegistrationId, listenerRegistration);
-        const activeConnections = this.connectionRegistry.getConnections();
+        const activeConnections = this.connectionManager.getConnectionRegistry().getConnections();
 
         const registrationPromises = [];
         for (const connection of activeConnections) {

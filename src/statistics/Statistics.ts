@@ -17,7 +17,6 @@
 
 import {Connection} from '../network/Connection';
 import {CLIENT_TYPE, ConnectionManager} from '../network/ConnectionManager';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import {MetricDescriptor, MetricsCompressor, ProbeUnit, ValueType} from './MetricsCompressor';
@@ -63,7 +62,6 @@ export class Statistics {
         private readonly clientName: string,
         private readonly invocationService: InvocationService,
         private readonly nearCacheManager: NearCacheManager,
-        private readonly connectionRegistry: ConnectionRegistry,
         private readonly connectionManager: ConnectionManager
     ) {
         this.properties = properties;
@@ -72,7 +70,6 @@ export class Statistics {
         this.invocationService = invocationService;
         this.clientName = clientName;
         this.nearCacheManager = nearCacheManager;
-        this.connectionRegistry = connectionRegistry;
     }
 
     /**
@@ -113,7 +110,7 @@ export class Statistics {
             this.compressorErrorLogged = false;
             const collectionTimestamp = Long.fromNumber(Date.now());
 
-            const connection = this.connectionRegistry.getRandomConnection();
+            const connection = this.connectionManager.getConnectionRegistry().getRandomConnection();
             if (connection == null) {
                 this.logger.trace('Statistics', 'Can not send client statistics to the server. No connection found.');
                 return;
