@@ -27,10 +27,11 @@ const TestUtil = require('../../../../TestUtil');
 describe('MapLockTest', function () {
     const INVOCATION_TIMEOUT_FOR_TWO = 1000;
     const testFactory = new TestUtil.TestFactory();
+    const DEFAULT_PARTITION_COUNT = 271;
 
-    async function generateKeyOwnedBy(client, member) {
+    function generateKeyOwnedBy(client, member) {
         const partitionService = client.getPartitionService();
-        const MAX_ATTEMPTS = 20;
+        const MAX_ATTEMPTS = 10000;
         let attempt = 0;
         while (attempt++ < MAX_ATTEMPTS) {
             const key = TestUtil.getRandomInt(0, 1000);
@@ -39,9 +40,24 @@ describe('MapLockTest', function () {
             if (uuid.toString() === member.uuid) {
                 return key;
             }
+        }
+        throw new Error('Could not generate key in ' + MAX_ATTEMPTS + ' attempts');
+    }
+
+    async function waitForNewPartitionTable(client, member) {
+        const partitionService = client.getPartitionService();
+        const MAX_ATTEMPTS = 20;
+        let attempt = 0;
+        while (attempt++ < MAX_ATTEMPTS) {
+            for (let i = 0; i < DEFAULT_PARTITION_COUNT; i++) {
+                const uuid = partitionService.getPartitionOwner(i);
+                if (uuid.toString() === member.uuid) {
+                    return;
+                }
+            }
             await TestUtil.promiseWaitMilliseconds(1000);
         }
-        throw new Error('Could not generate key in ' + MAX_ATTEMPTS + ' seconds');
+        throw new Error('Could not get new partition table in ' + MAX_ATTEMPTS + ' seconds');
     }
 
     let cluster;
@@ -86,10 +102,9 @@ describe('MapLockTest', function () {
             }, [member, m]);
         }).then((c) => {
             clientTwo = c;
+            return waitForNewPartitionTable(client, keyOwner);
         }).then(() => {
-            return generateKeyOwnedBy(client, keyOwner);
-        }).then(k => {
-            key = k;
+            key = generateKeyOwnedBy(client, keyOwner);
             return map.lock(key);
         }).then(() => {
             return clientTwo.getMap('test');
