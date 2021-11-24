@@ -24,7 +24,7 @@ import {FieldOperations} from '../generic_record/FieldOperations';
 import {SchemaWriter} from './SchemaWriter';
 import {HazelcastSerializationError} from '../../core';
 import {ObjectDataInput, ObjectDataOutput, PositionalObjectDataOutput} from '../ObjectData';
-import {GenericRecord, IS_GENERIC_RECORD_SYMBOL} from '../generic_record/GenericRecord';
+import {IS_GENERIC_RECORD_SYMBOL} from '../generic_record/GenericRecord';
 import {CompactGenericRecord} from '../generic_record/CompactGenericRecord';
 
 /**
@@ -44,57 +44,58 @@ export class CompactStreamSerializer {
         this.typeNameToSerializersMap = new Map<string, CompactSerializer<new () => any>>();
     }
 
-    getOrReadSchema(input: ObjectDataInput, schemaIncludedInBinary: boolean): Schema {
+    getOrReadSchema(input: ObjectDataInput, schemaIncludedInBinary: boolean): Promise<Schema> {
         const schemaId = input.readLong();
-        let schema = this.schemaService.get(schemaId);
+        return this.schemaService.get(schemaId).then((schema : Schema | null) => {
+            if (schema !== null) {
+                if (schemaIncludedInBinary) {
+                    const sizeOfSchema = input.readInt();
+                    input.skipBytes(sizeOfSchema);
+                }
+                return schema;
+            }
 
-        if (schema !== null) {
             if (schemaIncludedInBinary) {
-                const sizeOfSchema = input.readInt();
-                input.skipBytes(sizeOfSchema);
+                // sizeOfSchema
+                input.readInt();
+                schema = input.readObject();
+                const incomingSchemaId = schema.schemaId;
+                if (schemaId !== incomingSchemaId) {
+                    const schemaJsonString = JSON.stringify(schema);
+                    throw new HazelcastSerializationError(
+                        `Invalid schema id found. Expected ${schemaId}, actual ${incomingSchemaId} for schema ${schemaJsonString}`
+                    );
+                }
+                this.schemaService.put(schema).catch(() => {});
+                return schema;
             }
-            return schema;
-        }
-
-        if (schemaIncludedInBinary) {
-            // sizeOfSchema
-            input.readInt();
-            schema = input.readObject();
-            const incomingSchemaId = schema.schemaId;
-            if (schemaId !== incomingSchemaId) {
-                const schemaJsonString = JSON.stringify(schema);
-                throw new HazelcastSerializationError(
-                    `Invalid schema id found. Expected ${schemaId}, actual ${incomingSchemaId} for schema ${schemaJsonString}`
-                );
-            }
-            this.schemaService.put(schema).catch(() => {});
-            return schema;
-        }
-        throw new HazelcastSerializationError(`The schema can not be found with id ${schemaId}`);
+            throw new HazelcastSerializationError(`The schema can not be found with id ${schemaId}`);
+        });
     }
 
-    read(input: ObjectDataInput, schemaIncludedInBinary: boolean): any {
-        const schema: Schema = this.getOrReadSchema(input, schemaIncludedInBinary);
-        const registration = this.classNameToSerializersMap.get(schema.typeName);
+    read(input: ObjectDataInput, schemaIncludedInBinary: boolean): Promise<any> {
+        return this.getOrReadSchema(input, schemaIncludedInBinary).then((schema: Schema) => {
+            const registration = this.classNameToSerializersMap.get(schema.typeName);
 
-        if (registration === undefined) {
-           // Registration does not exist, we will return a GenericRecord
-           return new DefaultCompactReader(this, input, schema, null, schemaIncludedInBinary);
-        }
+            if (registration === undefined) {
+                // Registration does not exist, we will return a GenericRecord
+                return new DefaultCompactReader(this, input, schema, null, schemaIncludedInBinary).toSerialized();
+            }
 
-        const genericRecord = new DefaultCompactReader(this, input, schema, registration.hzClassName, schemaIncludedInBinary);
-        return registration.read(genericRecord);
+            const genericRecord = new DefaultCompactReader(this, input, schema, registration.hzClassName, schemaIncludedInBinary);
+            return registration.read(genericRecord);
+        })
     }
 
     // write won't happen with schema in Node for now
-    write(output: ObjectDataOutput, object: any, schemaIncludedInBinary: boolean): void {
+    write(output: ObjectDataOutput, object: any, schemaIncludedInBinary: boolean): Promise<void> {
         if (!(output instanceof PositionalObjectDataOutput)) {
             throw new HazelcastSerializationError('Expected a positional object data output.')
         }
         if (object && object[IS_GENERIC_RECORD_SYMBOL] === true) {
-            this.writeGenericRecord(output, object, schemaIncludedInBinary);
+            return this.writeGenericRecord(output, object, schemaIncludedInBinary);
         } else {
-            this.writeObject(output, object, schemaIncludedInBinary);
+            return this.writeObject(output, object, schemaIncludedInBinary);
         }
     }
 
@@ -111,13 +112,14 @@ export class CompactStreamSerializer {
         }
     }
 
-    putToSchemaService(includeSchemaOnBinary: boolean, schema: Schema) {
+    putToSchemaService(includeSchemaOnBinary: boolean, schema: Schema): Promise<void> {
         if (includeSchemaOnBinary) {
             //if we will include the schema on binary, the schema will be delivered anyway.
             //No need to put it to cluster. Putting it local only in order not to ask from remote on read.
             this.schemaService.putLocal(schema);
+            return Promise.resolve();
         } else {
-            this.schemaService.put(schema).catch(() => {});
+            return this.schemaService.put(schema).catch(() => {});
         }
     }
 
@@ -135,20 +137,34 @@ export class CompactStreamSerializer {
 
     writeGenericRecord(
         output: PositionalObjectDataOutput, record: CompactGenericRecord, includeSchemaOnBinary: boolean
-    ) : void {
+    ) : Promise<void> {
         const schema: Schema = record.getSchema();
-        this.putToSchemaService(includeSchemaOnBinary, schema);
+        return this.putToSchemaService(includeSchemaOnBinary, schema).then(() => {
+            this.writeSchema(output, includeSchemaOnBinary, schema);
+            const writer = new DefaultCompactWriter(this, output, schema, includeSchemaOnBinary);
+            for (const fieldDescriptor of schema.getFields()) {
+                const fieldName = fieldDescriptor.fieldName;
+                const fieldKind = fieldDescriptor.kind;
+                FieldOperations.fieldOperations(fieldKind).writeFieldFromRecordToWriter(writer, record, fieldName);
+            }
+            writer.end();
+        });
+    }
+
+    writeSchemaAndObject(
+        compactSerializer: CompactSerializer<new () => any>,
+        output: PositionalObjectDataOutput,
+        includeSchemaOnBinary: boolean,
+        schema: Schema,
+        o: any
+    ) : void {
         this.writeSchema(output, includeSchemaOnBinary, schema);
         const writer = new DefaultCompactWriter(this, output, schema, includeSchemaOnBinary);
-        for (const fieldDescriptor of schema.getFields()) {
-            const fieldName = fieldDescriptor.fieldName;
-            const fieldKind = fieldDescriptor.kind;
-            FieldOperations.fieldOperations(fieldKind).writeFieldFromRecordToWriter(writer, record, fieldName);
-        }
+        compactSerializer.write(writer, o);
         writer.end();
     }
 
-    writeObject(output: PositionalObjectDataOutput, o: any, includeSchemaOnBinary: boolean) : void {
+    writeObject(output: PositionalObjectDataOutput, o: any, includeSchemaOnBinary: boolean) : Promise<void> {
         const compactSerializer = this.getOrCreateSerializerFromObject(o);
         const className = compactSerializer.hzClassName;
 
@@ -157,13 +173,14 @@ export class CompactStreamSerializer {
             const writer = new SchemaWriter(className);
             compactSerializer.write(writer, o);
             schema = writer.build();
-            this.putToSchemaService(includeSchemaOnBinary, schema);
-            this.classNameToSchemaMap.set(className, schema);
+            console.log('Schema id: ', schema.schemaId.toString());
+            return this.putToSchemaService(includeSchemaOnBinary, schema).then(() => {
+                this.classNameToSchemaMap.set(className, schema);
+                this.writeSchemaAndObject(compactSerializer, output, includeSchemaOnBinary, schema, o);
+            });
         }
-        this.writeSchema(output, includeSchemaOnBinary, schema);
-        const writer = new DefaultCompactWriter(this, output, schema, includeSchemaOnBinary);
-        compactSerializer.write(writer, o);
-        writer.end();
+        this.writeSchemaAndObject(compactSerializer, output, includeSchemaOnBinary, schema, o);
+        return Promise.resolve();
     }
 
     private getOrCreateSerializerFromObject(obj: any) : CompactSerializer<new () => any> {
@@ -172,16 +189,11 @@ export class CompactStreamSerializer {
         if (serializer !== undefined) {
             return serializer;
         } else {
-            if (obj.getCompactSerializer) {
+            if (typeof obj.getCompactSerializer === 'function') {
                 return obj.getCompactSerializer();
             } else {
                 throw new HazelcastSerializationError(`Explicit compact serializer is needed for obj: ${JSON.stringify(obj)}`);
             }
         }
-    }
-
-    readGenericRecord(input: ObjectDataInput, schemaIncludedInBinary: boolean): GenericRecord {
-        const schema = this.getOrReadSchema(input, schemaIncludedInBinary);
-        return new DefaultCompactReader(this, input, schema, null, schemaIncludedInBinary);
     }
 }

@@ -533,7 +533,7 @@ export class FieldOperations {
         },
         [FieldKind.ARRAY_OF_COMPACTS]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return (record as InternalGenericRecord).getArrayOfObjects(fieldName, Object);
+                return (record as InternalGenericRecord).getArrayOfObjects(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 writer.writeArrayOfGenericRecords(fieldName, record.getArrayOfGenericRecords(fieldName));

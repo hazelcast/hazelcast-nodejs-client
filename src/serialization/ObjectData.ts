@@ -181,6 +181,10 @@ export class ObjectDataOutput implements DataOutput {
         this.service.writeObject(this, object);
     }
 
+    writeObjectAsync(object: any): Promise<void> {
+        return this.service.writeObjectAsync(this, object);
+    }
+
     writeShort(short: number): void {
         this.ensureAvailable(BitsUtil.SHORT_SIZE_IN_BYTES);
         BitsUtil.writeInt16(this.buffer, this.pos, short, this.isBigEndian());
@@ -477,6 +481,10 @@ export class ObjectDataInput implements DataInput {
 
     readObject(): any {
         return this.service.readObject(this);
+    }
+
+    readObjectAsync(): Promise<any> {
+        return this.service.readObjectAsync(this);
     }
 
     readShort(pos?: number): number {

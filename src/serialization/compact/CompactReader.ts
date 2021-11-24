@@ -45,7 +45,7 @@ export interface CompactReader {
     readArrayOfDates(fieldName: string, defaultValue?: LocalDate[] | null): LocalDate[] | null;
     readArrayOfTimestamps(fieldName: string, defaultValue?: LocalDateTime[] | null): LocalDateTime[] | null;
     readArrayOfTimestampWithTimezones(fieldName: string, defaultValue?: OffsetDateTime[] | null): OffsetDateTime[] | null;
-    readArrayOfCompacts<T>(fieldName: string, componentType: new() => T, defaultValue?: T[] | null): T[] | null;
+    readArrayOfCompacts<T>(fieldName: string, defaultValue?: T[] | null): T[] | null;
     readNullableBoolean(fieldName : string, defaultValue?: boolean | null) : boolean | null;
     readNullableByte(fieldName : string, defaultValue?: number | null) : number | null;
     readNullableShort(fieldName : string, defaultValue?: number | null) : number | null ;

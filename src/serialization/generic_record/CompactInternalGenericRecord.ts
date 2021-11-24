@@ -48,6 +48,7 @@ import {IOUtil} from '../../util/IOUtil';
 import {CompactStreamSerializer} from '../compact/CompactStreamSerializer';
 import {CompactGenericRecord} from './CompactGenericRecord';
 import {InternalGenericRecord} from './InternalGenericRecord';
+import {DefaultCompactReader} from '../compact/DefaultCompactReader';
 
 /**
  * @internal
@@ -62,24 +63,53 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         private readonly serializer: CompactStreamSerializer,
         protected readonly input: ObjectDataInput,
         protected readonly schema: Schema,
-        private readonly className: string | null,
+        public readonly className: string | null,
         private readonly schemaIncludedInBinary: boolean
     ) {
+        try {
+            const numberOfVariableLengthFields = schema.numberVarSizeFields;
+            let finalPosition;
+            if (numberOfVariableLengthFields !== 0) {
+                const dataLength = input.readInt();
+                this.dataStartPosition = this.input.position();
+                this.variableOffsetsPosition = this.dataStartPosition + dataLength;
+                if (dataLength < BYTE_OFFSET_READER_RANGE) {
+                    this.offsetReader = BYTE_OFFSET_READER;
+                    finalPosition = this.variableOffsetsPosition + numberOfVariableLengthFields;
+                } else if (dataLength < SHORT_OFFSET_READER_RANGE) {
+                    this.offsetReader = SHORT_OFFSET_READER;
+                    finalPosition = this.variableOffsetsPosition + numberOfVariableLengthFields * BitsUtil.SHORT_SIZE_IN_BYTES;
+                } else {
+                    this.offsetReader = INT_OFFSET_READER;
+                    finalPosition = this.variableOffsetsPosition + numberOfVariableLengthFields * BitsUtil.INT_SIZE_IN_BYTES;
+                }
+            } else {
+                this.offsetReader = INT_OFFSET_READER;
+                this.variableOffsetsPosition = 0;
+                this.dataStartPosition = input.position();
+                finalPosition = this.dataStartPosition + schema.fixedSizeFieldsLength;
+            }
+            //set the position to final so that the next one to read something from `input` can start from
+            //correct position
+            this.input.position(finalPosition);
+        } catch (e) {
+            throw CompactInternalGenericRecord.toIllegalStateException(e);
+        }
     }
 
-    private static toUnknownFieldException(fieldName: string, schema: Schema) : Error {
+    private static toUnknownFieldException(fieldName: string, schema: Schema): Error {
         return new HazelcastSerializationError(`Unknown field name: '${fieldName}' for schema ${JSON.stringify(schema)}`);
     }
 
-    private static toIllegalStateException(e : Error) {
+    private static toIllegalStateException(e: Error) {
         return new IllegalStateError('IOException is not expected since we get from a well known format and position', e);
     }
 
-    private static toUnexpectedFieldKind(fieldKind: FieldKind, fieldName: string) : Error {
+    private static toUnexpectedFieldKind(fieldKind: FieldKind, fieldName: string): Error {
         return new HazelcastSerializationError(`Unknown fieldKind: '${fieldKind}' for field: ${fieldName}`);
     }
 
-    private readVariableSizeFieldPosition(fieldDescriptor: FieldDescriptor) : number {
+    private readVariableSizeFieldPosition(fieldDescriptor: FieldDescriptor): number {
         try {
             const index = fieldDescriptor.index;
             const offset = this.offsetReader.getOffset(this.input, this.variableOffsetsPosition, index);
@@ -89,7 +119,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         }
     }
 
-    private readVariableSizeFieldPositionByNameAndKind(fieldName: string, fieldKind: FieldKind) : number {
+    private readVariableSizeFieldPositionByNameAndKind(fieldName: string, fieldKind: FieldKind): number {
         try {
             const fd = this.getFieldDefinition(fieldName);
             const index = fd.index;
@@ -100,7 +130,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         }
     }
 
-    private getVariableSizeByNameAndKind<R>(fieldName: string, fieldKind: FieldKind, readFn: (reader: ObjectDataInput) => R) : R {
+    private getVariableSizeByNameAndKind<R>(fieldName: string, fieldKind: FieldKind, readFn: (reader: ObjectDataInput) => R): R {
         const currentPos = this.input.position();
         try {
             const pos = this.readVariableSizeFieldPositionByNameAndKind(fieldName, fieldKind);
@@ -116,7 +146,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         }
     }
 
-    private getVariableSize<R>(fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => R) : R | null {
+    private getVariableSize<R>(fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => R): R | null {
         const currentPos = this.input.position();
         try {
             const pos = this.readVariableSizeFieldPosition(fieldDescriptor);
@@ -132,7 +162,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         }
     }
 
-    private static getOffsetReader(dataLength: number) : OffsetReader {
+    private static getOffsetReader(dataLength: number): OffsetReader {
         if (dataLength < BYTE_OFFSET_READER_RANGE) {
             return BYTE_OFFSET_READER;
         } else if (dataLength < SHORT_OFFSET_READER_RANGE) {
@@ -144,7 +174,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
 
     private getNullableArrayAsPrimitiveArray<T>(
         fd: FieldDescriptor, readFn: (reader: ObjectDataInput) => T, methodSuffix: string
-    ) : T | null {
+    ): T | null {
         const currentPos = this.input.position();
         try {
             const position = this.readVariableSizeFieldPosition(fd);
@@ -174,7 +204,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         }
     }
 
-    private getFieldDefinition(fieldName: string) : FieldDescriptor {
+    private getFieldDefinition(fieldName: string): FieldDescriptor {
         const fd = this.schema.fieldDefinitionMap.get(fieldName);
         if (fd === null) {
             throw CompactInternalGenericRecord.toUnknownFieldException(fieldName, this.schema);
@@ -182,7 +212,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         return fd;
     }
 
-    private getFieldDefinitionChecked(fieldName: string, fieldKind: FieldKind) : FieldDescriptor {
+    private getFieldDefinitionChecked(fieldName: string, fieldKind: FieldKind): FieldDescriptor {
         const fd = this.schema.fieldDefinitionMap.get(fieldName);
         if (fd.kind !== fieldKind) {
             throw CompactInternalGenericRecord.toUnexpectedFieldKind(fd.kind, fieldName);
@@ -190,7 +220,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         return fd;
     }
 
-    private static readBooleanBits(input: ObjectDataInput) : boolean[] | null {
+    private static readBooleanBits(input: ObjectDataInput): boolean[] | null {
         const len = input.readInt();
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
             return null;
@@ -213,7 +243,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         return values;
     }
 
-    private readLength(beginPosition: number) : number {
+    private readLength(beginPosition: number): number {
         try {
             return this.input.readInt(beginPosition);
         } catch (e) {
@@ -230,7 +260,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
 
     private getFixedSizeFieldFromArray<T>(
         fieldName: string, fieldKind: FieldKind, readFn: (reader: ObjectDataInput) => T, index: number
-    ) : T | null {
+    ): T | null {
         CompactInternalGenericRecord.checkArrayIndexNotNegative(index);
 
         const position = this.readVariableSizeFieldPositionByNameAndKind(fieldName, fieldKind);
@@ -256,7 +286,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
 
     private getVariableSizeFromArray<T>(
         fieldName: string, fieldKind: FieldKind, readFn: (reader: ObjectDataInput) => T, index: number
-    ) : T | null {
+    ): T | null {
         const currentPos = this.input.position();
         try {
             const pos = this.readVariableSizeFieldPositionByNameAndKind(fieldName, fieldKind);
@@ -288,9 +318,9 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         }
     }
 
-    private getArrayOfVariableSizesWithFieldDescriptor<T> (
+    private getArrayOfVariableSizesWithFieldDescriptor<T>(
         fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => T
-    ) : T[] | null {
+    ): T[] | null {
         const currentPos = this.input.position();
         try {
             const pos = this.readVariableSizeFieldPosition(fieldDescriptor);
@@ -357,32 +387,41 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
     getByteFromArray(fieldName: string, index: number): number {
         return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_BYTES, reader => reader.readByte(), index);
     }
+
     getCharFromArray(fieldName: string, index: number): string {
         return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_CHARS, reader => reader.readChar(), index);
     }
+
     getShortFromArray(fieldName: string, index: number): number {
         return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_SHORTS, reader => reader.readShort(), index);
     }
+
     getIntFromArray(fieldName: string, index: number): number {
         return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_INTS, reader => reader.readInt(), index);
     }
+
     getLongFromArray(fieldName: string, index: number): Long {
         return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_LONGS, reader => reader.readLong(), index);
     }
+
     getFloatFromArray(fieldName: string, index: number): number {
         return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_FLOATS, reader => reader.readFloat(), index);
     }
+
     getDoubleFromArray(fieldName: string, index: number): number {
         return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_DOUBLES, reader => reader.readDouble(), index);
     }
+
     getStringFromArray(fieldName: string, index: number): string {
         return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_STRINGS, reader => reader.readString(), index);
     }
+
     getGenericRecordFromArray(fieldName: string, index: number): GenericRecord {
         return this.getVariableSizeFromArray(
             fieldName,
             FieldKind.ARRAY_OF_COMPACTS,
-            reader => this.serializer.readGenericRecord(reader, this.schemaIncludedInBinary),
+            reader =>
+                new DefaultCompactReader(this.serializer, reader, this.schema, null, this.schemaIncludedInBinary).toSerialized(),
             index
         );
     }
@@ -393,7 +432,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         );
     }
 
-    getArrayOfObjects(fieldName: string, componentType: new () => any): any[] {
+    getArrayOfObjects(fieldName: string): any[] {
         return this.getArrayOfVariableSizes(
             fieldName,
             FieldKind.ARRAY_OF_COMPACTS,
@@ -404,57 +443,68 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
     getDecimalFromArray(fieldName: string, index: number): BigDecimal {
         return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_DECIMALS, IOUtil.readDecimal, index);
     }
+
     getTimeFromArray(fieldName: string, index: number): LocalTime {
         return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_TIMES, IOUtil.readLocalTime, index);
     }
+
     getDateFromArray(fieldName: string, index: number): LocalDate {
         return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_DATES, IOUtil.readLocalDate, index);
     }
+
     getTimestampFromArray(fieldName: string, index: number): LocalDateTime {
         return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_TIMESTAMPS, IOUtil.readLocalDateTime, index);
     }
+
     getTimestampWithTimezoneFromArray(fieldName: string, index: number): OffsetDateTime {
         return this.getVariableSizeFromArray(
             fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONES, IOUtil.readOffsetDateTime, index
         );
     }
+
     getNullableBooleanFromArray(fieldName: string, index: number): boolean {
         return this.getVariableSizeFromArray(
             fieldName, FieldKind.ARRAY_OF_NULLABLE_BOOLEANS, reader => reader.readBoolean(), index
         );
     }
+
     getNullableByteFromArray(fieldName: string, index: number): number {
         return this.getVariableSizeFromArray(
             fieldName, FieldKind.ARRAY_OF_NULLABLE_BYTES, reader => reader.readByte(), index
         );
     }
+
     getNullableShortFromArray(fieldName: string, index: number): number {
         return this.getVariableSizeFromArray(
             fieldName, FieldKind.ARRAY_OF_NULLABLE_SHORTS, reader => reader.readShort(), index
         );
     }
+
     getNullableIntFromArray(fieldName: string, index: number): number {
         return this.getVariableSizeFromArray(
             fieldName, FieldKind.ARRAY_OF_NULLABLE_INTS, reader => reader.readInt(), index
         );
     }
+
     getNullableLongFromArray(fieldName: string, index: number): Long {
         return this.getVariableSizeFromArray(
             fieldName, FieldKind.ARRAY_OF_NULLABLE_LONGS, reader => reader.readLong(), index
         );
     }
+
     getNullableFloatFromArray(fieldName: string, index: number): number {
         return this.getVariableSizeFromArray(
             fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOATS, reader => reader.readFloat(), index
         );
     }
+
     getNullableDoubleFromArray(fieldName: string, index: number): number {
         return this.getVariableSizeFromArray(
             fieldName, FieldKind.ARRAY_OF_NULLABLE_DOUBLES, reader => reader.readDouble(), index
         );
     }
 
-    protected isFieldExists(fieldName: string, kind: FieldKind) : boolean {
+    protected isFieldExists(fieldName: string, kind: FieldKind): boolean {
         const field = this.schema.fieldDefinitionMap.get(fieldName);
         if (field === undefined) {
             return false;
@@ -568,7 +618,8 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         return this.getArrayOfVariableSizes(
             fieldName,
             FieldKind.ARRAY_OF_COMPACTS,
-            reader => this.serializer.readGenericRecord(reader, this.schemaIncludedInBinary)
+            reader =>
+                new DefaultCompactReader(this.serializer, reader, this.schema, null, this.schemaIncludedInBinary).toSerialized()
         );
     }
 
@@ -594,7 +645,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
 
     readFixedSizePosition(fd: FieldDescriptor) {
         const primitiveOffset = fd.offset;
-        return primitiveOffset - this.dataStartPosition;
+        return primitiveOffset + this.dataStartPosition;
     }
 
     getNullableBoolean(fieldName: string): boolean | null {
@@ -731,7 +782,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
 
     private getPrimitiveArrayAsNullableArray<T>(
         fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => T
-    ) : T[] | null {
+    ): T[] | null {
         const currentPos = this.input.position();
         try {
             const pos = this.readVariableSizeFieldPosition(fieldDescriptor);
@@ -807,7 +858,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
     }
 
     private getVariableSizeAsNonNull<T>(
-        fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => T, methodSuffix: string) : T {
+        fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => T, methodSuffix: string): T {
         const value = this.getVariableSize(fieldDescriptor, readFn);
         if (value === null) {
             throw CompactUtil.toExceptionForUnexpectedNullValue(fieldDescriptor.fieldName, methodSuffix);
@@ -907,7 +958,8 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
 
     getGenericRecord(fieldName: string): GenericRecord {
         return this.getVariableSizeByNameAndKind(
-            fieldName, FieldKind.COMPACT, reader => this.serializer.readGenericRecord(reader, this.schemaIncludedInBinary)
+            fieldName, FieldKind.COMPACT, reader =>
+                new DefaultCompactReader(this.serializer, reader, this.schema, null, this.schemaIncludedInBinary).toSerialized()
         );
     }
 

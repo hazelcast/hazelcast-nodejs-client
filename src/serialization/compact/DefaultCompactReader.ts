@@ -16,13 +16,15 @@
 /** @ignore *//** */
 
 import {CompactReader} from './CompactReader';
-import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
+import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, UnsupportedOperationError} from '../../core';
 import * as Long from 'long';
 import {CompactStreamSerializer} from './CompactStreamSerializer';
 import {Schema} from './Schema';
 import {ObjectDataInput} from '../ObjectData';
 import {FieldKind} from '../generic_record/FieldKind';
 import {CompactInternalGenericRecord} from '../generic_record/CompactInternalGenericRecord';
+import {CompactGenericRecordImpl} from '../generic_record';
+import {Field} from '../generic_record/Field';
 
 /**
  * @internal
@@ -36,6 +38,152 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         schemaIncludedInBinary: boolean
     ) {
         super(serializer, input, schema, className, schemaIncludedInBinary);
+    }
+
+    toSerialized(): CompactGenericRecordImpl {
+        const fields: {[name: string]: Field<any>} = {};
+        const values: {[name: string]: any} = {};
+
+        for (const field of this.schema.fields) {
+            fields[field.fieldName] = field;
+            switch (field.kind) {
+                case FieldKind.BOOLEAN:
+                    values[field.fieldName] = this.readBoolean(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_BOOLEANS:
+                    values[field.fieldName] = this.readArrayOfBooleans(field.fieldName);
+                    break;
+                case FieldKind.BYTE:
+                    values[field.fieldName] = this.readByte(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_BYTES:
+                    values[field.fieldName] = this.readArrayOfBytes(field.fieldName);
+                    break;
+                case FieldKind.CHAR:
+                    throw new UnsupportedOperationError('Char field is not supported in compact');
+                case FieldKind.ARRAY_OF_CHARS:
+                    throw new UnsupportedOperationError('Char field is not supported in compact');
+                case FieldKind.SHORT:
+                    values[field.fieldName] = this.readShort(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_SHORTS:
+                    values[field.fieldName] = this.readArrayOfShorts(field.fieldName);
+                    break;
+                case FieldKind.INT:
+                    values[field.fieldName] = this.readInt(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_INTS:
+                    values[field.fieldName] = this.readArrayOfInts(field.fieldName);
+                    break;
+                case FieldKind.LONG:
+                    values[field.fieldName] = this.readLong(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_LONGS:
+                    values[field.fieldName] = this.readArrayOfLongs(field.fieldName);
+                    break;
+                case FieldKind.FLOAT:
+                    values[field.fieldName] = this.readFloat(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_FLOATS:
+                    values[field.fieldName] = this.readArrayOfFloats(field.fieldName);
+                    break;
+                case FieldKind.DOUBLE:
+                    values[field.fieldName] = this.readDouble(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_DOUBLES:
+                    values[field.fieldName] = this.readArrayOfDoubles(field.fieldName);
+                    break;
+                case FieldKind.STRING:
+                    values[field.fieldName] = this.readString(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_STRINGS:
+                    values[field.fieldName] = this.readArrayOfStrings(field.fieldName);
+                    break;
+                case FieldKind.DECIMAL:
+                    values[field.fieldName] = this.readDecimal(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_DECIMALS:
+                    values[field.fieldName] = this.readArrayOfDecimals(field.fieldName);
+                    break;
+                case FieldKind.TIME:
+                    values[field.fieldName] = this.readTime(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_TIMES:
+                    values[field.fieldName] = this.readArrayOfTimes(field.fieldName);
+                    break;
+                case FieldKind.DATE:
+                    values[field.fieldName] = this.readDate(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_DATES:
+                    values[field.fieldName] = this.readArrayOfDates(field.fieldName);
+                    break;
+                case FieldKind.TIMESTAMP:
+                    values[field.fieldName] = this.readTimestamp(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_TIMESTAMPS:
+                    values[field.fieldName] = this.readArrayOfTimestamps(field.fieldName);
+                    break;
+                case FieldKind.TIMESTAMP_WITH_TIMEZONE:
+                    values[field.fieldName] = this.readTimestampWithTimezone(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONES:
+                    values[field.fieldName] = this.readArrayOfTimestampWithTimezones(field.fieldName);
+                    break;
+                case FieldKind.COMPACT:
+                    values[field.fieldName] = this.readCompact(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_COMPACTS:
+                    values[field.fieldName] = this.readArrayOfCompacts(field.fieldName);
+                    break;
+                case FieldKind.PORTABLE:
+                    throw new UnsupportedOperationError('Portable field is not supported in compact');
+                case FieldKind.ARRAY_OF_PORTABLES:
+                    throw new UnsupportedOperationError('Portable field is not supported in compact');
+                case FieldKind.NULLABLE_BOOLEAN:
+                    values[field.fieldName] = this.readNullableBoolean(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_BOOLEANS:
+                    values[field.fieldName] = this.readArrayOfNullableBooleans(field.fieldName);
+                    break;
+                case FieldKind.NULLABLE_BYTE:
+                    values[field.fieldName] = this.readNullableByte(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_BYTES:
+                    values[field.fieldName] = this.readArrayOfNullableBytes(field.fieldName);
+                    break;
+                case FieldKind.NULLABLE_SHORT:
+                    values[field.fieldName] = this.readNullableShort(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_SHORTS:
+                    values[field.fieldName] = this.readArrayOfNullableShorts(field.fieldName);
+                    break;
+                case FieldKind.NULLABLE_INT:
+                    values[field.fieldName] = this.readNullableInt(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_INTS:
+                    values[field.fieldName] = this.readArrayOfNullableInts(field.fieldName);
+                    break;
+                case FieldKind.NULLABLE_LONG:
+                    values[field.fieldName] = this.readNullableLong(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_LONGS:
+                    values[field.fieldName] = this.readArrayOfNullableLongs(field.fieldName);
+                    break;
+                case FieldKind.NULLABLE_FLOAT:
+                    values[field.fieldName] = this.readNullableFloat(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_FLOATS:
+                    values[field.fieldName] = this.readArrayOfNullableFloats(field.fieldName);
+                    break;
+                case FieldKind.NULLABLE_DOUBLE:
+                    values[field.fieldName] = this.readNullableDouble(field.fieldName);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_DOUBLES:
+                    values[field.fieldName] = this.readArrayOfNullableDoubles(field.fieldName);
+                    break;
+            }
+        }
+        return new CompactGenericRecordImpl(this.className, fields, values);
     }
 
     readArrayOfBooleans(fieldName: string, defaultValue?: boolean[] | null): boolean[] | null {
@@ -54,12 +202,12 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfCompacts<T>(fieldName: string, componentType: { new(): T }, defaultValue?: T[] | null): T[] | null {
+    readArrayOfCompacts<T>(fieldName: string, defaultValue?: T[] | null): T[] | null {
         if (defaultValue === undefined) {
-            return this.getArrayOfObjects(fieldName, componentType);
+            return this.getArrayOfObjects(fieldName);
         } else {
             return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_COMPACTS)
-                ? this.getArrayOfObjects(fieldName, componentType) : defaultValue;
+                ? this.getArrayOfObjects(fieldName) : defaultValue;
         }
     }
 

@@ -17,7 +17,7 @@
 import {DataInput, DataOutput} from './Data';
 
 /**
- * Defines a common interface for default and custom serializers.
+ * Defines an interface for sync serializers.
  */
 export interface Serializer<T = any> {
 
@@ -40,6 +40,33 @@ export interface Serializer<T = any> {
      * @param object object to be serialized
      */
     write(output: DataOutput, object: T): void;
+
+}
+
+/**
+ * Defines an interface for async serializers.
+ */
+export interface AsyncSerializer<T = any> {
+
+    /**
+     * Type id.
+     */
+    id: number;
+
+    /**
+     * Deserializes input data into an object.
+     *
+     * @param input input data reader
+     */
+    read(input: DataInput): Promise<T>;
+
+    /**
+     * Serializes an object into binary data.
+     *
+     * @param output output data writer
+     * @param object object to be serialized
+     */
+    write(output: DataOutput, object: T): Promise<void>;
 
 }
 

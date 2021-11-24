@@ -42,9 +42,6 @@ var EmployeeDTO = /** @class */ (function () {
     function EmployeeDTO(age, id) {
         this.age = age;
         this.id = id;
-        this.isFired = false;
-        this.isHired = true;
-        this.rank = age;
     }
     return EmployeeDTO;
 }());
@@ -54,46 +51,35 @@ var EmployeeDTOSerializer = /** @class */ (function () {
     }
     EmployeeDTOSerializer.prototype.read = function (reader) {
         var age = reader.readInt('age');
-        var id = reader.readInt('id');
+        var id = reader.readLong('id');
         return new EmployeeDTO(age, id);
     };
     EmployeeDTOSerializer.prototype.write = function (writer, instance) {
         writer.writeInt('age', instance.age);
-        writer.writeInt('id', instance.id);
+        writer.writeLong('id', instance.id);
     };
     return EmployeeDTOSerializer;
 }());
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var client, fields, map;
+        var client, map, record;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, lib_1.Client.newHazelcastClient({
-                        serialization: {
-                            compactSerializers: [new EmployeeDTOSerializer()]
-                        }
+                    // serialization: {
+                    //     compactSerializers: [new EmployeeDTOSerializer()]
+                    // }
                     })];
                 case 1:
                     client = _a.sent();
-                    fields = {
-                        name: lib_1.Fields.string,
-                        age: lib_1.Fields.int,
-                        long: lib_1.Fields.long
-                    };
-                    lib_1.GenericRecords.compact(fields, {
-                        name: 'employee',
-                        age: 1,
-                        long: Long.ONE
-                    });
                     return [4 /*yield*/, client.getMap('test')];
                 case 2:
                     map = _a.sent();
-                    return [4 /*yield*/, map["delete"](Long.fromNumber(1))];
+                    return [4 /*yield*/, map.get(Long.fromNumber(1))];
                 case 3:
-                    _a.sent();
-                    return [4 /*yield*/, map.put(Long.fromNumber(1), new EmployeeDTO(1, 2))];
-                case 4:
-                    _a.sent();
+                    record = _a.sent();
+                    console.log(record);
+                    console.log(record.constructor.name);
                     return [2 /*return*/];
             }
         });

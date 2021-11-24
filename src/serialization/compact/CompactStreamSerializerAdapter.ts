@@ -15,24 +15,24 @@
  */
 /** @ignore *//** */
 
-import {SerializerAdapter} from '../SerializerAdapter';
+import {AsyncSerializerAdapter} from '../SerializerAdapter';
 import {CompactStreamSerializer} from './CompactStreamSerializer';
 import {ObjectDataInput, ObjectDataOutput} from '../ObjectData';
 
 /**
  * @internal
  */
-export class CompactStreamSerializerAdapter implements SerializerAdapter {
+export class CompactStreamSerializerAdapter implements AsyncSerializerAdapter {
 
     id = -55;
     constructor(private readonly serializer: CompactStreamSerializer) {
     }
 
-    read(input: ObjectDataInput): any {
+    read(input: ObjectDataInput): Promise<any> {
         return this.serializer.read(input, false);
     }
 
-    write(output: ObjectDataOutput, object: any): void {
-        this.serializer.write(output, object, false);
+    write(output: ObjectDataOutput, object: any): Promise<void> {
+        return this.serializer.write(output, object, false);
     }
 }

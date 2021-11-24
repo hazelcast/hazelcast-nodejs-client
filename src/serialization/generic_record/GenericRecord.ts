@@ -22,6 +22,7 @@ export const IS_GENERIC_RECORD_SYMBOL = Symbol('IS_GENERIC_RECORD');
 
 export interface GenericRecord {
     getFieldNames(): Set<string>;
+    // throws TypeError if the field name does not exist in the class definition
     getFieldKind(fieldName: string): FieldKind;
     hasField(fieldName: string): boolean;
     getBoolean(fieldName: string): boolean;

@@ -92,6 +92,7 @@ import {IndexConfig} from '../config/IndexConfig';
 import {IndexUtil} from '../util/IndexUtil';
 import {PagingPredicateHolder} from '../protocol/PagingPredicateHolder';
 import {MapEntriesWithPagingPredicateCodec} from '../codec/MapEntriesWithPagingPredicateCodec';
+import * as Long from 'long';
 
 type EntryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number,
                           uuid: UUID, numberOfAffectedEntries: number) => void;
@@ -259,9 +260,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     put(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
-        const keyData: Data = this.toData(key);
-        const valueData: Data = this.toData(value);
-        return this.putInternal(keyData, valueData, ttl, maxIdle);
+        const keyData: Promise<Data> = this.toDataAsync(key);
+        const valueData: Promise<Data> = this.toDataAsync(value);
+
+        return Promise.all([keyData, valueData]).then(([keyData, valueData]) => {
+            return this.putInternal(keyData, valueData, ttl, maxIdle);
+        });
     }
 
     putAll(pairs: Array<[K, V]>): Promise<void> {
@@ -274,8 +278,9 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     get(key: K): Promise<V> {
         assertNotNull(key);
-        const keyData = this.toData(key);
-        return this.getInternal(keyData);
+        return this.toDataAsync(key).then(keyData => {
+            return this.getInternal(keyData);
+        });
     }
 
     remove(key: K, value: V = null): Promise<V | boolean> {
@@ -533,8 +538,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return request
             .then((clientMessage) => {
                 const response = MapPutCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+                return this.toObjectAsync(response);
+            }).then(obj => obj);
     }
 
     protected finalizePutAll(_partitionsToKeys: { [id: string]: Array<[Data, Data]> }): void {
@@ -545,8 +550,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey(MapGetCodec, keyData, keyData, 0)
             .then((clientMessage) => {
                 const response = MapGetCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+                return this.toObjectAsync(response);
+            }).then(obj => obj);
     }
 
     protected removeInternal(keyData: Data, value: V = null): Promise<V | boolean> {

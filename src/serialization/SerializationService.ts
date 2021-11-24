@@ -25,7 +25,7 @@ import {
 } from '../proxy/topic/ReliableTopicMessage';
 import * as Util from '../util/Util';
 import {Data, DataInput, DataOutput} from './Data';
-import {Serializer, IdentifiedDataSerializableFactory} from './Serializable';
+import {Serializer, IdentifiedDataSerializableFactory, AsyncSerializer} from './Serializable';
 import {
     ArrayListSerializer,
     BigDecimalSerializer,
@@ -81,6 +81,14 @@ export interface SerializationService {
     writeObject(out: DataOutput, object: any): void;
 
     readObject(inp: DataInput): any;
+
+    toDataAsync(object: any, partitioningStrategy?: any): Promise<Data>;
+
+    toObjectAsync(data: Data): Promise<any>;
+
+    writeObjectAsync(out: DataOutput, object: any): Promise<void>;
+
+    readObjectAsync(inp: DataInput): Promise<any>;
 
 }
 
@@ -139,7 +147,7 @@ export class SerializationServiceV1 implements SerializationService {
             dataOutput.writeIntBE(this.calculatePartitionHash(object, partitioningStrategy));
         }
         dataOutput.writeIntBE(serializer.id);
-        serializer.write(dataOutput, object);
+        (serializer as Serializer).write(dataOutput, object);
         return new HeapData(dataOutput.toBuffer());
     }
 
@@ -155,19 +163,87 @@ export class SerializationServiceV1 implements SerializationService {
             throw new RangeError(`There is no suitable deserializer for data with type ${data.getType()}`);
         }
         const dataInput = new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serializationConfig.isBigEndian);
-        return serializer.read(dataInput);
+        return (serializer as Serializer).read(dataInput);
+    }
+
+
+    /**
+     * Serializes object to data
+     *
+     * @param object Object to serialize
+     * @param partitioningStrategy
+     * @throws RangeError if object is not serializable
+     */
+    toDataAsync(object: any, partitioningStrategy: PartitionStrategy = defaultPartitionStrategy): Promise<Data> {
+        if (this.isData(object)) {
+            return Promise.resolve(object as Data);
+        }
+        const dataOutput = new PositionalObjectDataOutput(this, this.serializationConfig.isBigEndian);
+        const serializer = this.findSerializerFor(object);
+        // Check if object is partition aware
+        if (object != null && object.partitionKey != null) {
+            const partitionKey = object.partitionKey;
+            const serializedPartitionKey = this.toData(partitionKey);
+            dataOutput.writeIntBE(this.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
+        } else {
+            dataOutput.writeIntBE(this.calculatePartitionHash(object, partitioningStrategy));
+        }
+        dataOutput.writeIntBE(serializer.id);
+        if (serializer instanceof CompactStreamSerializerAdapter) {
+            return (serializer as AsyncSerializer).write(dataOutput, object).then(() => {
+                return new HeapData(dataOutput.toBuffer());
+            })
+        } else {
+            (serializer as Serializer).write(dataOutput, object)
+            return Promise.resolve(new HeapData(dataOutput.toBuffer()));
+        }
+
+
+    }
+
+    toObjectAsync(data: Data): Promise<any> {
+        if (data == null) {
+            return Promise.resolve(data);
+        }
+        if (!data.getType) {
+            return Promise.resolve(data);
+        }
+        const serializer = this.findSerializerById(data.getType());
+        if (serializer === undefined) {
+            throw new RangeError(`There is no suitable deserializer for data with type ${data.getType()}`);
+        }
+        const dataInput = new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serializationConfig.isBigEndian);
+        if (serializer instanceof CompactStreamSerializerAdapter) {
+            return serializer.read(dataInput).then((obj: any) => {
+                return obj;
+            })
+        } else {
+            return Promise.resolve(serializer.read(dataInput));
+        }
+    }
+
+    writeObjectAsync(out: DataOutput, object: any): Promise<void> {
+        const serializer = this.findSerializerFor(object);
+        out.writeInt(serializer.id);
+        return (serializer as AsyncSerializer).write(out, object);
+    }
+
+    readObjectAsync(inp: DataInput): Promise<any> {
+        const serializerId = inp.readInt();
+        const serializer = this.findSerializerById(serializerId);
+        return (serializer as AsyncSerializer).read(inp);
     }
 
     writeObject(out: DataOutput, object: any): void {
         const serializer = this.findSerializerFor(object);
         out.writeInt(serializer.id);
-        serializer.write(out, object);
+        (serializer as Serializer).write(out, object);
     }
 
     readObject(inp: DataInput): any {
         const serializerId = inp.readInt();
         const serializer = this.findSerializerById(serializerId);
-        return serializer.read(inp);
+        return (serializer as Serializer).read(inp);
     }
 
     registerSerializer(name: string, serializer: Serializer): void {
@@ -197,7 +273,7 @@ export class SerializationServiceV1 implements SerializationService {
      * @param obj
      * @returns
      */
-    findSerializerFor(obj: any): Serializer {
+    findSerializerFor(obj: any): Serializer | AsyncSerializer {
         if (obj === undefined) {
             throw new RangeError('undefined cannot be serialized.');
         }
@@ -398,7 +474,7 @@ export class SerializationServiceV1 implements SerializationService {
         return this.findSerializerById(serializerId);
     }
 
-    private findSerializerById(id: number): Serializer {
+    private findSerializerById(id: number): Serializer | AsyncSerializer {
         const serializer = this.registry[id];
         return serializer;
     }

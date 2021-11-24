@@ -50,5 +50,5 @@ const RabinFingerPrintLongInt = (fp: Long, int: number) : Long =>  {
 }
 
 const RabinFingerPrintLongByte = (fp: Long, byte: number) : Long => {
-    return fp.shiftRightUnsigned(8).xor(FP_TABLE[(fp.xor(byte)).toNumber() & 0xff]);
+    return fp.shiftRightUnsigned(8).xor(FP_TABLE[fp.xor(byte).and(Long.fromString('0xff', true, 16)).toNumber()]);
 }

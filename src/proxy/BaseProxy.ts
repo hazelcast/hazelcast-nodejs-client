@@ -131,11 +131,19 @@ export abstract class BaseProxy {
         return this.serializationService.toData(object);
     }
 
+    protected toDataAsync(object: any): Promise<Data> {
+        return this.serializationService.toDataAsync(object);
+    }
+
     /**
      * De-serializes an object from binary form according to serialization settings of the client.
      */
     protected toObject(data: Data): any {
         return this.serializationService.toObject(data);
+    }
+
+    protected toObjectAsync(data: Data): Promise<any> {
+        return this.serializationService.toObjectAsync(data);
     }
 
     protected getConnectedServerVersion(): number {

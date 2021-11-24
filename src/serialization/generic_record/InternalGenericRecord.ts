@@ -34,7 +34,7 @@ export interface InternalGenericRecord extends GenericRecord {
     getStringFromArray(fieldName: string, index: number): string | null;
     getGenericRecordFromArray(fieldName: string, index: number): GenericRecord | null;
     getObjectFromArray(fieldName: string, index: number): any | null;
-    getArrayOfObjects(fieldName: string, componentType: new() => any): any[];
+    getArrayOfObjects(fieldName: string): any[];
     getObject(fieldName: string): any;
     getDecimalFromArray(fieldName: string, index: number): BigDecimal | null;
     getTimeFromArray(fieldName: string, index: number): LocalTime | null;

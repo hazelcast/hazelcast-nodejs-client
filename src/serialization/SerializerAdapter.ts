@@ -1,7 +1,7 @@
 import {ObjectDataInput, ObjectDataOutput} from './ObjectData';
 
-export interface SerializerAdapter {
+export interface AsyncSerializerAdapter {
     id: number;
-    write(out: ObjectDataOutput, object: any): void;
-    read(input: ObjectDataInput): any;
+    write(out: ObjectDataOutput, object: any): Promise<void>;
+    read(input: ObjectDataInput): Promise<any>;
 }
