@@ -1,4 +1,4 @@
-name: Create Issue in Jira when to-jira label added
+name: Create Jira issue
 
 on:
   issues:
