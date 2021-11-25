@@ -17,6 +17,7 @@ import {FieldKind} from './FieldKind';
 import * as Long from 'long';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 import {Buffer} from 'buffer';
+import {Nullable} from './Field';
 
 export const IS_GENERIC_RECORD_SYMBOL = Symbol('IS_GENERIC_RECORD');
 
@@ -55,18 +56,18 @@ export interface GenericRecord {
     getArrayOfTimestamps(fieldName: string): LocalDateTime[];
     getArrayOfTimestampWithTimezones(fieldName: string): OffsetDateTime[];
     getArrayOfGenericRecords(fieldName: string): GenericRecord[];
-    getNullableBoolean(fieldName: string): boolean | null;
-    getNullableByte(fieldName: string): number | null;
-    getNullableDouble(fieldName: string): number | null;
-    getNullableFloat(fieldName: string): number | null;
-    getNullableInt(fieldName: string): number | null;
-    getNullableLong(fieldName: string): Long | null;
-    getNullableShort(fieldName: string): number | null;
-    getArrayOfNullableBooleans(fieldName: string): (boolean | null)[];
-    getArrayOfNullableBytes(fieldName: string): (number | null)[];
-    getArrayOfNullableDoubles(fieldName: string): (number | null)[];
-    getArrayOfNullableFloats(fieldName: string): (number | null)[];
-    getArrayOfNullableInts(fieldName: string): (number | null)[];
-    getArrayOfNullableLongs(fieldName: string): (Long | null)[];
-    getArrayOfNullableShorts(fieldName: string): (number | null)[];
+    getNullableBoolean(fieldName: string): Nullable<boolean>;
+    getNullableByte(fieldName: string): Nullable<number>;
+    getNullableDouble(fieldName: string): Nullable<number>;
+    getNullableFloat(fieldName: string): Nullable<number>;
+    getNullableInt(fieldName: string): Nullable<number>;
+    getNullableLong(fieldName: string): Nullable<Long>;
+    getNullableShort(fieldName: string): Nullable<number>;
+    getArrayOfNullableBooleans(fieldName: string): Nullable<boolean>[];
+    getArrayOfNullableBytes(fieldName: string): Nullable<number>[];
+    getArrayOfNullableDoubles(fieldName: string): Nullable<number>[];
+    getArrayOfNullableFloats(fieldName: string): Nullable<number>[];
+    getArrayOfNullableInts(fieldName: string): Nullable<number>[];
+    getArrayOfNullableLongs(fieldName: string): Nullable<Long>[];
+    getArrayOfNullableShorts(fieldName: string): Nullable<number>[];
 }

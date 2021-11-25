@@ -19,8 +19,6 @@ const chai = require('chai');
 chai.should();
 
 const RC = require('../../../../RC');
-const {Lang} = require('../../../../remote_controller/remote_controller_types');
-// const { EmployeeDTO } = require('./Employee');
 const TestUtil = require('../../../../../TestUtil');
 
 const COMPACT_ENABLED_XML = `
@@ -40,17 +38,13 @@ const COMPACT_ENABLED_XML = `
 describe('CompactSerializersLiveTest', function () {
     let cluster;
     let client;
-    let client2;
 
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_XML);
+        cluster = await testFactory.createClusterForParallelTests(undefined, undefined);
         const member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForParallelTests({
-            clusterName: cluster.id
-        }, member);
-        client2 = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
     });
@@ -58,26 +52,4 @@ describe('CompactSerializersLiveTest', function () {
     after(async function () {
         await testFactory.shutdownAll();
     });
-
-    it('should read compact', async function () {
-        const script = `
-            const map = instance_0.getMap("test");
-            map.put(1.0, new EmployeeDTO(1, 1L));
-        `;
-
-        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-
-        const map = await client.getMap('test');
-        console.log(map);
-
-        // const employee = await map.get(1);
-
-        const map2 = await client2.getMap('test');
-        const value = await map2.get(1);
-        value.should.deep.eq(value);
-    });
-
-    /* it.skip('should write compact', async function () {
-
-    });*/
 });

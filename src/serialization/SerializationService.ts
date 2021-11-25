@@ -291,10 +291,10 @@ export class SerializationServiceV1 implements SerializationService {
             serializer = this.lookupGlobalSerializer();
         }
         if (serializer === null) {
-            serializer = this.findSerializerByName('!json', false);
+            serializer = this.findSerializerByName('!compact', false);
         }
         if (serializer === null) {
-            serializer = this.findSerializerByName('!compact', false);
+            serializer = this.findSerializerByName('!json', false);
         }
         if (serializer === null) {
             throw new RangeError('There is no suitable serializer for ' + obj + '.');

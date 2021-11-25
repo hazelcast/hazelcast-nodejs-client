@@ -84,7 +84,7 @@ export class Schema implements IdentifiedDataSerializable {
 
         let bitOffset = 0;
         for (const descriptor of booleanFields) {
-            descriptor.offset = bitOffset;
+            descriptor.offset = offset;
             descriptor.bitOffset = bitOffset % BitsUtil.BITS_IN_A_BYTE;
             bitOffset++;
             if (bitOffset % BitsUtil.BITS_IN_A_BYTE === 0) {

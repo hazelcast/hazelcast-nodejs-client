@@ -95,7 +95,7 @@ export class SchemaWriter implements CompactWriter {
     }
 
     writeArrayOfTimes(fieldName: string, value: LocalTime[] | null): void {
-        this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_NULLABLE_LONGS));
+        this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_TIMES));
     }
 
     writeArrayOfTimestampWithTimezones(fieldName: string, value: OffsetDateTime[] | null): void {

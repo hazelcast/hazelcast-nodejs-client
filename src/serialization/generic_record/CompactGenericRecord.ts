@@ -26,7 +26,7 @@ import {
     UnsupportedOperationError
 } from '../../core';
 import {FieldKind} from './FieldKind';
-import {Field} from './Field';
+import {Field, Nullable} from './Field';
 import {Schema} from '../compact/Schema';
 import {SchemaWriter} from '../compact/SchemaWriter';
 import {FieldDescriptor} from './FieldDescriptor';
@@ -174,31 +174,31 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         );
     }
 
-    getArrayOfNullableBooleans(fieldName: string): (boolean | null)[] {
+    getArrayOfNullableBooleans(fieldName: string): (Nullable<boolean>)[] {
         return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_BOOLEANS, FieldKind.ARRAY_OF_NULLABLE_BOOLEANS);
     }
 
-    getArrayOfNullableBytes(fieldName: string): (number | null)[] {
+    getArrayOfNullableBytes(fieldName: string): (Nullable<number>)[] {
         return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_BYTES, FieldKind.ARRAY_OF_NULLABLE_BYTES);
     }
 
-    getArrayOfNullableDoubles(fieldName: string): (number | null)[] {
+    getArrayOfNullableDoubles(fieldName: string): (Nullable<number>)[] {
         return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_DOUBLES, FieldKind.ARRAY_OF_NULLABLE_DOUBLES);
     }
 
-    getArrayOfNullableFloats(fieldName: string): (number | null)[] {
+    getArrayOfNullableFloats(fieldName: string): (Nullable<number>)[] {
         return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_FLOATS, FieldKind.ARRAY_OF_NULLABLE_FLOATS);
     }
 
-    getArrayOfNullableInts(fieldName: string): (number | null)[] {
+    getArrayOfNullableInts(fieldName: string): (Nullable<number>)[] {
         return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INTS, FieldKind.ARRAY_OF_NULLABLE_INTS);
     }
 
-    getArrayOfNullableLongs(fieldName: string): (Long | null)[] {
+    getArrayOfNullableLongs(fieldName: string): (Nullable<Long>)[] {
         return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_LONGS, FieldKind.ARRAY_OF_NULLABLE_LONGS);
     }
 
-    getArrayOfNullableShorts(fieldName: string): (number | null)[] {
+    getArrayOfNullableShorts(fieldName: string): (Nullable<number>)[] {
         return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_SHORTS, FieldKind.ARRAY_OF_NULLABLE_SHORTS);
     }
 
@@ -244,7 +244,7 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         return this.get(fieldName, FieldKind.DECIMAL);
     }
 
-    getDouble(fieldName: string): number {
+    getFloat(fieldName: string): number {
         return this.getNonNull(fieldName, FieldKind.FLOAT, FieldKind.NULLABLE_FLOAT, 'Float');
     }
 
@@ -256,7 +256,7 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         return new Set(Object.keys(this.fields));
     }
 
-    getFloat(fieldName: string): number {
+    getDouble(fieldName: string): number {
         return this.getNonNull(fieldName, FieldKind.DOUBLE, FieldKind.NULLABLE_DOUBLE, 'Double');
     }
 
@@ -272,31 +272,31 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         return this.getNonNull(fieldName, FieldKind.LONG, FieldKind.NULLABLE_LONG, 'Long');
     }
 
-    getNullableBoolean(fieldName: string): boolean | null {
+    getNullableBoolean(fieldName: string): Nullable<boolean> {
         return this.get(fieldName, FieldKind.BOOLEAN, FieldKind.NULLABLE_BOOLEAN);
     }
 
-    getNullableByte(fieldName: string): number | null {
+    getNullableByte(fieldName: string): Nullable<number> {
         return this.get(fieldName, FieldKind.BYTE, FieldKind.NULLABLE_BYTE);
     }
 
-    getNullableDouble(fieldName: string): number | null {
+    getNullableDouble(fieldName: string): Nullable<number> {
         return this.get(fieldName, FieldKind.DOUBLE, FieldKind.NULLABLE_DOUBLE);
     }
 
-    getNullableFloat(fieldName: string): number | null {
+    getNullableFloat(fieldName: string): Nullable<number> {
         return this.get(fieldName, FieldKind.FLOAT, FieldKind.NULLABLE_FLOAT);
     }
 
-    getNullableInt(fieldName: string): number | null {
+    getNullableInt(fieldName: string): Nullable<number> {
         return this.get(fieldName, FieldKind.INT, FieldKind.NULLABLE_INT);
     }
 
-    getNullableLong(fieldName: string): Long | null {
+    getNullableLong(fieldName: string): Nullable<Long> {
         return this.get(fieldName, FieldKind.LONG, FieldKind.NULLABLE_LONG);
     }
 
-    getNullableShort(fieldName: string): number | null {
+    getNullableShort(fieldName: string): Nullable<number> {
         return this.get(fieldName, FieldKind.SHORT, FieldKind.NULLABLE_SHORT);
     }
 

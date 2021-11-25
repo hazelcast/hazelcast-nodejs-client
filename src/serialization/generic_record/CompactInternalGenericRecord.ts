@@ -31,7 +31,7 @@ import * as Long from 'long';
 import {FieldKind} from './FieldKind';
 import {Schema} from '../compact/Schema';
 import {ObjectDataInput} from '../ObjectData';
-import {OffsetReader} from '../compact/OffsetReader';
+import {OffsetReader} from '../compact/OffsetRead';
 import {FieldDescriptor} from './FieldDescriptor';
 import {BitsUtil} from '../../util/BitsUtil';
 import {
@@ -112,7 +112,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
     private readVariableSizeFieldPosition(fieldDescriptor: FieldDescriptor): number {
         try {
             const index = fieldDescriptor.index;
-            const offset = this.offsetReader.getOffset(this.input, this.variableOffsetsPosition, index);
+            const offset = this.offsetReader(this.input, this.variableOffsetsPosition, index);
             return offset === NULL_OFFSET ? NULL_OFFSET : offset + this.dataStartPosition;
         } catch (e) {
             throw CompactInternalGenericRecord.toIllegalStateException(e);
@@ -123,7 +123,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         try {
             const fd = this.getFieldDefinition(fieldName);
             const index = fd.index;
-            const offset = this.offsetReader.getOffset(this.input, this.variableOffsetsPosition, index);
+            const offset = this.offsetReader(this.input, this.variableOffsetsPosition, index);
             return offset === NULL_OFFSET ? NULL_OFFSET : offset + this.dataStartPosition;
         } catch (e) {
             throw CompactInternalGenericRecord.toIllegalStateException(e);
@@ -190,7 +190,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
             const offsetReader = CompactInternalGenericRecord.getOffsetReader(dataLen);
             const offsetsPosition = dataStartPosition + dataLen;
             for (let i = 0; i < itemCount; i++) {
-                const offset = offsetReader.getOffset(this.input, offsetsPosition, i);
+                const offset = offsetReader(this.input, offsetsPosition, i);
                 if (offset === BitsUtil.NULL_ARRAY_LENGTH) {
                     throw CompactUtil.toExceptionForUnexpectedNullValueInArray(fd.fieldName, methodSuffix);
                 }
@@ -305,7 +305,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
             const dataStartPosition = pos + 2 * BitsUtil.INT_SIZE_IN_BYTES;
             const offsetReader = CompactInternalGenericRecord.getOffsetReader(dataLength);
             const offsetsPosition = dataStartPosition + dataLength;
-            const indexedItemOffset = offsetReader.getOffset(this.input, offsetsPosition, index);
+            const indexedItemOffset = offsetReader(this.input, offsetsPosition, index);
             if (indexedItemOffset === NULL_OFFSET) {
                 return null;
             }
@@ -337,7 +337,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
             const offsetReader = CompactInternalGenericRecord.getOffsetReader(dataLength);
             const offsetsPosition = dataStartPosition + dataLength;
             for (let i = 0; i < itemCount; i++) {
-                const offset = offsetReader.getOffset(this.input, offsetsPosition, i);
+                const offset = offsetReader(this.input, offsetsPosition, i);
                 if (offset !== BitsUtil.NULL_ARRAY_LENGTH) {
                     this.input.position(offset + dataStartPosition);
                     values[i] = readFn(this.input);
@@ -821,27 +821,39 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
     }
 
     getArrayOfNullableBytes(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, reader => reader.readByte(), FieldKind.BYTE, FieldKind.NULLABLE_BYTE);
+        return this.getArrayOfNullables(
+            fieldName, reader => reader.readByte(), FieldKind.ARRAY_OF_BYTES, FieldKind.ARRAY_OF_NULLABLE_BYTES
+        );
     }
 
     getArrayOfNullableDoubles(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, reader => reader.readDouble(), FieldKind.DOUBLE, FieldKind.NULLABLE_DOUBLE);
+        return this.getArrayOfNullables(
+            fieldName, reader => reader.readDouble(), FieldKind.ARRAY_OF_DOUBLES, FieldKind.ARRAY_OF_NULLABLE_DOUBLES
+        );
     }
 
     getArrayOfNullableFloats(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, reader => reader.readFloat(), FieldKind.FLOAT, FieldKind.NULLABLE_FLOAT);
+        return this.getArrayOfNullables(
+            fieldName, reader => reader.readFloat(), FieldKind.ARRAY_OF_FLOATS, FieldKind.ARRAY_OF_NULLABLE_FLOATS
+        );
     }
 
     getArrayOfNullableInts(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, reader => reader.readInt(), FieldKind.INT, FieldKind.NULLABLE_INT);
+        return this.getArrayOfNullables(
+            fieldName, reader => reader.readInt(), FieldKind.ARRAY_OF_INTS, FieldKind.ARRAY_OF_NULLABLE_INTS
+        );
     }
 
     getArrayOfNullableLongs(fieldName: string): (Long | null)[] {
-        return this.getArrayOfNullables(fieldName, reader => reader.readLong(), FieldKind.LONG, FieldKind.NULLABLE_LONG);
+        return this.getArrayOfNullables(
+            fieldName, reader => reader.readLong(), FieldKind.ARRAY_OF_LONGS, FieldKind.ARRAY_OF_NULLABLE_LONGS
+        );
     }
 
     getArrayOfNullableShorts(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, reader => reader.readShort(), FieldKind.SHORT, FieldKind.NULLABLE_SHORT);
+        return this.getArrayOfNullables(
+            fieldName, reader => reader.readShort(), FieldKind.ARRAY_OF_SHORTS, FieldKind.ARRAY_OF_NULLABLE_SHORTS
+        );
     }
 
     getBoolean(fieldName: string): boolean {

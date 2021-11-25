@@ -18,35 +18,36 @@
 import {GenericRecord} from './GenericRecord';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 import * as Long from 'long';
+import {Nullable} from './Field';
 
 /**
  * @internal
  */
 export interface InternalGenericRecord extends GenericRecord {
-    getBooleanFromArray(fieldName: string, index: number): boolean | null;
-    getByteFromArray(fieldName: string, index: number): number | null;
-    getCharFromArray(fieldName: string, index: number): string | null;
-    getShortFromArray(fieldName: string, index: number): number | null;
-    getIntFromArray(fieldName: string, index: number): number | null;
-    getLongFromArray(fieldName: string, index: number): Long | null;
-    getFloatFromArray(fieldName: string, index: number): number | null;
-    getDoubleFromArray(fieldName: string, index: number): number | null;
-    getStringFromArray(fieldName: string, index: number): string | null;
-    getGenericRecordFromArray(fieldName: string, index: number): GenericRecord | null;
-    getObjectFromArray(fieldName: string, index: number): any | null;
+    getBooleanFromArray(fieldName: string, index: number): Nullable<boolean>;
+    getByteFromArray(fieldName: string, index: number): Nullable<number>;
+    getCharFromArray(fieldName: string, index: number): Nullable<string>;
+    getShortFromArray(fieldName: string, index: number): Nullable<number>;
+    getIntFromArray(fieldName: string, index: number): Nullable<number>;
+    getLongFromArray(fieldName: string, index: number): Nullable<Long>;
+    getFloatFromArray(fieldName: string, index: number): Nullable<number>;
+    getDoubleFromArray(fieldName: string, index: number): Nullable<number>;
+    getStringFromArray(fieldName: string, index: number): Nullable<string>;
+    getGenericRecordFromArray(fieldName: string, index: number): Nullable<GenericRecord>;
+    getObjectFromArray(fieldName: string, index: number): Nullable<any>;
     getArrayOfObjects(fieldName: string): any[];
     getObject(fieldName: string): any;
-    getDecimalFromArray(fieldName: string, index: number): BigDecimal | null;
-    getTimeFromArray(fieldName: string, index: number): LocalTime | null;
-    getDateFromArray(fieldName: string, index: number): LocalDate | null;
-    getTimestampFromArray(fieldName: string, index: number): LocalDateTime | null;
-    getTimestampWithTimezoneFromArray(fieldName: string, index: number): OffsetDateTime | null;
-    getNullableBooleanFromArray(fieldName: string, index: number): boolean | null;
-    getNullableByteFromArray(fieldName: string, index: number): number | null;
-    getNullableShortFromArray(fieldName: string, index: number): number | null;
-    getNullableIntFromArray(fieldName: string, index: number): number | null;
-    getNullableLongFromArray(fieldName: string, index: number): Long | null;
-    getNullableFloatFromArray(fieldName: string, index: number): number | null;
-    getNullableDoubleFromArray(fieldName: string, index: number): number | null;
+    getDecimalFromArray(fieldName: string, index: number): Nullable<BigDecimal>;
+    getTimeFromArray(fieldName: string, index: number): Nullable<LocalTime>;
+    getDateFromArray(fieldName: string, index: number): Nullable<LocalDate>;
+    getTimestampFromArray(fieldName: string, index: number): Nullable<LocalDateTime>;
+    getTimestampWithTimezoneFromArray(fieldName: string, index: number): Nullable<OffsetDateTime>;
+    getNullableBooleanFromArray(fieldName: string, index: number): Nullable<boolean>;
+    getNullableByteFromArray(fieldName: string, index: number): Nullable<number>;
+    getNullableShortFromArray(fieldName: string, index: number): Nullable<number>;
+    getNullableIntFromArray(fieldName: string, index: number): Nullable<number>;
+    getNullableLongFromArray(fieldName: string, index: number): Nullable<Long>;
+    getNullableFloatFromArray(fieldName: string, index: number): Nullable<number>;
+    getNullableDoubleFromArray(fieldName: string, index: number): Nullable<number>;
 }
 

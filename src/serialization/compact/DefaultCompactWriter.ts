@@ -192,6 +192,7 @@ export class DefaultCompactWriter implements CompactWriter {
                     position++;
                 }
                 out.pwriteBooleanBit(position, index, boolean);
+                index++;
             }
         }
     }
