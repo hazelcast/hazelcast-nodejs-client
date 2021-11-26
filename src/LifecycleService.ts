@@ -68,8 +68,8 @@ const LIFECYCLE_EVENT_NAME = 'lifecycleEvent';
 export interface LifecycleService {
 
     /**
-     * Returns true if the client is running. The client is considered to be running between the time it is initialized
-     * and it's shutdown process is started.
+     * Returns true if the client is running. The client is considered to be running between initialization
+     * and start of its shutdown process.
      */
     isRunning(): boolean;
 

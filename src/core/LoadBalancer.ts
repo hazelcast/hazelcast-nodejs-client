@@ -24,7 +24,8 @@ import {
 } from './MembershipListener';
 
 /**
- * A {@link LoadBalancer} allows you to send operations to one of a number of endpoints (Members).
+ * A {@link LoadBalancer} selects one of the endpoints(Members) for the next send operation that be directed
+ * to many endpoints.
  * It is up to the implementation to use different load balancing policies.
  *
  * If the client is a smart client configured with {@link ClientNetworkConfig.smartRouting},
