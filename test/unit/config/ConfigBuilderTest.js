@@ -373,7 +373,6 @@ describe('ConfigBuilderValidationTest', function () {
             'hazelcast.client.invocation.retry.pause.millis',
             'hazelcast.client.invocation.timeout.millis',
             'hazelcast.client.internal.clean.resources.millis',
-            'hazelcast.client.statistics.period.seconds',
             'hazelcast.invalidation.reconciliation.interval.seconds',
             'hazelcast.invalidation.max.tolerated.miss.count',
             'hazelcast.invalidation.min.reconciliation.interval.seconds',
@@ -382,7 +381,6 @@ describe('ConfigBuilderValidationTest', function () {
         ];
 
         const propsAcceptingBoolean = [
-            'hazelcast.client.statistics.enabled',
             'hazelcast.client.autopipelining.enabled',
             'hazelcast.client.socket.no.delay',
             'hazelcast.client.shuffle.member.list',
@@ -440,6 +438,58 @@ describe('ConfigBuilderValidationTest', function () {
                 }
             });
         }
+
+        describe('statistics', function () {
+            it('should throw error on non-positive frequency', function () {
+                expect(() => new ConfigBuilder({
+                    properties: {
+                        'hazelcast.client.metrics.collection.frequency': -1
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'must be positive');
+
+                expect(() => new ConfigBuilder({
+                    properties: {
+                        'hazelcast.client.statistics.period.seconds': -1,
+                        'hazelcast.client.metrics.collection.frequency': -1
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'must be positive');
+
+                expect(() => new ConfigBuilder({
+                    properties: {
+                        'hazelcast.client.metrics.collection.frequency': 0
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'must be positive');
+
+                expect(() => new ConfigBuilder({
+                    properties: {
+                        'hazelcast.client.statistics.period.seconds': 0,
+                        'hazelcast.client.metrics.collection.frequency': 0
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'must be positive');
+            });
+
+            it('should throw if only statistics props are given but not metrics', function () {
+                expect(() => new ConfigBuilder({
+                    properties: {
+                        'hazelcast.client.statistics.enabled': true
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'hazelcast.client.statistics.enabled property is deprecated');
+
+                expect(() => new ConfigBuilder({
+                    properties: {
+                        'hazelcast.client.statistics.period.seconds': 3,
+                    }
+                }).build()).to.throw(InvalidConfigurationError,
+                    'hazelcast.client.statistics.period.seconds property is deprecated');
+
+                expect(() => new ConfigBuilder({
+                    properties: {
+                        'hazelcast.client.statistics.enabled': true,
+                        'hazelcast.client.statistics.period.seconds': 3,
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'property is deprecated');
+            });
+        });
     });
 
     describe('networkConfig', function () {

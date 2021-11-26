@@ -19,6 +19,7 @@ import {InvalidConfigurationError} from '../core';
 import {TopicOverloadPolicy} from '../proxy';
 import {
     assertNonNegativeNumber,
+    assertPositiveNumber,
     tryGetArray,
     tryGetBoolean,
     tryGetEnum,
@@ -263,10 +264,18 @@ export class ConfigBuilder {
             case 'hazelcast.client.cloud.url':
                 tryGetString(value);
                 break;
+            case 'hazelcast.client.metrics.enabled':
+                tryGetBoolean(value);
+                break;
+            case 'hazelcast.client.metrics.collection.frequency':
+                assertPositiveNumber(value, 'Metrics collection frequency must be positive!');
+                tryGetNumber(value);
+                break;
             case 'hazelcast.client.statistics.enabled':
                 tryGetBoolean(value);
                 break;
             case 'hazelcast.client.statistics.period.seconds':
+                assertPositiveNumber(value, 'Statistics period must be positive!');
                 tryGetNumber(value);
                 break;
             case 'hazelcast.invalidation.reconciliation.interval.seconds':
@@ -309,6 +318,24 @@ export class ConfigBuilder {
         }
     }
 
+    /**
+     * Statistics properties are deprecated and metrics will be used instead. This method will ensure metrics properties
+     * are set if statistics properties are set.
+     */
+    private static ensureMetricsConfiguredIfStatisticsConfigured(properties: Properties) {
+        if (properties.hasOwnProperty('hazelcast.client.statistics.enabled') &&
+            !properties.hasOwnProperty('hazelcast.client.metrics.enabled')) {
+            throw new RangeError('hazelcast.client.statistics.enabled property is deprecated in version 5.1. ' +
+                'Use hazelcast.client.metrics.enabled instead.');
+        }
+
+        if (properties.hasOwnProperty('hazelcast.client.statistics.period.seconds') &&
+            !properties.hasOwnProperty('hazelcast.client.metrics.collection.frequency')) {
+            throw new RangeError('hazelcast.client.statistics.period.seconds property is deprecated in version 5.1. ' +
+                'Use hazelcast.client.metrics.collection.frequency instead.');
+        }
+    }
+
     private handleProperties(jsonObject: any): void {
         if (typeof jsonObject !== 'object') {
             throw new RangeError(`Expected 'properties' to be an object but it is a: ${typeof jsonObject}`);
@@ -322,6 +349,7 @@ export class ConfigBuilder {
             }
             this.effectiveConfig.properties[key] = value;
         }
+        ConfigBuilder.ensureMetricsConfiguredIfStatisticsConfigured(jsonObject);
     }
 
     private handleLifecycleListeners(jsonObject: any): void {

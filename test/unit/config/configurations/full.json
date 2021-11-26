@@ -9,6 +9,8 @@
         "hazelcast.client.cloud.url": "https://hz.cloud",
         "hazelcast.client.statistics.enabled": true,
         "hazelcast.client.statistics.period.seconds": 4,
+        "hazelcast.client.metrics.enabled": true,
+        "hazelcast.client.metrics.collection.frequency": 4,
         "hazelcast.invalidation.reconciliation.interval.seconds": 50,
         "hazelcast.invalidation.max.tolerated.miss.count": 15,
         "hazelcast.invalidation.min.reconciliation.interval.seconds": 60,

@@ -165,8 +165,16 @@ const DEFAULT_PROPERTIES: Properties = {
     'hazelcast.client.invocation.timeout.millis': 120000,
     'hazelcast.client.internal.clean.resources.millis': 100,
     'hazelcast.client.cloud.url': 'https://coordinator.hazelcast.cloud',
+    /**
+     * `hazelcast.client.statistics.enabled` and `hazelcast.client.period.seconds` are
+     * @deprecated since 5.1
+     *
+     * use `hazelcast.client.metrics.enabled` and `hazelcast.client.metrics.collection.frequency` instead.
+     */
     'hazelcast.client.statistics.enabled': false,
     'hazelcast.client.statistics.period.seconds': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
+    'hazelcast.client.metrics.enabled': false,
+    'hazelcast.client.metrics.collection.frequency': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
     'hazelcast.invalidation.reconciliation.interval.seconds': 60,
     'hazelcast.invalidation.max.tolerated.miss.count': 10,
     'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,

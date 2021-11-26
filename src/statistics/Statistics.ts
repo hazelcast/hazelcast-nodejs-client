@@ -43,9 +43,9 @@ type GaugeDescription = {
  */
 export class Statistics {
 
-    public static readonly PERIOD_SECONDS_DEFAULT_VALUE = 3;
-    private static readonly ENABLED = 'hazelcast.client.statistics.enabled';
-    private static readonly PERIOD_SECONDS = 'hazelcast.client.statistics.period.seconds';
+    public static readonly PERIOD_SECONDS_DEFAULT_VALUE = 5;
+    private static readonly ENABLED = 'hazelcast.client.metrics.enabled';
+    private static readonly PERIOD_SECONDS = 'hazelcast.client.metrics.collection.frequency';
 
     private static readonly NEAR_CACHE_CATEGORY_PREFIX: string = 'nc.';
     private static readonly STAT_SEPARATOR: string = ',';
