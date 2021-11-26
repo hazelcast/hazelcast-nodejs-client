@@ -95,8 +95,25 @@ export class ConfigBuilder {
                 this.effectiveConfig.customCredentials = jsonObject;
             } else if (key === 'backupAckToClientEnabled') {
                 this.effectiveConfig.backupAckToClientEnabled = tryGetBoolean(value);
+            } else if (key === 'metrics') {
+                this.handleMetrics(value);
             } else {
                 throw new RangeError(`Unexpected config key '${key}' is passed to the Hazelcast Client`);
+            }
+        }
+        ConfigBuilder.ensureMetricsConfiguredIfStatisticsConfigured(jsonObject);
+    }
+
+    private handleMetrics(jsonObject: any) {
+        for (const key in jsonObject) {
+            if (key === 'enabled') {
+                this.effectiveConfig.metrics.enabled = tryGetBoolean(jsonObject[key]);
+            } else if (key === 'collectionFrequencySeconds') {
+                const collectionFrequencySeconds = jsonObject[key];
+                assertPositiveNumber(collectionFrequencySeconds, 'Metrics collection frequency must be positive!');
+                this.effectiveConfig.metrics.collectionFrequencySeconds = collectionFrequencySeconds;
+            } else {
+                throw new RangeError(`Unexpected metrics config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -264,13 +281,6 @@ export class ConfigBuilder {
             case 'hazelcast.client.cloud.url':
                 tryGetString(value);
                 break;
-            case 'hazelcast.client.metrics.enabled':
-                tryGetBoolean(value);
-                break;
-            case 'hazelcast.client.metrics.collection.frequency':
-                assertPositiveNumber(value, 'Metrics collection frequency must be positive!');
-                tryGetNumber(value);
-                break;
             case 'hazelcast.client.statistics.enabled':
                 tryGetBoolean(value);
                 break;
@@ -322,17 +332,19 @@ export class ConfigBuilder {
      * Statistics properties are deprecated and metrics will be used instead. This method will ensure metrics properties
      * are set if statistics properties are set.
      */
-    private static ensureMetricsConfiguredIfStatisticsConfigured(properties: Properties) {
-        if (properties.hasOwnProperty('hazelcast.client.statistics.enabled') &&
-            !properties.hasOwnProperty('hazelcast.client.metrics.enabled')) {
+    private static ensureMetricsConfiguredIfStatisticsConfigured(config: ClientConfig) {
+        if (config.hasOwnProperty('properties') &&
+            config.properties.hasOwnProperty('hazelcast.client.statistics.enabled') &&
+            (!config.hasOwnProperty('metrics') || !config.metrics.hasOwnProperty('enabled'))) {
             throw new RangeError('hazelcast.client.statistics.enabled property is deprecated in version 5.1. ' +
-                'Use hazelcast.client.metrics.enabled instead.');
+                'Use metrics.enabled instead.');
         }
 
-        if (properties.hasOwnProperty('hazelcast.client.statistics.period.seconds') &&
-            !properties.hasOwnProperty('hazelcast.client.metrics.collection.frequency')) {
+        if (config.hasOwnProperty('properties') &&
+            config.properties.hasOwnProperty('hazelcast.client.statistics.period.seconds') &&
+            (!config.hasOwnProperty('metrics') || !config.metrics.hasOwnProperty('collectionFrequencySeconds'))) {
             throw new RangeError('hazelcast.client.statistics.period.seconds property is deprecated in version 5.1. ' +
-                'Use hazelcast.client.metrics.collection.frequency instead.');
+                'Use metrics.collectionFrequencySeconds instead.');
         }
     }
 
@@ -349,7 +361,6 @@ export class ConfigBuilder {
             }
             this.effectiveConfig.properties[key] = value;
         }
-        ConfigBuilder.ensureMetricsConfiguredIfStatisticsConfigured(jsonObject);
     }
 
     private handleLifecycleListeners(jsonObject: any): void {
@@ -375,8 +386,8 @@ export class ConfigBuilder {
         // Throw in case both memberAdded and memberRemoved are invalid.
         if (typeof membershipListener.memberAdded !== 'function' && typeof membershipListener.memberRemoved !== 'function') {
             throw new RangeError(`Invalid membershipListener is given in 'membershipListeners': ${membershipListener}. `
-                                + 'Expected at least one of \'memberAdded\' and \'memberRemoved\' properties to exist and be a'
-                                + ' function.');
+                + 'Expected at least one of \'memberAdded\' and \'memberRemoved\' properties to exist and be a'
+                + ' function.');
         }
         this.effectiveConfig.membershipListeners.push(membershipListener);
     }
@@ -526,7 +537,7 @@ export class ConfigBuilder {
                     nearCacheConfig.evictionSamplingPoolSize = tryGetNumber(ncConfig[key]);
                 } else {
                     throw new RangeError(`Unexpected near cache config '${key}' for near cache ${name}`
-                              + 'is passed to the Hazelcast Client');
+                        + 'is passed to the Hazelcast Client');
                 }
             }
             this.effectiveConfig.nearCaches[nearCacheConfig.name] = nearCacheConfig;

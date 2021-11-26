@@ -23,10 +23,10 @@ import {NearCacheConfig, NearCacheConfigImpl} from './NearCacheConfig';
 import {Properties} from './Properties';
 import {ReliableTopicConfig, ReliableTopicConfigImpl} from './ReliableTopicConfig';
 import {SerializationConfig, SerializationConfigImpl} from './SerializationConfig';
-import {Statistics} from '../statistics/Statistics';
 import {ILogger} from '../logging/ILogger';
 import {ConnectionStrategyConfig, ConnectionStrategyConfigImpl} from './ConnectionStrategyConfig';
 import {LoadBalancerConfig, LoadBalancerConfigImpl} from './LoadBalancerConfig';
+import {MetricsConfig, MetricsConfigImpl} from './MetricsConfig';
 
 /**
  * Top level configuration object of Hazelcast client.
@@ -152,6 +152,13 @@ export interface ClientConfig {
      */
     properties?: Properties;
 
+    /**
+     * Metrics config. With this config, you enable collecting the client metrics and sending them to the cluster.
+     * After enabling you can monitor the clients that are connected to your Hazelcast cluster,
+     * using Hazelcast Management Center.
+     */
+    metrics?: MetricsConfig;
+
 }
 
 /**
@@ -169,12 +176,10 @@ const DEFAULT_PROPERTIES: Properties = {
      * `hazelcast.client.statistics.enabled` and `hazelcast.client.period.seconds` are
      * @deprecated since 5.1
      *
-     * use `hazelcast.client.metrics.enabled` and `hazelcast.client.metrics.collection.frequency` instead.
+     * use `metrics` client config instead.
      */
     'hazelcast.client.statistics.enabled': false,
-    'hazelcast.client.statistics.period.seconds': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
-    'hazelcast.client.metrics.enabled': false,
-    'hazelcast.client.metrics.collection.frequency': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
+    'hazelcast.client.statistics.period.seconds': 3,
     'hazelcast.invalidation.reconciliation.interval.seconds': 60,
     'hazelcast.invalidation.max.tolerated.miss.count': 10,
     'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
@@ -208,6 +213,7 @@ export class ClientConfigImpl implements ClientConfig {
     clientLabels: string[] = [];
     loadBalancer = new LoadBalancerConfigImpl();
     backupAckToClientEnabled = true;
+    metrics = new MetricsConfigImpl();
 
     private configPatternMatcher = new ConfigPatternMatcher();
 

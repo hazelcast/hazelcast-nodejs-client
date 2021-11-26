@@ -125,7 +125,7 @@
       * [8.9.2.6. Near Cache Eventual Consistency](#8926-near-cache-eventual-consistency)
     * [8.9.3. Automated Pipelining](#893-automated-pipelining)
   * [8.10. Monitoring and Logging](#810-monitoring-and-logging)
-    * [8.10.1. Enabling Client Statistics](#8101-enabling-client-statistics)
+    * [8.10.1. Enabling Client Metrics](#8101-enabling-client-metrics)
     * [8.10.2. Logging Configuration](#8102-logging-configuration)
   * [8.11. Defining Client Labels](#811-defining-client-labels)
   * [8.12. Defining Instance Name](#812-defining-instance-name)
@@ -638,10 +638,8 @@ The following is the list of all client properties in alphabetical order.
 | hazelcast.client.operation.fail.on.indeterminate.state | false                               | boolean         | When it is `true`, if an operation has sync backups and acks are not received from backup replicas in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails. However, even if the invocation fails, there will not be any rollback on other successful replicas.                                                                                     |
 | hazelcast.client.shuffle.member.list                   | true                                | boolean         | The client shuffles the given member list to prevent all the clients to connect to the same member when this property is `true`. When it is set to `false`, the client tries to connect to the members in the given order.                                                                                                                                                                                          |
 | hazelcast.client.socket.no.delay                       | true                                | boolean         | The [setNoDelay](https://nodejs.org/api/net.html#net_socket_setnodelay_nodelay) setting for connections.                                                                                                                                                                                                                                                                                                            |
-| hazelcast.client.statistics.enabled                    | false                               | boolean         | **DEPRECATED since 5.1, use `hazelcast.client.metrics.enabled` instead** If set to `true`, it enables collecting the client statistics and sending them to the cluster. When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center.                                                                                                              |
-| hazelcast.client.statistics.period.seconds             | 5                                   | number          | **DEPRECATED since 5.1, use `hazelcast.client.metrics.collection.frequency` instead** Period in seconds the client statistics are collected and sent to the cluster. Must be positive.                                                                                                                                                                                                                              |
-| hazelcast.client.metrics.enabled                       | false                               | boolean         | If set to `true`, it enables collecting the client metrics and sending them to the cluster. When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center.                                                                                                                                                                                          |
-| hazelcast.client.metrics.collection.frequency          | 5                                   | number          | Period in seconds the client metrics are collected and sent to the cluster. Must be positive.                                                                                                                                                                                                                                                                                                                       |
+| hazelcast.client.statistics.enabled                    | false                               | boolean         | **DEPRECATED since 5.1, use `metrics` client config instead** If set to `true`, it enables collecting the client statistics and sending them to the cluster. When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center.                                                                                                              |
+| hazelcast.client.statistics.period.seconds             | 5                                   | number          | **DEPRECATED since 5.1, use `metrics` client config instead** Period in seconds the client statistics are collected and sent to the cluster. Must be positive.                                                                                                                                                                                                                              |
 | hazelcast.discovery.public.ip.enabled                  | null(detection enabled)             | boolean or null | When set to `true`, the client will assume that it needs to use public IP addresses reported by members. When set to `false`, the client will always use private addresses reported by members. If it is `null`, the client will try to infer how the discovery mechanism should be based on the reachability of the members. This inference is not %100 reliable and may result in false negatives.                |
 | hazelcast.invalidation.max.tolerated.miss.count        | 10                                  | number          | If missed invalidation count is bigger than this value, relevant cached data in a Near Cache will be made unreachable.                                                                                                                                                                                                                                                                                              |
 | hazelcast.invalidation.reconciliation.interval.seconds | 60                                  | number          | Period of the task that scans cluster members to compare generated invalidation events with the received ones from the client Near Cache.                                                                                                                                                                                                                                                                           |
@@ -3602,30 +3600,29 @@ You can configure automated operation pipelining with `hazelcast.client.autopipe
 
 ## 8.10. Monitoring and Logging
 
-### 8.10.1. Enabling Client Statistics
+### 8.10.1. Enabling Client Metrics
 
 You can monitor your clients using Hazelcast Management Center.
 
-As a prerequisite, you need to enable the client statistics in the Node.js client.
-You can configure client statistics with `hazelcast.client.metrics.enabled` and `hazelcast.client.metrics.collection.frequency`
-[properties](#31-client-properties).
+As a prerequisite, you need to enable the client metrics in the Node.js client.
+You can configure client metrics with `metrics` client config.
 
-You can enable client statistics and set a non-default period in seconds as follows:
+You can enable client metrics and set a non-default period in seconds as follows:
 
 ```javascript
 const cfg = {
-    properties: {
-        'hazelcast.client.metrics.enabled': true,
-        'hazelcast.client.metrics.collection.frequency': 4 // in seconds, must be positive
+    metrics: {
+        enabled: true,
+        collectionFrequencySeconds: 4 // in seconds, must be positive
     }
 };
 ```
 
-After enabling the client statistics, you can monitor your clients using Hazelcast Management Center. Please refer to the
+After enabling the client metrics, you can monitor your clients using Hazelcast Management Center. Please refer to the
 [Monitoring Clients section](https://docs.hazelcast.com/management-center/latest/monitor-imdg/monitor-clients.html) in the
-Hazelcast Management Center Reference Manual for more information on the client statistics.
+Hazelcast Management Center Reference Manual for more information on the client metrics.
 
-> **NOTE: Statistics sent by Hazelcast Node.js client 4.0 are compatible with Management Center 4.0. Management Center 4.2020.08
+> **NOTE: Metrics sent by Hazelcast Node.js client 4.0 are compatible with Management Center 4.0. Management Center 4.2020.08
 > and newer versions will be supported in version 4.1 of the client.**
 
 ### 8.10.2. Logging Configuration

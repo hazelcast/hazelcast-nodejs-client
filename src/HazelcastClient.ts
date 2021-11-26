@@ -214,7 +214,7 @@ export class HazelcastClient {
         );
         this.statistics = new Statistics(
             this.loggingService.getLogger(),
-            this.config.properties,
+            this.config.metrics,
             this.instanceName,
             this.invocationService,
             this.nearCacheManager,

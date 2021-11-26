@@ -441,31 +441,22 @@ describe('ConfigBuilderValidationTest', function () {
 
         describe('statistics', function () {
             it('should throw error on non-positive frequency', function () {
-                expect(() => new ConfigBuilder({
-                    properties: {
-                        'hazelcast.client.metrics.collection.frequency': -1
-                    }
-                }).build()).to.throw(InvalidConfigurationError, 'must be positive');
+                [-1, 0].forEach(frequency => {
+                    expect(() => new ConfigBuilder({
+                        metrics: {
+                            collectionFrequencySeconds: frequency
+                        }
+                    }).build()).to.throw(InvalidConfigurationError, 'must be positive');
 
-                expect(() => new ConfigBuilder({
-                    properties: {
-                        'hazelcast.client.statistics.period.seconds': -1,
-                        'hazelcast.client.metrics.collection.frequency': -1
-                    }
-                }).build()).to.throw(InvalidConfigurationError, 'must be positive');
-
-                expect(() => new ConfigBuilder({
-                    properties: {
-                        'hazelcast.client.metrics.collection.frequency': 0
-                    }
-                }).build()).to.throw(InvalidConfigurationError, 'must be positive');
-
-                expect(() => new ConfigBuilder({
-                    properties: {
-                        'hazelcast.client.statistics.period.seconds': 0,
-                        'hazelcast.client.metrics.collection.frequency': 0
-                    }
-                }).build()).to.throw(InvalidConfigurationError, 'must be positive');
+                    expect(() => new ConfigBuilder({
+                        metrics: {
+                            collectionFrequencySeconds: frequency
+                        },
+                        properties: {
+                            'hazelcast.client.statistics.period.seconds': frequency,
+                        }
+                    }).build()).to.throw(InvalidConfigurationError, 'must be positive');
+                });
             });
 
             it('should throw if only statistics props are given but not metrics', function () {

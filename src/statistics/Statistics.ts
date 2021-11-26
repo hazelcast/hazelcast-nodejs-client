@@ -18,7 +18,6 @@
 import {Connection} from '../network/Connection';
 import {CLIENT_TYPE, ConnectionManager} from '../network/ConnectionManager';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
-import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import {MetricDescriptor, MetricsCompressor, ProbeUnit, ValueType} from './MetricsCompressor';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
@@ -28,6 +27,7 @@ import {ILogger} from '../logging/ILogger';
 import * as Long from 'long';
 import {InvocationService} from '../invocation/InvocationService';
 import {NearCacheManager} from '../nearcache/NearCacheManager';
+import {MetricsConfig} from '../config/MetricsConfig';
 
 type GaugeDescription = {
     gaugeFn: () => number;
@@ -42,11 +42,6 @@ type GaugeDescription = {
  * @internal
  */
 export class Statistics {
-
-    public static readonly PERIOD_SECONDS_DEFAULT_VALUE = 5;
-    private static readonly ENABLED = 'hazelcast.client.metrics.enabled';
-    private static readonly PERIOD_SECONDS = 'hazelcast.client.metrics.collection.frequency';
-
     private static readonly NEAR_CACHE_CATEGORY_PREFIX: string = 'nc.';
     private static readonly STAT_SEPARATOR: string = ',';
     private static readonly KEY_VALUE_SEPARATOR: string = '=';
@@ -54,20 +49,19 @@ export class Statistics {
     private static readonly EMPTY_STAT_VALUE: string = '';
     private readonly allGauges: { [name: string]: GaugeDescription } = {};
     private readonly enabled: boolean;
-    private task: Task;
+    private statisticsSendTask: Task;
     private compressorErrorLogged = false;
 
     constructor(
         private readonly logger: ILogger,
-        private readonly properties: Properties,
+        private readonly metricsConfig: MetricsConfig,
         private readonly clientName: string,
         private readonly invocationService: InvocationService,
         private readonly nearCacheManager: NearCacheManager,
         private readonly connectionRegistry: ConnectionRegistry,
         private readonly connectionManager: ConnectionManager
     ) {
-        this.properties = properties;
-        this.enabled = this.properties[Statistics.ENABLED] as boolean;
+        this.enabled = this.metricsConfig.enabled;
         this.logger = logger;
         this.invocationService = invocationService;
         this.clientName = clientName;
@@ -84,24 +78,15 @@ export class Statistics {
         }
 
         this.registerMetrics();
-
-        let periodSeconds = this.properties[Statistics.PERIOD_SECONDS] as number;
-        if (periodSeconds <= 0) {
-            const defaultValue = Statistics.PERIOD_SECONDS_DEFAULT_VALUE;
-            this.logger.warn('Statistics', 'Provided client statistics ' + Statistics.PERIOD_SECONDS
-                + ' can not be less than or equal to 0. You provided ' + periodSeconds
-                + ' seconds as the configuration. Client will use the default value of ' + defaultValue + ' instead.');
-            periodSeconds = defaultValue;
-        }
-
-        this.task = this.schedulePeriodicStatisticsSendTask(periodSeconds);
+        const periodSeconds = this.metricsConfig.collectionFrequencySeconds;
+        this.statisticsSendTask = this.schedulePeriodicStatisticsSendTask(periodSeconds);
 
         this.logger.info('Statistics', 'Client statistics is enabled with period ' + periodSeconds + ' seconds.');
     }
 
     stop(): void {
-        if (this.task != null) {
-            cancelRepetitionTask(this.task);
+        if (this.statisticsSendTask != null) {
+            cancelRepetitionTask(this.statisticsSendTask);
         }
     }
 
