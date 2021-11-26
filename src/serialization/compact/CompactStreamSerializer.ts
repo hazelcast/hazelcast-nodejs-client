@@ -173,7 +173,7 @@ export class CompactStreamSerializer {
             const writer = new SchemaWriter(className);
             compactSerializer.write(writer, o);
             schema = writer.build();
-            console.log('Schema id: ', schema.schemaId.toString());
+            // console.log('Schema id: ', schema.schemaId.toString());
             return this.putToSchemaService(includeSchemaOnBinary, schema).then(() => {
                 this.classNameToSchemaMap.set(className, schema);
                 this.writeSchemaAndObject(compactSerializer, output, includeSchemaOnBinary, schema, o);

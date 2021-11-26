@@ -18,44 +18,8 @@
 const chai = require('chai');
 const Long = require('long');
 const should = chai.should();
-const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
-const { Fields, GenericRecords, CompactGenericRecordImpl, IllegalStateError, HazelcastSerializationError } = require('../../../../lib');
-const { SerializationConfigImpl } = require('../../../../src');
-
-class InMemorySchemaService {
-    constructor() {
-        this.schemas = {};
-    }
-
-    get(schemaId) {
-        return Promise.resolve(this.schemas[schemaId]);
-    }
-
-    put(schema) {
-        const schemaId = schema.schemaId;
-        const existingSchema = this.schemas[schemaId];
-        if (existingSchema === undefined) {
-            this.schemas[schemaId] = schema;
-        }
-
-        if (existingSchema !== undefined && !schema.equals(existingSchema)) {
-            return Promise.reject(new IllegalStateError(`Schema with id ${schemaId} already exists.`));
-        }
-        return Promise.resolve();
-    }
-
-    putLocal(schema) {
-        const schemaId = schema.schemaId;
-        const existingSchema = this.schemas[schemaId];
-        if (existingSchema === undefined) {
-            this.schemas[schemaId] = schema;
-        }
-
-        if (existingSchema !== undefined && !schema.equals(existingSchema)) {
-            throw new IllegalStateError(`Schema with id ${schemaId} already exists.`);
-        }
-    }
-}
+const { Fields, GenericRecords, CompactGenericRecordImpl, HazelcastSerializationError } = require('../../../../lib');
+const { createSerializationService } = require('./CompactUtil');
 
 describe('CompactNullablePrimitiveInteroperability', function () {
     const assertReadAsNullable = record => {
@@ -136,11 +100,6 @@ describe('CompactNullablePrimitiveInteroperability', function () {
         should.throw(() => record.getArrayOfLongs('longs'), HazelcastSerializationError);
         should.throw(() => record.getArrayOfFloats('floats'), HazelcastSerializationError);
         should.throw(() => record.getArrayOfDoubles('doubles'), HazelcastSerializationError);
-    };
-
-    const createSerializationService = () => {
-        const serializationConfig = new SerializationConfigImpl();
-        return new SerializationServiceV1(serializationConfig, new InMemorySchemaService());
     };
 
     it('should write primitive read nullable', async function () {
@@ -235,7 +194,7 @@ describe('CompactNullablePrimitiveInteroperability', function () {
         assertReadAsPrimitive(serializedRecord);
     });
 
-    it('should raise error if write null and read primitive', async function (){
+    it('should raise error if write null and read primitive', async function () {
         const schema = {
             boolean: Fields.nullableBoolean,
             byte: Fields.nullableByte,
