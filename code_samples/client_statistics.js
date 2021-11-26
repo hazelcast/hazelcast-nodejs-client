@@ -25,8 +25,8 @@ const { Client } = require('hazelcast-client');
                 'nearCachedMap': {}
             },
             properties: {
-                'hazelcast.client.statistics.enabled': true,
-                'hazelcast.client.statistics.period.seconds': 2
+                'hazelcast.client.metrics.enabled': true,
+                'hazelcast.client.metrics.collection.frequency': 2
             }
         });
         const ncMap = await client.getMap('nearCachedMap');
