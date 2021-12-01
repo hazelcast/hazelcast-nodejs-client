@@ -23,7 +23,7 @@
         "eslint-plugin-mocha": "~8.1.0",
         "husky": "~6.0.0",
         "jsonschema": "~1.4.0",
-        "markdown-link-check": "~3.8.7",
+        "markdown-link-check": "~3.9.0",
         "markdownlint-cli": "~0.28.1",
         "mocha": "~8.4.0",
         "mocha-jenkins-reporter": "~0.4.7",
