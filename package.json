@@ -39,7 +39,7 @@
         "typedoc": "~0.21.9",
         "typescript": "~4.4.4",
         "winston": "~3.3.3",
-        "yargs": "~17.2.1"
+        "yargs": "~17.3.0"
     },
     "engines": {
         "node": ">=10.4.0"
