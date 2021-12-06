@@ -22,13 +22,14 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 chai.should();
 
-const { Client, HazelcastSqlException } = require('../../../../../lib');
+const { Client, HazelcastSqlException, LifecycleState} = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');
 const RC = require('../../../RC');
 const {Lang} = require('../../../remote_controller/remote_controller_types');
 const fs = require('fs');
 const path = require('path');
 const { isClientVersionAtLeast } = require('../../../../TestUtil');
+const { deferredPromise } = require('../../../../../lib/util/Util');
 
 const getHazelcastSqlException = () => {
     const { HazelcastSqlException } = require('../../../../../lib/core/HazelcastError');
@@ -620,12 +621,21 @@ describe('SqlExecuteTest', function () {
     describe('errors/invalid usage', function () {
         let member;
         let cluster;
+        let disconnectedFired;
 
         beforeEach(async function () {
+            disconnectedFired = deferredPromise();
             cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
             member = await RC.startMember(cluster.id);
             client = await testFactory.newHazelcastClientForParallelTests({
-                clusterName: cluster.id
+                clusterName: cluster.id,
+                lifecycleListeners: [
+                    (state) => {
+                        if (state === LifecycleState.DISCONNECTED) {
+                            disconnectedFired.resolve(true);
+                        }
+                    }
+                ],
             }, member);
         });
 
@@ -640,19 +650,15 @@ describe('SqlExecuteTest', function () {
 
             await RC.terminateMember(cluster.id, member.uuid);
 
+            // Wait until the connection is removed from the active connections
+            await disconnectedFired.promise;
+
             const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
                 await TestUtil.getSql(client).execute(`SELECT * FROM ${mapName}`);
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
-            // There was a fix regarding originatingMemberId in 5.0 and 4.2.x after 4.2.0.
-            // TODO: Update here to be 4.2.1 if we release 4.2.1
-            // https://github.com/hazelcast/hazelcast-nodejs-client/pull/940
-            if (TestUtil.isClientVersionAtLeast('5.0.0')) {
-                error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
-            } else {
-                error1.originatingMemberId.toString().should.be.eq(member.uuid);
-            }
+            error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
         });
 
         it('should return an error if connection lost - statement', async function () {
@@ -661,6 +667,9 @@ describe('SqlExecuteTest', function () {
             someMap = await client.getMap(mapName);
 
             await RC.terminateMember(cluster.id, member.uuid);
+
+            // Wait until the connection is removed from the active connections
+            await disconnectedFired.promise;
 
             const error1 = await TestUtil.getRejectionReasonOrThrow(async () => {
                 await TestUtil.getSql(client).executeStatement({
@@ -671,14 +680,7 @@ describe('SqlExecuteTest', function () {
             });
             error1.should.be.instanceof(getHazelcastSqlException());
             error1.code.should.be.eq(getSqlErrorCode().CONNECTION_PROBLEM);
-            // There was a fix regarding originatingMemberId in 5.0 and 4.2.x after 4.2.0.
-            // TODO: Update here to be 4.2.1 if we release 4.2.1
-            // https://github.com/hazelcast/hazelcast-nodejs-client/pull/940
-            if (TestUtil.isClientVersionAtLeast('5.0.0')) {
-                error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
-            } else {
-                error1.originatingMemberId.toString().should.be.eq(member.uuid);
-            }
+            error1.originatingMemberId.should.be.eq(client.connectionManager.getClientUuid());
         });
 
         it('should return an error if sql is invalid', async function () {
