@@ -135,7 +135,10 @@
     * [9.1.1. TLS/SSL for Hazelcast Members](#911-tlsssl-for-hazelcast-members)
     * [9.1.2. TLS/SSL for Hazelcast Node.js Clients](#912-tlsssl-for-hazelcast-nodejs-clients)
     * [9.1.3. Mutual Authentication](#913-mutual-authentication)
-  * [9.2. Credentials](#92-credentials)
+  * [9.2. Authentication](#92-authentication)
+    * [9.2.1. Username Password Authentication](#921-username-password-authentication)
+    * [9.2.2. Token Authentication](#922-token-authentication)
+    * [9.2.3. Custom Authentication](#923-custom-authentication)
 * [10. Development and Testing](#10-development-and-testing)
   * [10.1. Building and Using Client From Sources](#101-building-and-using-client-from-sources)
   * [10.2. Testing](#102-testing)
@@ -1366,6 +1369,7 @@ connection attempts done by the client is 4 x 2 = 8.
 be exactly the same except the following configuration options:
   - `clusterName`
   - `customCredentials`
+  - `security`
   - `network.clusterMembers`
   - `network.ssl`
   - `network.hazelcastCloud`
@@ -3927,11 +3931,178 @@ const cfg = {
 The client calls the `init()` method with the `properties` configuration option. Then the client calls the `getSSLOptions()`
 method of `SSLOptionsFactory` to create the `options` object.
 
-## 9.2. Credentials
+## 9.2 Authentication
 
-One of the key elements in Hazelcast security is the `Credentials` object, which can be used to carry all security attributes of
-the Hazelcast Node.js client to Hazelcast members. Then, Hazelcast members can authenticate the clients and perform access
-control checks on the client operations using this `Credentials` object.
+By default, the client does not use any authentication method and just uses the configured cluster name to connect to members.
+
+Hazelcast Node.js client has more ways to authenticate the client against the members, using the ``security`` configuration.
+
+The ``security`` configuration has an element called ``credentials`` in which you can specify different kinds of authentication mechanisms.
+
+The ``credentials`` must always have a property called ``type`` that describes the valid types of credentials,
+which is one of the case-insensitive versions below.
+
+- ``username_password``
+- ``token``
+- ``custom``
+
+The content of the ``credentials`` depends on the ``type`` used, and is described below in detail.
+The idea behind specifying the ``type`` in the ``credentials`` is to prevent possible misuses of that configuration
+element and fail-fast on invalid configurations.
+
+### 9.2.1. Username Password Authentication
+
+The client can authenticate with username and password against the members with the following configuration.
+The ``type`` of the ``credentials`` is case-insensitive ``username_password`` string, and the properties
+are ``username`` and ``password`` strings.
+
+```js
+const config = {
+    security: {
+        credentials: {
+            type: 'username_password',
+            username: 'admin',
+            password: 'some-strong-password'
+        }
+    }
+}
+```
+
+One can use the following default authentication configuration on the member-side.
+
+```xml
+<hazelcast>
+    <security enabled="true">
+        <realms>
+            <realm name="username-password">
+                <identity>
+                    <username-password username="admin" password="some-strong-password" />
+                </identity>
+            </realm>
+        </realms>
+        <member-authentication realm="username-password"/>
+        <!--
+        This is not `client-authentication` to use default authentication.
+        See https://docs.hazelcast.com/hazelcast/latest/security/default-authentication
+         -->
+    </security>
+</hazelcast>
+```
+
+Alternatively, you could provide your custom login module in the member configuration and use that.
+
+```xml
+<hazelcast>
+    <security enabled="true">
+        <realms>
+            <realm name="username-password-with-login-module">
+                <authentication>
+                    <jaas>
+                        <login-module class-name="org.example.CustomLoginModule"/>
+                    </jaas>
+                </authentication>
+            </realm>
+        </realms>
+        <client-authentication realm="username-password-with-login-module"/>
+    </security>
+</hazelcast>
+```
+
+See [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest/security/jaas-authentication)
+for details of custom login modules.
+
+### 9.2.2. Token Authentication
+
+The client can authenticate with a token against the members with the following configuration.
+The ``type`` of the ``credentials`` is case-insensitive ``token`` string, and the properties are ``token`` and ``encoding`` strings.
+The ``token`` must be the string representation of the token encoded with the given ``encoding``.
+The possible values for ``encoding`` are case-insensitive values of ``ascii`` and ``base64``, and when not provided, defaults to ``ascii``.
+
+```js
+const config = {
+    security: {
+        credentials: {
+            type: 'token',
+            token: 'bXktdG9rZW4=',
+            encoding: 'base64'
+        }
+    }
+}
+```
+
+There is no out-of-the-box support token-based authentication on the member side, so you have to provide
+your login module to use in the member configuration. The login module will be responsible for performing
+the authentication against the decoded version of the token sent by the client.
+
+```xml
+<hazelcast>
+    <security enabled="true">
+        <realms>
+            <realm name="token-authentication">
+                <authentication>
+                    <jaas>
+                        <login-module class-name="org.example.CustomTokenLoginModule"/>
+                    </jaas>
+                </authentication>
+            </realm>
+        </realms>
+        <client-authentication realm="token-with-login-module"/>
+    </security>
+</hazelcast>
+```
+
+See [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest/security/jaas-authentication)
+for details of custom login modules.
+
+### 9.2.3. Custom Authentication
+
+The client can use a custom object during the authentication against the members with the following configuration.
+
+The ``type`` of the ``credentials`` is case-insensitive ``custom`` string. The rest of the object depends
+entirely on the serialization mechanism that will be used. The example below uses Portable serialization to demonstrate the concept.
+
+```js
+const config = {
+    security: {
+        credentials: {
+            type: 'custom',
+            someField: 'someValue',
+            factoryId: 1,
+            classId: 1,
+            readPortable: function (reader) {
+                this.someField = reader.readString('someField');
+            },
+            writePortable: function (writer) {
+                writer.writeString('someField', this.someField);
+            }
+        }
+    }
+}
+```
+
+You have to write your login module and provide that in the member configuration to use custom authentication.
+The login module will be responsible for performing the authentication against the deserialized version of the
+credentials sent by the client.
+
+```xml
+<hazelcast>
+    <security enabled="true">
+        <realms>
+            <realm name="custom-credentials">
+                <authentication>
+                    <jaas>
+                        <login-module class-name="org.example.CustomCredentialsLoginModule"/>
+                    </jaas>
+                </authentication>
+            </realm>
+        </realms>
+        <client-authentication realm="custom-credentials"/>
+    </security>
+</hazelcast>
+```
+
+See [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest/security/jaas-authentication)
+for details of custom login modules.
 
 With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
 See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based

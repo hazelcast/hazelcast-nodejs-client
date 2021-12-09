@@ -69,6 +69,7 @@ import {AddressProvider} from '../connection/AddressProvider';
 import {ClusterService} from '../invocation/ClusterService';
 import {SerializationService} from '../serialization/SerializationService';
 import {ConnectionRegistryImpl} from './ConnectionRegistry';
+import {Credentials, TokenCredentialsImpl, UsernamePasswordCredentialsImpl} from '../security';
 
 /** @internal */
 export const CONNECTION_REMOVED_EVENT_NAME = 'connectionRemoved';
@@ -869,20 +870,42 @@ export class ConnectionManager extends EventEmitter {
         const ctx = this.clusterFailoverService.current();
         const clusterName = ctx.clusterName;
         const customCredentials = ctx.customCredentials;
+        const credentials = ctx.securityConfig.credentials;
         const clientVersion = BuildInfo.getClientVersion();
 
         let clientMessage: ClientMessage;
-        if (customCredentials != null) {
-            const credentialsPayload = this.serializationService.toData(customCredentials).toBuffer();
+
+        if (customCredentials != null || !(credentials instanceof UsernamePasswordCredentialsImpl)) {
+            // User either provided a customCredentials or explicitly configured
+            // a token or custom credentials with the security element.
+            const credentialsPayload = this.getCredentialsPayload(customCredentials, credentials);
 
             clientMessage = ClientAuthenticationCustomCodec.encodeRequest(clusterName, credentialsPayload, this.clientUuid,
                 CLIENT_TYPE, SERIALIZATION_VERSION, clientVersion, this.clientName, this.labels);
         } else {
-            clientMessage = ClientAuthenticationCodec.encodeRequest(clusterName, null, null, this.clientUuid,
-                CLIENT_TYPE, SERIALIZATION_VERSION, clientVersion, this.clientName, this.labels);
+            clientMessage = ClientAuthenticationCodec.encodeRequest(clusterName, credentials.username, credentials.password,
+                this.clientUuid, CLIENT_TYPE, SERIALIZATION_VERSION, clientVersion, this.clientName, this.labels);
         }
 
         return clientMessage;
+    }
+
+    private getCredentialsPayload(customCredentials: any, credentials: Credentials): Buffer {
+        let payload: Buffer;
+        if (credentials instanceof TokenCredentialsImpl) {
+            const token = credentials.token;
+            const encoding = credentials.encoding;
+            payload = Buffer.from(token, encoding);
+        } else {
+            // If we are this far, we ruled out the possibility of credentials being
+            // UsernamePasswordCredentials or TokenCredentials. So, it has to
+            // be either a customCredentials(deprecated configuration element)
+            // or a user specified custom credentials object with the new security
+            // configuration.
+            payload = this.serializationService.toData(customCredentials || credentials).toBuffer();
+        }
+
+        return payload;
     }
 
     private checkPartitionCount(newPartitionCount: number): void {

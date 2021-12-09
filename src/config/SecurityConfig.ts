@@ -13,22 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @ignore *//** */
+
+import {Credentials} from '../security/Credentials';
+import {UsernamePasswordCredentialsImpl} from '../security';
 
 /**
- * Public API re-exports.
+ * Contains configuration for the client to use different kinds
+ * of credential types during authentication, such as username
+ * password, token, or custom credentials.
  */
+export interface SecurityConfig {
+    /**
+     * Represents an identity to be authenticated.
+     */
+    credentials?: Credentials
+}
 
-export * from './aggregation';
-export * from './config';
-export * from './connection';
-export * from './core';
-export * from './logging';
-export * from './proxy';
-export * from './serialization';
-export {HazelcastClient as Client} from './HazelcastClient';
-export * from './LifecycleService';
-export * from './PartitionService';
-export * from './CPSubsystem';
-export * from './sql';
-export * from './security';
+/** @internal */
+export class SecurityConfigImpl implements SecurityConfig {
+    credentials: Credentials = new UsernamePasswordCredentialsImpl(null, null);
+}

@@ -36,6 +36,13 @@ import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy
 import {ReconnectMode} from './ConnectionStrategyConfig';
 import {LoadBalancerType} from './LoadBalancerConfig';
 import {LogLevel} from '../logging';
+import {
+    Credentials,
+    TokenCredentialsImpl,
+    UsernamePasswordCredentialsImpl
+} from '../security';
+import {CredentialsTypeGuards} from '../security/CredentialsTypeGuards';
+import {TokenEncoding} from '../security/TokenEncoding';
 
 /**
  * Responsible for user-defined config validation. Builds the effective config with necessary defaults.
@@ -60,6 +67,8 @@ export class ConfigBuilder {
     }
 
     private handleConfig(jsonObject: any): void {
+        ConfigBuilder.validateSecurityConfiguration(jsonObject);
+
         for (const key in jsonObject) {
             const value = jsonObject[key];
             if (key === 'clusterName') {
@@ -91,13 +100,52 @@ export class ConfigBuilder {
             } else if (key === 'customLogger') {
                 this.handleLogger(value);
             } else if (key === 'customCredentials') {
-                this.effectiveConfig.customCredentials = jsonObject;
+                this.effectiveConfig.customCredentials = value;
             } else if (key === 'backupAckToClientEnabled') {
                 this.effectiveConfig.backupAckToClientEnabled = tryGetBoolean(value);
+            } else if (key === 'security') {
+                this.handleSecurity(value);
             } else {
                 throw new RangeError(`Unexpected config key '${key}' is passed to the Hazelcast Client`);
             }
         }
+    }
+
+    private static validateSecurityConfiguration(jsonObject: any): void {
+        if ('security' in jsonObject && 'customCredentials' in jsonObject) {
+            throw new RangeError('Ambiguous security configuration is found. ' +
+                'Use one of \'security\' or \'customCredentials\' elements, not both.')
+        }
+    }
+
+    private handleSecurity(jsonObject: any): void {
+        for (const key in jsonObject) {
+            const value = jsonObject[key];
+            if (key === 'credentials') {
+                this.handleCredentials(value);
+            } else {
+                throw new RangeError(`Unexpected security config ${key} is passed to the Hazelcast Client`);
+            }
+        }
+    }
+
+    private handleCredentials(jsonObject: any): void {
+        let credentials: Credentials;
+
+        if (CredentialsTypeGuards.isUsernamePasswordCredentials(jsonObject)) {
+            const username = jsonObject.username;
+            const password = jsonObject.password;
+            credentials = new UsernamePasswordCredentialsImpl(username, password);
+        } else if (CredentialsTypeGuards.isTokenCredentials(jsonObject)) {
+            const token = jsonObject.token;
+            const encoding = tryGetEnum(TokenEncoding, jsonObject.encoding);
+            credentials = new TokenCredentialsImpl(token, encoding as TokenEncoding);
+        } else if (CredentialsTypeGuards.isCustomCredentials(jsonObject)) {
+          credentials = jsonObject;
+        } else {
+            throw new RangeError('Unexpected credentials type or object is passed to the Hazelcast Client');
+        }
+        this.effectiveConfig.security.credentials = credentials;
     }
 
     private handleConnectionStrategy(jsonObject: any): void {

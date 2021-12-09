@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {AddressProvider} from './connection/AddressProvider';
-import {ClientConfigImpl} from './config';
+import {ClientConfigImpl, SecurityConfigImpl} from './config';
 import {IllegalStateError} from './core';
 import {LifecycleService} from './LifecycleService';
 import {HazelcastCloudAddressProvider} from './discovery/HazelcastCloudAddressProvider';
@@ -81,13 +81,16 @@ export class CandidateClusterContext {
     readonly clusterName: string;
     readonly addressProvider: AddressProvider;
     readonly customCredentials: any;
+    readonly securityConfig: SecurityConfigImpl;
 
     constructor(clusterName: string,
                 addressProvider: AddressProvider,
-                customCredentials: any) {
+                customCredentials: any,
+                securityConfig: SecurityConfigImpl) {
         this.clusterName = clusterName;
         this.addressProvider = addressProvider;
         this.customCredentials = customCredentials;
+        this.securityConfig = securityConfig;
     }
 }
 
@@ -114,7 +117,7 @@ export class ClusterFailoverServiceBuilder {
         for (const config of this.clientConfigs) {
             const addressProvider = this.createAddressProvider(config);
             const context = new CandidateClusterContext(
-                config.clusterName, addressProvider, config.customCredentials);
+                config.clusterName, addressProvider, config.customCredentials, config.security);
             contexts.push(context);
         }
         return new ClusterFailoverService(this.maxTryCount, contexts, this.lifecycleService);

@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @ignore *//** */
+'use strict';
 
-/**
- * Public API re-exports.
- */
+class SimpleCredentials {
+    constructor(username, password) {
+        this.username = username;
+        this.password = password;
+        this.type = 'CUSTOM';
+        this.factoryId = 1;
+        this.classId = 1;
+    }
 
-export * from './aggregation';
-export * from './config';
-export * from './connection';
-export * from './core';
-export * from './logging';
-export * from './proxy';
-export * from './serialization';
-export {HazelcastClient as Client} from './HazelcastClient';
-export * from './LifecycleService';
-export * from './PartitionService';
-export * from './CPSubsystem';
-export * from './sql';
-export * from './security';
+    readData(input) {
+        this.username = input.readString();
+        this.password = input.readString();
+    }
+
+    writeData(output) {
+        output.writeString(this.username);
+        output.writeString(this.password);
+    }
+}
+
+exports.SimpleCredentials = SimpleCredentials;

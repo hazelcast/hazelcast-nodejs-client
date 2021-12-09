@@ -32,6 +32,7 @@ const {
     createAddressFromString
 } = require('../../../lib/util/AddressUtil');
 const { ReconnectMode } = require('../../../lib/config/ConnectionStrategyConfig');
+const {CredentialsType} = require('../../../lib/security/CredentialsType');
 
 describe('ConfigBuilderTest', function () {
     let fullConfig;
@@ -245,6 +246,14 @@ describe('ConfigBuilderTest', function () {
         const loadBalancer = fullConfig.loadBalancer;
         expect(loadBalancer.type).to.equal(LoadBalancerType.RANDOM);
         expect(loadBalancer.customLoadBalancer).to.equal(customLoadBalancer);
+    });
+
+    it('security', function () {
+        const security = fullConfig.security;
+        const credentials = security.credentials;
+        expect(credentials.type).to.equal(CredentialsType.USERNAME_PASSWORD);
+        expect(credentials.username).to.equal('username');
+        expect(credentials.password).to.equal('password');
     });
 });
 
@@ -729,5 +738,92 @@ describe('ConfigBuilderValidationTest', function () {
                 }
             ]
         }).build()).to.throw(InvalidConfigurationError, 'Unexpected flake id generator config');
+    });
+
+    it('should validate security config', function () {
+        const invalidConfigs = [
+            {
+                'security': {
+                    'somethingElse': false
+                }
+            },
+            {
+                'security': {
+                    'credentials': {
+                        'type': 'username_password',
+                        'username': false,
+                        'password': 'password'
+                    }
+                }
+            },
+            {
+                'security': {
+                    'credentials': {
+                        'type': 'username_password',
+                        'username': 'username',
+                        'password': false
+                    }
+                }
+            },
+            {
+                'security': {
+                    'credentials': {
+                        'type': 'username_password',
+                        'username': 'username',
+                    }
+                }
+            },
+            {
+                'security': {
+                    'credentials': {
+                        'type': 'token',
+                        'token': 'token',
+                        'encoding': 'not-a-valid-encoding'
+                    }
+                }
+            },
+            {
+                'security': {
+                    'credentials': {
+                        'type': 'token',
+                        'token': 123,
+                        'encoding': 'ascii'
+                    }
+                }
+            },
+            {
+                'security': {
+                    'credentials': {
+                        'type': 'token',
+                        'token': 'token',
+                        'encoding': 123
+                    }
+                }
+            },
+            {
+                'security': {
+                    'credentials': {
+                        'field': 'value',
+                    }
+                }
+            },
+        ];
+
+        for (const config of invalidConfigs) {
+            expect(() => new ConfigBuilder(config).build()).to.throw(InvalidConfigurationError);
+        }
+    });
+
+    it('should throw when customCredentials and security are used together', function () {
+        expect(() => new ConfigBuilder({
+            'customCredentials': {},
+            'security': {
+                'credentials': {
+                    'type': 'username_password',
+                    'username': 'username',
+                    'password': 'password',
+                }
+            }
+        }).build()).to.throw(InvalidConfigurationError, 'Ambiguous security configuration is found');
     });
 });

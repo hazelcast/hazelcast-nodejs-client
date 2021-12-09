@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @ignore *//** */
+
+import {CredentialsType} from './CredentialsType';
 
 /**
- * Public API re-exports.
+ * Represents an identity to be authenticated.
  */
+export interface Credentials {
 
-export * from './aggregation';
-export * from './config';
-export * from './connection';
-export * from './core';
-export * from './logging';
-export * from './proxy';
-export * from './serialization';
-export {HazelcastClient as Client} from './HazelcastClient';
-export * from './LifecycleService';
-export * from './PartitionService';
-export * from './CPSubsystem';
-export * from './sql';
-export * from './security';
+    /**
+     * Type of the credentials.
+     */
+    type: CredentialsType,
+}
