@@ -157,8 +157,8 @@ export interface ClientConfig {
 
     /**
      * Contains configuration for the client to use different kinds
-     * of credential types during authentication, such as username
-     * password, token, or custom credentials.
+     * of credential types during authentication, such as username/password,
+     * token, or custom credentials.
      */
     security?: SecurityConfig;
 
