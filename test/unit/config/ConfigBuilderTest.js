@@ -32,6 +32,7 @@ const {
     createAddressFromString
 } = require('../../../lib/util/AddressUtil');
 const { ReconnectMode } = require('../../../lib/config/ConnectionStrategyConfig');
+const {TokenEncoding} = require('../../../lib/security/TokenEncoding');
 
 describe('ConfigBuilderTest', function () {
     let fullConfig;
@@ -782,7 +783,7 @@ describe('ConfigBuilderValidationTest', function () {
                 'security': {
                     'token': {
                         'token': 123,
-                        'encoding': 'ascii'
+                        'encoding': TokenEncoding.ASCII
                     }
                 }
             },
@@ -798,7 +799,7 @@ describe('ConfigBuilderValidationTest', function () {
                 'security': {
                     'token': {
                         'token': 'token',
-                        'encoding': 'ascii',
+                        'encoding': TokenEncoding.ASCII,
                         'extraField': true
                     }
                 }

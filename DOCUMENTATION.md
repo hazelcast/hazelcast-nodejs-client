@@ -4011,14 +4011,15 @@ for details of custom login modules.
 The client can authenticate with a token against the members with the following configuration.
 The properties are ``token`` and ``encoding`` strings. The ``token`` must be the string representation of the token
 encoded with the given ``encoding``. The possible values for ``encoding`` are case-insensitive values of ``ascii``
-and ``base64``, and when not provided, defaults to ``ascii``.
+and ``base64``, and when not provided, defaults to ``ascii``. Supported encodings are provided in the
+``TokenEncoding`` enum.
 
 ```js
 const config = {
     security: {
         token: {
             token: 'bXktdG9rZW4=',
-            encoding: 'base64'
+            encoding: TokenEncoding.BASE64 // Or, 'base64' string.
         }
     }
 }

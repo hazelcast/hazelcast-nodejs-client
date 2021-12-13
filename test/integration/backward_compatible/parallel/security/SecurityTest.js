@@ -24,6 +24,7 @@ const fs = require('fs');
 const RC = require('../../../RC');
 const {IllegalStateError} = require('../../../../../lib');
 const {SimpleCredentials} = require('./SimpleCredentials');
+const {TokenEncoding} = require('../../../../../lib/security/TokenEncoding');
 
 describe('SecurityTest', function () {
     describe('username password credentials', function () {
@@ -107,7 +108,7 @@ describe('SecurityTest', function () {
                 security: {
                     token: {
                         token: 'dG9rZW4=',
-                        encoding: 'base64',
+                        encoding: TokenEncoding.BASE64
                     }
                 }
             }, member);
@@ -120,7 +121,7 @@ describe('SecurityTest', function () {
                 security: {
                     token: {
                         token: 'dG9rZW4=',
-                        encoding: 'ascii'
+                        encoding: TokenEncoding.ASCII
                     }
                 },
                 connectionStrategy: {
