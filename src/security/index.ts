@@ -19,7 +19,6 @@
  * Public API re-exports.
  */
 
-export * from './Credentials';
 export * from './UsernamePasswordCredentials';
 export * from './TokenCredentials';
 export * from './TokenEncoding';

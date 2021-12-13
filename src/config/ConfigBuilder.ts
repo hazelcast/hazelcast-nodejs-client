@@ -23,7 +23,8 @@ import {
     tryGetBoolean,
     tryGetEnum,
     tryGetNumber,
-    tryGetString
+    tryGetString,
+    tryGetStringOrNull
 } from '../util/Util';
 import {ClientConfig, ClientConfigImpl} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
@@ -36,13 +37,7 @@ import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy
 import {ReconnectMode} from './ConnectionStrategyConfig';
 import {LoadBalancerType} from './LoadBalancerConfig';
 import {LogLevel} from '../logging';
-import {
-    Credentials,
-    TokenCredentialsImpl,
-    UsernamePasswordCredentialsImpl
-} from '../security';
-import {CredentialsTypeGuards} from '../security/CredentialsTypeGuards';
-import {TokenEncoding} from '../security/TokenEncoding';
+import {TokenCredentialsImpl, TokenEncoding, UsernamePasswordCredentialsImpl,} from '../security';
 
 /**
  * Responsible for user-defined config validation. Builds the effective config with necessary defaults.
@@ -119,33 +114,64 @@ export class ConfigBuilder {
     }
 
     private handleSecurity(jsonObject: any): void {
+        let isCredentialsSet = false;
         for (const key in jsonObject) {
+            if (isCredentialsSet) {
+                throw new RangeError('Security configuration may only contain one of the supported credential types. ' +
+                    'Multiple credential types are passed to the Hazelcast Client.');
+            }
+
             const value = jsonObject[key];
-            if (key === 'credentials') {
-                this.handleCredentials(value);
+            if (key === 'usernamePassword') {
+                this.handleUsernamePasswordCredentials(value);
+            } else if (key === 'token') {
+                this.handleTokenCredentials(value);
+            } else if (key === 'custom') {
+                this.effectiveConfig.security.custom = value;
             } else {
                 throw new RangeError(`Unexpected security config ${key} is passed to the Hazelcast Client`);
             }
+
+            isCredentialsSet = true;
         }
     }
 
-    private handleCredentials(jsonObject: any): void {
-        let credentials: Credentials;
-
-        if (CredentialsTypeGuards.isUsernamePasswordCredentials(jsonObject)) {
-            const username = jsonObject.username;
-            const password = jsonObject.password;
-            credentials = new UsernamePasswordCredentialsImpl(username, password);
-        } else if (CredentialsTypeGuards.isTokenCredentials(jsonObject)) {
-            const token = jsonObject.token;
-            const encoding = tryGetEnum(TokenEncoding, jsonObject.encoding);
-            credentials = new TokenCredentialsImpl(token, encoding as TokenEncoding);
-        } else if (CredentialsTypeGuards.isCustomCredentials(jsonObject)) {
-          credentials = jsonObject;
-        } else {
-            throw new RangeError('Unexpected credentials type or object is passed to the Hazelcast Client');
+    private handleUsernamePasswordCredentials(jsonObject: any): void {
+        let username: string;
+        let password: string;
+        for (const key in jsonObject) {
+            const value = jsonObject[key];
+            if (key === 'username') {
+                username = tryGetStringOrNull(value);
+            } else if (key === 'password') {
+                password = tryGetStringOrNull(value);
+            } else {
+                throw new RangeError(`Unexpected username password credentials option '${key}' is passed to the Hazelcast Client`)
+            }
         }
-        this.effectiveConfig.security.credentials = credentials;
+
+        this.effectiveConfig.security.usernamePassword = new UsernamePasswordCredentialsImpl(username, password);
+    }
+
+    private handleTokenCredentials(jsonObject: any): void {
+        let token: string;
+        let encoding: TokenEncoding;
+        for (const key in jsonObject) {
+            const value = jsonObject[key];
+            if (key === 'token') {
+                token = tryGetString(value);
+            } else if (key === 'encoding') {
+                encoding = tryGetEnum(TokenEncoding, value);
+            } else {
+                throw new RangeError(`Unexpected token credentials option '${key}' is passed to the Hazelcast Client`)
+            }
+        }
+
+        if (token == null) {
+            return;
+        }
+
+        this.effectiveConfig.security.token = new TokenCredentialsImpl(token, encoding);
     }
 
     private handleConnectionStrategy(jsonObject: any): void {

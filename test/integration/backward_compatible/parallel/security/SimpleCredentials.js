@@ -19,7 +19,6 @@ class SimpleCredentials {
     constructor(username, password) {
         this.username = username;
         this.password = password;
-        this.type = 'CUSTOM';
         this.factoryId = 1;
         this.classId = 1;
     }

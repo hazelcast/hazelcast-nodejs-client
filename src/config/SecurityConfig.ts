@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import {Credentials} from '../security/Credentials';
-import {UsernamePasswordCredentialsImpl} from '../security';
+import {TokenCredentials, TokenCredentialsImpl, UsernamePasswordCredentials, UsernamePasswordCredentialsImpl} from '../security';
 
 /**
  * Contains configuration for the client to use different kinds
@@ -24,12 +23,24 @@ import {UsernamePasswordCredentialsImpl} from '../security';
  */
 export interface SecurityConfig {
     /**
-     * Represents an identity to be authenticated.
+     * Credentials to be used with username and password authentication.
      */
-    credentials?: Credentials
+    usernamePassword?: UsernamePasswordCredentials
+
+    /**
+     * Credentials to be used with token-based authentication.
+     */
+    token?: TokenCredentials,
+
+    /**
+     * Credentials to be used with custom authentication.
+     */
+    custom?: any,
 }
 
 /** @internal */
 export class SecurityConfigImpl implements SecurityConfig {
-    credentials: Credentials = new UsernamePasswordCredentialsImpl(null, null);
+    usernamePassword = new UsernamePasswordCredentialsImpl(null, null);
+    token: TokenCredentialsImpl = null;
+    custom: any = null;
 }

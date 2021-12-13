@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-import {Credentials} from './Credentials';
-import {CredentialsType} from './CredentialsType';
-
 /**
  * Username and password based credentials for custom authentication.
  */
-export interface UsernamePasswordCredentials extends Credentials {
+export interface UsernamePasswordCredentials {
     username: string | null,
     password: string | null,
 }
 
 /** @internal */
 export class UsernamePasswordCredentialsImpl implements UsernamePasswordCredentials {
-    type = CredentialsType.USERNAME_PASSWORD;
     username: string | null;
     password: string | null;
 

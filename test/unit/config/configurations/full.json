@@ -107,8 +107,7 @@
         "type": "random"
     },
     "security": {
-        "credentials": {
-            "type": "username_password",
+        "usernamePassword": {
             "username": "username",
             "password": "password"
         }

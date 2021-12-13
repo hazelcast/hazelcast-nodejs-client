@@ -32,7 +32,6 @@ const {
     createAddressFromString
 } = require('../../../lib/util/AddressUtil');
 const { ReconnectMode } = require('../../../lib/config/ConnectionStrategyConfig');
-const {CredentialsType} = require('../../../lib/security/CredentialsType');
 
 describe('ConfigBuilderTest', function () {
     let fullConfig;
@@ -250,10 +249,9 @@ describe('ConfigBuilderTest', function () {
 
     it('security', function () {
         const security = fullConfig.security;
-        const credentials = security.credentials;
-        expect(credentials.type).to.equal(CredentialsType.USERNAME_PASSWORD);
-        expect(credentials.username).to.equal('username');
-        expect(credentials.password).to.equal('password');
+        const usernamePasswordCredentials = security.usernamePassword;
+        expect(usernamePasswordCredentials.username).to.equal('username');
+        expect(usernamePasswordCredentials.password).to.equal('password');
     });
 });
 
@@ -749,8 +747,7 @@ describe('ConfigBuilderValidationTest', function () {
             },
             {
                 'security': {
-                    'credentials': {
-                        'type': 'username_password',
+                    'usernamePassword': {
                         'username': false,
                         'password': 'password'
                     }
@@ -758,8 +755,7 @@ describe('ConfigBuilderValidationTest', function () {
             },
             {
                 'security': {
-                    'credentials': {
-                        'type': 'username_password',
+                    'usernamePassword': {
                         'username': 'username',
                         'password': false
                     }
@@ -767,16 +763,16 @@ describe('ConfigBuilderValidationTest', function () {
             },
             {
                 'security': {
-                    'credentials': {
-                        'type': 'username_password',
+                    'usernamePassword': {
                         'username': 'username',
+                        'password': 'password',
+                        'extraField': true
                     }
                 }
             },
             {
                 'security': {
-                    'credentials': {
-                        'type': 'token',
+                    'token': {
                         'token': 'token',
                         'encoding': 'not-a-valid-encoding'
                     }
@@ -784,8 +780,7 @@ describe('ConfigBuilderValidationTest', function () {
             },
             {
                 'security': {
-                    'credentials': {
-                        'type': 'token',
+                    'token': {
                         'token': 123,
                         'encoding': 'ascii'
                     }
@@ -793,8 +788,7 @@ describe('ConfigBuilderValidationTest', function () {
             },
             {
                 'security': {
-                    'credentials': {
-                        'type': 'token',
+                    'token': {
                         'token': 'token',
                         'encoding': 123
                     }
@@ -802,11 +796,13 @@ describe('ConfigBuilderValidationTest', function () {
             },
             {
                 'security': {
-                    'credentials': {
-                        'field': 'value',
+                    'token': {
+                        'token': 'token',
+                        'encoding': 'ascii',
+                        'extraField': true
                     }
                 }
-            },
+            }
         ];
 
         for (const config of invalidConfigs) {
@@ -818,12 +814,66 @@ describe('ConfigBuilderValidationTest', function () {
         expect(() => new ConfigBuilder({
             'customCredentials': {},
             'security': {
-                'credentials': {
-                    'type': 'username_password',
+                'username': {
                     'username': 'username',
                     'password': 'password',
                 }
             }
         }).build()).to.throw(InvalidConfigurationError, 'Ambiguous security configuration is found');
+    });
+
+    it('should throw when multiple security configurations are used together', function () {
+        const invalidConfigs = [
+            {
+                'security': {
+                    'usernamePassword': {
+                        'username': 'username',
+                        'password': 'password',
+                    },
+                    'token': {
+                        'token': 'token',
+                    }
+                }
+            },
+            {
+                'security': {
+                    'usernamePassword': {
+                        'username': 'username',
+                        'password': 'password',
+                    },
+                    'custom': {
+                        'field': 'value',
+                    }
+                }
+            },
+            {
+                'security': {
+                    'token': {
+                        'token': 'token',
+                    },
+                    'custom': {
+                        'field': 'value',
+                    }
+                }
+            },
+            {
+                'security': {
+                    'usernamePassword': {
+                        'username': 'username',
+                        'password': 'password',
+                    },
+                    'token': {
+                        'token': 'token',
+                    },
+                    'custom': {
+                        'field': 'value',
+                    }
+                }
+            }
+        ];
+
+        for (const config of invalidConfigs) {
+            expect(() => new ConfigBuilder(config).build()).to.throw(InvalidConfigurationError, 'Multiple credential types');
+        }
     });
 });

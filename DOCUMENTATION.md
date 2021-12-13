@@ -3936,31 +3936,26 @@ method of `SSLOptionsFactory` to create the `options` object.
 By default, the client does not use any authentication method and just uses the configured cluster name to connect to members.
 
 Hazelcast Node.js client has more ways to authenticate the client against the members, using the ``security`` configuration.
+Please note that, the security configuration requires **Hazelcast Enterprise** edition.
 
-The ``security`` configuration has an element called ``credentials`` in which you can specify different kinds of authentication mechanisms.
+The ``security`` configuration lets you specify different kinds of authentication mechanisms which are
+described in the following sub-sections.
 
-The ``credentials`` must always have a property called ``type`` that describes the valid types of credentials,
-which is one of the case-insensitive versions below.
+> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL
+> encryption is highly recommended while using the security configuration as described in [TLS/SSL section](#91-tlsssl).**
 
-- ``username_password``
-- ``token``
-- ``custom``
-
-The content of the ``credentials`` depends on the ``type`` used, and is described below in detail.
-The idea behind specifying the ``type`` in the ``credentials`` is to prevent possible misuses of that configuration
-element and fail-fast on invalid configurations.
+Also, see the [Security section](https://docs.hazelcast.com/hazelcast/latest/security/overview.html) of Hazelcast Reference
+Manual for more information.
 
 ### 9.2.1. Username Password Authentication
 
 The client can authenticate with username and password against the members with the following configuration.
-The ``type`` of the ``credentials`` is case-insensitive ``username_password`` string, and the properties
-are ``username`` and ``password`` strings.
+The properties are ``username`` and ``password`` strings.
 
 ```js
 const config = {
     security: {
-        credentials: {
-            type: 'username_password',
+        usernamePassword: {
             username: 'admin',
             password: 'some-strong-password'
         }
@@ -4014,15 +4009,14 @@ for details of custom login modules.
 ### 9.2.2. Token Authentication
 
 The client can authenticate with a token against the members with the following configuration.
-The ``type`` of the ``credentials`` is case-insensitive ``token`` string, and the properties are ``token`` and ``encoding`` strings.
-The ``token`` must be the string representation of the token encoded with the given ``encoding``.
-The possible values for ``encoding`` are case-insensitive values of ``ascii`` and ``base64``, and when not provided, defaults to ``ascii``.
+The properties are ``token`` and ``encoding`` strings. The ``token`` must be the string representation of the token
+encoded with the given ``encoding``. The possible values for ``encoding`` are case-insensitive values of ``ascii``
+and ``base64``, and when not provided, defaults to ``ascii``.
 
 ```js
 const config = {
     security: {
-        credentials: {
-            type: 'token',
+        token: {
             token: 'bXktdG9rZW4=',
             encoding: 'base64'
         }
@@ -4058,14 +4052,13 @@ for details of custom login modules.
 
 The client can use a custom object during the authentication against the members with the following configuration.
 
-The ``type`` of the ``credentials`` is case-insensitive ``custom`` string. The rest of the object depends
-entirely on the serialization mechanism that will be used. The example below uses Portable serialization to demonstrate the concept.
+The properties of the object depends entirely on the serialization mechanism that will be used. The example below
+uses Portable serialization to demonstrate the concept.
 
 ```js
 const config = {
     security: {
-        credentials: {
-            type: 'custom',
+        custom: {
             someField: 'someValue',
             factoryId: 1,
             classId: 1,
@@ -4103,17 +4096,6 @@ credentials sent by the client.
 
 See [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest/security/jaas-authentication)
 for details of custom login modules.
-
-With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
-See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based
-on user groups.
-
-> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL
-> encryption is highly recommended while using the custom credentials as described in [TLS/SSL section](#91-tlsssl).**
-
-Also, see the [Security section](https://docs.hazelcast.com/hazelcast/latest/security/overview.html) of Hazelcast Reference
-Manual for more information.
-
 
 # 10. Development and Testing
 

@@ -21,8 +21,7 @@ const { Client } = require('hazelcast-client');
     try {
         const client = await Client.newHazelcastClient({
             security: {
-                credentials: {
-                    type: 'username_password',
+                usernamePassword: {
                     username: 'admin',
                     password: 'some-strong-password',
                 }

@@ -52,8 +52,7 @@ describe('SecurityTest', function () {
             const client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 security: {
-                    credentials: {
-                        type: 'USERNAME_PASSWORD',
+                    usernamePassword: {
                         username: 'dummy-username',
                         password: 'dummy-password',
                     }
@@ -66,8 +65,7 @@ describe('SecurityTest', function () {
             await expect(testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 security: {
-                    credentials: {
-                        type: 'USERNAME_PASSWORD',
+                    usernamePassword: {
                         username: 'dummy-username',
                         password: 'not-a-dummy-password',
                     }
@@ -107,8 +105,7 @@ describe('SecurityTest', function () {
             const client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 security: {
-                    credentials: {
-                        type: 'TOKEN',
+                    token: {
                         token: 'dG9rZW4=',
                         encoding: 'base64',
                     }
@@ -121,8 +118,7 @@ describe('SecurityTest', function () {
             await expect(testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 security: {
-                    credentials: {
-                        type: 'TOKEN',
+                    token: {
                         token: 'dG9rZW4=',
                         encoding: 'ascii'
                     }
@@ -162,7 +158,7 @@ describe('SecurityTest', function () {
             const client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 security: {
-                    credentials: new SimpleCredentials('dummy-username', 'dummy-password'),
+                    custom: new SimpleCredentials('dummy-username', 'dummy-password'),
                 }
             }, member);
             expect(client.getLifecycleService().isRunning()).to.be.true;
@@ -172,7 +168,7 @@ describe('SecurityTest', function () {
             await expect(testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 security: {
-                    credentials: new SimpleCredentials('dummy-username', 'not-a-dummy-password'),
+                    custom: new SimpleCredentials('dummy-username', 'not-a-dummy-password'),
                 },
                 connectionStrategy: {
                     connectionRetry: {

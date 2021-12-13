@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import {Credentials} from './Credentials';
-import {CredentialsType} from './CredentialsType';
 import {TokenEncoding} from './TokenEncoding';
 
 /**
  * Token-based credentials for custom authentication.
  */
-export interface TokenCredentials extends Credentials {
+export interface TokenCredentials {
 
     /**
      * String representation of the encoded form of the
@@ -38,7 +36,6 @@ export interface TokenCredentials extends Credentials {
 
 /** @internal */
 export class TokenCredentialsImpl implements TokenCredentials {
-    type = CredentialsType.TOKEN;
     token: string;
     encoding: TokenEncoding;
 
