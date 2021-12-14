@@ -11,6 +11,7 @@ const ignoredNames = [
     'hazelcast_cloud_discovery.js', // needs a token
     'jaas_sample', // this example is hard to run
     'paging_predicate_sample', // this example is hard to run
+    'security', // needs a special server configuration
 ];
 
 // Recursively walks inside a directory, returning all the JavaScript files inside of it
