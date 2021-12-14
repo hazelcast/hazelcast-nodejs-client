@@ -90,7 +90,7 @@ export class FailoverConfigBuilder {
             'Alternative config with cluster name ' + alternative.clusterName
                 + ' must have the same config as the initial config with cluster name '
                 + main.clusterName + ' except for the following options: '
-                + 'clusterName, customCredentials, network.clusterMembers, '
+                + 'clusterName, customCredentials, security, network.clusterMembers, '
                 + 'network.ssl, network.hazelcastCloud'
         );
     }
@@ -109,6 +109,7 @@ export class FailoverConfigBuilder {
         //       when this list changes
         delete copy.clusterName;
         delete copy.customCredentials;
+        delete copy.security;
         delete copy.network.clusterMembers;
         delete copy.network.ssl;
         delete copy.network.hazelcastCloud;
