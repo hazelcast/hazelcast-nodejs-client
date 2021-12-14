@@ -49,6 +49,7 @@ export interface ClientFailoverConfig {
      * The client configurations must be exactly the same except the following configuration options:
      * - `clusterName`
      * - `customCredentials`
+     * - `security`
      * - `network.clusterMembers`
      * - `network.ssl`
      * - `network.hazelcastCloud`
