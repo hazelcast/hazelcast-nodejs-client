@@ -134,6 +134,14 @@ export function tryGetString(val: any): string {
 }
 
 /** @internal */
+export function tryGetStringOrNull(val: any): string {
+    if (val === null || typeof val === 'string') {
+        return val;
+    }
+    throw new RangeError(val + ' is not a string or null.');
+}
+
+/** @internal */
 export function getStringOrUndefined(val: any): string {
     try {
         return tryGetString(val);
