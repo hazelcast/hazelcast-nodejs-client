@@ -38,3 +38,4 @@ export * from './Properties';
 export * from './ReliableTopicConfig';
 export * from './SerializationConfig';
 export * from './SSLConfig';
+export * from  './SecurityConfig';
