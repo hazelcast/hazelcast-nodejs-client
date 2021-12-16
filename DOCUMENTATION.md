@@ -4033,7 +4033,7 @@ the authentication against the decoded version of the token sent by the client.
 <hazelcast>
     <security enabled="true">
         <realms>
-            <realm name="token-authentication">
+            <realm name="token">
                 <authentication>
                     <jaas>
                         <login-module class-name="org.example.CustomTokenLoginModule"/>
@@ -4041,7 +4041,7 @@ the authentication against the decoded version of the token sent by the client.
                 </authentication>
             </realm>
         </realms>
-        <client-authentication realm="token-with-login-module"/>
+        <client-authentication realm="token"/>
     </security>
 </hazelcast>
 ```
