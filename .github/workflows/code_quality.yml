@@ -9,7 +9,7 @@ on:
 
 jobs:
     check-code-quality:
-        name: Check code quality on (${{ matrix.os }})
+        name: Check code quality
         runs-on: ${{ matrix.os }}
 
         strategy:
@@ -21,10 +21,6 @@ jobs:
               uses: actions/setup-node@v2
               with:
                   node-version: 12
-            - name: Disable line ending conversion of git
-              if: ${{ matrix.os == 'windows-latest'}}
-              run: |
-                  git config --global core.autocrlf false
             - name: Checkout code
               uses: actions/checkout@v2
             - name: Install dependencies
