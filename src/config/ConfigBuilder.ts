@@ -136,8 +136,8 @@ export class ConfigBuilder {
     }
 
     private handleUsernamePasswordCredentials(jsonObject: any): void {
-        let username: string;
-        let password: string;
+        let username: string | null = null;
+        let password: string | null = null;
         for (const key in jsonObject) {
             const value = jsonObject[key];
             if (key === 'username') {
@@ -167,7 +167,7 @@ export class ConfigBuilder {
         }
 
         if (token == null) {
-            return;
+            throw new RangeError('\'token\' option must be provided in token credentials.');
         }
 
         this.effectiveConfig.security.token = new TokenCredentialsImpl(token, encoding);
