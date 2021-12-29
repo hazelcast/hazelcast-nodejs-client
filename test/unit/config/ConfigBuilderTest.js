@@ -570,6 +570,14 @@ describe('ConfigBuilderValidationTest', function () {
                     }
                 }
             },
+            // token field is mandatory
+            {
+                'security': {
+                    'token': {
+                        'encoding': TokenEncoding.ASCII
+                    }
+                }
+            },
             {
                 'security': {
                     'token': {
