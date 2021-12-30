@@ -4,3 +4,12 @@ _site
 .jekyll-metadata
 vendor
 .idea
+.eslintcache
+.husky
+.nyc_output
+index.js.map
+node_modules
+package-lock.json
+coverage
+*.jar
+*.log

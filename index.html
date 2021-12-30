@@ -1,8 +1,11 @@
 ---
 layout: default
-title: Redirecting…
+title: API Documentation
 ---
 
-<h1>Redirecting…</h1>
-<a href="api/{{ site.data.current.version }}/docs/">Click here if you are not redirected.</a>
-<script>location="api/{{ site.data.current.version }}/docs/"</script>
+<p>Select version for Hazelcast Node.js Client API documentation: </p>
+<ul'>
+    {% for version in site.data.releases.versions %}
+    <li><a href="api/{{ version }}/docs/">{{ version }}</a></li>
+    {% endfor %}
+</ul>

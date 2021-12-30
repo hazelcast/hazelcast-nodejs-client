@@ -14,6 +14,8 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 title: Hazelcast Node.js Client
+description: Copyright © 2008-2022 Hazelcast, Inc. All rights reserved.
+author: Hazelcast Developers
 url: "http://hazelcast.github.io/hazelcast-nodejs-client" # the base hostname & protocol for your site, e.g. http://example.com
 baseurl: "/hazelcast-nodejs-client"
 twitter_username: hazelcast
