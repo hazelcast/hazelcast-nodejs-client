@@ -1,0 +1,33 @@
+name: Check code quality
+on:
+    push:
+        branches-ignore:
+            - 'gh-pages'
+        tags-ignore:
+            - '*'
+    pull_request:
+
+jobs:
+    check-code-quality:
+        name: Check code quality
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Setup Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 12
+            - name: Checkout code
+              uses: actions/checkout@v2
+            - name: Install dependencies
+              run: |
+                  npm install
+            - name: Compile code
+              run: |
+                  npm run compile
+            - name: Lint
+              run: |
+                  npm run lint
+            - name: Validate User Code
+              run: |
+                  npm run validate-user-code
