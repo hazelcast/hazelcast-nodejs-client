@@ -525,4 +525,12 @@ exports.TestFactory = class TestFactory {
         this.clients.clear();
         this.clusterIds.clear();
     }
+
+    async shutdownAllClients() {
+        for (const client of this.clients) {
+            await client.shutdown();
+        }
+
+        this.clients.clear();
+    }
 };
