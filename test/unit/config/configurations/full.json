@@ -109,5 +109,11 @@
     },
     "loadBalancer": {
         "type": "random"
+    },
+    "security": {
+        "usernamePassword": {
+            "username": "username",
+            "password": "password"
+        }
     }
 }

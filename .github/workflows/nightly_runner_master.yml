@@ -22,9 +22,6 @@ jobs:
               uses: actions/setup-node@v2
               with:
                   node-version: ${{ matrix.nodejs_version }}
-            - name: Disable line ending conversion of git
-              if: ${{ matrix.os == 'windows-latest'}}
-              run: git config --global core.autocrlf false
             - name: Checkout code
               uses: actions/checkout@v2
             - name: Install dependencies and compile client

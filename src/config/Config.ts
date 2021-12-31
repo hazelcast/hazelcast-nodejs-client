@@ -27,6 +27,7 @@ import {ILogger} from '../logging/ILogger';
 import {ConnectionStrategyConfig, ConnectionStrategyConfigImpl} from './ConnectionStrategyConfig';
 import {LoadBalancerConfig, LoadBalancerConfigImpl} from './LoadBalancerConfig';
 import {MetricsConfig, MetricsConfigImpl} from './MetricsConfig';
+import {SecurityConfig, SecurityConfigImpl} from './SecurityConfig';
 
 /**
  * Top level configuration object of Hazelcast client.
@@ -134,6 +135,8 @@ export interface ClientConfig {
     /**
      * Custom credentials to be used as a part of authentication on
      * the cluster.
+     *
+     * @deprecated Since version 5.1. Use {@link security} element instead.
      */
     customCredentials?: any;
 
@@ -158,6 +161,12 @@ export interface ClientConfig {
      * using Hazelcast Management Center.
      */
     metrics?: MetricsConfig;
+    /**
+     * Contains configuration for the client to use different kinds
+     * of credential types during authentication, such as username/password,
+     * token, or custom credentials.
+     */
+    security?: SecurityConfig;
 
 }
 
@@ -214,6 +223,7 @@ export class ClientConfigImpl implements ClientConfig {
     loadBalancer = new LoadBalancerConfigImpl();
     backupAckToClientEnabled = true;
     metrics = new MetricsConfigImpl();
+    security = new SecurityConfigImpl();
 
     private configPatternMatcher = new ConfigPatternMatcher();
 
