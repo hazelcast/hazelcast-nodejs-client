@@ -13,7 +13,7 @@
         "long": "4.0.0"
     },
     "devDependencies": {
-        "@istanbuljs/nyc-config-typescript": "^1.0.1",
+        "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@types/node": "~10.17.60",
         "@typescript-eslint/eslint-plugin": "~5.8.1",
         "@typescript-eslint/parser": "~5.8.1",
