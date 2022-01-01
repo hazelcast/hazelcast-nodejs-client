@@ -19,7 +19,7 @@
         "@typescript-eslint/parser": "~5.8.1",
         "chai": "~4.3.4",
         "chai-as-promised": "~7.1.1",
-        "eslint": "~8.5.0",
+        "eslint": "~8.6.0",
         "eslint-plugin-mocha": "~8.1.0",
         "husky": "~6.0.0",
         "jsonschema": "~1.4.0",
