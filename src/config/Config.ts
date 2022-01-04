@@ -156,9 +156,8 @@ export interface ClientConfig {
     properties?: Properties;
 
     /**
-     * Metrics config. With this config, you enable collecting the client metrics and sending them to the cluster.
-     * After enabling you can monitor the clients that are connected to your Hazelcast cluster,
-     * using Hazelcast Management Center.
+     * Metrics config. Using this config, you can enable client metrics collection and change the frequency of sending client
+     * metrics to the cluster. You can monitor clients using Hazelcast Management Center once the metrics collection is enabled.
      */
     metrics?: MetricsConfig;
     /**

@@ -15,24 +15,18 @@
  */
 
 /**
- * Metrics config. With this config, you enable collecting the client metrics and sending them to the cluster.
- * After enabling you can monitor the clients that are connected to your Hazelcast cluster,
- * using Hazelcast Management Center.
+ * Metrics config. Using this config, you can enable client metrics collection and change the frequency of sending client
+ * metrics to the cluster. You can monitor clients using Hazelcast Management Center once the metrics collection is enabled.
  */
 export interface MetricsConfig {
 
     /**
-     * Whether metrics collection should be enabled for the client. It's enabled by default.
-     *
-     * If set to `true`, it enables collecting the client metrics and sending them to the cluster.
-     * When it is `true` you can monitor the clients that are connected to your Hazelcast cluster,
-     * using Hazelcast Management Center.
+     * Whether the metrics collection should be enabled for the client. It's enabled by default.
      */
     enabled?: boolean;
 
     /**
-     * Period in seconds the client metrics are collected and sent to the cluster. Must be positive. By default,
-     * metrics are collected every 5 seconds.
+     * Frequency of client metrics collection. Must be positive. By default, metrics are collected every 5 seconds.
      */
     collectionFrequencySeconds?: number;
 }
