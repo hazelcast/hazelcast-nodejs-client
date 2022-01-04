@@ -64,7 +64,10 @@ export enum SqlColumnType {
      * The type of the generic SQL `NULL` literal.
      * The only valid value of `NULL` type is `null`.
      */
-    NULL
+    NULL,
+
+    /** JSON type, represented by {@link HazelcastJsonValue} */
+    JSON
 }
 
 /**
