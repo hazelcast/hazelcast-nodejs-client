@@ -19,8 +19,12 @@ const { Client } = require('hazelcast-client');
 
 (async () => {
     try {
-        const client = await Client.newHazelcastClient();
-        const mapName = 'myMap';
+        const client = await Client.newHazelcastClient({
+            properties: {
+                'hazelcast.logging.level': 'OFF'
+            }
+        });
+        const mapName = 'myMap' + Math.floor(Math.random() * 10000);
         const map = await client.getMap(mapName);
         // To be able to use our map in SQL we need to create mapping for it.
         const createMappingQuery = `
@@ -43,7 +47,7 @@ const { Client } = require('hazelcast-client');
         await map.put('key4', 4);
         await map.put('key5', 5);
 
-        const result = await client.getSql().execute('SELECT * FROM myMap');
+        const result = await client.getSql().execute(`SELECT * FROM ${mapName}`);
 
         console.log('Rows from unsorted query:');
         for await (const row of result) {
@@ -67,9 +71,9 @@ const { Client } = require('hazelcast-client');
         await map.put('key5', 5);
 
         // Expected to see 2 3 4
-        const result2 = await client.getSql().execute('SELECT * FROM myMap ORDER BY this ASC LIMIT 3 OFFSET 1');
+        const result2 = await client.getSql().execute(`SELECT * FROM ${mapName} ORDER BY this ASC LIMIT 3 OFFSET 1`);
 
-        console.log('Rows from sorted query with limit 3 and offset 1:');
+        console.log('\nRows from sorted query with limit 3 and offset 1:');
         for await (const row of result2) {
             console.log(`${row['__key']}: ${row['this']}`);
         }

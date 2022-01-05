@@ -40,7 +40,7 @@ class Student {
 
 const varcharExample = async (client) => {
     console.log('----------VARCHAR Example----------');
-    const mapName = 'varcharMap';
+    const mapName = 'varcharMap' + Math.floor(Math.random() * 10000);
     const someMap = await client.getMap(mapName);
     // To be able to use our map in SQL we need to create mapping for it.
     const createMappingQuery = `
@@ -61,7 +61,7 @@ const varcharExample = async (client) => {
     }
 
     try {
-        const result = await client.getSql().execute('SELECT * FROM varcharMap WHERE this = ? OR this = ?', ['7', '2']);
+        const result = await client.getSql().execute(`SELECT * FROM ${mapName} WHERE this = ? OR this = ?`, ['7', '2']);
         const rowMetadata = result.rowMetadata;
         const columnIndex = rowMetadata.findColumn('this');
         const columnMetadata = rowMetadata.getColumn(columnIndex);
@@ -85,9 +85,9 @@ const varcharExample = async (client) => {
     will not work for `BIGINT` type. Instead, you can use `long` objects or you can use explicit
     casting which can convert doubles to other integer types.
 */
-const integersExample = async (client) => {
-    console.log('---------- BIGINT Example----------');
-    const mapName = 'bigintMap';
+const bigintExample = async (client) => {
+    console.log('\n---------- BIGINT Example----------');
+    const mapName = 'bigintMap' + Math.floor(Math.random() * 10000);
     const someMap = await client.getMap(mapName);
     // To be able to use our map in SQL we need to create mapping for it.
     const createMappingQuery = `
@@ -108,7 +108,7 @@ const integersExample = async (client) => {
     }
 
     const result = await client.getSql().execute(
-        'SELECT * FROM bigintMap WHERE this > ? AND this < ?',
+        `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
         [long.fromNumber(10), long.fromNumber(18)]
     );
     const rowMetadata = result.rowMetadata;
@@ -122,7 +122,7 @@ const integersExample = async (client) => {
 
     // Casting example. Casting to other integer types is also possible.
     const result2 = await client.getSql().execute(
-        'SELECT * FROM bigintMap WHERE this > CAST(? AS BIGINT) AND this < CAST(? AS BIGINT)',
+        `SELECT * FROM ${mapName} WHERE this > CAST(? AS BIGINT) AND this < CAST(? AS BIGINT)`,
         [10, 18]
     );
 
@@ -133,8 +133,8 @@ const integersExample = async (client) => {
 
 // Portable example
 const objectExample = async (client, classId, factoryId) => {
-    console.log('----------OBJECT Example----------');
-    const mapName = 'studentMap';
+    console.log('\n----------OBJECT Example----------');
+    const mapName = 'studentMap' + Math.floor(Math.random() * 10000);
     const someMap = await client.getMap(mapName);
     // To be able to use our map in SQL we need to create mapping for it.
     const createMappingQuery = `
@@ -161,7 +161,7 @@ const objectExample = async (client, classId, factoryId) => {
     // instead of `this`.
     // This is true only for complex custom objects like portable and identified serializable.
     const result = await client.getSql().execute(
-        'SELECT __key, this FROM studentMap WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)',
+        `SELECT __key, this FROM ${mapName} WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)`,
         [3, 8]
     );
 
@@ -191,11 +191,14 @@ const objectExample = async (client, classId, factoryId) => {
                 portableFactories: {
                     23: portableFactory
                 }
+            },
+            properties: {
+                'hazelcast.logging.level': 'OFF'
             }
         });
 
         await varcharExample(client);
-        await integersExample(client);
+        await bigintExample(client);
         await objectExample(client, 1, 23);
 
         await client.shutdown();
