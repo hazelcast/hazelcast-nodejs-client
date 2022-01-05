@@ -1,0 +1,534 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>hazelcast-client</title>
+	<meta name="description" content="Documentation for hazelcast-client">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">hazelcast-client</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>hazelcast-client</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<p align="center">
+					<a href="https://github.com/hazelcast/hazelcast-nodejs-client/">
+						<img src="https://3l0wd94f0qdd10om8642z9se-wpengine.netdna-ssl.com/images/logos/hazelcast-logo-horz_md.png" />
+					</a>
+					<h2 align="center">Hazelcast Node.js Client</h2>
+				</p>
+				<p align="center">
+					<a href="https://www.npmjs.com/package/hazelcast-client"><img src="https://img.shields.io/npm/v/hazelcast-client" alt="NPM version"></a>
+					<a href="https://slack.hazelcast.com"><img src="https://img.shields.io/badge/slack-chat-green.svg" alt="Chat on Slack"></a>
+					<a href="https://twitter.com/Hazelcast"><img src="https://img.shields.io/twitter/follow/Hazelcast.svg?style=flat-square&colorA=1da1f2&colorB=&label=Follow%20on%20Twitter" alt="Follow on Twitter"></a>
+				</p>
+				<hr>
+				<p><a href="https://hazelcast.org/">Hazelcast</a> is an open-source distributed in-memory data store and computation platform that
+				provides a wide variety of distributed data structures and concurrency primitives.</p>
+				<p>Hazelcast Node.js client is a way to communicate to Hazelcast IMDG clusters and access the cluster data.
+				The client provides a Promise-based API with a builtin support for native JavaScript objects.</p>
+				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+					<h2>Installation</h2>
+				</a>
+				<a href="#hazelcast" id="hazelcast" style="color: inherit; text-decoration: none;">
+					<h3>Hazelcast</h3>
+				</a>
+				<p>Hazelcast Node.js client requires a working Hazelcast IMDG cluster to run. This cluster handles the storage and
+				manipulation of the user data.</p>
+				<p>A Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or
+					physical machines and are connected to each other via the network. Any data put on the cluster is partitioned to
+					multiple members transparent to the user. It is therefore very easy to scale the system by adding new members as
+					the data grows. Hazelcast IMDG cluster also offers resilience. Should any hardware or software problem causes a crash
+					to any member, the data on that member is recovered from backups and the cluster continues to operate without any
+				downtime.</p>
+				<p>The quickest way to start a single member cluster for development purposes is to use our
+				<a href="https://hub.docker.com/r/hazelcast/hazelcast/">Docker images</a>.</p>
+				<pre><code class="language-bash"><span style="color: #000000">docker run -p 5701:5701 hazelcast/hazelcast:4.1.1</span>
+</code></pre>
+				<p>You can also use our ZIP or TAR <a href="https://hazelcast.org/imdg/download/archives/#hazelcast-imdg">distributions</a>
+				as described <a href="DOCUMENTATION.md#121-setting-up-a-hazelcast-imdg-cluster">here</a>.</p>
+				<a href="#client" id="client" style="color: inherit; text-decoration: none;">
+					<h3>Client</h3>
+				</a>
+				<pre><code class="language-bash"><span style="color: #000000">npm install hazelcast-client</span>
+</code></pre>
+				<a href="#overview" id="overview" style="color: inherit; text-decoration: none;">
+					<h2>Overview</h2>
+				</a>
+				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+					<h3>Usage</h3>
+				</a>
+				<pre><code class="language-js"><span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">Client</span><span style="color: #000000"> } = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;hazelcast-client&#039;</span><span style="color: #000000">);</span>
+
+<span style="color: #008000">// Connect to Hazelcast cluster</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">client</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">Client</span><span style="color: #000000">.</span><span style="color: #795E26">newHazelcastClient</span><span style="color: #000000">();</span>
+
+<span style="color: #008000">// Get or create the &#039;distributed-map&#039; on the cluster</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">map</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">client</span><span style="color: #000000">.</span><span style="color: #795E26">getMap</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;distributed-map&#039;</span><span style="color: #000000">);</span>
+
+<span style="color: #008000">// Put &#039;key&#039;, &#039;value&#039; pair into the &#039;distributed-map&#039;</span>
+<span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">map</span><span style="color: #000000">.</span><span style="color: #795E26">put</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;key&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;value&#039;</span><span style="color: #000000">);</span>
+
+<span style="color: #008000">// Get the value associated with the given key from the cluster</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">value</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">map</span><span style="color: #000000">.</span><span style="color: #795E26">get</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;key&#039;</span><span style="color: #000000">);</span>
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">value</span><span style="color: #000000">); </span><span style="color: #008000">// Outputs &#039;value&#039;</span>
+
+<span style="color: #008000">// Shutdown the client</span>
+<span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">client</span><span style="color: #000000">.</span><span style="color: #795E26">shutdown</span><span style="color: #000000">();</span>
+</code></pre>
+				<blockquote>
+					<p><strong>NOTE: For the sake of brevity we are going to omit boilerplate parts in the above code snippet. Refer to the <a href="https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples">Code Samples section</a> to see samples with the complete code.</strong></p>
+				</blockquote>
+				<p>If you are using Hazelcast IMDG and the Node.js client on the same machine, the default configuration should work
+					out-of-the-box. However, you may need to configure the client to connect to cluster nodes that are running on
+				different machines or to customize client properties.</p>
+				<a href="#configuration" id="configuration" style="color: inherit; text-decoration: none;">
+					<h3>Configuration</h3>
+				</a>
+				<pre><code class="language-js"><span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">Client</span><span style="color: #000000"> } = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;hazelcast-client&#039;</span><span style="color: #000000">);</span>
+
+<span style="color: #008000">// Initialize the client with the given configuration</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">client</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">Client</span><span style="color: #000000">.</span><span style="color: #795E26">newHazelcastClient</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">clusterName:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;cluster-name&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">network:</span><span style="color: #000000"> {</span>
+<span style="color: #000000">        </span><span style="color: #001080">clusterMembers:</span><span style="color: #000000"> [</span>
+<span style="color: #000000">            </span><span style="color: #A31515">&#039;10.90.0.2:5701&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">            </span><span style="color: #A31515">&#039;10.90.0.3:5701&#039;</span>
+<span style="color: #000000">        ]</span>
+<span style="color: #000000">    },</span>
+<span style="color: #000000">    </span><span style="color: #001080">lifecycleListeners:</span><span style="color: #000000"> [</span>
+<span style="color: #000000">        (</span><span style="color: #001080">state</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">            </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Lifecycle Event &gt;&gt;&gt; &#039;</span><span style="color: #000000"> + </span><span style="color: #001080">state</span><span style="color: #000000">);</span>
+<span style="color: #000000">        }</span>
+<span style="color: #000000">    ]</span>
+<span style="color: #000000">});</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Connected to cluster&#039;</span><span style="color: #000000">);</span>
+<span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">client</span><span style="color: #000000">.</span><span style="color: #795E26">shutdown</span><span style="color: #000000">();</span>
+</code></pre>
+				<p>Refer to <a href="DOCUMENTATION.md">the documentation</a> to learn more about supported configuration options.</p>
+				<a href="#features" id="features" style="color: inherit; text-decoration: none;">
+					<h2>Features</h2>
+				</a>
+				<ul>
+					<li>Distributed, partitioned and queryable in-memory key-value store implementation, called <strong>Map</strong></li>
+					<li>Eventually consistent cache implementation to store a subset of the Map data locally in the memory of the client, called <strong>Near Cache</strong></li>
+					<li>Additional data structures and simple messaging constructs such as <strong>Set</strong>, <strong>MultiMap</strong>, <strong>Queue</strong>, <strong>Topic</strong></li>
+					<li>Cluster-wide unique ID generator, called <strong>FlakeIdGenerator</strong></li>
+					<li>Distributed, CRDT based counter, called <strong>PNCounter</strong></li>
+					<li>Distributed concurrency primitives from CP Subsystem such as <strong>FencedLock</strong>, <strong>Semaphore</strong>, <strong>AtomicLong</strong></li>
+					<li>Integration with <a href="https://cloud.hazelcast.com/">Hazelcast Cloud</a></li>
+					<li>Support for serverless and traditional web service architectures with <strong>Unisocket</strong> and <strong>Smart</strong> operation modes</li>
+					<li>Ability to listen client lifecycle, cluster state and distributed data structure events</li>
+					<li>and <a href="https://hazelcast.org/imdg/clients-languages/node-js/#client-features">many more</a>.</li>
+				</ul>
+				<a href="#getting-help" id="getting-help" style="color: inherit; text-decoration: none;">
+					<h2>Getting Help</h2>
+				</a>
+				<p>You can use the following channels for your questions and development/usage issues:</p>
+				<ul>
+					<li><a href="https://github.com/hazelcast/hazelcast-nodejs-client">GitHub repository</a></li>
+					<li><a href="DOCUMENTATION.md">Complete documentation</a></li>
+					<li><a href="http://hazelcast.github.io/hazelcast-nodejs-client/">API documentation</a></li>
+					<li><a href="https://slack.hazelcast.com">Slack</a></li>
+					<li><a href="https://groups.google.com/forum/#!forum/hazelcast">Google Groups</a></li>
+					<li><a href="https://stackoverflow.com/questions/tagged/hazelcast">Stack Overflow</a></li>
+				</ul>
+				<a href="#contributing" id="contributing" style="color: inherit; text-decoration: none;">
+					<h2>Contributing</h2>
+				</a>
+				<p>We encourage any type of contribution in the form of issue reports or pull requests.</p>
+				<a href="#issue-reports" id="issue-reports" style="color: inherit; text-decoration: none;">
+					<h3>Issue Reports</h3>
+				</a>
+				<p>For issue reports, please share the following information with us to quickly resolve the problems.</p>
+				<ul>
+					<li>Hazelcast IMDG and the client version that you use</li>
+					<li>General information about the environment and the architecture you use like Node.js version, cluster size, number of clients, Java version, JVM parameters, operating system etc.</li>
+					<li>Logs and stack traces, if any.</li>
+					<li>Detailed description of the steps to reproduce the issue.</li>
+				</ul>
+				<a href="#pull-requests" id="pull-requests" style="color: inherit; text-decoration: none;">
+					<h3>Pull Requests</h3>
+				</a>
+				<p>Contributions are submitted, reviewed and accepted using the pull requests on GitHub. For an enhancement or larger
+				feature, create a GitHub issue first to discuss.</p>
+				<a href="#development" id="development" style="color: inherit; text-decoration: none;">
+					<h4>Development</h4>
+				</a>
+				<ol>
+					<li>Clone the GitHub <a href="https://github.com/hazelcast/hazelcast-nodejs-client.git">repository</a>.</li>
+					<li>Run <code>npm install</code> to automatically download and install all the required modules.</li>
+					<li>Do the work.</li>
+					<li>Hazelcast Node.js client developed using TypeScript. Run <code>npm run compile</code> to compile TypeScript files to JavaScript.</li>
+					<li>To have a consistent code style across the code base, Hazelcast Node.js client uses a style checker. Run <code>npm run lint</code> and fix the reported issues, if any.</li>
+				</ol>
+				<a href="#testing" id="testing" style="color: inherit; text-decoration: none;">
+					<h4>Testing</h4>
+				</a>
+				<p>In order to test Hazelcast Node.js client locally, you will need the following:</p>
+				<ul>
+					<li>Java 8 or newer</li>
+					<li>Maven</li>
+				</ul>
+				<p>Following command starts the tests:</p>
+				<pre><code class="language-bash"><span style="color: #000000">npm </span><span style="color: #795E26">test</span>
+</code></pre>
+				<p>Test script automatically downloads <code>hazelcast-remote-controller</code> and Hazelcast IMDG. The script uses Maven to download those.</p>
+				<p>In order to run specific tests, you can give a pattern to the test command like the following:</p>
+				<pre><code class="language-bash"><span style="color: #000000">npm </span><span style="color: #795E26">test</span><span style="color: #000000"> pattern</span>
+</code></pre>
+				<p>This command will only run the tests matching the pattern. The pattern can be a string or regex in the same form
+				<code>grep</code> command accepts.</p>
+				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+					<h2>License</h2>
+				</a>
+				<p><a href="LICENSE">Apache 2.0 License</a>.</p>
+				<a href="#copyright" id="copyright" style="color: inherit; text-decoration: none;">
+					<h2>Copyright</h2>
+				</a>
+				<p>Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.</p>
+				<p>Visit <a href="http://www.hazelcast.com">www.hazelcast.com</a> for more information.</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/cpsubsystem.html">CPSubsystem</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/hazelcastclient.html">Hazelcast<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/lifecycleservice.html">Lifecycle<wbr>Service</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/partitionservice.html">Partition<wbr>Service</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/aggregation_aggregator.html">aggregation/<wbr>Aggregator</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/aggregation_aggregators.html">aggregation/<wbr>Aggregators</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_bitmapindexoptions.html">config/<wbr>Bitmap<wbr>Index<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_clientcloudconfig.html">config/<wbr>Client<wbr>Cloud<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_clientnetworkconfig.html">config/<wbr>Client<wbr>Network<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_config.html">config/<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_connectionretryconfig.html">config/<wbr>Connection<wbr>Retry<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_connectionstrategyconfig.html">config/<wbr>Connection<wbr>Strategy<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_evictionpolicy.html">config/<wbr>Eviction<wbr>Policy</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_failoverconfig.html">config/<wbr>Failover<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_flakeidgeneratorconfig.html">config/<wbr>Flake<wbr>IdGenerator<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_inmemoryformat.html">config/<wbr>InMemory<wbr>Format</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_indexconfig.html">config/<wbr>Index<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_indextype.html">config/<wbr>Index<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_jsonstringdeserializationpolicy.html">config/<wbr>Json<wbr>String<wbr>Deserialization<wbr>Policy</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_loadbalancerconfig.html">config/<wbr>Load<wbr>Balancer<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_nearcacheconfig.html">config/<wbr>Near<wbr>Cache<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_properties.html">config/<wbr>Properties</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_reliabletopicconfig.html">config/<wbr>Reliable<wbr>Topic<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_sslconfig.html">config/SSLConfig</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_securityconfig.html">config/<wbr>Security<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config_serializationconfig.html">config/<wbr>Serialization<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/connection_basicssloptionsfactory.html">connection/<wbr>BasicSSLOptions<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/connection_ssloptionsfactory.html">connection/SSLOptions<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_address.html">core/<wbr>Address</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_clientinfo.html">core/<wbr>Client<wbr>Info</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_cluster.html">core/<wbr>Cluster</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_comparator.html">core/<wbr>Comparator</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_distributedobject.html">core/<wbr>Distributed<wbr>Object</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_distributedobjectlistener.html">core/<wbr>Distributed<wbr>Object<wbr>Listener</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_hazelcasterror.html">core/<wbr>Hazelcast<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_hazelcastjsonvalue.html">core/<wbr>Hazelcast<wbr>Json<wbr>Value</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_loadbalancer.html">core/<wbr>Load<wbr>Balancer</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_member.html">core/<wbr>Member</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_memberselector.html">core/<wbr>Member<wbr>Selector</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_membershiplistener.html">core/<wbr>Membership<wbr>Listener</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_partitionaware.html">core/<wbr>Partition<wbr>Aware</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_predicate.html">core/<wbr>Predicate</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_readonlylazylist.html">core/<wbr>Read<wbr>Only<wbr>Lazy<wbr>List</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_readresultset.html">core/<wbr>Read<wbr>Result<wbr>Set</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_restvalue.html">core/<wbr>Rest<wbr>Value</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_simpleentryview.html">core/<wbr>Simple<wbr>Entry<wbr>View</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/core_uuid.html">core/UUID</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/logging_ilogger.html">logging/ILogger</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_entrylistener.html">proxy/<wbr>Entry<wbr>Listener</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_fencedlock.html">proxy/<wbr>Fenced<wbr>Lock</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_flakeidgenerator.html">proxy/<wbr>Flake<wbr>IdGenerator</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_iatomiclong.html">proxy/IAtomic<wbr>Long</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_iatomicreference.html">proxy/IAtomic<wbr>Reference</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_icountdownlatch.html">proxy/ICount<wbr>Down<wbr>Latch</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_ilist.html">proxy/IList</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_imap.html">proxy/IMap</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_iqueue.html">proxy/IQueue</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_isemaphore.html">proxy/ISemaphore</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_iset.html">proxy/ISet</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_itopic.html">proxy/ITopic</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_itemlistener.html">proxy/<wbr>Item<wbr>Listener</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_maplistener.html">proxy/<wbr>Map<wbr>Listener</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_messagelistener.html">proxy/<wbr>Message<wbr>Listener</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_multimap.html">proxy/<wbr>Multi<wbr>Map</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_overflowpolicy.html">proxy/<wbr>Overflow<wbr>Policy</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_pncounter.html">proxy/PNCounter</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_replicatedmap.html">proxy/<wbr>Replicated<wbr>Map</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_replicatedmapproxy.html">proxy/<wbr>Replicated<wbr>Map<wbr>Proxy</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_ringbuffer.html">proxy/<wbr>Ringbuffer</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/proxy_topicoverloadpolicy.html">proxy/<wbr>Topic<wbr>Overload<wbr>Policy</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/security_tokencredentials.html">security/<wbr>Token<wbr>Credentials</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/security_tokenencoding.html">security/<wbr>Token<wbr>Encoding</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/security_usernamepasswordcredentials.html">security/<wbr>Username<wbr>Password<wbr>Credentials</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/serialization_data.html">serialization/<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/serialization_portable.html">serialization/<wbr>Portable</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/serialization_serializable.html">serialization/<wbr>Serializable</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/sql_sqlcolumnmetadata.html">sql/<wbr>Sql<wbr>Column<wbr>Metadata</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/sql_sqlqueryid.html">sql/<wbr>Sql<wbr>Query<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/sql_sqlresult.html">sql/<wbr>Sql<wbr>Result</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/sql_sqlrow.html">sql/<wbr>Sql<wbr>Row</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/sql_sqlrowmetadata.html">sql/<wbr>Sql<wbr>Row<wbr>Metadata</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/sql_sqlservice.html">sql/<wbr>Sql<wbr>Service</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/sql_sqlstatement.html">sql/<wbr>Sql<wbr>Statement</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
