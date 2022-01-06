@@ -28,8 +28,6 @@ jobs:
               run: |
                   npm install
                   npm run compile
-            - name: Lint
-              run: npm run lint
             - name: Validate User Code
               run: npm run validate-user-code
             - name: Run tests
