@@ -13,14 +13,14 @@
         "long": "4.0.0"
     },
     "devDependencies": {
-        "@istanbuljs/nyc-config-typescript": "^1.0.1",
+        "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@types/node": "~10.17.60",
         "@typescript-eslint/eslint-plugin": "~5.8.1",
         "@typescript-eslint/parser": "~5.8.1",
         "chai": "~4.3.4",
         "chai-as-promised": "~7.1.1",
-        "eslint": "~8.5.0",
-        "eslint-plugin-mocha": "~8.1.0",
+        "eslint": "~8.6.0",
+        "eslint-plugin-mocha": "~9.0.0",
         "husky": "~6.0.0",
         "jsonschema": "~1.4.0",
         "markdown-link-check": "~3.9.0",
