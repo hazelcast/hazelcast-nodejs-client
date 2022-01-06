@@ -15,13 +15,10 @@
  */
 /** @ignore *//** */
 
-import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
 import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
 import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
-import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
 import {DistributedObject} from '../core/DistributedObject';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
-import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {FlakeIdGeneratorProxy} from './flakeid/FlakeIdGeneratorProxy';
 import {ListProxy} from './ListProxy';
 import {MapProxy} from './MapProxy';
@@ -32,10 +29,8 @@ import {ReplicatedMapProxy} from './ReplicatedMapProxy';
 import {RingbufferProxy} from './ringbuffer/RingbufferProxy';
 import {SetProxy} from './SetProxy';
 import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
-import {DistributedObjectEvent, DistributedObjectListener} from '../core/DistributedObjectListener';
 import {deferredPromise} from '../util/Util';
 import {ClientMessage} from '../protocol/ClientMessage';
-import {UUID} from '../core/UUID';
 import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
 import {BaseProxy} from './BaseProxy';
 import {Ringbuffer} from './Ringbuffer';
@@ -55,7 +50,10 @@ import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 export const NAMESPACE_SEPARATOR = '/';
 const RINGBUFFER_PREFIX = '_hz_rb_';
 
-/** @internal */
+/**
+ * Returns distributed objects in the cluster. Also creates and destroys proxies both locally and remotely
+ * @internal
+ */
 export class ProxyManager {
 
     public static readonly MAP_SERVICE: string = 'hz:impl:mapService';
@@ -176,23 +174,6 @@ export class ProxyManager {
         return Promise.resolve();
     }
 
-    public addDistributedObjectListener(distributedObjectListener: DistributedObjectListener): Promise<string> {
-        const handler = (clientMessage: ClientMessage): void => {
-            const converterFunc = (objectName: string, serviceName: string, eventType: string): void => {
-                eventType = eventType.toLowerCase();
-                const distributedObjectEvent = new DistributedObjectEvent(eventType, serviceName, objectName);
-                distributedObjectListener(distributedObjectEvent);
-            };
-            ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc);
-        };
-        const codec = this.createDistributedObjectListener();
-        return this.listenerService.registerListener(codec, handler);
-    }
-
-    public removeDistributedObjectListener(listenerId: string): Promise<boolean> {
-        return this.listenerService.deregisterListener(listenerId);
-    }
-
     public destroy(): void {
         this.proxies.clear();
     }
@@ -200,20 +181,6 @@ export class ProxyManager {
     private createProxy(name: string, serviceName: string): Promise<ClientMessage> {
         const request = ClientCreateProxyCodec.encodeRequest(name, serviceName);
         return this.invocationService.invokeOnRandomTarget(request);
-    }
-
-    private createDistributedObjectListener(): ListenerMessageCodec {
-        return {
-            encodeAddRequest(localOnly: boolean): ClientMessage {
-                return ClientAddDistributedObjectListenerCodec.encodeRequest(localOnly);
-            },
-            decodeAddResponse(msg: ClientMessage): UUID {
-                return ClientAddDistributedObjectListenerCodec.decodeResponse(msg);
-            },
-            encodeRemoveRequest(listenerId: UUID): ClientMessage {
-                return ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId);
-            },
-        };
     }
 
     private initializeLocalProxy(name: string, serviceName: string, createAtServer: boolean): Promise<DistributedObject> {

@@ -15,7 +15,6 @@
  */
 import {SqlResult, SqlResultImpl} from './SqlResult';
 import {ConnectionManager} from '../network/ConnectionManager';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {SqlExpectedResultType, SqlStatement, SqlStatementOptions} from './SqlStatement';
 import {HazelcastSqlException, IllegalArgumentError} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
@@ -121,7 +120,6 @@ export class SqlServiceImpl implements SqlService {
     static readonly DEFAULT_SCHEMA: null = null;
 
     constructor(
-        private readonly connectionRegistry: ConnectionRegistry,
         private readonly serializationService: SerializationService,
         private readonly invocationService: InvocationService,
         private readonly connectionManager: ConnectionManager
@@ -248,7 +246,7 @@ export class SqlServiceImpl implements SqlService {
         let connection: Connection | null;
 
         try {
-            connection = this.connectionRegistry.getConnectionForSql();
+            connection = this.connectionManager.getConnectionRegistry().getConnectionForSql();
         } catch (e) {
             throw this.toHazelcastSqlException(e);
         }
