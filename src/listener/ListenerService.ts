@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {
-    ClientNotActiveError,
+    ClientNotActiveError, DistributedObjectEvent, DistributedObjectListener,
     HazelcastError,
     IOError,
     TargetDisconnectedError,
@@ -25,19 +25,23 @@ import {
 import {Connection} from '../network/Connection';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {ListenerRegistration} from '../invocation/ListenerRegistration';
-import {ClientMessageHandler} from '../protocol/ClientMessage';
+import {ClientMessage, ClientMessageHandler} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {
     ConnectionManager,
     CONNECTION_ADDED_EVENT_NAME,
     CONNECTION_REMOVED_EVENT_NAME
 } from '../network/ConnectionManager';
 import {ConnectionRegistration} from '../invocation/ConnectionRegistration';
+import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
+import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
 
-/** @internal */
+/**
+ * Stores, adds and removes listener registrations.
+ * @internal
+ */
 export class ListenerService {
 
     private readonly registrations: Map<string, ListenerRegistration>;
@@ -47,7 +51,6 @@ export class ListenerService {
         private readonly isSmartService: boolean,
         private readonly connectionManager: ConnectionManager,
         private readonly invocationService: InvocationService,
-        private readonly connectionRegistry: ConnectionRegistry
     ) {
         this.registrations = new Map();
     }
@@ -126,7 +129,7 @@ export class ListenerService {
 
         const listenerRegistration = new ListenerRegistration(listenerHandlerFn, codec);
         this.registrations.set(userRegistrationId, listenerRegistration);
-        const activeConnections = this.connectionRegistry.getConnections();
+        const activeConnections = this.connectionManager.getConnectionRegistry().getConnections();
 
         const registrationPromises = [];
         for (const connection of activeConnections) {
@@ -184,6 +187,33 @@ export class ListenerService {
                 'Deregistration of listener ' + userRegistrationId + ' has failed for address '
                     + invocation.connection.getRemoteAddress().toString());
         });
+    }
+
+    public addDistributedObjectListener(distributedObjectListener: DistributedObjectListener): Promise<string> {
+        const handler = (clientMessage: ClientMessage): void => {
+            const converterFunc = (objectName: string, serviceName: string, eventType: string): void => {
+                eventType = eventType.toLowerCase();
+                const distributedObjectEvent = new DistributedObjectEvent(eventType, serviceName, objectName);
+                distributedObjectListener(distributedObjectEvent);
+            };
+            ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc);
+        };
+        const codec = this.createDistributedObjectListener();
+        return this.registerListener(codec, handler);
+    }
+
+    private createDistributedObjectListener(): ListenerMessageCodec {
+        return {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
+                return ClientAddDistributedObjectListenerCodec.encodeRequest(localOnly);
+            },
+            decodeAddResponse(msg: ClientMessage): UUID {
+                return ClientAddDistributedObjectListenerCodec.decodeResponse(msg);
+            },
+            encodeRemoveRequest(listenerId: UUID): ClientMessage {
+                return ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId);
+            },
+        };
     }
 
     isSmart(): boolean {

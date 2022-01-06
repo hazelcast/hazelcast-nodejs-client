@@ -18,11 +18,11 @@
 import {ClientPingCodec} from '../codec/ClientPingCodec';
 import {Connection} from './Connection';
 import {ILogger} from '../logging/ILogger';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import {TargetDisconnectedError} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {Properties} from '../config';
+import {ConnectionManager} from './ConnectionManager';
 
 const PROPERTY_HEARTBEAT_INTERVAL = 'hazelcast.client.heartbeat.interval';
 const PROPERTY_HEARTBEAT_TIMEOUT = 'hazelcast.client.heartbeat.timeout';
@@ -35,17 +35,13 @@ export class HeartbeatManager {
 
     private readonly heartbeatTimeout: number;
     private readonly heartbeatInterval: number;
-    private logger: ILogger;
     private task: Task;
-    private readonly connectionRegistry: ConnectionRegistry;
 
     constructor(
         properties: Properties,
-        logger: ILogger,
-        connectionRegistry: ConnectionRegistry
+        private logger: ILogger,
+        private readonly connectionManager: ConnectionManager
     ) {
-        this.connectionRegistry = connectionRegistry;
-        this.logger = logger;
         this.heartbeatInterval = properties[PROPERTY_HEARTBEAT_INTERVAL] as number;
         this.heartbeatTimeout = properties[PROPERTY_HEARTBEAT_TIMEOUT] as number;
     }
@@ -73,12 +69,12 @@ export class HeartbeatManager {
     }
 
     private heartbeatFunction(invocationService: InvocationService): void {
-        if (!this.connectionRegistry.isActive()) {
+        if (!this.connectionManager.isActive()) {
             return;
         }
 
         const now = Date.now();
-        for (const connection of this.connectionRegistry.getConnections()) {
+        for (const connection of this.connectionManager.getConnectionRegistry().getConnections()) {
             this.checkConnection(now, connection, invocationService);
         }
     }

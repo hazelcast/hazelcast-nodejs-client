@@ -72,11 +72,13 @@ describe('SqlServiceTest', function () {
             };
             fakeSerializationService = { toData: sandbox.fake(v => v)};
             fakeInvocationService = { invokeOnConnection: sandbox.fake.resolves(fakeClientResponseMessage) };
-            fakeConnectionManager = { getClientUuid: sandbox.fake.returns(fakeClientUUID) };
+            fakeConnectionManager = {
+                getClientUuid: sandbox.fake.returns(fakeClientUUID),
+                getConnectionRegistry: () => fakeConnectionRegistry
+            };
 
             // sql service
             sqlService = new SqlServiceImpl(
-                fakeConnectionRegistry,
                 fakeSerializationService,
                 fakeInvocationService,
                 fakeConnectionManager
@@ -138,11 +140,9 @@ describe('SqlServiceTest', function () {
         });
 
         it('should throw HazelcastSqlException if no connection is available', async function () {
-            fakeConnectionRegistry = {
-                getConnectionForSql: sandbox.fake.returns(null)
-            };
+            fakeConnectionManager.getConnectionRegistry().getConnectionForSql = sandbox.fake.returns(null);
+
             sqlService = new SqlServiceImpl(
-                fakeConnectionRegistry,
                 fakeSerializationService,
                 fakeInvocationService,
                 fakeConnectionManager
@@ -157,7 +157,6 @@ describe('SqlServiceTest', function () {
             const err = new Error('Invocation failed');
             fakeInvocationService.invokeOnConnection = sandbox.fake.rejects(err);
             sqlService = new SqlServiceImpl(
-                fakeConnectionRegistry,
                 fakeSerializationService,
                 fakeInvocationService,
                 fakeConnectionManager
@@ -383,7 +382,6 @@ describe('SqlServiceTest', function () {
             // sql service
             sqlService = new SqlServiceImpl(
                 {},
-                {},
                 fakeInvocationService,
                 {}
             );
@@ -499,7 +497,6 @@ describe('SqlServiceTest', function () {
             fakeInvokeOnConnection = sandbox.fake.resolves(fakeClientResponseMessage);
             // sql service
             sqlService = new SqlServiceImpl(
-                {},
                 {},
                 {invokeOnConnection: fakeInvokeOnConnection},
                 {}

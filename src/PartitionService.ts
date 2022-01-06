@@ -20,8 +20,7 @@ import {ClientOfflineError, UUID} from './core';
 import {SerializationService} from './serialization/SerializationService';
 
 /**
- * Partition service for Hazelcast clients. Allows to retrieve information
- * about the partition count, the partition owner or the partitionId of a key.
+ * Retrieves information about the partition count, the partition owner or the partitionId of a key.
  */
 export interface PartitionService {
 
