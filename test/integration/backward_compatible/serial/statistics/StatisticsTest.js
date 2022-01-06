@@ -64,7 +64,7 @@ describe('StatisticsTest (default period)', function () {
     let cluster;
     let client;
     let map;
-    const DEFAULT_STATISTICS_PERIOD = 3;
+    const DEFAULT_STATISTICS_FREQUENCY = 3;
 
     before(async function () {
         cluster = await testFactory.createClusterForSerialTests();
@@ -115,7 +115,7 @@ describe('StatisticsTest (default period)', function () {
         expect(stats).to.not.be.null;
         expect(extractStringStatValue(stats, 'clientName')).to.equal(client.getName());
         expect(extractIntStatValue(stats, 'lastStatisticsCollectionTime')).to.be
-            .within(Date.now() - DEFAULT_STATISTICS_PERIOD * 2000, Date.now());
+            .within(Date.now() - DEFAULT_STATISTICS_FREQUENCY * 2000, Date.now());
         expect(extractBooleanStatValue(stats, 'enterprise')).to.be.false;
         const expectedClientType = TestUtil.isClientVersionAtLeast('4.0.2') ? 'NJS' : 'NodeJS';
         expect(extractStringStatValue(stats, 'clientType')).to.equal(expectedClientType);
