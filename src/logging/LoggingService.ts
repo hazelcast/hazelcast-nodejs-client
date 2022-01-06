@@ -20,7 +20,10 @@ import {DefaultLogger} from './DefaultLogger';
 import {ILogger, LogLevel} from './ILogger';
 import {enumFromString} from '../util/Util';
 
-/** @internal */
+/**
+ * Validates and constructs a valid logger instance and returns it.
+ * @internal
+ */
 export class LoggingService {
 
     private readonly logger: ILogger;

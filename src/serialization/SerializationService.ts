@@ -68,7 +68,10 @@ import {PREDICATE_FACTORY_ID, predicateFactory} from './DefaultPredicates';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
 import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
 
-/** @internal */
+/**
+ * Serializes objects and deserializes data.
+ * @internal
+ */
 export interface SerializationService {
 
     toData(object: any, partitioningStrategy?: any): Data;
