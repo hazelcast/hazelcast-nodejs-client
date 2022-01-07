@@ -75,7 +75,7 @@ export class CompactStreamSerializer {
 
     read(input: ObjectDataInput, schemaIncludedInBinary: boolean): Promise<any> {
         return this.getOrReadSchema(input, schemaIncludedInBinary).then((schema: Schema) => {
-            const registration = this.classNameToSerializersMap.get(schema.typeName);
+            const registration = this.typeNameToSerializersMap.get(schema.typeName);
 
             if (registration === undefined) {
                 // Registration does not exist, we will return a GenericRecord
@@ -108,7 +108,7 @@ export class CompactStreamSerializer {
         if (serializer.hzTypeName) {
             this.typeNameToSerializersMap.set(serializer.hzTypeName, serializer);
         } else {
-            this.typeNameToSerializersMap.set(serializer.hzClassName, serializer);
+            this.typeNameToSerializersMap.set(serializer.hzTypeName, serializer);
         }
     }
 
@@ -142,12 +142,16 @@ export class CompactStreamSerializer {
         return this.putToSchemaService(includeSchemaOnBinary, schema).then(() => {
             this.writeSchema(output, includeSchemaOnBinary, schema);
             const writer = new DefaultCompactWriter(this, output, schema, includeSchemaOnBinary);
-            for (const fieldDescriptor of schema.getFields()) {
-                const fieldName = fieldDescriptor.fieldName;
-                const fieldKind = fieldDescriptor.kind;
-                FieldOperations.fieldOperations(fieldKind).writeFieldFromRecordToWriter(writer, record, fieldName);
+            const fields = [...schema.getFields()];
+            const promises = new Array<Promise<void>>(fields.length);
+            for (let i = 0; i < fields.length; i++) {
+                const fieldName = fields[i].fieldName;
+                const fieldKind = fields[i].kind;
+                promises[i] = FieldOperations.fieldOperations(fieldKind).writeFieldFromRecordToWriter(writer, record, fieldName);
             }
-            writer.end();
+            return Promise.all(promises).then(() => {
+                writer.end();
+            });
         });
     }
 
