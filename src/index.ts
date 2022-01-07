@@ -31,3 +31,4 @@ export * from './LifecycleService';
 export * from './PartitionService';
 export * from './CPSubsystem';
 export * from './sql';
+export * from './security';

@@ -20,7 +20,6 @@ import {
     CONNECTION_ADDED_EVENT_NAME,
     CONNECTION_REMOVED_EVENT_NAME
 } from '../network/ConnectionManager';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
 import {ILogger} from '../logging/ILogger';
@@ -44,8 +43,7 @@ export class ClusterViewListenerService {
         private readonly connectionManager: ConnectionManager,
         private readonly partitionService: PartitionServiceImpl,
         private readonly clusterService: ClusterService,
-        private readonly invocationService: InvocationService,
-        private readonly connectionRegistry: ConnectionRegistry
+        private readonly invocationService: InvocationService
     ) {}
 
     public start(): void {
@@ -92,7 +90,7 @@ export class ClusterViewListenerService {
             return;
         }
         this.listenerAddedConnection = null;
-        const newConnection = this.connectionRegistry.getRandomConnection();
+        const newConnection = this.connectionManager.getConnectionRegistry().getRandomConnection();
         if (newConnection != null) {
             this.tryRegister(newConnection);
         }
@@ -101,7 +99,9 @@ export class ClusterViewListenerService {
     private createClusterViewEventHandler(connection: Connection): (msg: ClientMessage) => void {
         return (clientMessage: ClientMessage): void => {
             ClientAddClusterViewListenerCodec.handle(clientMessage,
-                this.clusterService.handleMembersViewEvent.bind(this.clusterService, this.connectionRegistry),
+                this.clusterService.handleMembersViewEvent.bind(
+                    this.clusterService, this.connectionManager.getConnectionRegistry()
+                ),
                 (version: number, partitions: Array<[UUID, number[]]>) => {
                     this.partitionService.handlePartitionViewEvent(connection, partitions, version);
                 });

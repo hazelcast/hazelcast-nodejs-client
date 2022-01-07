@@ -24,8 +24,6 @@ export interface Field<T> {
     kind: FieldKind
 }
 
-export type Nullable<T> = T | null;
-
 export const boolean: Field<boolean> = {
     kind: FieldKind.BOOLEAN
 }
@@ -116,45 +114,45 @@ export const genericRecord: Field<GenericRecord> = {
 export const arrayOfGenericRecords: Field<GenericRecord[]> = {
     kind: FieldKind.ARRAY_OF_GENERIC_RECORDS
 }
-export const nullableBoolean: Field<Nullable<boolean>> = {
+export const nullableBoolean: Field<boolean | null> = {
     kind: FieldKind.NULLABLE_BOOLEAN
 }
-export const arrayOfNullableBooleans: Field<Nullable<boolean>[]> = {
+export const arrayOfNullableBooleans: Field<(boolean | null)[]> = {
     kind: FieldKind.ARRAY_OF_NULLABLE_BOOLEANS
 }
-export const nullableByte: Field<Nullable<number>> = {
+export const nullableByte: Field<number | null> = {
     kind: FieldKind.NULLABLE_BYTE
 }
-export const arrayOfNullableBytes: Field<Nullable<number>[]> = {
+export const arrayOfNullableBytes: Field<(number | null)[]> = {
     kind: FieldKind.ARRAY_OF_NULLABLE_BYTES
 }
-export const nullableShort: Field<Nullable<number>> = {
+export const nullableShort: Field<number | null> = {
     kind: FieldKind.NULLABLE_SHORT
 }
-export const arrayOfNullableShorts: Field<Nullable<number>[]> = {
+export const arrayOfNullableShorts: Field<(number | null)[]> = {
     kind: FieldKind.ARRAY_OF_NULLABLE_SHORTS
 }
-export const nullableInt: Field<Nullable<number>> = {
+export const nullableInt: Field<number | null> = {
     kind: FieldKind.NULLABLE_INT
 }
-export const arrayOfNullableInts: Field<Nullable<number>[]> = {
+export const arrayOfNullableInts: Field<(number | null)[]> = {
     kind: FieldKind.ARRAY_OF_NULLABLE_INTS
 }
-export const nullableLong: Field<Nullable<Long>> = {
+export const nullableLong: Field<Long | null> = {
     kind: FieldKind.NULLABLE_LONG
 }
-export const arrayOfNullableLongs: Field<Nullable<Long>[]> = {
+export const arrayOfNullableLongs: Field<(Long | null)[]> = {
     kind: FieldKind.ARRAY_OF_NULLABLE_LONGS
 }
-export const nullableFloat: Field<Nullable<number>> = {
+export const nullableFloat: Field<number | null> = {
     kind: FieldKind.NULLABLE_FLOAT
 }
-export const arrayOfNullableFloats: Field<Nullable<number>[]> = {
+export const arrayOfNullableFloats: Field<(number | null)[]> = {
     kind: FieldKind.ARRAY_OF_NULLABLE_FLOATS
 }
-export const nullableDouble: Field<Nullable<number>> = {
+export const nullableDouble: Field<number | null> = {
     kind: FieldKind.NULLABLE_DOUBLE
 }
-export const arrayOfNullableDoubles: Field<Nullable<number>[]> = {
+export const arrayOfNullableDoubles: Field<(number | null)[]> = {
     kind: FieldKind.ARRAY_OF_NULLABLE_DOUBLES
 }

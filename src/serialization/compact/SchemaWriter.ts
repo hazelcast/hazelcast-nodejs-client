@@ -22,87 +22,88 @@ export class SchemaWriter implements CompactWriter {
         return new Schema(this.className, this.fields);
     }
 
-    writeArrayOfBooleans(fieldName: string, value: boolean[] | null): void {
+    writeArrayOfBoolean(fieldName: string, value: boolean[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_BOOLEANS));
     }
 
-    writeArrayOfBytes(fieldName: string, value: Buffer | null): void {
+    writeArrayOfInt8(fieldName: string, value: Buffer | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_BYTES));
     }
 
-    writeArrayOfCompacts<T>(fieldName: string, value: T[] | null): void {
+    writeArrayOfCompact<T>(fieldName: string, value: T[] | null): Promise<void> {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_COMPACTS));
+        return Promise.resolve();
     }
 
-    writeArrayOfDates(fieldName: string, value: LocalDate[] | null): void {
+    writeArrayOfDate(fieldName: string, value: LocalDate[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_DATES));
     }
 
-    writeArrayOfDecimals(fieldName: string, value: BigDecimal[] | null): void {
+    writeArrayOfDecimal(fieldName: string, value: BigDecimal[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_DECIMALS));
     }
 
-    writeArrayOfDoubles(fieldName: string, value: number[] | null): void {
+    writeArrayOfFloat64(fieldName: string, value: number[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_DOUBLES));
     }
 
-    writeArrayOfFloats(fieldName: string, value: number[] | null): void {
+    writeArrayOfFloat32(fieldName: string, value: number[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_FLOATS));
     }
 
-    writeArrayOfInts(fieldName: string, value: number[] | null): void {
+    writeArrayOfInt32(fieldName: string, value: number[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_INTS));
     }
 
-    writeArrayOfLongs(fieldName: string, value: Long[] | null): void {
+    writeArrayOfInt64(fieldName: string, value: Long[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_LONGS));
     }
 
-    writeArrayOfNullableBooleans(fieldName: string, value: (boolean | null)[] | null): void {
+    writeArrayOfNullableBoolean(fieldName: string, value: (boolean | null)[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_NULLABLE_BOOLEANS));
     }
 
-    writeArrayOfNullableBytes(fieldName: string, value: (number | null)[] | null): void {
+    writeArrayOfNullableInt8(fieldName: string, value: (number | null)[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_NULLABLE_BYTES));
     }
 
-    writeArrayOfNullableDoubles(fieldName: string, value: (number | null)[] | null): void {
+    writeArrayOfNullableFloat64(fieldName: string, value: (number | null)[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_NULLABLE_DOUBLES));
     }
 
-    writeArrayOfNullableFloats(fieldName: string, value: (number | null)[] | null): void {
+    writeArrayOfNullableFloat32(fieldName: string, value: (number | null)[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOATS));
     }
 
-    writeArrayOfNullableInts(fieldName: string, value: (number | null)[] | null): void {
+    writeArrayOfNullableInt32(fieldName: string, value: (number | null)[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_NULLABLE_INTS));
     }
 
-    writeArrayOfNullableLongs(fieldName: string, value: (Long | null)[] | null): void {
+    writeArrayOfNullableInt64(fieldName: string, value: (Long | null)[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_NULLABLE_LONGS));
     }
 
-    writeArrayOfNullableShorts(fieldName: string, value: (number | null)[] | null): void {
+    writeArrayOfNullableInt16(fieldName: string, value: (number | null)[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_NULLABLE_SHORTS));
     }
 
-    writeArrayOfShorts(fieldName: string, value: number[] | null): void {
+    writeArrayOfInt16(fieldName: string, value: number[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_SHORTS));
     }
 
-    writeArrayOfStrings(fieldName: string, value: string[] | null): void {
+    writeArrayOfString(fieldName: string, value: string[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_STRINGS));
     }
 
-    writeArrayOfTimes(fieldName: string, value: LocalTime[] | null): void {
+    writeArrayOfTime(fieldName: string, value: LocalTime[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_TIMES));
     }
 
-    writeArrayOfTimestampWithTimezones(fieldName: string, value: OffsetDateTime[] | null): void {
+    writeArrayOfTimestampWithTimezone(fieldName: string, value: OffsetDateTime[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONES));
     }
 
-    writeArrayOfTimestamps(fieldName: string, value: LocalDateTime[] | null): void {
+    writeArrayOfTimestamp(fieldName: string, value: LocalDateTime[] | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.ARRAY_OF_TIMESTAMPS));
     }
 
@@ -110,12 +111,13 @@ export class SchemaWriter implements CompactWriter {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.BOOLEAN));
     }
 
-    writeByte(fieldName: string, value: number): void {
+    writeInt8(fieldName: string, value: number): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.BYTE));
     }
 
-    writeCompact<T>(fieldName: string, value: T | null): void {
+    writeCompact<T>(fieldName: string, value: T | null): Promise<void> {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.COMPACT));
+        return Promise.resolve();
     }
 
     writeDate(fieldName: string, value: LocalDate | null): void {
@@ -126,19 +128,19 @@ export class SchemaWriter implements CompactWriter {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.DECIMAL));
     }
 
-    writeDouble(fieldName: string, value: number): void {
+    writeFloat64(fieldName: string, value: number): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.DOUBLE));
     }
 
-    writeFloat(fieldName: string, value: number): void {
+    writeFloat32(fieldName: string, value: number): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.FLOAT));
     }
 
-    writeInt(fieldName: string, value: number): void {
+    writeInt32(fieldName: string, value: number): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.INT));
     }
 
-    writeLong(fieldName: string, value: Long): void {
+    writeInt64(fieldName: string, value: Long): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.LONG));
     }
 
@@ -146,31 +148,31 @@ export class SchemaWriter implements CompactWriter {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.NULLABLE_BOOLEAN));
     }
 
-    writeNullableByte(fieldName: string, value: number | null): void {
+    writeNullableInt8(fieldName: string, value: number | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.NULLABLE_BYTE));
     }
 
-    writeNullableDouble(fieldName: string, value: number | null): void {
+    writeNullableFloat64(fieldName: string, value: number | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.NULLABLE_DOUBLE));
     }
 
-    writeNullableFloat(fieldName: string, value: number | null): void {
+    writeNullableFloat32(fieldName: string, value: number | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.NULLABLE_FLOAT));
     }
 
-    writeNullableInt(fieldName: string, value: number | null): void {
+    writeNullableInt32(fieldName: string, value: number | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.NULLABLE_INT));
     }
 
-    writeNullableLong(fieldName: string, value: Long | null): void {
+    writeNullableInt64(fieldName: string, value: Long | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.NULLABLE_LONG));
     }
 
-    writeNullableShort(fieldName: string, value: number | null): void {
+    writeNullableInt16(fieldName: string, value: number | null): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.NULLABLE_SHORT));
     }
 
-    writeShort(fieldName: string, value: number): void {
+    writeInt16(fieldName: string, value: number): void {
         this.fields.push(new FieldDescriptor(fieldName, FieldKind.SHORT));
     }
 

@@ -51,89 +51,89 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
                     values[field.fieldName] = this.readBoolean(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_BOOLEANS:
-                    values[field.fieldName] = this.readArrayOfBooleans(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfBoolean(field.fieldName);
                     break;
                 case FieldKind.BYTE:
-                    values[field.fieldName] = this.readByte(field.fieldName);
+                    values[field.fieldName] = this.readInt8(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_BYTES:
-                    values[field.fieldName] = this.readArrayOfBytes(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfInt8(field.fieldName);
                     break;
                 case FieldKind.CHAR:
                     throw new UnsupportedOperationError('Char field is not supported in compact');
                 case FieldKind.ARRAY_OF_CHARS:
                     throw new UnsupportedOperationError('Char field is not supported in compact');
                 case FieldKind.SHORT:
-                    values[field.fieldName] = this.readShort(field.fieldName);
+                    values[field.fieldName] = this.readInt16(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_SHORTS:
-                    values[field.fieldName] = this.readArrayOfShorts(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfInt16(field.fieldName);
                     break;
                 case FieldKind.INT:
-                    values[field.fieldName] = this.readInt(field.fieldName);
+                    values[field.fieldName] = this.readInt32(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_INTS:
-                    values[field.fieldName] = this.readArrayOfInts(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfInt32(field.fieldName);
                     break;
                 case FieldKind.LONG:
-                    values[field.fieldName] = this.readLong(field.fieldName);
+                    values[field.fieldName] = this.readInt64(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_LONGS:
-                    values[field.fieldName] = this.readArrayOfLongs(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfInt64(field.fieldName);
                     break;
                 case FieldKind.FLOAT:
-                    values[field.fieldName] = this.readFloat(field.fieldName);
+                    values[field.fieldName] = this.readFloat32(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_FLOATS:
-                    values[field.fieldName] = this.readArrayOfFloats(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfFloat32(field.fieldName);
                     break;
                 case FieldKind.DOUBLE:
-                    values[field.fieldName] = this.readDouble(field.fieldName);
+                    values[field.fieldName] = this.readFloat64(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_DOUBLES:
-                    values[field.fieldName] = this.readArrayOfDoubles(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfFloat64(field.fieldName);
                     break;
                 case FieldKind.STRING:
                     values[field.fieldName] = this.readString(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_STRINGS:
-                    values[field.fieldName] = this.readArrayOfStrings(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfString(field.fieldName);
                     break;
                 case FieldKind.DECIMAL:
                     values[field.fieldName] = this.readDecimal(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_DECIMALS:
-                    values[field.fieldName] = this.readArrayOfDecimals(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfDecimal(field.fieldName);
                     break;
                 case FieldKind.TIME:
                     values[field.fieldName] = this.readTime(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_TIMES:
-                    values[field.fieldName] = this.readArrayOfTimes(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfTime(field.fieldName);
                     break;
                 case FieldKind.DATE:
                     values[field.fieldName] = this.readDate(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_DATES:
-                    values[field.fieldName] = this.readArrayOfDates(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfDate(field.fieldName);
                     break;
                 case FieldKind.TIMESTAMP:
                     values[field.fieldName] = this.readTimestamp(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_TIMESTAMPS:
-                    values[field.fieldName] = this.readArrayOfTimestamps(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfTimestamp(field.fieldName);
                     break;
                 case FieldKind.TIMESTAMP_WITH_TIMEZONE:
                     values[field.fieldName] = this.readTimestampWithTimezone(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONES:
-                    values[field.fieldName] = this.readArrayOfTimestampWithTimezones(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfTimestampWithTimezone(field.fieldName);
                     break;
                 case FieldKind.COMPACT:
                     values[field.fieldName] = this.readCompact(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_COMPACTS:
-                    values[field.fieldName] = this.readArrayOfCompacts(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfCompact(field.fieldName);
                     break;
                 case FieldKind.PORTABLE:
                     throw new UnsupportedOperationError('Portable field is not supported in compact');
@@ -143,50 +143,50 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
                     values[field.fieldName] = this.readNullableBoolean(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_NULLABLE_BOOLEANS:
-                    values[field.fieldName] = this.readArrayOfNullableBooleans(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfNullableBoolean(field.fieldName);
                     break;
                 case FieldKind.NULLABLE_BYTE:
-                    values[field.fieldName] = this.readNullableByte(field.fieldName);
+                    values[field.fieldName] = this.readNullableInt8(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_NULLABLE_BYTES:
-                    values[field.fieldName] = this.readArrayOfNullableBytes(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfNullableInt8(field.fieldName);
                     break;
                 case FieldKind.NULLABLE_SHORT:
-                    values[field.fieldName] = this.readNullableShort(field.fieldName);
+                    values[field.fieldName] = this.readNullableInt16(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_NULLABLE_SHORTS:
-                    values[field.fieldName] = this.readArrayOfNullableShorts(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfNullableInt16(field.fieldName);
                     break;
                 case FieldKind.NULLABLE_INT:
-                    values[field.fieldName] = this.readNullableInt(field.fieldName);
+                    values[field.fieldName] = this.readNullableInt32(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_NULLABLE_INTS:
-                    values[field.fieldName] = this.readArrayOfNullableInts(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfNullableInt32(field.fieldName);
                     break;
                 case FieldKind.NULLABLE_LONG:
-                    values[field.fieldName] = this.readNullableLong(field.fieldName);
+                    values[field.fieldName] = this.readNullableInt64(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_NULLABLE_LONGS:
-                    values[field.fieldName] = this.readArrayOfNullableLongs(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfNullableInt64(field.fieldName);
                     break;
                 case FieldKind.NULLABLE_FLOAT:
-                    values[field.fieldName] = this.readNullableFloat(field.fieldName);
+                    values[field.fieldName] = this.readNullableFloat32(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_NULLABLE_FLOATS:
-                    values[field.fieldName] = this.readArrayOfNullableFloats(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfNullableFloat32(field.fieldName);
                     break;
                 case FieldKind.NULLABLE_DOUBLE:
-                    values[field.fieldName] = this.readNullableDouble(field.fieldName);
+                    values[field.fieldName] = this.readNullableFloat64(field.fieldName);
                     break;
                 case FieldKind.ARRAY_OF_NULLABLE_DOUBLES:
-                    values[field.fieldName] = this.readArrayOfNullableDoubles(field.fieldName);
+                    values[field.fieldName] = this.readArrayOfNullableFloat64(field.fieldName);
                     break;
             }
         }
         return new CompactGenericRecordImpl(this.className, fields, values);
     }
 
-    readArrayOfBooleans(fieldName: string, defaultValue?: boolean[] | null): boolean[] | null {
+    readArrayOfBoolean(fieldName: string, defaultValue?: boolean[] | null): boolean[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfBooleans(fieldName);
         } else {
@@ -194,7 +194,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfBytes(fieldName: string, defaultValue?: Buffer | null): Buffer | null {
+    readArrayOfInt8(fieldName: string, defaultValue?: Buffer | null): Buffer | null {
         if (defaultValue === undefined) {
             return this.getArrayOfBytes(fieldName);
         } else {
@@ -202,7 +202,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfCompacts<T>(fieldName: string, defaultValue?: T[] | null): T[] | null {
+    readArrayOfCompact<T>(fieldName: string, defaultValue?: T[] | null): T[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfObjects(fieldName);
         } else {
@@ -211,7 +211,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfDates(fieldName: string, defaultValue?: LocalDate[] | null): LocalDate[] | null {
+    readArrayOfDate(fieldName: string, defaultValue?: LocalDate[] | null): LocalDate[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfDates(fieldName);
         } else {
@@ -219,7 +219,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfDecimals(fieldName: string, defaultValue?: BigDecimal[] | null): BigDecimal[] | null {
+    readArrayOfDecimal(fieldName: string, defaultValue?: BigDecimal[] | null): BigDecimal[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfDecimals(fieldName);
         } else {
@@ -227,7 +227,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfDoubles(fieldName: string, defaultValue?: number[] | null): number[] | null {
+    readArrayOfFloat64(fieldName: string, defaultValue?: number[] | null): number[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfDoubles(fieldName);
         } else {
@@ -235,7 +235,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfFloats(fieldName: string, defaultValue?: number[] | null): number[] | null {
+    readArrayOfFloat32(fieldName: string, defaultValue?: number[] | null): number[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfFloats(fieldName);
         } else {
@@ -243,7 +243,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfInts(fieldName: string, defaultValue?: number[] | null): number[] | null {
+    readArrayOfInt32(fieldName: string, defaultValue?: number[] | null): number[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfInts(fieldName);
         } else {
@@ -251,7 +251,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfLongs(fieldName: string, defaultValue?: Long[] | null): Long[] | null {
+    readArrayOfInt64(fieldName: string, defaultValue?: Long[] | null): Long[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfLongs(fieldName);
         } else {
@@ -259,7 +259,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfNullableBooleans(fieldName: string, defaultValue?: (boolean | null)[] | null): (boolean | null)[] | null {
+    readArrayOfNullableBoolean(fieldName: string, defaultValue?: (boolean | null)[] | null): (boolean | null)[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfNullableBooleans(fieldName);
         } else {
@@ -268,7 +268,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfNullableBytes(fieldName: string, defaultValue?: (number | null)[] | null): (number | null)[] | null {
+    readArrayOfNullableInt8(fieldName: string, defaultValue?: (number | null)[] | null): (number | null)[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfNullableBytes(fieldName);
         } else {
@@ -277,7 +277,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfNullableDoubles(fieldName: string, defaultValue?: (number | null)[] | null): (number | null)[] | null {
+    readArrayOfNullableFloat64(fieldName: string, defaultValue?: (number | null)[] | null): (number | null)[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfNullableDoubles(fieldName);
         } else {
@@ -286,7 +286,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfNullableFloats(fieldName: string, defaultValue?: (number | null)[] | null): (number | null)[] | null {
+    readArrayOfNullableFloat32(fieldName: string, defaultValue?: (number | null)[] | null): (number | null)[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfNullableFloats(fieldName);
         } else {
@@ -295,7 +295,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfNullableInts(fieldName: string, defaultValue?: (number | null)[] | null): (number | null)[] | null {
+    readArrayOfNullableInt32(fieldName: string, defaultValue?: (number | null)[] | null): (number | null)[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfNullableInts(fieldName);
         } else {
@@ -304,7 +304,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfNullableLongs(fieldName: string, defaultValue?: (Long | null)[] | null): (Long | null)[] | null {
+    readArrayOfNullableInt64(fieldName: string, defaultValue?: (Long | null)[] | null): (Long | null)[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfNullableLongs(fieldName);
         } else {
@@ -313,7 +313,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfNullableShorts(fieldName: string, defaultValue?: (number | null)[] | null): (number | null)[] | null {
+    readArrayOfNullableInt16(fieldName: string, defaultValue?: (number | null)[] | null): (number | null)[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfNullableShorts(fieldName);
         } else {
@@ -322,7 +322,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfShorts(fieldName: string, defaultValue?: number[] | null): number[] | null {
+    readArrayOfInt16(fieldName: string, defaultValue?: number[] | null): number[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfShorts(fieldName);
         } else {
@@ -330,7 +330,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfStrings(fieldName: string, defaultValue?: string[] | null): string[] | null {
+    readArrayOfString(fieldName: string, defaultValue?: string[] | null): string[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfStrings(fieldName);
         } else {
@@ -338,7 +338,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfTimes(fieldName: string, defaultValue?: LocalTime[] | null): LocalTime[] | null {
+    readArrayOfTime(fieldName: string, defaultValue?: LocalTime[] | null): LocalTime[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfTimes(fieldName);
         } else {
@@ -346,7 +346,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfTimestampWithTimezones(fieldName: string, defaultValue?: OffsetDateTime[] | null): OffsetDateTime[] | null {
+    readArrayOfTimestampWithTimezone(fieldName: string, defaultValue?: OffsetDateTime[] | null): OffsetDateTime[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfTimestampWithTimezones(fieldName);
         } else {
@@ -355,7 +355,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readArrayOfTimestamps(fieldName: string, defaultValue?: LocalDateTime[] | null): LocalDateTime[] | null {
+    readArrayOfTimestamp(fieldName: string, defaultValue?: LocalDateTime[] | null): LocalDateTime[] | null {
         if (defaultValue === undefined) {
             return this.getArrayOfTimestamps(fieldName);
         } else {
@@ -372,7 +372,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readByte(fieldName: string, defaultValue?: number): number {
+    readInt8(fieldName: string, defaultValue?: number): number {
         if (defaultValue === undefined) {
             return this.getByte(fieldName);
         } else {
@@ -404,7 +404,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readDouble(fieldName: string, defaultValue?: number): number {
+    readFloat64(fieldName: string, defaultValue?: number): number {
         if (defaultValue === undefined) {
             return this.getDouble(fieldName);
         } else {
@@ -412,7 +412,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readFloat(fieldName: string, defaultValue?: number): number {
+    readFloat32(fieldName: string, defaultValue?: number): number {
         if (defaultValue === undefined) {
             return this.getFloat(fieldName);
         } else {
@@ -420,7 +420,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readInt(fieldName: string, defaultValue?: number): number {
+    readInt32(fieldName: string, defaultValue?: number): number {
         if (defaultValue === undefined) {
             return this.getInt(fieldName);
         } else {
@@ -428,7 +428,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readLong(fieldName: string, defaultValue?: Long): Long {
+    readInt64(fieldName: string, defaultValue?: Long): Long {
         if (defaultValue === undefined) {
             return this.getLong(fieldName);
         } else {
@@ -436,7 +436,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readShort(fieldName: string, defaultValue?: number): number {
+    readInt16(fieldName: string, defaultValue?: number): number {
         if (defaultValue === undefined) {
             return this.getShort(fieldName);
         } else {
@@ -485,7 +485,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readNullableByte(fieldName: string, defaultValue?: number | null): number | null {
+    readNullableInt8(fieldName: string, defaultValue?: number | null): number | null {
         if (defaultValue === undefined) {
             return this.getNullableByte(fieldName);
         } else {
@@ -493,7 +493,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readNullableDouble(fieldName: string, defaultValue?: number | null): number | null {
+    readNullableFloat64(fieldName: string, defaultValue?: number | null): number | null {
         if (defaultValue === undefined) {
             return this.getNullableDouble(fieldName);
         } else {
@@ -501,7 +501,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readNullableFloat(fieldName: string, defaultValue?: number | null): number | null {
+    readNullableFloat32(fieldName: string, defaultValue?: number | null): number | null {
         if (defaultValue === undefined) {
             return this.getNullableFloat(fieldName);
         } else {
@@ -509,7 +509,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readNullableInt(fieldName: string, defaultValue?: number | null): number | null {
+    readNullableInt32(fieldName: string, defaultValue?: number | null): number | null {
         if (defaultValue === undefined) {
             return this.getNullableInt(fieldName);
         } else {
@@ -517,7 +517,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readNullableLong(fieldName: string, defaultValue?: Long | null): Long | null {
+    readNullableInt64(fieldName: string, defaultValue?: Long | null): Long | null {
         if (defaultValue === undefined) {
             return this.getNullableLong(fieldName);
         } else {
@@ -525,7 +525,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         }
     }
 
-    readNullableShort(fieldName: string, defaultValue?: number | null): number | null {
+    readNullableInt16(fieldName: string, defaultValue?: number | null): number | null {
         if (defaultValue === undefined) {
             return this.getNullableShort(fieldName);
         } else {

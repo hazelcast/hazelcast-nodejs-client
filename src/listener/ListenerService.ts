@@ -16,41 +16,43 @@
 /** @ignore *//** */
 
 import {
-    ClientNotActiveError,
+    ClientNotActiveError, DistributedObjectEvent, DistributedObjectListener,
     HazelcastError,
     IOError,
-    TargetDisconnectedError
+    TargetDisconnectedError,
+    UUID
 } from '../core';
 import {Connection} from '../network/Connection';
-import {ClientEventRegistration} from '../invocation/ClientEventRegistration';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
-import {RegistrationKey} from '../invocation/RegistrationKey';
-import {ClientMessageHandler} from '../protocol/ClientMessage';
+import {ListenerRegistration} from '../invocation/ListenerRegistration';
+import {ClientMessage, ClientMessageHandler} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from './ListenerMessageCodec';
 import {UuidUtil} from '../util/UuidUtil';
 import {ILogger} from '../logging';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {
     ConnectionManager,
     CONNECTION_ADDED_EVENT_NAME,
     CONNECTION_REMOVED_EVENT_NAME
 } from '../network/ConnectionManager';
+import {ConnectionRegistration} from '../invocation/ConnectionRegistration';
+import {ClientAddDistributedObjectListenerCodec} from '../codec/ClientAddDistributedObjectListenerCodec';
+import {ClientRemoveDistributedObjectListenerCodec} from '../codec/ClientRemoveDistributedObjectListenerCodec';
 
-/** @internal */
+/**
+ * Stores, adds and removes listener registrations.
+ * @internal
+ */
 export class ListenerService {
 
-    private readonly activeRegistrations: Map<string, Map<Connection, ClientEventRegistration>>;
-    private readonly userKeyInformation: Map<string, RegistrationKey>;
+    private readonly registrations: Map<string, ListenerRegistration>;
 
     constructor(
         private readonly logger: ILogger,
         private readonly isSmartService: boolean,
         private readonly connectionManager: ConnectionManager,
         private readonly invocationService: InvocationService,
-        private readonly connectionRegistry: ConnectionRegistry
     ) {
-        this.activeRegistrations = new Map();
-        this.userKeyInformation = new Map();
+        this.registrations = new Map();
     }
 
     start(): void {
@@ -67,151 +69,151 @@ export class ListenerService {
     }
 
     reregisterListenersOnConnection(connection: Connection): void {
-        this.activeRegistrations.forEach((registrationMap, userKey) => {
-            if (registrationMap.has(connection)) {
-                return;
-            }
-            this.invokeRegistrationFromRecord(userKey, connection).then((eventRegistration) => {
-                // handle potential race with deregisterListener
-                // which might have deleted the registration
-                if (this.userKeyInformation.get(userKey) === undefined) {
-                    this.deregisterListenerOnTarget(userKey, eventRegistration);
-                    return;
-                }
-                registrationMap.set(connection, eventRegistration);
-            }).catch((err) => {
-                this.logger.warn('ListenerService', err);
+        this.registrations.forEach((registration, userRegistrationId) => {
+            this.invoke(registration, connection, userRegistrationId).catch(err => {
+                this.logger.warn('ListenerService', `Listener ${userRegistrationId} can not` +
+                    `be added to a new connection: ${connection}, reason: ${err}`);
             });
         }, this);
     }
 
     removeRegistrationsOnConnection(connection: Connection): void {
-        this.activeRegistrations.forEach((registrationsOnUserKey) => {
-            const eventRegistration = registrationsOnUserKey.get(connection);
-            if (eventRegistration !== undefined) {
-                this.invocationService.removeEventHandler(eventRegistration.correlationId);
+        this.registrations.forEach((listenerRegistration) => {
+            const connectionRegistration = listenerRegistration.connectionRegistrations.get(connection);
+            if (connectionRegistration !== undefined) {
+                listenerRegistration.connectionRegistrations.delete(connection);
+                this.invocationService.removeEventHandler(connectionRegistration.correlationId);
             }
         });
     }
 
-    invokeRegistrationFromRecord(userKey: string, connection: Connection): Promise<ClientEventRegistration> {
-        const activeRegsOnUserKey = this.activeRegistrations.get(userKey);
-        if (activeRegsOnUserKey !== undefined && activeRegsOnUserKey.has(connection)) {
-            return Promise.resolve(activeRegsOnUserKey.get(connection));
+    invoke(listenerRegistration: ListenerRegistration, connection: Connection, userRegistrationId: string): Promise<void> {
+        if (listenerRegistration.connectionRegistrations.has(connection)) {
+            return Promise.resolve();
         }
-        const registrationKey = this.userKeyInformation.get(userKey);
-        // New correlation id will be set on the invoke call
-        const registerRequest = registrationKey.getRegisterRequest().copyWithNewCorrelationId();
-        const codec = registrationKey.getCodec();
+        const codec = listenerRegistration.codec;
+        const handler = listenerRegistration.handler;
+
+        const registerRequest = codec.encodeAddRequest(this.isSmart());
+
+        this.logger.trace('ListenerService', `Register attempt of ${listenerRegistration} to ${connection}`);
+
         const invocation = new Invocation(this.invocationService, registerRequest);
-        invocation.handler = registrationKey.getHandler() as any;
+        invocation.handler = handler as any;
         invocation.connection = connection;
-        return this.invocationService.invokeUrgent(invocation).then((responseMessage) => {
-            const correlationId = responseMessage.getCorrelationId();
-            const response = codec.decodeAddResponse(responseMessage);
-            const eventRegistration = new ClientEventRegistration(response, correlationId, invocation.connection, codec);
-            this.logger.debug('ListenerService',
-                'Listener ' + userKey + ' re-registered on ' + connection.toString());
-            return eventRegistration;
-        }).catch(((err) => {
-            throw new HazelcastError(`Could not add listener[${userKey}] to connection[${connection}]`, err);
-        }));
+
+        return this.invocationService.invokeUrgent(invocation)
+            .then((responseMessage) => {
+                const serverRegistrationId = codec.decodeAddResponse(responseMessage);
+                this.logger.trace('ListenerService',
+                    'Registered ' + userRegistrationId + ' to ' + connection.toString());
+                const correlationId = responseMessage.getCorrelationId();
+                const clientEventRegistration = new ConnectionRegistration(serverRegistrationId, correlationId);
+
+                listenerRegistration.connectionRegistrations.set(connection, clientEventRegistration);
+            })
+            .catch((err) => {
+                if (invocation.connection.isAlive()) {
+                    this.deregisterListener(userRegistrationId)
+                        .catch(() => {
+                            // no-op
+                        });
+                    throw new HazelcastError('Listener cannot be added!', err);
+                }
+            });
     }
 
     registerListener(codec: ListenerMessageCodec,
                      listenerHandlerFn: ClientMessageHandler): Promise<string> {
-        const activeConnections = this.connectionRegistry.getConnections();
-        const userKey = UuidUtil.generate().toString();
-        let connectionsOnUserKey: Map<Connection, ClientEventRegistration>;
-        const registerRequest = codec.encodeAddRequest(this.isSmart());
-        connectionsOnUserKey = this.activeRegistrations.get(userKey);
-        if (connectionsOnUserKey === undefined) {
-            connectionsOnUserKey = new Map();
-            this.activeRegistrations.set(userKey, connectionsOnUserKey);
-            this.userKeyInformation.set(userKey,
-                new RegistrationKey(userKey, codec, registerRequest, listenerHandlerFn));
-        }
+        const userRegistrationId = UuidUtil.generate().toString();
+
+        const listenerRegistration = new ListenerRegistration(listenerHandlerFn, codec);
+        this.registrations.set(userRegistrationId, listenerRegistration);
+        const activeConnections = this.connectionManager.getConnectionRegistry().getConnections();
 
         const registrationPromises = [];
         for (const connection of activeConnections) {
-            if (connectionsOnUserKey.has(connection)) {
-                continue;
-            }
-
-            // new correlation id will be set on the invoke call
-            const requestCopy = registerRequest.copyWithNewCorrelationId();
-            const invocation = new Invocation(this.invocationService, requestCopy);
-            invocation.handler = listenerHandlerFn as any;
-            invocation.connection = connection;
-
-            const registrationPromise = this.invocationService.invokeUrgent(invocation)
-                .then((responseMessage) => {
-                    const correlationId = responseMessage.getCorrelationId();
-                    const response = codec.decodeAddResponse(responseMessage);
-                    const clientEventRegistration = new ClientEventRegistration(
-                        response, correlationId, invocation.connection, codec);
-                    this.logger.debug('ListenerService',
-                        'Listener ' + userKey + ' registered on ' + invocation.connection.toString());
-                    connectionsOnUserKey.set(connection, clientEventRegistration);
-                })
-                .catch((err) => {
-                    if (invocation.connection.isAlive()) {
-                        this.deregisterListener(userKey)
-                            .catch(() => {
-                                // no-op
-                            });
-                        throw new HazelcastError('Listener cannot be added!', err);
-                    }
-                });
+            const registrationPromise = this.invoke(listenerRegistration, connection, userRegistrationId);
             registrationPromises.push(registrationPromise);
         }
         return Promise.all(registrationPromises)
-            .then(() => userKey);
+            .then(() => userRegistrationId);
     }
 
-    deregisterListener(userKey: string): Promise<boolean> {
-        const registrationsOnUserKey = this.activeRegistrations.get(userKey);
-        if (registrationsOnUserKey === undefined) {
+    deregisterListener(userRegistrationId: string): Promise<boolean> {
+        const listenerRegistration = this.registrations.get(userRegistrationId);
+        if (listenerRegistration === undefined) {
             return Promise.resolve(false);
         }
 
-        this.activeRegistrations.delete(userKey);
-        this.userKeyInformation.delete(userKey);
+        const connectionRegistrations = listenerRegistration.connectionRegistrations;
 
-        registrationsOnUserKey.forEach((eventRegistration, connection) => {
+        const deregistrationPromises = new Array(connectionRegistrations.size);
+        let i = 0;
+        connectionRegistrations.forEach((connectionRegistration, connection) => {
             // remove local handler
-            registrationsOnUserKey.delete(connection);
-            this.invocationService.removeEventHandler(eventRegistration.correlationId);
+            this.invocationService.removeEventHandler(connectionRegistration.correlationId);
             // the rest is for deleting remote registration
-            this.deregisterListenerOnTarget(userKey, eventRegistration);
+            deregistrationPromises[i] = this.deregisterListenerOnTarget(
+                userRegistrationId, listenerRegistration, connectionRegistration.serverRegistrationId, connection
+            );
+            i++;
         });
 
-        return Promise.resolve(true);
+        return Promise.all(deregistrationPromises).then(() => true);
     }
 
     /**
      * Asynchronously de-registers listener on the target associated
      * with the given event registration.
      */
-    private deregisterListenerOnTarget(userKey: string,
-                                       eventRegistration: ClientEventRegistration): void {
-        const clientMessage = eventRegistration.codec.encodeRemoveRequest(eventRegistration.serverRegistrationId);
+    private deregisterListenerOnTarget(
+        userRegistrationId: string, eventRegistration: ListenerRegistration, serverRegistrationId: UUID, connection: Connection
+    ): Promise<void> {
+        const clientMessage = eventRegistration.codec.encodeRemoveRequest(serverRegistrationId);
         // null message means no remote registration (e.g. for backup acks)
         if (clientMessage === null) {
-            return;
+            return Promise.resolve();
         }
         const invocation = new Invocation(this.invocationService, clientMessage, Number.MAX_SAFE_INTEGER);
-        invocation.connection = eventRegistration.subscriber;
-        this.invocationService.invoke(invocation).catch((err) => {
+        invocation.connection = connection;
+        return this.invocationService.invoke(invocation).then(() => {}).catch((err) => {
             if (err instanceof ClientNotActiveError
                     || err instanceof IOError
                     || err instanceof TargetDisconnectedError) {
                 return;
             }
             this.logger.warn('ListenerService',
-                'Deregistration of listener ' + userKey + ' has failed for address '
+                'Deregistration of listener ' + userRegistrationId + ' has failed for address '
                     + invocation.connection.getRemoteAddress().toString());
         });
+    }
+
+    public addDistributedObjectListener(distributedObjectListener: DistributedObjectListener): Promise<string> {
+        const handler = (clientMessage: ClientMessage): void => {
+            const converterFunc = (objectName: string, serviceName: string, eventType: string): void => {
+                eventType = eventType.toLowerCase();
+                const distributedObjectEvent = new DistributedObjectEvent(eventType, serviceName, objectName);
+                distributedObjectListener(distributedObjectEvent);
+            };
+            ClientAddDistributedObjectListenerCodec.handle(clientMessage, converterFunc);
+        };
+        const codec = this.createDistributedObjectListener();
+        return this.registerListener(codec, handler);
+    }
+
+    private createDistributedObjectListener(): ListenerMessageCodec {
+        return {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
+                return ClientAddDistributedObjectListenerCodec.encodeRequest(localOnly);
+            },
+            decodeAddResponse(msg: ClientMessage): UUID {
+                return ClientAddDistributedObjectListenerCodec.decodeResponse(msg);
+            },
+            encodeRemoveRequest(listenerId: UUID): ClientMessage {
+                return ClientRemoveDistributedObjectListenerCodec.encodeRequest(listenerId);
+            },
+        };
     }
 
     isSmart(): boolean {

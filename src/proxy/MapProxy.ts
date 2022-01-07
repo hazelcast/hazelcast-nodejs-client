@@ -101,12 +101,21 @@ type EntryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: 
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     aggregate<R>(aggregator: Aggregator<R>): Promise<R> {
         assertNotNull(aggregator);
-        const aggregatorData = this.toData(aggregator);
-        return this.encodeInvokeOnRandomTarget(MapAggregateCodec, aggregatorData)
+        const invokeAndHandleFn: (aggregatorData: Data) => Promise<R> =
+            (aggregatorData: Data) => this.encodeInvokeOnRandomTarget(MapAggregateCodec, aggregatorData)
             .then((clientMessage) => {
                 const response = MapAggregateCodec.decodeResponse(clientMessage);
                 return this.toObject(response);
             });
+
+        if (this.isCompactSerializable(aggregator)) {
+            return this.toDataAsync(aggregator).then(aggregatorData => {
+                return invokeAndHandleFn(aggregatorData);
+            });
+        } else {
+            const aggregatorData = this.toData(aggregator);
+            return invokeAndHandleFn(aggregatorData);
+        }
     }
 
     aggregateWithPredicate<R>(aggregator: Aggregator<R>, predicate: Predicate): Promise<R> {
@@ -260,12 +269,28 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     put(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
-        const keyData: Promise<Data> = this.toDataAsync(key);
-        const valueData: Promise<Data> = this.toDataAsync(value);
+        if (this.isCompactSerializable(key) && this.isCompactSerializable(value)) {
+            const keyData: Promise<Data> = this.toDataAsync(key);
+            const valueData: Promise<Data> = this.toDataAsync(value);
 
-        return Promise.all([keyData, valueData]).then(([keyData, valueData]) => {
+            return Promise.all([keyData, valueData]).then(([keyData, valueData]) => {
+                return this.putInternal(keyData, valueData, ttl, maxIdle);
+            });
+        } else if (this.isCompactSerializable(key) && !this.isCompactSerializable(value)) {
+            const valueData = this.toData(value);
+            return this.toDataAsync(key).then(keyData => {
+                return this.putInternal(keyData, valueData, ttl, maxIdle);
+            });
+        } else if (!this.isCompactSerializable(key) && this.isCompactSerializable(value)) {
+            const keyData = this.toData(key);
+            return this.toDataAsync(value).then(valueData => {
+                return this.putInternal(keyData, valueData, ttl, maxIdle);
+            });
+        } else {
+            const keyData = this.toData(key);
+            const valueData = this.toData(value);
             return this.putInternal(keyData, valueData, ttl, maxIdle);
-        });
+        }
     }
 
     putAll(pairs: Array<[K, V]>): Promise<void> {
@@ -278,9 +303,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     get(key: K): Promise<V> {
         assertNotNull(key);
-        return this.toDataAsync(key).then(keyData => {
-            return this.getInternal(keyData);
-        });
+        const keyData = this.toData(key);
+        return this.getInternal(keyData);
     }
 
     remove(key: K, value: V = null): Promise<V | boolean> {
@@ -434,9 +458,28 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     set(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void> {
         assertNotNull(key);
         assertNotNull(value);
-        const keyData = this.toData(key);
-        const valueData = this.toData(value);
-        return this.setInternal(keyData, valueData, ttl, maxIdle);
+        if (this.isCompactSerializable(key) && this.isCompactSerializable(value)) {
+            const keyData: Promise<Data> = this.toDataAsync(key);
+            const valueData: Promise<Data> = this.toDataAsync(value);
+
+            return Promise.all([keyData, valueData]).then(([keyData, valueData]) => {
+                return this.setInternal(keyData, valueData, ttl, maxIdle);
+            });
+        } else if (this.isCompactSerializable(key) && !this.isCompactSerializable(value)) {
+            const valueData = this.toData(value);
+            return this.toDataAsync(key).then(keyData => {
+                return this.setInternal(keyData, valueData, ttl, maxIdle);
+            });
+        } else if (!this.isCompactSerializable(key) && this.isCompactSerializable(value)) {
+            const keyData = this.toData(key);
+            return this.toDataAsync(value).then(valueData => {
+                return this.setInternal(keyData, valueData, ttl, maxIdle);
+            });
+        } else {
+            const keyData = this.toData(key);
+            const valueData = this.toData(value);
+            return this.setInternal(keyData, valueData, ttl, maxIdle);
+        }
     }
 
     values(): Promise<ReadOnlyLazyList<V>> {

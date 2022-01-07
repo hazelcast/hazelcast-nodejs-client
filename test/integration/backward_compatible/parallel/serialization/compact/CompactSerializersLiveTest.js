@@ -1,3 +1,4 @@
+/* eslint-disable */
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -35,7 +36,7 @@ const COMPACT_ENABLED_XML = `
     </hazelcast>
 `;
 
-describe('CompactSerializersLiveTest', function () {
+describe('CompactSerializersTest', function () {
     let cluster;
     let client;
 
@@ -52,4 +53,6 @@ describe('CompactSerializersLiveTest', function () {
     after(async function () {
         await testFactory.shutdownAll();
     });
+
+
 });

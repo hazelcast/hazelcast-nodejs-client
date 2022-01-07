@@ -43,7 +43,12 @@ export class FieldOperations {
                 return record.getBoolean(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeBoolean(fieldName, record.getBoolean(fieldName));
+                try {
+                    writer.writeBoolean(fieldName, record.getBoolean(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return 0;
@@ -60,7 +65,12 @@ export class FieldOperations {
                 return record.getArrayOfBooleans(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfBooleans(fieldName, record.getArrayOfBooleans(fieldName));
+                try {
+                    writer.writeArrayOfBoolean(fieldName, record.getArrayOfBooleans(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -77,7 +87,12 @@ export class FieldOperations {
                 return record.getByte(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeByte(fieldName, record.getByte(fieldName));
+                try {
+                    writer.writeInt8(fieldName, record.getByte(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return BitsUtil.BYTE_SIZE_IN_BYTES;
@@ -94,7 +109,12 @@ export class FieldOperations {
                 return record.getArrayOfBytes(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfBytes(fieldName, record.getArrayOfBytes(fieldName));
+                try {
+                    writer.writeArrayOfInt8(fieldName, record.getArrayOfBytes(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -111,7 +131,7 @@ export class FieldOperations {
                 return record.getChar(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                throw new UnsupportedOperationError('Compact format does not support writing a char field');
+                return Promise.reject(new UnsupportedOperationError('Compact format does not support writing a char field'));
             },
             kindSizeInBytes(): number {
                 return BitsUtil.CHAR_SIZE_IN_BYTES;
@@ -128,7 +148,9 @@ export class FieldOperations {
                 return record.getArrayOfChars(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                throw new UnsupportedOperationError('Compact format does not support writing an array of chars field');
+                return Promise.reject(
+                    new UnsupportedOperationError('Compact format does not support writing an array of chars field')
+                );
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -145,7 +167,12 @@ export class FieldOperations {
                 return record.getShort(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeShort(fieldName, record.getShort(fieldName));
+                try {
+                    writer.writeInt16(fieldName, record.getShort(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return BitsUtil.SHORT_SIZE_IN_BYTES;
@@ -162,7 +189,12 @@ export class FieldOperations {
                 return record.getArrayOfShorts(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfShorts(fieldName, record.getArrayOfShorts(fieldName));
+                try {
+                    writer.writeArrayOfInt16(fieldName, record.getArrayOfShorts(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -179,7 +211,12 @@ export class FieldOperations {
                 return record.getInt(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeInt(fieldName, record.getInt(fieldName));
+                try {
+                    writer.writeInt32(fieldName, record.getInt(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return BitsUtil.INT_SIZE_IN_BYTES;
@@ -196,7 +233,12 @@ export class FieldOperations {
                 return record.getArrayOfInts(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfInts(fieldName, record.getArrayOfInts(fieldName));
+                try {
+                    writer.writeArrayOfInt32(fieldName, record.getArrayOfInts(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -213,7 +255,12 @@ export class FieldOperations {
                 return record.getLong(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeLong(fieldName, record.getLong(fieldName));
+                try {
+                    writer.writeInt64(fieldName, record.getLong(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return BitsUtil.LONG_SIZE_IN_BYTES;
@@ -230,7 +277,12 @@ export class FieldOperations {
                 return record.getArrayOfLongs(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfLongs(fieldName, record.getArrayOfLongs(fieldName));
+                try {
+                    writer.writeArrayOfInt64(fieldName, record.getArrayOfLongs(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -247,7 +299,12 @@ export class FieldOperations {
                 return record.getFloat(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeFloat(fieldName, record.getFloat(fieldName));
+                try {
+                    writer.writeFloat32(fieldName, record.getFloat(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return BitsUtil.FLOAT_SIZE_IN_BYTES;
@@ -264,7 +321,12 @@ export class FieldOperations {
                 return record.getArrayOfFloats(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfFloats(fieldName, record.getArrayOfFloats(fieldName));
+                try {
+                    writer.writeArrayOfFloat32(fieldName, record.getArrayOfFloats(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -281,7 +343,12 @@ export class FieldOperations {
                 return record.getDouble(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeDouble(fieldName, record.getDouble(fieldName));
+                try {
+                    writer.writeFloat64(fieldName, record.getDouble(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return BitsUtil.DOUBLE_SIZE_IN_BYTES;
@@ -298,7 +365,12 @@ export class FieldOperations {
                 return record.getArrayOfDoubles(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfDoubles(fieldName, record.getArrayOfDoubles(fieldName));
+                try {
+                    writer.writeArrayOfFloat64(fieldName, record.getArrayOfDoubles(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -315,7 +387,12 @@ export class FieldOperations {
                 return record.getString(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeString(fieldName, record.getString(fieldName));
+                try {
+                    writer.writeString(fieldName, record.getString(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -332,7 +409,12 @@ export class FieldOperations {
                 return record.getArrayOfStrings(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfStrings(fieldName, record.getArrayOfStrings(fieldName));
+                try {
+                    writer.writeArrayOfString(fieldName, record.getArrayOfStrings(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -349,7 +431,12 @@ export class FieldOperations {
                 return record.getDecimal(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeDecimal(fieldName, record.getDecimal(fieldName));
+                try {
+                    writer.writeDecimal(fieldName, record.getDecimal(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -366,7 +453,12 @@ export class FieldOperations {
                 return record.getArrayOfDecimals(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfDecimals(fieldName, record.getArrayOfDecimals(fieldName));
+                try {
+                    writer.writeArrayOfDecimal(fieldName, record.getArrayOfDecimals(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -383,7 +475,12 @@ export class FieldOperations {
                 return record.getTime(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeTime(fieldName, record.getTime(fieldName));
+                try {
+                    writer.writeTime(fieldName, record.getTime(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -400,7 +497,12 @@ export class FieldOperations {
                 return record.getArrayOfTimes(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfTimes(fieldName, record.getArrayOfTimes(fieldName));
+                try {
+                    writer.writeArrayOfTime(fieldName, record.getArrayOfTimes(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -417,7 +519,12 @@ export class FieldOperations {
                 return record.getDate(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeDate(fieldName, record.getDate(fieldName));
+                try {
+                    writer.writeDate(fieldName, record.getDate(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -434,7 +541,12 @@ export class FieldOperations {
                 return record.getArrayOfDates(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfDates(fieldName, record.getArrayOfDates(fieldName));
+                try {
+                    writer.writeArrayOfDate(fieldName, record.getArrayOfDates(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -451,7 +563,12 @@ export class FieldOperations {
                 return record.getTimestamp(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeTimestamp(fieldName, record.getTimestamp(fieldName));
+                try {
+                    writer.writeTimestamp(fieldName, record.getTimestamp(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -468,7 +585,12 @@ export class FieldOperations {
                 return record.getArrayOfTimestamps(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfTimestamps(fieldName, record.getArrayOfTimestamps(fieldName));
+                try {
+                    writer.writeArrayOfTimestamp(fieldName, record.getArrayOfTimestamps(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -485,7 +607,12 @@ export class FieldOperations {
                 return record.getTimestampWithTimezone(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeTimestampWithTimezone(fieldName, record.getTimestampWithTimezone(fieldName));
+                try {
+                    writer.writeTimestampWithTimezone(fieldName, record.getTimestampWithTimezone(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -502,7 +629,12 @@ export class FieldOperations {
                 return record.getArrayOfTimestampWithTimezones(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfTimestampWithTimezones(fieldName, record.getArrayOfTimestampWithTimezones(fieldName));
+                try {
+                    writer.writeArrayOfTimestampWithTimezone(fieldName, record.getArrayOfTimestampWithTimezones(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -519,7 +651,7 @@ export class FieldOperations {
                 return (record as InternalGenericRecord).getObject(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeGenericRecord(fieldName, record.getGenericRecord(fieldName));
+                return writer.writeGenericRecord(fieldName, record.getGenericRecord(fieldName));
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -536,7 +668,7 @@ export class FieldOperations {
                 return (record as InternalGenericRecord).getArrayOfObjects(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfGenericRecords(fieldName, record.getArrayOfGenericRecords(fieldName));
+                return writer.writeArrayOfGenericRecords(fieldName, record.getArrayOfGenericRecords(fieldName));
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -553,7 +685,12 @@ export class FieldOperations {
                 return record.getNullableBoolean(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeNullableBoolean(fieldName, record.getNullableBoolean(fieldName));
+                try {
+                    writer.writeNullableBoolean(fieldName, record.getNullableBoolean(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -570,7 +707,12 @@ export class FieldOperations {
                 return record.getArrayOfNullableBooleans(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfNullableBooleans(fieldName, record.getArrayOfNullableBooleans(fieldName));
+                try {
+                    writer.writeArrayOfNullableBoolean(fieldName, record.getArrayOfNullableBooleans(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -587,7 +729,12 @@ export class FieldOperations {
                 return record.getNullableByte(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeNullableByte(fieldName, record.getNullableByte(fieldName));
+                try {
+                    writer.writeNullableInt8(fieldName, record.getNullableByte(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -604,7 +751,12 @@ export class FieldOperations {
                 return record.getArrayOfNullableBytes(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfNullableBytes(fieldName, record.getArrayOfNullableBytes(fieldName));
+                try {
+                    writer.writeArrayOfNullableInt8(fieldName, record.getArrayOfNullableBytes(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -621,7 +773,12 @@ export class FieldOperations {
                 return record.getNullableShort(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeNullableShort(fieldName, record.getNullableShort(fieldName));
+                try {
+                    writer.writeNullableInt16(fieldName, record.getNullableShort(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -638,7 +795,12 @@ export class FieldOperations {
                 return record.getArrayOfNullableShorts(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfNullableShorts(fieldName, record.getArrayOfNullableShorts(fieldName));
+                try {
+                    writer.writeArrayOfNullableInt16(fieldName, record.getArrayOfNullableShorts(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -655,7 +817,12 @@ export class FieldOperations {
                 return record.getNullableInt(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeNullableInt(fieldName, record.getNullableInt(fieldName));
+                try {
+                    writer.writeNullableInt32(fieldName, record.getNullableInt(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -672,7 +839,12 @@ export class FieldOperations {
                 return record.getArrayOfNullableInts(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfNullableInts(fieldName, record.getArrayOfNullableInts(fieldName));
+                try {
+                    writer.writeArrayOfNullableInt32(fieldName, record.getArrayOfNullableInts(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -689,7 +861,12 @@ export class FieldOperations {
                 return record.getNullableLong(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeNullableLong(fieldName, record.getNullableLong(fieldName));
+                try {
+                    writer.writeNullableInt64(fieldName, record.getNullableLong(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -706,7 +883,12 @@ export class FieldOperations {
                 return record.getArrayOfNullableLongs(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfNullableLongs(fieldName, record.getArrayOfNullableLongs(fieldName));
+                try {
+                    writer.writeArrayOfNullableInt64(fieldName, record.getArrayOfNullableLongs(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -723,7 +905,12 @@ export class FieldOperations {
                 return record.getNullableFloat(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeNullableFloat(fieldName, record.getNullableFloat(fieldName));
+                try {
+                    writer.writeNullableFloat32(fieldName, record.getNullableFloat(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -740,7 +927,12 @@ export class FieldOperations {
                 return record.getArrayOfNullableFloats(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfNullableFloats(fieldName, record.getArrayOfNullableFloats(fieldName));
+                try {
+                    writer.writeArrayOfNullableFloat32(fieldName, record.getArrayOfNullableFloats(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -757,7 +949,12 @@ export class FieldOperations {
                 return record.getNullableDouble(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeNullableDouble(fieldName, record.getNullableDouble(fieldName));
+                try {
+                    writer.writeNullableFloat64(fieldName, record.getNullableDouble(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -774,7 +971,12 @@ export class FieldOperations {
                 return record.getArrayOfNullableDoubles(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                writer.writeArrayOfNullableDoubles(fieldName, record.getArrayOfNullableDoubles(fieldName));
+                try {
+                    writer.writeArrayOfNullableFloat64(fieldName, record.getArrayOfNullableDoubles(fieldName));
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;

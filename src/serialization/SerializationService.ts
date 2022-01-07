@@ -71,7 +71,10 @@ import {CompactStreamSerializerAdapter} from './compact/CompactStreamSerializerA
 import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 
-/** @internal */
+/**
+ * Serializes objects and deserializes data.
+ * @internal
+ */
 export interface SerializationService {
 
     toData(object: any, partitioningStrategy?: any): Data;
@@ -90,6 +93,7 @@ export interface SerializationService {
 
     readObjectAsync(inp: DataInput): Promise<any>;
 
+    isCompactSerializable(obj: any): boolean;
 }
 
 type PartitionStrategy = (obj: any) => number;
@@ -142,9 +146,9 @@ export class SerializationServiceV1 implements SerializationService {
         if (object != null && object.partitionKey != null) {
             const partitionKey = object.partitionKey;
             const serializedPartitionKey = this.toData(partitionKey);
-            dataOutput.writeIntBE(this.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
+            dataOutput.writeIntBE(SerializationServiceV1.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
         } else {
-            dataOutput.writeIntBE(this.calculatePartitionHash(object, partitioningStrategy));
+            dataOutput.writeIntBE(SerializationServiceV1.calculatePartitionHash(object, partitioningStrategy));
         }
         dataOutput.writeIntBE(serializer.id);
         (serializer as Serializer).write(dataOutput, object);
@@ -184,9 +188,9 @@ export class SerializationServiceV1 implements SerializationService {
         if (object != null && object.partitionKey != null) {
             const partitionKey = object.partitionKey;
             const serializedPartitionKey = this.toData(partitionKey);
-            dataOutput.writeIntBE(this.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
+            dataOutput.writeIntBE(SerializationServiceV1.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
         } else {
-            dataOutput.writeIntBE(this.calculatePartitionHash(object, partitioningStrategy));
+            dataOutput.writeIntBE(SerializationServiceV1.calculatePartitionHash(object, partitioningStrategy));
         }
         dataOutput.writeIntBE(serializer.id);
         if (serializer instanceof CompactStreamSerializerAdapter) {
@@ -197,8 +201,6 @@ export class SerializationServiceV1 implements SerializationService {
             (serializer as Serializer).write(dataOutput, object)
             return Promise.resolve(new HeapData(dataOutput.toBuffer()));
         }
-
-
     }
 
     toObjectAsync(data: Data): Promise<any> {
@@ -349,7 +351,7 @@ export class SerializationServiceV1 implements SerializationService {
             && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
-    private isCompactSerializable(obj: any): boolean {
+    isCompactSerializable(obj: any): boolean {
         // Null object case: Object.create(null)
         if (!obj.constructor) {
             return false;
@@ -427,6 +429,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
+
     private registerGlobalSerializer(): void {
         const candidate: any = this.serializationConfig.globalSerializer;
         if (candidate == null) {
@@ -474,12 +477,11 @@ export class SerializationServiceV1 implements SerializationService {
         return this.findSerializerById(serializerId);
     }
 
-    private findSerializerById(id: number): Serializer | AsyncSerializer {
-        const serializer = this.registry[id];
-        return serializer;
+    private findSerializerById(id: number): Serializer {
+        return this.registry[id];
     }
 
-    private calculatePartitionHash(object: any, strategy: PartitionStrategy): number {
+    private static calculatePartitionHash(object: any, strategy: PartitionStrategy): number {
         return strategy(object);
     }
 }

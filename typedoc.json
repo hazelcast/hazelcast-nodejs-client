@@ -2,6 +2,7 @@
     "out": "docs/",
     "entryPoints": ["src/"],
     "exclude": "src/codec/**/*.ts",
+    "entryPointStrategy": "Expand",
     "excludeExternals": true,
     "excludeInternal": true,
     "excludePrivate": true,

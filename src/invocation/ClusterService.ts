@@ -182,7 +182,7 @@ export class ClusterService implements Cluster {
             return;
         }
 
-        if (memberListVersion >= this.memberListSnapshot.version) {
+        if (memberListVersion > this.memberListSnapshot.version) {
             const prevMembers = this.memberListSnapshot.memberList;
             const snapshot = ClusterService.createSnapshot(memberListVersion, memberInfos);
             this.memberListSnapshot = snapshot;
