@@ -183,6 +183,12 @@ exports.isClientVersionAtLeast = function(version) {
     return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
 };
 
+exports.isClientVersionAtMost = function(version) {
+    const actual = BuildInfo.calculateServerVersionFromString(BuildInfo.getClientVersion());
+    const expected = BuildInfo.calculateServerVersionFromString(version);
+    return actual === BuildInfo.UNKNOWN_VERSION_ID || expected >= actual;
+};
+
 exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     if (!exports.isServerVersionAtLeast(client, expectedVersion)) {
         _this.skip();
