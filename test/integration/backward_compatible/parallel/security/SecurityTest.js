@@ -23,16 +23,12 @@ const TestUtil = require('../../../../TestUtil');
 const fs = require('fs');
 const RC = require('../../../RC');
 const {IllegalStateError} = require('../../../../../lib');
+const {SimpleCredentials} = require('./SimpleCredentials');
 
-// Lazy imports are due to back compatibility
+// Lazy import is due to back compatibility
 const getTokenEncoding = () => {
     const {TokenEncoding} = require('../../../../../lib/security/TokenEncoding');
     return TokenEncoding;
-};
-
-const getSimpleCredentials = () => {
-    const {SimpleCredentials} = require('./SimpleCredentials');
-    return SimpleCredentials;
 };
 
 describe('SecurityTest', function () {
@@ -162,7 +158,6 @@ describe('SecurityTest', function () {
         let cluster;
         let member;
         const testFactory = new TestUtil.TestFactory();
-        let simpleCredentials;
 
         before(async function () {
             TestUtil.markEnterprise(this);
@@ -178,7 +173,6 @@ describe('SecurityTest', function () {
             cluster = await testFactory.createClusterForParallelTests(null,
                 fs.readFileSync(__dirname + '/hazelcast_custom_credentials.xml', 'utf8'));
             member = await RC.startMember(cluster.id);
-            simpleCredentials = getSimpleCredentials();
         });
 
         after(async function () {
@@ -193,7 +187,7 @@ describe('SecurityTest', function () {
             const client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 security: {
-                    custom: new simpleCredentials('dummy-username', 'dummy-password'),
+                    custom: new SimpleCredentials('dummy-username', 'dummy-password'),
                 }
             }, member);
             expect(client.getLifecycleService().isRunning()).to.be.true;
@@ -203,7 +197,7 @@ describe('SecurityTest', function () {
             await expect(testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 security: {
-                    custom: new simpleCredentials('dummy-username', 'not-a-dummy-password'),
+                    custom: new SimpleCredentials('dummy-username', 'not-a-dummy-password'),
                 },
                 connectionStrategy: {
                     connectionRetry: {
