@@ -105,7 +105,6 @@ describe('SecurityTest', function () {
         before(async function () {
             TestUtil.markEnterprise(this);
             // Security config is added in 5.1.0, 4.2.1 and 5.0.3.
-            // Security config is added in 5.1.0, 4.2.1 and 5.0.3.
             if (!(
                 TestUtil.isClientVersionAtLeast('5.1') ||
                 (TestUtil.isClientVersionAtLeast('5.0.3') && TestUtil.isClientVersionAtMost('5.0.99')) ||
@@ -167,7 +166,6 @@ describe('SecurityTest', function () {
 
         before(async function () {
             TestUtil.markEnterprise(this);
-            // Security config is added in 5.1.0, 4.2.1 and 5.0.3.
             // Security config is added in 5.1.0, 4.2.1 and 5.0.3.
             if (!(
                 TestUtil.isClientVersionAtLeast('5.1') ||
