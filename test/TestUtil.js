@@ -558,17 +558,11 @@ exports.calculateServerVersionFromString = (versionString) => {
 
     const major = +tokens[0];
     const minor = +tokens[1];
-    let patch;
-    if (tokens.length === 2) {
-        patch = 0;
-    } else {
-        patch = +tokens[2];
-    }
-    const version = BuildInfo.MAJOR_VERSION_MULTIPLIER * major + BuildInfo.MINOR_VERSION_MULTIPLIER * minor + patch;
-    if (isNaN(version)) {
-        return BuildInfo.UNKNOWN_VERSION_ID;
-    } else {
-        return version;
-    }
+    const patch = (tokens.length === 2) ? 0 : +tokens[2];
+
+    const version = this.calculateServerVersion(major, minor, patch);
+
+    // version is NaN when one of major, minor and patch is not a number.
+    return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
 };
 

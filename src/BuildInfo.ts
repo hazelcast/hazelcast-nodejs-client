@@ -38,18 +38,12 @@ export class BuildInfo {
 
         const major = +tokens[0];
         const minor = +tokens[1];
-        let patch: number;
-        if (tokens.length === 2) {
-            patch = 0;
-        } else {
-            patch = +tokens[2];
-        }
+        const patch = (tokens.length === 2) ? 0 : +tokens[2];
+
         const version = this.calculateServerVersion(major, minor, patch);
-        if (isNaN(version)) {
-            return BuildInfo.UNKNOWN_VERSION_ID;
-        } else {
-            return version;
-        }
+
+        // version is NaN when one of major, minor and patch is not a number.
+        return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
     }
 
     public static calculateServerVersion(major: number, minor: number, patch: number): number {
