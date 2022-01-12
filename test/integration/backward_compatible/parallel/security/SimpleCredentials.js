@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 'use strict';
+const TestUtil = require('../../../../TestUtil');
 
 class SimpleCredentials {
     constructor(username, password) {
@@ -24,13 +25,13 @@ class SimpleCredentials {
     }
 
     readData(input) {
-        this.username = input.readString();
-        this.password = input.readString();
+        this.username = TestUtil.readStringFromInput(input);
+        this.password = TestUtil.readStringFromInput(input);
     }
 
     writeData(output) {
-        output.writeString(this.username);
-        output.writeString(this.password);
+        TestUtil.writeStringToOutput(output, this.username);
+        TestUtil.writeStringToOutput(output, this.password);
     }
 }
 
