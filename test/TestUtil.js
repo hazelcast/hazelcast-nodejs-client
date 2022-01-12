@@ -560,7 +560,7 @@ exports.calculateServerVersionFromString = (versionString) => {
     const minor = +tokens[1];
     const patch = (tokens.length === 2) ? 0 : +tokens[2];
 
-    const version = this.calculateServerVersion(major, minor, patch);
+    const version = BuildInfo.MAJOR_VERSION_MULTIPLIER * major + BuildInfo.MINOR_VERSION_MULTIPLIER * minor + patch;
 
     // version is NaN when one of major, minor and patch is not a number.
     return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
