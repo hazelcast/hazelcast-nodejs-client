@@ -120,8 +120,6 @@ export interface DataOutput {
 
     writeObject(object: any): void;
 
-    writeObjectAsync(object: any): Promise<void>;
-
     writeShort(short: number): void;
 
     writeShortArray(shorts: number[] | null): void;
@@ -214,8 +212,6 @@ export interface DataInput {
     readLongArray(pos?: number): Long[] | null;
 
     readObject(): any;
-
-    readObjectAsync(): Promise<any>;
 
     readShort(pos?: number): number;
 

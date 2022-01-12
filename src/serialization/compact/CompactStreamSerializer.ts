@@ -108,7 +108,7 @@ export class CompactStreamSerializer {
         if (serializer.hzTypeName) {
             this.typeNameToSerializersMap.set(serializer.hzTypeName, serializer);
         } else {
-            this.typeNameToSerializersMap.set(serializer.hzTypeName, serializer);
+            this.typeNameToSerializersMap.set(serializer.hzClassName, serializer);
         }
     }
 

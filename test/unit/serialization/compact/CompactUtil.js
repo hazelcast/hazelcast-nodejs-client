@@ -84,8 +84,8 @@ class BitsSerializer {
         bits.f = reader.readBoolean('f');
         bits.g = reader.readBoolean('g');
         bits.h = reader.readBoolean('h');
-        bits.id = reader.readInt('id');
-        bits.booleans = reader.readArrayOfBooleans('booleans');
+        bits.id = reader.readInt32('id');
+        bits.booleans = reader.readArrayOfBoolean('booleans');
         return bits;
     }
 
@@ -98,8 +98,8 @@ class BitsSerializer {
         writer.writeBoolean('f', value.f);
         writer.writeBoolean('g', value.g);
         writer.writeBoolean('h', value.h);
-        writer.writeInt('id', value.id);
-        writer.writeArrayOfBooleans('booleans', value.booleans);
+        writer.writeInt32('id', value.id);
+        writer.writeArrayOfBoolean('booleans', value.booleans);
     }
 }
 
@@ -159,21 +159,21 @@ class EmployerSerializer {
 
     read(reader) {
         const name = reader.readString('name');
-        const zcode = reader.readInt('zcode');
+        const zcode = reader.readInt32('zcode');
         const hiringStatus = reader.readString('hiringStatus');
-        const ids = reader.readArrayOfLongs('ids');
+        const ids = reader.readArrayOfInt64('ids');
         const singleEmployee = reader.readCompact('singleEmployee');
-        const otherEmployees = reader.readArrayOfCompacts('otherEmployees');
+        const otherEmployees = reader.readArrayOfCompact('otherEmployees');
         return new Employer(name, zcode, hiringStatus, ids, singleEmployee, otherEmployees);
     }
 
     write(writer, value) {
         writer.writeString('name', value.name);
-        writer.writeInt('zcode', value.zcode);
+        writer.writeInt32('zcode', value.zcode);
         writer.writeString('hiringStatus', value.hiringStatus);
-        writer.writeArrayOfLongs('ids', value.ids);
+        writer.writeArrayOfInt64('ids', value.ids);
         writer.writeCompact('singleEmployee', value.singleEmployee);
-        writer.writeArrayOfCompacts('otherEmployees', value.otherEmployees);
+        writer.writeArrayOfCompact('otherEmployees', value.otherEmployees);
     }
 }
 

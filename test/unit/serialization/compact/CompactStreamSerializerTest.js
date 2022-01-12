@@ -41,12 +41,12 @@ describe('CompactStreamSerializerTest', function () {
         bits.booleans[0] = true;
         bits.booleans[4] = true;
 
-        const data = await serializationService.toDataAsync(bits);
+        const data = await serializationService.toData(bits);
 
         // hash(4) + typeid(4) + schemaId(8) + (4 byte length) + (1 bytes for 8 bits) + (4 bytes for int)
         // (4 byte length of byte array) + (1 byte for booleans array of 8 bits) + (1 byte offset bytes)
         data.toBuffer().length.should.be.equal(31);
-        const object = await serializationService.toObjectAsync(data);
+        const object = await serializationService.toObject(data);
         object.should.be.deep.equal(bits);
     });
 
@@ -62,8 +62,8 @@ describe('CompactStreamSerializerTest', function () {
         }
         const employer = new Employer('nbss', 40, HIRING_STATUS.HIRING, ids, employee, employees);
 
-        const data = await serializationService.toDataAsync(employer);
-        const object = await serializationService.toObjectAsync(data);
+        const data = await serializationService.toData(employer);
+        const object = await serializationService.toObject(data);
         object.should.be.deep.equal(employer);
     });
 });

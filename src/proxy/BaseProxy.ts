@@ -97,9 +97,11 @@ export abstract class BaseProxy {
     /**
      * Encodes a request from a codec and invokes it on any node.
      */
-    protected encodeInvokeOnRandomTarget(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
+    protected encodeInvokeOnRandomTarget<V>(
+        codec: any, handler: (clientMessage: ClientMessage) => V,  ...codecArguments: any[]
+    ): Promise<V> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnRandomTarget(clientMessage);
+        return this.invocationService.invokeOnRandomTarget(clientMessage, handler);
     }
 
     protected encodeInvokeOnTarget(codec: any, target: UUID, ...codecArguments: any[]): Promise<ClientMessage> {
@@ -137,10 +139,6 @@ export abstract class BaseProxy {
         return this.serializationService.toData(object);
     }
 
-    protected toDataAsync(object: any): Promise<Data> {
-        return this.serializationService.toDataAsync(object);
-    }
-
     /**
      * Returns true if object is compact serializable, false otherwise.
      */
@@ -153,10 +151,6 @@ export abstract class BaseProxy {
      */
     protected toObject(data: Data): any {
         return this.serializationService.toObject(data);
-    }
-
-    protected toObjectAsync(data: Data): Promise<any> {
-        return this.serializationService.toObjectAsync(data);
     }
 
     protected getConnectedServerVersion(): number {

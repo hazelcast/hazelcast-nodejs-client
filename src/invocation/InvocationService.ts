@@ -400,8 +400,10 @@ export class InvocationService {
      * Invokes given invocation on any host.
      * Useful when an operation is not bound to any host but a generic operation.
      */
-    invokeOnRandomTarget(request: ClientMessage): Promise<ClientMessage> {
-        return this.invoke(new Invocation(this, request));
+    invokeOnRandomTarget<V>(request: ClientMessage, handler: (clientMessage: ClientMessage) => V): Promise<V> {
+        const invocation = new Invocation(this, request);
+        invocation.handler = handler;
+        return this.invoke(invocation);
     }
 
     /**

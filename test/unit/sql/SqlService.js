@@ -17,7 +17,6 @@
 
 const { SqlServiceImpl } = require('../../../lib/sql/SqlService');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
-const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
 const { SqlExpectedResultType } = require('../../../lib/sql/SqlStatement');
 const { SqlQueryId } = require('../../../lib/sql/SqlQueryId');
 const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
@@ -215,7 +214,9 @@ describe('SqlServiceTest', function () {
 
         it('should invoke on connection returned from getConnectionForSql', async function () {
             await sqlService.execute('s', [], {});
-            fakeInvocationService.invokeOnConnection.calledOnceWithExactly(fakeConnection, fakeClientMessage).should.be.true;
+            fakeInvocationService.invokeOnConnection.calledOnceWithMatch(
+                fakeConnection, fakeClientMessage, sandbox.match.any
+            ).should.be.true;
         });
 
         it('should call handleExecuteResponse if invoke is successful', async function () {
@@ -396,9 +397,10 @@ describe('SqlServiceTest', function () {
             const fakeQueryId = {};
             sqlService.close(fakeConnection, fakeQueryId);
 
-            fakeInvocationService.invokeOnConnection.calledOnceWithExactly(
+            fakeInvocationService.invokeOnConnection.calledOnceWithMatch(
                 sandbox.match.same(fakeConnection),
-                sandbox.match.same(fakeClientMessage)
+                sandbox.match.same(fakeClientMessage),
+                sandbox.match.any
             ).should.be.true;
         });
 
@@ -410,76 +412,6 @@ describe('SqlServiceTest', function () {
             fakeCloseCodec.calledOnceWithExactly(
                 sandbox.match.same(fakeQueryId)
             ).should.be.true;
-        });
-    });
-    describe('handleExecuteResponse', function () {
-        const fakeClientMessage = {};
-
-        let fakeResult;
-
-        beforeEach(function () {
-            fakeResult = {
-                onExecuteError: sandbox.fake(),
-                onExecuteResponse: sandbox.fake()
-            };
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
-        it('should decode the response', function () {
-            const fake = sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns({
-                error: null,
-                rowMetadata: [1]
-            }));
-
-            SqlServiceImpl.handleExecuteResponse(fakeClientMessage, fakeResult);
-
-            fake.calledOnceWithExactly(fakeClientMessage).should.be.true;
-        });
-
-        it('should call onExecuteError method of result if response error is not null', function () {
-            const fakeResponse = {
-                error: {
-                    originatingMemberId: 1,
-                    code: 1,
-                    message: 'Execute error response',
-                    suggestion: null
-                },
-                rowMetadata: [],
-                rowPage: {},
-                updateCount: 1
-            };
-
-            const fake = sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns(fakeResponse));
-
-            (() => SqlServiceImpl.handleExecuteResponse(fakeClientMessage, fakeResult)).should.throw(HazelcastSqlException);
-
-            fake.calledOnceWithExactly(fakeClientMessage).should.be.true;
-            fakeResult.onExecuteResponse.called.should.be.false;
-        });
-
-        it('should call onExecuteResponse method of result if response error is null', function () {
-            const fakeResponse = {
-                error: null,
-                rowMetadata: [1],
-                rowPage: {},
-                updateCount: 1
-            };
-            const fake = sandbox.replace(SqlExecuteCodec, 'decodeResponse', sandbox.fake.returns(fakeResponse));
-
-            SqlServiceImpl.handleExecuteResponse(fakeClientMessage, fakeResult);
-
-            fake.calledOnceWithExactly(fakeClientMessage).should.be.true;
-
-            fakeResult.onExecuteResponse.calledOnceWithExactly(
-                sandbox.match(new SqlRowMetadataImpl(fakeResponse.rowMetadata)),
-                sandbox.match.same(fakeResponse.rowPage),
-                fakeResponse.updateCount
-            ).should.be.true;
-
-            fakeResult.onExecuteError.called.should.be.false;
         });
     });
     describe('fetch', function () {
@@ -524,9 +456,10 @@ describe('SqlServiceTest', function () {
             const fakeConnection = {};
             sqlService.fetch(fakeConnection, {}, 1);
 
-            fakeInvokeOnConnection.calledOnceWithExactly(
+            fakeInvokeOnConnection.calledOnceWithMatch(
                 sandbox.match.same(fakeConnection),
-                sandbox.match.same(fakeRequestMessage)
+                sandbox.match.same(fakeRequestMessage),
+                sandbox.match.any
             ).should.be.true;
         });
 
@@ -540,40 +473,5 @@ describe('SqlServiceTest', function () {
                 ).should.be.true;
             });
         });
-
-        it('should return a promise that will be rejected if response contains an error', function (done) {
-            const theError = {
-                originatingMemberId: 1,
-                code: 1,
-                message: 'oops',
-                suggestion: null
-            };
-            sandbox.replace(SqlFetchCodec, 'decodeResponse', sandbox.fake.returns({
-                error: theError, rowPage: []
-            }));
-
-            sqlService.fetch({}, {}, 1).then(() => {
-                done(new Error('Expected promise to be rejected'));
-            }).catch(err => {
-                sandbox.assert.match(err, theError);
-                done();
-            });
-        });
-
-        it('should return a promise that will be resolved with a SqlPage if response does not contain an error',
-            function (done) {
-                const expectedPage = {};
-                const decodeFake = sandbox.fake.returns({
-                    error: null, rowPage: expectedPage
-                });
-                sandbox.replace(SqlFetchCodec, 'decodeResponse', decodeFake);
-
-                sqlService.fetch({}, {}, 1).then(actualPage => {
-                    actualPage.should.be.eq(expectedPage);
-                    done();
-                }).catch(err => {
-                    done(err);
-                });
-            });
     });
 });

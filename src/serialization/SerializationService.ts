@@ -70,6 +70,7 @@ import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
 import {CompactStreamSerializerAdapter} from './compact/CompactStreamSerializerAdapter';
 import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
+import {CompactGenericRecordImpl} from './generic_record';
 
 /**
  * Serializes objects and deserializes data.
@@ -84,14 +85,6 @@ export interface SerializationService {
     writeObject(out: DataOutput, object: any): void;
 
     readObject(inp: DataInput): any;
-
-    toDataAsync(object: any, partitioningStrategy?: any): Promise<Data>;
-
-    toObjectAsync(data: Data): Promise<any>;
-
-    writeObjectAsync(out: DataOutput, object: any): Promise<void>;
-
-    readObjectAsync(inp: DataInput): Promise<any>;
 
     isCompactSerializable(obj: any): boolean;
 }
@@ -170,72 +163,6 @@ export class SerializationServiceV1 implements SerializationService {
         return (serializer as Serializer).read(dataInput);
     }
 
-
-    /**
-     * Serializes object to data
-     *
-     * @param object Object to serialize
-     * @param partitioningStrategy
-     * @throws RangeError if object is not serializable
-     */
-    toDataAsync(object: any, partitioningStrategy: PartitionStrategy = defaultPartitionStrategy): Promise<Data> {
-        if (this.isData(object)) {
-            return Promise.resolve(object as Data);
-        }
-        const dataOutput = new PositionalObjectDataOutput(this, this.serializationConfig.isBigEndian);
-        const serializer = this.findSerializerFor(object);
-        // Check if object is partition aware
-        if (object != null && object.partitionKey != null) {
-            const partitionKey = object.partitionKey;
-            const serializedPartitionKey = this.toData(partitionKey);
-            dataOutput.writeIntBE(SerializationServiceV1.calculatePartitionHash(serializedPartitionKey, partitioningStrategy));
-        } else {
-            dataOutput.writeIntBE(SerializationServiceV1.calculatePartitionHash(object, partitioningStrategy));
-        }
-        dataOutput.writeIntBE(serializer.id);
-        if (serializer instanceof CompactStreamSerializerAdapter) {
-            return (serializer as AsyncSerializer).write(dataOutput, object).then(() => {
-                return new HeapData(dataOutput.toBuffer());
-            })
-        } else {
-            (serializer as Serializer).write(dataOutput, object)
-            return Promise.resolve(new HeapData(dataOutput.toBuffer()));
-        }
-    }
-
-    toObjectAsync(data: Data): Promise<any> {
-        if (data == null) {
-            return Promise.resolve(data);
-        }
-        if (!data.getType) {
-            return Promise.resolve(data);
-        }
-        const serializer = this.findSerializerById(data.getType());
-        if (serializer === undefined) {
-            throw new RangeError(`There is no suitable deserializer for data with type ${data.getType()}`);
-        }
-        const dataInput = new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serializationConfig.isBigEndian);
-        if (serializer instanceof CompactStreamSerializerAdapter) {
-            return serializer.read(dataInput).then((obj: any) => {
-                return obj;
-            })
-        } else {
-            return Promise.resolve(serializer.read(dataInput));
-        }
-    }
-
-    writeObjectAsync(out: DataOutput, object: any): Promise<void> {
-        const serializer = this.findSerializerFor(object);
-        out.writeInt(serializer.id);
-        return (serializer as AsyncSerializer).write(out, object);
-    }
-
-    readObjectAsync(inp: DataInput): Promise<any> {
-        const serializerId = inp.readInt();
-        const serializer = this.findSerializerById(serializerId);
-        return (serializer as AsyncSerializer).read(inp);
-    }
-
     writeObject(out: DataOutput, object: any): void {
         const serializer = this.findSerializerFor(object);
         out.writeInt(serializer.id);
@@ -292,7 +219,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (serializer === null) {
             serializer = this.lookupGlobalSerializer();
         }
-        if (serializer === null) {
+        if (serializer === null && this.isCompactSerializable(obj)) {
             serializer = this.findSerializerByName('!compact', false);
         }
         if (serializer === null) {
@@ -352,6 +279,9 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     isCompactSerializable(obj: any): boolean {
+        if (obj instanceof CompactGenericRecordImpl) {
+            return true;
+        }
         // Null object case: Object.create(null)
         if (!obj.constructor) {
             return false;

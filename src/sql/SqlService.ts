@@ -20,7 +20,7 @@ import {HazelcastSqlException, IllegalArgumentError} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
 import {SqlQueryId} from './SqlQueryId';
 import {SerializationService} from '../serialization/SerializationService';
-import {SqlExecuteCodec} from '../codec/SqlExecuteCodec';
+import {SqlExecuteCodec, SqlExecuteResponseParams} from '../codec/SqlExecuteCodec';
 import * as Long from 'long';
 import {InvocationService} from '../invocation/InvocationService';
 import {ClientMessage} from '../protocol/ClientMessage';
@@ -128,11 +128,10 @@ export class SqlServiceImpl implements SqlService {
 
     /**
      * Handles SQL execute response.
-     * @param clientMessage The response message
+     * @param response The response
      * @param res SQL result for this response
      */
-    private static handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
-        const response = SqlExecuteCodec.decodeResponse(clientMessage);
+    private static handleExecuteResponse(response: SqlExecuteResponseParams, res: SqlResultImpl): void {
         const sqlError = response.error;
         if (sqlError !== null) {
             throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code, sqlError.message, sqlError.suggestion);
@@ -302,7 +301,7 @@ export class SqlServiceImpl implements SqlService {
                 false // Used to skip updating statistics from MC client, should be false in other clients
             );
 
-            const res = SqlResultImpl.newResult(
+            const result = SqlResultImpl.newResult(
                 this,
                 this.deserializeRowValue.bind(this),
                 connection,
@@ -312,12 +311,14 @@ export class SqlServiceImpl implements SqlService {
                 this.connectionManager.getClientUuid()
             );
 
-            return this.invocationService.invokeOnConnection(connection, requestMessage, clientMessage => {
-                SqlServiceImpl.handleExecuteResponse(clientMessage, res);
-                return res;
+            return this.invocationService.invokeOnConnection(
+                connection, requestMessage, SqlExecuteCodec.decodeResponse
+            ).then(response => {
+                SqlServiceImpl.handleExecuteResponse(response, result);
+                return result;
             }).catch(err => {
                 const error = this.rethrow(err, connection);
-                res.onExecuteError(error);
+                result.onExecuteError(error);
                 throw error;
             });
         } catch (error) {
