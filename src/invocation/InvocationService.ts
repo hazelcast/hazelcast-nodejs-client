@@ -122,7 +122,12 @@ export class Invocation {
      * If this is an event listener registration, handler should be set to the function to be called on events.
      * Otherwise, should be set to null.
      */
-    handler: (...args: any[]) => any;
+    eventHandler: (...args: any[]) => any;
+
+    /**
+     * Handler is responsible for handling the client message and return the object user expects.
+     */
+    handler: (clientMessage: ClientMessage) => any = x => x;
 
     /**
      * True if this invocation is urgent (can be invoked even in the client is in the disconnected state), false otherwise.
@@ -332,7 +337,7 @@ export class InvocationService {
         return this.redoOperation;
     }
 
-    invoke(invocation: Invocation): Promise<ClientMessage> {
+    invoke(invocation: Invocation): Promise<any> {
         invocation.deferred = deferredPromise<ClientMessage>();
         const newCorrelationId = this.correlationCounter++;
         invocation.request.setCorrelationId(newCorrelationId);
@@ -349,18 +354,21 @@ export class InvocationService {
      * Invokes given invocation on specified connection.
      * @param connection
      * @param request
-     * @param handler called with values returned from server for this invocation.
+     * @param handler Handler is responsible for handling the client message and return the object user expects.
+     * @param eventHandler called with values returned from server for this invocation.
      * @returns a promise that resolves to {@link ClientMessage}
      */
-    invokeOnConnection(
+    invokeOnConnection<V>(
         connection: Connection,
         request: ClientMessage,
-        handler?: (...args: any[]) => any
-    ): Promise<ClientMessage> {
+        handler: (clientMessage: ClientMessage) => V,
+        eventHandler?: (...args: any[]) => any
+    ): Promise<V> {
         const invocation = new Invocation(this, request);
         invocation.connection = connection;
-        if (handler) {
-            invocation.handler = handler;
+        invocation.handler = handler;
+        if (eventHandler) {
+            invocation.eventHandler = eventHandler;
         }
         return this.invoke(invocation);
     }
@@ -369,11 +377,13 @@ export class InvocationService {
      * Invokes given invocation on the node that owns given partition.
      * Optionally overrides invocation timeout.
      */
-    invokeOnPartition(request: ClientMessage,
+    invokeOnPartition<V>(request: ClientMessage,
                       partitionId: number,
-                      timeoutMillis?: number): Promise<any> {
+                      handler: (clientMessage: ClientMessage) => V,
+                      timeoutMillis?: number): Promise<V> {
         const invocation = new Invocation(this, request, timeoutMillis);
         invocation.partitionId = partitionId;
+        invocation.handler = handler;
         return this.invoke(invocation);
     }
 
@@ -423,7 +433,7 @@ export class InvocationService {
             process.nextTick(() => {
                 const eventHandler = this.eventHandlers.get(correlationId);
                 if (eventHandler !== undefined) {
-                    eventHandler.handler(clientMessage);
+                    eventHandler.eventHandler(clientMessage);
                 }
             });
             return;

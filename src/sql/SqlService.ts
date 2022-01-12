@@ -312,7 +312,7 @@ export class SqlServiceImpl implements SqlService {
                 this.connectionManager.getClientUuid()
             );
 
-            return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
+            return this.invocationService.invokeOnConnection(connection, requestMessage, clientMessage => {
                 SqlServiceImpl.handleExecuteResponse(clientMessage, res);
                 return res;
             }).catch(err => {
@@ -347,7 +347,7 @@ export class SqlServiceImpl implements SqlService {
      */
     close(connection: Connection, queryId: SqlQueryId): Promise<ClientMessage> {
         const requestMessage = SqlCloseCodec.encodeRequest(queryId);
-        return this.invocationService.invokeOnConnection(connection, requestMessage);
+        return this.invocationService.invokeOnConnection(connection, requestMessage, x => x);
     }
 
     /**
@@ -358,7 +358,7 @@ export class SqlServiceImpl implements SqlService {
      */
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
         const requestMessage = SqlFetchCodec.encodeRequest(queryId, cursorBufferSize);
-        return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
+        return this.invocationService.invokeOnConnection(connection, requestMessage, clientMessage => {
             const response = SqlFetchCodec.decodeResponse(clientMessage);
             if (response.error !== null) {
                 throw new HazelcastSqlException(

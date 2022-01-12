@@ -132,8 +132,7 @@ export class Statistics {
         compressor.generateBlob()
             .then((blob) => {
                 const request = ClientStatisticsCodec.encodeRequest(collectionTimestamp, stats, blob);
-                return this.invocationService
-                    .invokeOnConnection(connection, request);
+                return this.invocationService.invokeOnConnection(connection, request, () => {});
             })
             .catch((err) => {
                 this.logger.trace('Statistics', 'Could not send stats', err);

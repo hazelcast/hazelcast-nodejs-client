@@ -74,21 +74,24 @@ export abstract class BaseProxy {
     /**
      * Encodes a request from a codec and invokes it on owner node of given key.
      */
-    protected encodeInvokeOnKey(codec: any, partitionKey: any, ...codecArguments: any[]): Promise<any> {
+    protected encodeInvokeOnKey<V>(
+        codec: any, partitionKey: any, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]
+    ): Promise<V> {
         const partitionId: number = this.partitionService.getPartitionId(partitionKey);
-        return this.encodeInvokeOnPartition(codec, partitionId, ...codecArguments);
+        return this.encodeInvokeOnPartition(codec, partitionId, handler, ...codecArguments);
     }
 
     /**
      * Encodes a request from a codec and invokes it on owner node of given key.
      * This method also overrides invocation timeout.
      */
-    protected encodeInvokeOnKeyWithTimeout(timeoutMillis: number,
+    protected encodeInvokeOnKeyWithTimeout<V>(timeoutMillis: number,
                                            codec: any,
                                            partitionKey: any,
-                                           ...codecArguments: any[]): Promise<ClientMessage> {
+                                           handler: (clientMessage: ClientMessage) => V,
+                                           ...codecArguments: any[]): Promise<V> {
         const partitionId: number = this.partitionService.getPartitionId(partitionKey);
-        return this.encodeInvokeOnPartitionWithTimeout(timeoutMillis, codec, partitionId, ...codecArguments);
+        return this.encodeInvokeOnPartitionWithTimeout(timeoutMillis, codec, partitionId, handler, ...codecArguments);
     }
 
     /**
@@ -107,21 +110,24 @@ export abstract class BaseProxy {
     /**
      * Encodes a request from a codec and invokes it on owner node of given partition.
      */
-    protected encodeInvokeOnPartition(codec: any, partitionId: number, ...codecArguments: any[]): Promise<any> {
+    protected encodeInvokeOnPartition<V>(
+        codec: any, partitionId: number, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]
+    ): Promise<V> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnPartition(clientMessage, partitionId);
+        return this.invocationService.invokeOnPartition(clientMessage, partitionId, handler);
     }
 
     /**
      * Encodes a request from a codec and invokes it on owner node of given partition.
      * This method also overrides invocation timeout.
      */
-    protected encodeInvokeOnPartitionWithTimeout(timeoutMillis: number,
+    protected encodeInvokeOnPartitionWithTimeout<V>(timeoutMillis: number,
                                                  codec: any,
                                                  partitionId: number,
-                                                 ...codecArguments: any[]): Promise<ClientMessage> {
+                                                 handler: (clientMessage: ClientMessage) => V,
+                                                 ...codecArguments: any[]): Promise<V> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnPartition(clientMessage, partitionId, timeoutMillis);
+        return this.invocationService.invokeOnPartition(clientMessage, partitionId, handler, timeoutMillis);
     }
 
     /**

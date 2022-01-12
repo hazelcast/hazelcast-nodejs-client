@@ -63,11 +63,10 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
 
         const valueData: Data = this.toData(value);
         const keyData: Data = this.toData(key);
-        return this.encodeInvokeOnKey(ReplicatedMapPutCodec, keyData, keyData, valueData, ttl)
-            .then((clientMessage) => {
-                const response = ReplicatedMapPutCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvokeOnKey(ReplicatedMapPutCodec, keyData, (clientMessage) => {
+            const response = ReplicatedMapPutCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, keyData, valueData, ttl);
     }
 
     clear(): Promise<void> {
@@ -78,19 +77,19 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         assertNotNull(key);
 
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(ReplicatedMapGetCodec, keyData, keyData)
-            .then((clientMessage) => {
-                const response = ReplicatedMapGetCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvokeOnKey(ReplicatedMapGetCodec, keyData, (clientMessage) => {
+            const response = ReplicatedMapGetCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, keyData);
     }
 
     containsKey(key: K): Promise<boolean> {
         assertNotNull(key);
 
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(ReplicatedMapContainsKeyCodec, keyData, keyData)
-            .then(ReplicatedMapContainsKeyCodec.decodeResponse);
+        return this.encodeInvokeOnKey(
+            ReplicatedMapContainsKeyCodec, keyData, ReplicatedMapContainsKeyCodec.decodeResponse, keyData
+        );
     }
 
     containsValue(value: V): Promise<boolean> {
@@ -115,11 +114,10 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         assertNotNull(key);
 
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(ReplicatedMapRemoveCodec, keyData, keyData)
-            .then((clientMessage) => {
-                const response = ReplicatedMapRemoveCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvokeOnKey(ReplicatedMapRemoveCodec, keyData, (clientMessage) => {
+            const response = ReplicatedMapRemoveCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, keyData);
     }
 
     putAll(pairs: Array<[K, V]>): Promise<void> {

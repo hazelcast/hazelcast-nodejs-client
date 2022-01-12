@@ -70,7 +70,7 @@ export class ClusterViewListenerService {
         const handler = this.createClusterViewEventHandler(connection);
         const invocation = new Invocation(this.invocationService, request);
         invocation.connection = connection;
-        invocation.handler = handler;
+        invocation.eventHandler = handler;
 
         this.logger.trace('ClusterViewListenerService', `Register attempt of cluster view handler to ${connection}`);
         this.clusterService.clearMemberListVersion();

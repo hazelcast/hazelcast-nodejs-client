@@ -269,28 +269,9 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     put(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
-        if (this.isCompactSerializable(key) && this.isCompactSerializable(value)) {
-            const keyData: Promise<Data> = this.toDataAsync(key);
-            const valueData: Promise<Data> = this.toDataAsync(value);
-
-            return Promise.all([keyData, valueData]).then(([keyData, valueData]) => {
-                return this.putInternal(keyData, valueData, ttl, maxIdle);
-            });
-        } else if (this.isCompactSerializable(key) && !this.isCompactSerializable(value)) {
-            const valueData = this.toData(value);
-            return this.toDataAsync(key).then(keyData => {
-                return this.putInternal(keyData, valueData, ttl, maxIdle);
-            });
-        } else if (!this.isCompactSerializable(key) && this.isCompactSerializable(value)) {
-            const keyData = this.toData(key);
-            return this.toDataAsync(value).then(valueData => {
-                return this.putInternal(keyData, valueData, ttl, maxIdle);
-            });
-        } else {
-            const keyData = this.toData(key);
-            const valueData = this.toData(value);
-            return this.putInternal(keyData, valueData, ttl, maxIdle);
-        }
+        const keyData: Data = this.toData(key);
+        const valueData: Data = this.toData(value);
+        return this.putInternal(keyData, valueData, ttl, maxIdle);
     }
 
     putAll(pairs: Array<[K, V]>): Promise<void> {
@@ -378,27 +359,26 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKeyWithTimeout(
-            Number.MAX_SAFE_INTEGER, MapLockCodec, keyData, keyData, 0, leaseTime, 0
-        ).then(() => {});
+            Number.MAX_SAFE_INTEGER, MapLockCodec, keyData, () => {}, keyData, 0, leaseTime, 0
+        );
     }
 
     isLocked(key: K): Promise<boolean> {
         assertNotNull(key);
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MapIsLockedCodec, keyData, keyData)
-            .then(MapIsLockedCodec.decodeResponse);
+        return this.encodeInvokeOnKey(MapIsLockedCodec, keyData, MapIsLockedCodec.decodeResponse, keyData);
     }
 
     unlock(key: K): Promise<void> {
         assertNotNull(key);
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MapUnlockCodec, keyData, keyData, 0, 0).then(() => {});
+        return this.encodeInvokeOnKey(MapUnlockCodec, keyData, () => {}, keyData, 0, 0);
     }
 
     forceUnlock(key: K): Promise<void> {
         assertNotNull(key);
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MapForceUnlockCodec, keyData, keyData, 0).then(() => {});
+        return this.encodeInvokeOnKey(MapForceUnlockCodec, keyData, () => {}, keyData, 0);
     }
 
     keySet(): Promise<K[]> {
@@ -493,19 +473,18 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     getEntryView(key: K): Promise<SimpleEntryView<K, V>> {
         assertNotNull(key);
         const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MapGetEntryViewCodec, keyData, keyData, 0)
-            .then((clientMessage) => {
-                const response = MapGetEntryViewCodec.decodeResponse(clientMessage);
-                const dataEntryView = response.response;
-                if (dataEntryView == null) {
-                    return null;
-                }
+        return this.encodeInvokeOnKey(MapGetEntryViewCodec, keyData, (clientMessage) => {
+            const response = MapGetEntryViewCodec.decodeResponse(clientMessage);
+            const dataEntryView = response.response;
+            if (dataEntryView == null) {
+                return null;
+            }
 
-                return new SimpleEntryView<K, V>(this.toObject(dataEntryView.key), this.toObject(dataEntryView.value),
-                    dataEntryView.cost, dataEntryView.creationTime, dataEntryView.expirationTime, dataEntryView.hits,
-                    dataEntryView.lastAccessTime, dataEntryView.lastStoredTime, dataEntryView.lastUpdateTime,
-                    dataEntryView.version, dataEntryView.ttl, response.maxIdle);
-            });
+            return new SimpleEntryView<K, V>(this.toObject(dataEntryView.key), this.toObject(dataEntryView.value),
+                dataEntryView.cost, dataEntryView.creationTime, dataEntryView.expirationTime, dataEntryView.hits,
+                dataEntryView.lastAccessTime, dataEntryView.lastStoredTime, dataEntryView.lastUpdateTime,
+                dataEntryView.version, dataEntryView.ttl, response.maxIdle);
+        }, keyData, 0);
     }
 
     addIndex(indexConfig: IndexConfig): Promise<void> {
@@ -518,8 +497,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(key);
         const keyData = this.toData(key);
         return this.encodeInvokeOnKeyWithTimeout(
-            Number.MAX_SAFE_INTEGER, MapTryLockCodec, keyData, keyData, 0, leaseTime, timeout, 0
-        ).then(MapTryLockCodec.decodeResponse);
+            Number.MAX_SAFE_INTEGER, MapTryLockCodec, keyData, MapTryLockCodec.decodeResponse, keyData, 0, leaseTime, timeout, 0
+        );
     }
 
     tryPut(key: K, value: V, timeout: number): Promise<boolean> {
@@ -554,35 +533,33 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     protected executeOnKeyInternal(keyData: Data, proData: Data): Promise<V> {
-        return this.encodeInvokeOnKey(MapExecuteOnKeyCodec, keyData, proData, keyData, 1)
-            .then((clientMessage) => {
-                const response = MapExecuteOnKeyCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvokeOnKey(MapExecuteOnKeyCodec, keyData, (clientMessage) => {
+            const response = MapExecuteOnKeyCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, proData, keyData, 1);
     }
 
     protected containsKeyInternal(keyData: Data): Promise<boolean> {
-        return this.encodeInvokeOnKey(MapContainsKeyCodec, keyData, keyData, 0)
-            .then(MapContainsKeyCodec.decodeResponse);
+        return this.encodeInvokeOnKey(MapContainsKeyCodec, keyData, MapContainsKeyCodec.decodeResponse, keyData, 0);
     }
 
     protected putInternal(keyData: Data,
                           valueData: Data,
                           ttl: number | Long = -1,
                           maxIdle?: number | Long): Promise<V> {
-        let request: Promise<ClientMessage>;
+        let request: Promise<V>;
+        const handler = (clientMessage: ClientMessage) => {
+            const response = MapPutCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        };
         if (maxIdle !== undefined) {
             request = this.encodeInvokeOnKey(MapPutWithMaxIdleCodec,
-                keyData, keyData, valueData, 0, ttl, maxIdle);
+                keyData, handler, keyData, valueData, 0, ttl, maxIdle);
         } else {
             request = this.encodeInvokeOnKey(MapPutCodec,
-                keyData, keyData, valueData, 0, ttl);
+                keyData, handler, keyData, valueData, 0, ttl);
         }
-        return request
-            .then((clientMessage) => {
-                const response = MapPutCodec.decodeResponse(clientMessage);
-                return this.toObjectAsync(response);
-            }).then(obj => obj);
+        return request;
     }
 
     protected finalizePutAll(_partitionsToKeys: { [id: string]: Array<[Data, Data]> }): void {
@@ -590,23 +567,23 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     protected getInternal(keyData: Data): Promise<V> {
-        return this.encodeInvokeOnKey(MapGetCodec, keyData, keyData, (clientMessage: ClientMessage) => {
+        return this.encodeInvokeOnKey(MapGetCodec, keyData, (clientMessage: ClientMessage) => {
             const response = MapGetCodec.decodeResponse(clientMessage);
             return this.toObject(response);
-        }, 0);
+        }, keyData, 0);
     }
 
     protected removeInternal(keyData: Data, value: V = null): Promise<V | boolean> {
         if (value == null) {
-            return this.encodeInvokeOnKey(MapRemoveCodec, keyData, keyData, 0)
-                .then((clientMessage) => {
-                    const response = MapRemoveCodec.decodeResponse(clientMessage);
-                    return this.toObject(response);
-                });
+            return this.encodeInvokeOnKey(MapRemoveCodec, keyData, (clientMessage) => {
+                const response = MapRemoveCodec.decodeResponse(clientMessage);
+                return this.toObject(response);
+            }, keyData, 0)
         } else {
             const valueData = this.toData(value);
-            return this.encodeInvokeOnKey(MapRemoveIfSameCodec, keyData, keyData, valueData, 0)
-                .then(MapRemoveIfSameCodec.decodeResponse);
+            return this.encodeInvokeOnKey(
+                MapRemoveIfSameCodec, keyData, MapRemoveIfSameCodec.decodeResponse, keyData, valueData, 0
+            );
         }
     }
 
@@ -615,8 +592,9 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         const partitionPromises: Array<Promise<Array<[Data, Data]>>> = [];
         for (const partition in partitionsToKeys) {
             partitionPromises.push(
-                this.encodeInvokeOnPartition(MapGetAllCodec, Number(partition), partitionsToKeys[partition])
-                    .then(MapGetAllCodec.decodeResponse)
+                this.encodeInvokeOnPartition(
+                    MapGetAllCodec, Number(partition), MapGetAllCodec.decodeResponse, partitionsToKeys[partition]
+                )
             );
         }
         const toObject = this.toObject.bind(this);
@@ -632,89 +610,80 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     protected deleteInternal(keyData: Data): Promise<void> {
-        return this.encodeInvokeOnKey(MapDeleteCodec, keyData, keyData, 0).then(() => {});
+        return this.encodeInvokeOnKey(MapDeleteCodec, keyData, () => {}, keyData, 0);
     }
 
     protected evictInternal(keyData: Data): Promise<boolean> {
-        return this.encodeInvokeOnKey(MapEvictCodec, keyData, keyData, 0)
-            .then(MapEvictCodec.decodeResponse);
+        return this.encodeInvokeOnKey(MapEvictCodec, keyData, MapEvictCodec.decodeResponse, keyData, 0);
     }
 
     protected putIfAbsentInternal(keyData: Data,
                                   valueData: Data,
                                   ttl: number | Long = -1,
                                   maxIdle?: number | Long): Promise<V> {
-        let request: Promise<ClientMessage>;
+        const handler = (clientMessage: ClientMessage) => {
+            const response = MapPutIfAbsentCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        };
+
         if (maxIdle !== undefined) {
-            request = this.encodeInvokeOnKey(MapPutIfAbsentWithMaxIdleCodec,
-                keyData, keyData, valueData, 0, ttl, maxIdle);
+            return this.encodeInvokeOnKey(MapPutIfAbsentWithMaxIdleCodec,
+                keyData, handler, keyData, valueData, 0, ttl, maxIdle);
         } else {
-            request = this.encodeInvokeOnKey(MapPutIfAbsentCodec,
-                keyData, keyData, valueData, 0, ttl);
+            return this.encodeInvokeOnKey(MapPutIfAbsentCodec,
+                keyData, handler, keyData, valueData, 0, ttl);
         }
-        return request
-            .then((clientMessage) => {
-                const response = MapPutIfAbsentCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
     }
 
     protected putTransientInternal(keyData: Data,
                                    valueData: Data,
                                    ttl: number | Long = -1,
                                    maxIdle?: number | Long): Promise<void> {
-        let request: Promise<ClientMessage>;
         if (maxIdle !== undefined) {
-            request = this.encodeInvokeOnKey(MapPutTransientWithMaxIdleCodec,
-                keyData, keyData, valueData, 0, ttl, maxIdle);
+            return this.encodeInvokeOnKey(MapPutTransientWithMaxIdleCodec,
+                keyData, () => {}, keyData, valueData, 0, ttl, maxIdle);
         } else {
-            request = this.encodeInvokeOnKey(MapPutTransientCodec,
-                keyData, keyData, valueData, 0, ttl)
+            return this.encodeInvokeOnKey(MapPutTransientCodec,
+                keyData, () => {}, keyData, valueData, 0, ttl)
         }
-        return request.then(() => {});
     }
 
     protected replaceInternal(keyData: Data, newValueData: Data): Promise<V> {
-        return this.encodeInvokeOnKey(MapReplaceCodec, keyData, keyData, newValueData, 0)
-            .then((clientMessage) => {
-                const response = MapReplaceCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvokeOnKey(MapReplaceCodec, keyData, (clientMessage) => {
+            const response = MapReplaceCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, keyData, newValueData, 0);
     }
 
     protected replaceIfSameInternal(keyData: Data, oldValueData: Data, newValueData: Data): Promise<boolean> {
-        return this.encodeInvokeOnKey(MapReplaceIfSameCodec, keyData, keyData, oldValueData, newValueData, 0)
-            .then(MapReplaceIfSameCodec.decodeResponse);
+        return this.encodeInvokeOnKey(
+            MapReplaceIfSameCodec, keyData, MapReplaceIfSameCodec.decodeResponse, keyData, oldValueData, newValueData, 0
+        );
     }
 
     protected setInternal(keyData: Data,
                           valueData: Data,
                           ttl: number | Long = -1,
                           maxIdle?: number | Long): Promise<void> {
-        let request: Promise<ClientMessage>;
         if (maxIdle !== undefined) {
-            request = this.encodeInvokeOnKey(MapSetWithMaxIdleCodec,
-                keyData, keyData, valueData, 0, ttl, maxIdle);
+            return this.encodeInvokeOnKey(MapSetWithMaxIdleCodec,
+                keyData, () => {}, keyData, valueData, 0, ttl, maxIdle);
         } else {
-            request = this.encodeInvokeOnKey(MapSetCodec,
-                keyData, keyData, valueData, 0, ttl);
+            return this.encodeInvokeOnKey(MapSetCodec,
+                keyData, () => {}, keyData, valueData, 0, ttl);
         }
-        return request.then(() => {});
     }
 
     protected tryPutInternal(keyData: Data, valueData: Data, timeout: number): Promise<boolean> {
-        return this.encodeInvokeOnKey(MapTryPutCodec, keyData, keyData, valueData, 0, timeout)
-            .then(MapTryPutCodec.decodeResponse);
+        return this.encodeInvokeOnKey(MapTryPutCodec, keyData, MapTryPutCodec.decodeResponse, keyData, valueData, 0, timeout);
     }
 
     protected tryRemoveInternal(keyData: Data, timeout: number): Promise<boolean> {
-        return this.encodeInvokeOnKey(MapTryRemoveCodec, keyData, keyData, 0, timeout)
-            .then(MapTryRemoveCodec.decodeResponse);
+        return this.encodeInvokeOnKey(MapTryRemoveCodec, keyData, MapTryRemoveCodec.decodeResponse, keyData, 0, timeout);
     }
 
     protected setTtlInternal(keyData: Data, ttl: number): Promise<boolean> {
-        return this.encodeInvokeOnKey(MapSetTtlCodec, keyData, keyData, ttl)
-            .then(MapSetTtlCodec.decodeResponse);
+        return this.encodeInvokeOnKey(MapSetTtlCodec, keyData, MapSetTtlCodec.decodeResponse, keyData, ttl);
     }
 
     private putAllInternal(pairs: Array<[K, V]>, triggerMapLoader: boolean): Promise<void> {
@@ -734,8 +703,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         const partitionPromises: Array<Promise<void>> = [];
         for (const partition in partitionsToKeys) {
             partitionPromises.push(
-                this.encodeInvokeOnPartition(MapPutAllCodec, Number(partition), partitionsToKeys[partition], triggerMapLoader)
-                    .then(() => this.finalizePutAll(partitionsToKeys)),
+                this.encodeInvokeOnPartition(
+                    MapPutAllCodec,
+                    Number(partition),
+                    () => this.finalizePutAll(partitionsToKeys),
+                    partitionsToKeys[partition],
+                    triggerMapLoader
+                )
             );
         }
         return Promise.all(partitionPromises).then(() => {});
