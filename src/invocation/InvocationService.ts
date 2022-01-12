@@ -213,7 +213,8 @@ export class Invocation {
     }
 
     complete(clientMessage: ClientMessage): void {
-        this.deferred.resolve(clientMessage);
+        const result = this.handler(clientMessage);
+        this.deferred.resolve(result);
         this.invocationService.deregisterInvocation(this.request.getCorrelationId());
     }
 
@@ -370,7 +371,7 @@ export class InvocationService {
      */
     invokeOnPartition(request: ClientMessage,
                       partitionId: number,
-                      timeoutMillis?: number): Promise<ClientMessage> {
+                      timeoutMillis?: number): Promise<any> {
         const invocation = new Invocation(this, request, timeoutMillis);
         invocation.partitionId = partitionId;
         return this.invoke(invocation);

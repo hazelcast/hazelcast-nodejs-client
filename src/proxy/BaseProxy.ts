@@ -74,7 +74,7 @@ export abstract class BaseProxy {
     /**
      * Encodes a request from a codec and invokes it on owner node of given key.
      */
-    protected encodeInvokeOnKey(codec: any, partitionKey: any, ...codecArguments: any[]): Promise<ClientMessage> {
+    protected encodeInvokeOnKey(codec: any, partitionKey: any, ...codecArguments: any[]): Promise<any> {
         const partitionId: number = this.partitionService.getPartitionId(partitionKey);
         return this.encodeInvokeOnPartition(codec, partitionId, ...codecArguments);
     }
@@ -107,7 +107,7 @@ export abstract class BaseProxy {
     /**
      * Encodes a request from a codec and invokes it on owner node of given partition.
      */
-    protected encodeInvokeOnPartition(codec: any, partitionId: number, ...codecArguments: any[]): Promise<ClientMessage> {
+    protected encodeInvokeOnPartition(codec: any, partitionId: number, ...codecArguments: any[]): Promise<any> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
         return this.invocationService.invokeOnPartition(clientMessage, partitionId);
     }

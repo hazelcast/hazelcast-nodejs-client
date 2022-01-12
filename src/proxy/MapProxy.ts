@@ -303,9 +303,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     get(key: K): Promise<V> {
         assertNotNull(key);
-        return this.toDataAsync(key).then(keyData => {
-            return this.getInternal(keyData);
-        });
+        const keyData = this.toData(key);
+        return this.getInternal(keyData);
     }
 
     remove(key: K, value: V = null): Promise<V | boolean> {
@@ -591,11 +590,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     protected getInternal(keyData: Data): Promise<V> {
-        return this.encodeInvokeOnKey(MapGetCodec, keyData, keyData, 0)
-            .then((clientMessage) => {
-                const response = MapGetCodec.decodeResponse(clientMessage);
-                return this.toObjectAsync(response);
-            }).then(obj => obj);
+        return this.encodeInvokeOnKey(MapGetCodec, keyData, keyData, (clientMessage: ClientMessage) => {
+            const response = MapGetCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, 0);
     }
 
     protected removeInternal(keyData: Data, value: V = null): Promise<V | boolean> {
