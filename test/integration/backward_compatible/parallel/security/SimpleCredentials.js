@@ -25,25 +25,13 @@ class SimpleCredentials {
     }
 
     readData(input) {
-        // readString is added in 4.2 https://github.com/hazelcast/hazelcast-nodejs-client/pull/802
-        if (TestUtil.isClientVersionAtLeast('4.2')) {
-            this.username = input.readString();
-            this.password = input.readString();
-        } else {
-            this.username = input.readUTF();
-            this.password = input.readUTF();
-        }
+        this.username = TestUtil.readStringFromInput(input);
+        this.password = TestUtil.readStringFromInput(input);
     }
 
     writeData(output) {
-        // writeString is added in 4.2 https://github.com/hazelcast/hazelcast-nodejs-client/pull/802
-        if (TestUtil.isClientVersionAtLeast('4.2')) {
-            output.writeString(this.username);
-            output.writeString(this.password);
-        } else {
-            output.writeUTF(this.username);
-            output.writeUTF(this.password);
-        }
+        TestUtil.writeStringToOutput(output, this.username);
+        TestUtil.writeStringToOutput(output, this.password);
     }
 }
 
