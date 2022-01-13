@@ -54,8 +54,9 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             assertNumber(delta);
             delta = Long.fromNumber(delta as number);
         }
-        return this.encodeInvokeOnRandomTarget(AtomicLongAddAndGetCodec, this.groupId, this.objectName, delta)
-            .then(AtomicLongAddAndGetCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(
+            AtomicLongAddAndGetCodec, AtomicLongAddAndGetCodec.decodeResponse, this.groupId, this.objectName, delta
+        );
     }
 
     compareAndSet(expect: Long | number, update: Long | number): Promise<boolean> {
@@ -67,8 +68,14 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             assertNumber(update);
             update = Long.fromNumber(update as number);
         }
-        return this.encodeInvokeOnRandomTarget(AtomicLongCompareAndSetCodec, this.groupId, this.objectName, expect, update)
-            .then(AtomicLongCompareAndSetCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(
+            AtomicLongCompareAndSetCodec,
+            AtomicLongCompareAndSetCodec.decodeResponse,
+            this.groupId,
+            this.objectName,
+            expect,
+            update
+        );
     }
 
     decrementAndGet(): Promise<Long> {
@@ -76,8 +83,9 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
     }
 
     get(): Promise<Long> {
-        return this.encodeInvokeOnRandomTarget(AtomicLongGetCodec, this.groupId, this.objectName)
-            .then(AtomicLongGetCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(
+            AtomicLongGetCodec, AtomicLongGetCodec.decodeResponse, this.groupId, this.objectName
+        );
     }
 
     getAndAdd(delta: Long | number): Promise<Long> {
@@ -85,8 +93,9 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             assertNumber(delta);
             delta = Long.fromNumber(delta as number);
         }
-        return this.encodeInvokeOnRandomTarget(AtomicLongGetAndAddCodec, this.groupId, this.objectName, delta)
-            .then(AtomicLongGetAndAddCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(
+            AtomicLongGetAndAddCodec, AtomicLongGetAndAddCodec.decodeResponse, this.groupId, this.objectName, delta
+        );
     }
 
     getAndDecrement(): Promise<Long> {
@@ -98,8 +107,9 @@ export class AtomicLongProxy extends BaseCPProxy implements IAtomicLong {
             assertNumber(newValue);
             newValue = Long.fromNumber(newValue as number);
         }
-        return this.encodeInvokeOnRandomTarget(AtomicLongGetAndSetCodec, this.groupId, this.objectName, newValue)
-            .then(AtomicLongGetAndSetCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(
+            AtomicLongGetAndSetCodec, AtomicLongGetAndSetCodec.decodeResponse, this.groupId, this.objectName, newValue
+        );
     }
 
     incrementAndGet(): Promise<Long> {

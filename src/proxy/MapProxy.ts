@@ -214,19 +214,17 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             predicate.setIterationType(IterationType.VALUE);
             const serializationService = this.serializationService;
             const pagingPredicateHolder = PagingPredicateHolder.of(predicate, serializationService);
-            return this.encodeInvokeOnRandomTarget(MapValuesWithPagingPredicateCodec, pagingPredicateHolder)
-                .then((clientMessage) => {
-                    const response = MapValuesWithPagingPredicateCodec.decodeResponse(clientMessage);
-                    predicate.setAnchorList(response.anchorDataList.asAnchorList(serializationService));
-                    return new ReadOnlyLazyList(response.response, serializationService);
-                });
+            return this.encodeInvokeOnRandomTarget(MapValuesWithPagingPredicateCodec, (clientMessage) => {
+                const response = MapValuesWithPagingPredicateCodec.decodeResponse(clientMessage);
+                predicate.setAnchorList(response.anchorDataList.asAnchorList(serializationService));
+                return new ReadOnlyLazyList(response.response, serializationService);
+            }, pagingPredicateHolder);
         } else {
             const predicateData = this.toData(predicate);
-            return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, predicateData)
-                .then((clientMessage) => {
-                    const response = MapValuesWithPredicateCodec.decodeResponse(clientMessage);
-                    return new ReadOnlyLazyList(response, this.serializationService);
-                });
+            return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, (clientMessage) => {
+                const response = MapValuesWithPredicateCodec.decodeResponse(clientMessage);
+                return new ReadOnlyLazyList(response, this.serializationService);
+            }, predicateData);
         }
     }
 
@@ -244,8 +242,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     containsValue(value: V): Promise<boolean> {
         assertNotNull(value);
         const valueData = this.toData(value);
-        return this.encodeInvokeOnRandomTarget(MapContainsValueCodec, valueData)
-            .then(MapContainsValueCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(MapContainsValueCodec, MapContainsValueCodec.decodeResponse, valueData);
     }
 
     put(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V> {
@@ -277,17 +274,15 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     size(): Promise<number> {
-        return this.encodeInvokeOnRandomTarget(MapSizeCodec)
-            .then(MapSizeCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(MapSizeCodec, MapSizeCodec.decodeResponse);
     }
 
     clear(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(MapClearCodec).then(() => {});
+        return this.encodeInvokeOnRandomTarget(MapClearCodec, () => {});
     }
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvokeOnRandomTarget(MapIsEmptyCodec)
-            .then(MapIsEmptyCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(MapIsEmptyCodec, MapIsEmptyCodec.decodeResponse);
     }
 
     getAll(keys: K[]): Promise<any[]> {
@@ -316,11 +311,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     entrySet(): Promise<any[]> {
-        return this.encodeInvokeOnRandomTarget(MapEntrySetCodec)
-            .then((clientMessage) => {
-                const response = MapEntrySetCodec.decodeResponse(clientMessage);
-                return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response);
-            });
+        return this.encodeInvokeOnRandomTarget(MapEntrySetCodec, (clientMessage) => {
+            const response = MapEntrySetCodec.decodeResponse(clientMessage);
+            return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response);
+        });
     }
 
     evict(key: K): Promise<boolean> {
@@ -330,11 +324,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     evictAll(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(MapEvictAllCodec).then(() => {});
+        return this.encodeInvokeOnRandomTarget(MapEvictAllCodec, () => {});
     }
 
     flush(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(MapFlushCodec).then(() => {});
+        return this.encodeInvokeOnRandomTarget(MapFlushCodec, () => {});
     }
 
     lock(key: K, leaseTime = -1): Promise<void> {
@@ -364,22 +358,19 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     keySet(): Promise<K[]> {
-        return this.encodeInvokeOnRandomTarget(MapKeySetCodec)
-            .then((clientMessage) => {
-                const response = MapKeySetCodec.decodeResponse(clientMessage);
-                return response.map<K>(this.toObject.bind(this));
-            });
+        return this.encodeInvokeOnRandomTarget(MapKeySetCodec, (clientMessage) => {
+            const response = MapKeySetCodec.decodeResponse(clientMessage);
+            return response.map<K>(this.toObject.bind(this));
+        });
     }
 
     loadAll(keys: K[] = null, replaceExistingValues = true): Promise<void> {
         if (keys == null) {
-            return this.encodeInvokeOnRandomTarget(MapLoadAllCodec, replaceExistingValues)
-                .then(() => {});
+            return this.encodeInvokeOnRandomTarget(MapLoadAllCodec, () => {}, replaceExistingValues);
         } else {
             const toData = this.toData.bind(this);
             const keysData: Data[] = keys.map<Data>(toData);
-            return this.encodeInvokeOnRandomTarget(MapLoadGivenKeysCodec, keysData, replaceExistingValues)
-                .then(() => {});
+            return this.encodeInvokeOnRandomTarget(MapLoadGivenKeysCodec, () => {}, keysData, replaceExistingValues);
         }
     }
 
@@ -426,11 +417,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     values(): Promise<ReadOnlyLazyList<V>> {
-        return this.encodeInvokeOnRandomTarget(MapValuesCodec)
-            .then((clientMessage) => {
-                const response = MapValuesCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList(response, this.serializationService);
-            });
+        return this.encodeInvokeOnRandomTarget(MapValuesCodec, (clientMessage) => {
+            const response = MapValuesCodec.decodeResponse(clientMessage);
+            return new ReadOnlyLazyList(response, this.serializationService);
+        });
     }
 
     getEntryView(key: K): Promise<SimpleEntryView<K, V>> {
@@ -453,7 +443,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     addIndex(indexConfig: IndexConfig): Promise<void> {
         assertNotNull(indexConfig);
         const normalizedConfig = IndexUtil.validateAndNormalize(this.name, indexConfig);
-        return this.encodeInvokeOnRandomTarget(MapAddIndexCodec, normalizedConfig).then(() => {});
+        return this.encodeInvokeOnRandomTarget(MapAddIndexCodec, () => {}, normalizedConfig);
     }
 
     tryLock(key: K, timeout = 0, leaseTime = -1): Promise<boolean> {

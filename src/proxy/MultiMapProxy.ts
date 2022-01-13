@@ -123,27 +123,24 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     keySet(): Promise<K[]> {
-        return this.encodeInvokeOnRandomTarget(MultiMapKeySetCodec)
-            .then((clientMessage) => {
-                const response = MultiMapKeySetCodec.decodeResponse(clientMessage);
-                return this.deserializeList(response);
-            });
+        return this.encodeInvokeOnRandomTarget(MultiMapKeySetCodec, (clientMessage) => {
+            const response = MultiMapKeySetCodec.decodeResponse(clientMessage);
+            return this.deserializeList(response);
+        });
     }
 
     values(): Promise<ReadOnlyLazyList<V>> {
-        return this.encodeInvokeOnRandomTarget(MultiMapValuesCodec)
-            .then((clientMessage) => {
-                const response = MultiMapValuesCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response, this.serializationService);
-            });
+        return this.encodeInvokeOnRandomTarget(MultiMapValuesCodec, (clientMessage) => {
+            const response = MultiMapValuesCodec.decodeResponse(clientMessage);
+            return new ReadOnlyLazyList<V>(response, this.serializationService);
+        });
     }
 
     entrySet(): Promise<Array<[K, V]>> {
-        return this.encodeInvokeOnRandomTarget(MultiMapEntrySetCodec)
-            .then((clientMessage) => {
-                const response = MultiMapEntrySetCodec.decodeResponse(clientMessage);
-                return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response);
-            });
+        return this.encodeInvokeOnRandomTarget(MultiMapEntrySetCodec, (clientMessage) => {
+            const response = MultiMapEntrySetCodec.decodeResponse(clientMessage);
+            return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response);
+        });
     }
 
     containsKey(key: K): Promise<boolean> {
@@ -153,8 +150,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
     containsValue(value: V): Promise<boolean> {
         const valueData = this.toData(value);
-        return this.encodeInvokeOnRandomTarget(MultiMapContainsValueCodec, valueData)
-            .then(MultiMapContainsValueCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(MultiMapContainsValueCodec, MultiMapContainsValueCodec.decodeResponse, valueData);
     }
 
     containsEntry(key: K, value: V): Promise<boolean> {
@@ -166,12 +162,11 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     size(): Promise<number> {
-        return this.encodeInvokeOnRandomTarget(MultiMapSizeCodec)
-            .then(MultiMapSizeCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(MultiMapSizeCodec, MultiMapSizeCodec.decodeResponse);
     }
 
     clear(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(MultiMapClearCodec).then(() => {});
+        return this.encodeInvokeOnRandomTarget(MultiMapClearCodec, () => {});
     }
 
     valueCount(key: K): Promise<number> {

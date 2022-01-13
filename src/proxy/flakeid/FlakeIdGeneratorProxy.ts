@@ -61,11 +61,10 @@ export class FlakeIdGeneratorProxy extends BaseProxy implements FlakeIdGenerator
         );
         this.config = (clientConfig as ClientConfigImpl).getFlakeIdGeneratorConfig(name);
         this.autoBatcher = new AutoBatcher(() => {
-            return this.encodeInvokeOnRandomTarget(FlakeIdGeneratorNewIdBatchCodec, this.config.prefetchCount)
-                .then((clientMessage) => {
-                    const response = FlakeIdGeneratorNewIdBatchCodec.decodeResponse(clientMessage);
-                    return new Batch(this.config.prefetchValidityMillis, response.base, response.increment, response.batchSize);
-                });
+            return this.encodeInvokeOnRandomTarget(FlakeIdGeneratorNewIdBatchCodec, (clientMessage) => {
+                const response = FlakeIdGeneratorNewIdBatchCodec.decodeResponse(clientMessage);
+                return new Batch(this.config.prefetchValidityMillis, response.base, response.increment, response.batchSize);
+            }, this.config.prefetchCount);
         });
     }
 

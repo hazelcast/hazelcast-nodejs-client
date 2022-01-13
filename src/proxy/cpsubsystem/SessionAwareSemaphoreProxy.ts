@@ -74,8 +74,9 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
 
     init(permits: number): Promise<boolean> {
         assertNonNegativeNumber(permits);
-        return this.encodeInvokeOnRandomTarget(SemaphoreInitCodec, this.groupId, this.objectName, permits)
-            .then(SemaphoreInitCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(
+            SemaphoreInitCodec, SemaphoreInitCodec.decodeResponse, this.groupId, this.objectName, permits
+        );
     }
 
     acquire(permits = 1): Promise<void> {
@@ -173,8 +174,9 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
     }
 
     availablePermits(): Promise<number> {
-        return this.encodeInvokeOnRandomTarget(SemaphoreAvailablePermitsCodec, this.groupId, this.objectName)
-            .then(SemaphoreAvailablePermitsCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(
+            SemaphoreAvailablePermitsCodec, SemaphoreAvailablePermitsCodec.decodeResponse, this.groupId, this.objectName
+        );
     }
 
     drainPermits(): Promise<number> {
@@ -249,6 +251,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                            timeout: number): Promise<boolean> {
         return this.encodeInvokeOnRandomTarget(
             SemaphoreAcquireCodec,
+            SemaphoreAcquireCodec.decodeResponse,
             this.groupId,
             this.objectName,
             sessionId,
@@ -256,7 +259,7 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
             invocationUid,
             permits,
             Long.fromNumber(timeout)
-        ).then(SemaphoreAcquireCodec.decodeResponse);
+        );
     }
 
     private requestRelease(sessionId: Long,
@@ -265,13 +268,14 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                            permits: number): Promise<void> {
         return this.encodeInvokeOnRandomTarget(
             SemaphoreReleaseCodec,
+            () => {},
             this.groupId,
             this.objectName,
             sessionId,
             threadId,
             invocationUid,
             permits
-        ).then(() => {});
+        );
     }
 
     private requestDrain(sessionId: Long,
@@ -279,12 +283,13 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                          invocationUid: UUID): Promise<number> {
         return this.encodeInvokeOnRandomTarget(
             SemaphoreDrainCodec,
+            SemaphoreDrainCodec.decodeResponse,
             this.groupId,
             this.objectName,
             sessionId,
             threadId,
             invocationUid
-        ).then(SemaphoreDrainCodec.decodeResponse);
+        );
     }
 
     private requestChange(sessionId: Long,
@@ -293,13 +298,14 @@ export class SessionAwareSemaphoreProxy extends CPSessionAwareProxy implements I
                           delta: number): Promise<void> {
         return this.encodeInvokeOnRandomTarget(
             SemaphoreChangeCodec,
+            () => {},
             this.groupId,
             this.objectName,
             sessionId,
             threadId,
             invocationUid,
             delta
-        ).then(() => {});
+        );
     }
 
     private newIllegalStateError(cause?: SessionExpiredError) {

@@ -109,15 +109,14 @@ export class ProxyManager {
 
         let createProxyPromise: Promise<any>;
         if (createAtServer) {
-            createProxyPromise = this.createProxy(name, serviceName);
+            createProxyPromise = this.createProxy(name, serviceName, () => {
+                return this.initializeLocalProxy(name, serviceName, createAtServer);
+            });
         } else {
-            createProxyPromise = Promise.resolve();
+            createProxyPromise = Promise.resolve(this.initializeLocalProxy(name, serviceName, createAtServer));
         }
 
         createProxyPromise
-            .then(() => {
-                return this.initializeLocalProxy(name, serviceName, createAtServer);
-            })
             .then((localProxy) => {
                 deferred.resolve(localProxy);
             })
@@ -160,7 +159,7 @@ export class ProxyManager {
         this.proxies.delete(serviceName + NAMESPACE_SEPARATOR + name);
         const clientMessage = ClientDestroyProxyCodec.encodeRequest(name, serviceName);
         clientMessage.setPartitionId(-1);
-        return this.invocationService.invokeOnRandomTarget(clientMessage).then(() => {});
+        return this.invocationService.invokeOnRandomTarget(clientMessage, () => {});
     }
 
     public destroyProxyLocally(namespace: string): Promise<void> {
@@ -178,9 +177,9 @@ export class ProxyManager {
         this.proxies.clear();
     }
 
-    private createProxy(name: string, serviceName: string): Promise<ClientMessage> {
+    private createProxy<V>(name: string, serviceName: string, handler: (clientMessage: ClientMessage) => V): Promise<V> {
         const request = ClientCreateProxyCodec.encodeRequest(name, serviceName);
-        return this.invocationService.invokeOnRandomTarget(request);
+        return this.invocationService.invokeOnRandomTarget(request, handler);
     }
 
     private initializeLocalProxy(name: string, serviceName: string, createAtServer: boolean): Promise<DistributedObject> {

@@ -52,47 +52,51 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
         const newData = this.toData(update);
         return this.encodeInvokeOnRandomTarget(
             AtomicRefCompareAndSetCodec,
+            AtomicRefCompareAndSetCodec.decodeResponse,
             this.groupId,
             this.objectName,
             expectedData,
             newData
-        ).then(AtomicRefCompareAndSetCodec.decodeResponse);
+        );
     }
 
     get(): Promise<E> {
         return this.encodeInvokeOnRandomTarget(
             AtomicRefGetCodec,
+            (clientMessage) => {
+                const response = AtomicRefGetCodec.decodeResponse(clientMessage);
+                return this.toObject(response);
+            },
             this.groupId,
             this.objectName
-        ).then((clientMessage) => {
-            const response = AtomicRefGetCodec.decodeResponse(clientMessage);
-            return this.toObject(response);
-        });
+        );
     }
 
     set(newValue: E): Promise<void> {
         const newData = this.toData(newValue);
         return this.encodeInvokeOnRandomTarget(
             AtomicRefSetCodec,
+            () => {},
             this.groupId,
             this.objectName,
             newData,
             false
-        ).then(() => {});
+        );
     }
 
     getAndSet(newValue: E): Promise<E> {
         const newData = this.toData(newValue);
         return this.encodeInvokeOnRandomTarget(
             AtomicRefSetCodec,
+            (clientMessage) => {
+                const response = AtomicRefSetCodec.decodeResponse(clientMessage);
+                return this.toObject(response);
+            },
             this.groupId,
             this.objectName,
             newData,
             true
-        ).then((clientMessage) => {
-            const response = AtomicRefSetCodec.decodeResponse(clientMessage);
-            return this.toObject(response);
-        });
+        );
     }
 
     isNull(): Promise<boolean> {
@@ -107,9 +111,10 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
         const valueData = this.toData(value);
         return this.encodeInvokeOnRandomTarget(
             AtomicRefContainsCodec,
+            AtomicRefContainsCodec.decodeResponse,
             this.groupId,
             this.objectName,
             valueData
-        ).then(AtomicRefContainsCodec.decodeResponse);
+        );
     }
 }

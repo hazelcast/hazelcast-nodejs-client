@@ -56,8 +56,8 @@ export abstract class BaseCPProxy {
 
     destroy(): Promise<void> {
         return this.encodeInvokeOnRandomTarget(
-            CPGroupDestroyCPObjectCodec, this.groupId, this.serviceName, this.objectName
-        ).then(() => {});
+            CPGroupDestroyCPObjectCodec, () => {}, this.groupId, this.serviceName, this.objectName
+        );
     }
 
     protected toData(object: any): Data {
@@ -71,11 +71,14 @@ export abstract class BaseCPProxy {
     /**
      * Encodes a request from a codec and invokes it on any node.
      * @param codec
+     * @param handler
      * @param codecArguments
      * @returns response message
      */
-    protected encodeInvokeOnRandomTarget(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
+    protected encodeInvokeOnRandomTarget<V>(
+        codec: any, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]
+    ): Promise<V> {
         const clientMessage = codec.encodeRequest(...codecArguments);
-        return this.invocationService.invokeOnRandomTarget(clientMessage);
+        return this.invocationService.invokeOnRandomTarget(clientMessage, handler);
     }
 }

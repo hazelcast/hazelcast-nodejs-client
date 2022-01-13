@@ -66,8 +66,9 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
 
     init(permits: number): Promise<boolean> {
         assertNonNegativeNumber(permits);
-        return this.encodeInvokeOnRandomTarget(SemaphoreInitCodec, this.groupId, this.objectName, permits)
-            .then(SemaphoreInitCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(
+            SemaphoreInitCodec, SemaphoreInitCodec.decodeResponse, this.groupId, this.objectName, permits
+        );
     }
 
     acquire(permits = 1): Promise<void> {
@@ -89,6 +90,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
             .then((clusterWideThreadId) =>
                 this.encodeInvokeOnRandomTarget(
                     SemaphoreAcquireCodec,
+                    SemaphoreAcquireCodec.decodeResponse,
                     this.groupId,
                     this.objectName,
                     NO_SESSION_ID,
@@ -97,9 +99,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
                     permits,
                     Long.fromNumber(timeout)
                 )
-            )
-            .then(SemaphoreAcquireCodec.decodeResponse)
-            .catch((err) => {
+            ).catch((err) => {
                 if (err instanceof WaitKeyCancelledError) {
                     throw new IllegalStateError('Semaphore[' + this.objectName
                         + '] not acquired because the acquire call on the CP group was cancelled.');
@@ -116,6 +116,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
             .then((clusterWideThreadId) =>
                 this.encodeInvokeOnRandomTarget(
                     SemaphoreReleaseCodec,
+                    () => {},
                     this.groupId,
                     this.objectName,
                     NO_SESSION_ID,
@@ -123,13 +124,13 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
                     invocationUid,
                     permits
                 )
-            )
-            .then(() => {});
+            );
     }
 
     availablePermits(): Promise<number> {
-        return this.encodeInvokeOnRandomTarget(SemaphoreAvailablePermitsCodec, this.groupId, this.objectName)
-            .then(SemaphoreAvailablePermitsCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(
+            SemaphoreAvailablePermitsCodec, SemaphoreAvailablePermitsCodec.decodeResponse, this.groupId, this.objectName
+        );
     }
 
     drainPermits(): Promise<number> {
@@ -138,14 +139,14 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
             .then((clusterWideThreadId) =>
                 this.encodeInvokeOnRandomTarget(
                     SemaphoreDrainCodec,
+                    SemaphoreDrainCodec.decodeResponse,
                     this.groupId,
                     this.objectName,
                     NO_SESSION_ID,
                     clusterWideThreadId,
                     invocationUid
                 )
-            )
-            .then(SemaphoreDrainCodec.decodeResponse);
+            );
     }
 
     reducePermits(reduction: number): Promise<void> {
@@ -170,6 +171,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
             .then((clusterWideThreadId) =>
                 this.encodeInvokeOnRandomTarget(
                     SemaphoreChangeCodec,
+                    () => {},
                     this.groupId,
                     this.objectName,
                     NO_SESSION_ID,
@@ -177,8 +179,7 @@ export class SessionlessSemaphoreProxy extends BaseCPProxy implements ISemaphore
                     invocationUid,
                     delta
                 )
-            )
-            .then(() => {});
+            );
     }
 
     private getClusterWideThreadId(): Promise<Long> {

@@ -309,7 +309,7 @@ export class HazelcastClient {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
         let localDistributedObjects: Set<string>;
         let responseMessage: ClientMessage;
-        return this.invocationService.invokeOnRandomTarget(clientMessage)
+        return this.invocationService.invokeOnRandomTarget(clientMessage, x => x)
             .then((resp) => {
                 responseMessage = resp;
                 return this.proxyManager.getDistributedObjects();
