@@ -104,9 +104,11 @@ export abstract class BaseProxy {
         return this.invocationService.invokeOnRandomTarget(clientMessage, handler);
     }
 
-    protected encodeInvokeOnTarget(codec: any, target: UUID, ...codecArguments: any[]): Promise<ClientMessage> {
+    protected encodeInvokeOnTarget<V>(
+        codec: any, target: UUID, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]
+    ): Promise<V> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnTarget(clientMessage, target);
+        return this.invocationService.invokeOnTarget(clientMessage, target, handler);
     }
 
     /**

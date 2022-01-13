@@ -26,6 +26,7 @@ import {randomInt} from '../util/Util';
 import {BaseProxy} from './BaseProxy';
 import {PNCounter} from './PNCounter';
 import {MemberImpl} from '../core/Member';
+import {ClientMessage} from '../protocol/ClientMessage';
 
 /** @internal */
 export class PNCounterProxy extends BaseProxy implements PNCounter {
@@ -91,7 +92,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
                         'because the cluster does not contain any data members');
                 }
             }
-            return this.encodeInvokeInternal<any>(target, codec, ...codecArgs).then((result) => {
+            return this.encodeInvokeInternal<any>(target, codec, x => x, ...codecArgs).then((result) => {
                 this.updateObservedReplicaTimestamps(result.replicaTimestamps);
                 return result.value;
             }).catch((err) => {
@@ -104,8 +105,10 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         });
     }
 
-    private encodeInvokeInternal<T>(target: MemberImpl, codec: any, ...codecArguments: any[]): Promise<T> {
-        return this.encodeInvokeOnTarget(codec, target.uuid, ...codecArguments,
+    private encodeInvokeInternal<V>(
+        target: MemberImpl, codec: any, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]
+    ): Promise<V> {
+        return this.encodeInvokeOnTarget(codec, target.uuid, handler, ...codecArguments,
             this.lastObservedVectorClock.entrySet(), target.uuid)
             .then((clientMessage) => {
                 return codec.decodeResponse(clientMessage);

@@ -390,9 +390,10 @@ export class InvocationService {
     /**
      * Invokes given invocation on the host with given UUID.
      */
-    invokeOnTarget(request: ClientMessage, target: UUID): Promise<ClientMessage> {
+    invokeOnTarget<V>(request: ClientMessage, target: UUID, handler: (clientMessage: ClientMessage) => V): Promise<V> {
         const invocation = new Invocation(this, request);
         invocation.uuid = target;
+        invocation.handler = handler;
         return this.invoke(invocation);
     }
 
