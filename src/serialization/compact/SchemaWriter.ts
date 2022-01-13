@@ -6,11 +6,11 @@ import {FieldDescriptor} from '../generic_record/FieldDescriptor';
 import {FieldKind} from '../generic_record/FieldKind';
 
 export class SchemaWriter implements CompactWriter {
-    private readonly className: string;
+    private readonly typeName: string;
     private readonly fields: FieldDescriptor[];
 
-    constructor(className: string) {
-        this.className = className;
+    constructor(typeName: string) {
+        this.typeName = typeName;
         this.fields = [];
     }
 
@@ -19,7 +19,7 @@ export class SchemaWriter implements CompactWriter {
     }
 
     build() : Schema {
-        return new Schema(this.className, this.fields);
+        return new Schema(this.typeName, this.fields);
     }
 
     writeArrayOfBoolean(fieldName: string, value: boolean[] | null): void {

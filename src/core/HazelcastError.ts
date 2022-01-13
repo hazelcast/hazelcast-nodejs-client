@@ -15,6 +15,7 @@
  */
 
 import {UUID} from './UUID';
+import * as Long from 'long';
 
 /**
  * Represents a stack trace element of server-side exception.
@@ -69,6 +70,16 @@ export class HazelcastError extends Error {
 export class HazelcastSerializationError extends HazelcastError {
     constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
         super(msg, cause, serverStackTrace);
+    }
+}
+
+export class SchemaNotFoundError extends HazelcastError {
+
+    schemaId: Long;
+
+    constructor(msg: string, schemaId: Long, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+        this.schemaId = schemaId;
     }
 }
 

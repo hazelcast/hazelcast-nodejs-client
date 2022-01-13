@@ -119,18 +119,18 @@ class EmployeeSerializer {
     }
 
     read(reader) {
-        const age = reader.readInt('age');
-        const rank = reader.readInt('rank');
-        const id = reader.readLong('id');
+        const age = reader.readInt32('age');
+        const rank = reader.readInt32('rank');
+        const id = reader.readInt64('id');
         const isHired = reader.readBoolean('isHired');
         const isFired = reader.readBoolean('isFired');
         return new Employee(age, rank, id, isHired, isFired);
     }
 
     write(writer, value) {
-        writer.writeInt('age', value.age);
-        writer.writeInt('rank', value.rank);
-        writer.writeLong('id', value.id);
+        writer.writeInt32('age', value.age);
+        writer.writeInt32('rank', value.rank);
+        writer.writeInt64('id', value.id);
         writer.writeBoolean('isHired', value.isHired);
         writer.writeBoolean('isFired', value.isFired);
     }

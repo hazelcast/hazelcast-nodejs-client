@@ -63,7 +63,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         private readonly serializer: CompactStreamSerializer,
         protected readonly input: ObjectDataInput,
         protected readonly schema: Schema,
-        public readonly className: string | null,
+        public readonly typeName: string | null,
         private readonly schemaIncludedInBinary: boolean
     ) {
         try {

@@ -24,7 +24,8 @@ import {
     RetryableHazelcastError,
     TargetDisconnectedError,
     TargetNotMemberError,
-    UUID
+    UUID,
+    SchemaNotFoundError
 } from '../core';
 import {Connection} from '../network/Connection';
 import {ILogger} from '../logging/ILogger';
@@ -45,6 +46,8 @@ import {ListenerService} from '../listener/ListenerService';
 import {ClientErrorFactory} from '../protocol/ErrorFactory';
 import {LifecycleService} from '../LifecycleService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
+import * as Long from 'long';
+import {SchemaService} from '../serialization/compact/SchemaService';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -217,10 +220,32 @@ export class Invocation {
         this.complete(this.pendingResponseMessage);
     }
 
+    fetchSchema(schemaId: Long, invocation: Invocation, clientMessage: ClientMessage): void {
+        this.invocationService.schemaService.fetchSchema(schemaId).then(() => {
+            // Reset nextFrame since we tried to parse the message once.
+            clientMessage.resetNextFrame();
+            invocation.complete(clientMessage);
+        }).catch(err => {
+            invocation.completeWithError(err);
+        });
+    }
+
     complete(clientMessage: ClientMessage): void {
-        const result = this.handler(clientMessage);
-        this.deferred.resolve(result);
-        this.invocationService.deregisterInvocation(this.request.getCorrelationId());
+        try {
+            const result = this.handler(clientMessage);
+            this.deferred.resolve(result);
+            this.invocationService.deregisterInvocation(this.request.getCorrelationId());
+        } catch (e) {
+            if (e instanceof SchemaNotFoundError) {
+                // We need to fetch the schema to deserialize compact.
+                this.invocationService.logger.trace(
+                    'SchemaService', `Could not find schema id ${e.schemaId} locally, will search on the cluster`
+                );
+                this.fetchSchema(e.schemaId, this, clientMessage);
+            } else {
+                this.completeWithError(e);
+            }
+        }
     }
 
     completeWithError(err: Error): void {
@@ -265,11 +290,12 @@ export class InvocationService {
 
     constructor(
         clientConfig: ClientConfig,
-        private readonly logger: ILogger,
+        readonly logger: ILogger,
         private readonly partitionService: PartitionServiceImpl,
         private readonly errorFactory: ClientErrorFactory,
         private readonly lifecycleService: LifecycleService,
-        private readonly connectionRegistry: ConnectionRegistry
+        private readonly connectionRegistry: ConnectionRegistry,
+        readonly schemaService: SchemaService
     ) {
         if (clientConfig.network.smartRouting) {
             this.doInvoke = this.invokeSmart;

@@ -31,7 +31,7 @@ export interface CompactWriter {
     writeDate(fieldName: string, value: LocalDate | null): void;
     writeTimestamp(fieldName: string, value: LocalDateTime | null): void;
     writeTimestampWithTimezone(fieldName: string, value: OffsetDateTime | null): void;
-    writeCompact<T>(fieldName: string, value: T | null): Promise<void>;
+    writeCompact<T>(fieldName: string, value: T | null): void;
     writeArrayOfBoolean(fieldName: string, value: boolean[] | null): void;
     writeArrayOfInt8(fieldName: string, value: Buffer | null): void;
     writeArrayOfInt16(fieldName: string, value: number[] | null): void;
@@ -45,7 +45,7 @@ export interface CompactWriter {
     writeArrayOfDate(fieldName: string, value: LocalDate[] | null): void;
     writeArrayOfTimestamp(fieldName: string, value: LocalDateTime[] | null): void;
     writeArrayOfTimestampWithTimezone(fieldName: string, value: OffsetDateTime[] | null): void;
-    writeArrayOfCompact<T>(fieldName: string, value: T[] | null): Promise<void>;
+    writeArrayOfCompact<T>(fieldName: string, value: T[] | null): void;
     writeNullableBoolean(fieldName: string, value: boolean | null): void;
     writeNullableInt8(fieldName: string, value: number | null): void;
     writeNullableInt16(fieldName: string, value: number | null): void;

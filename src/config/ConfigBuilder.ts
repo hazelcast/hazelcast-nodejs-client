@@ -448,6 +448,8 @@ export class ConfigBuilder {
             } else if (key === 'jsonStringDeserializationPolicy') {
                 this.effectiveConfig.serialization
                     .jsonStringDeserializationPolicy = tryGetEnum(JsonStringDeserializationPolicy, jsonObject[key]);
+            } else if (key === 'registerCompactSchema') {
+                this.effectiveConfig.serialization.registerCompactSchemas = tryGetBoolean(jsonObject[key]);
             } else {
                 throw new RangeError(`Unexpected serialization config '${key}' is passed to the Hazelcast Client`);
             }

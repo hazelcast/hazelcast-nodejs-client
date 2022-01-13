@@ -180,7 +180,8 @@ export class HazelcastClient {
             this.partitionService as PartitionServiceImpl,
             this.errorFactory,
             this.lifecycleService,
-            this.connectionRegistry
+            this.connectionRegistry,
+            this.schemaService
         );
         this.connectionManager = new ConnectionManager(
             this,

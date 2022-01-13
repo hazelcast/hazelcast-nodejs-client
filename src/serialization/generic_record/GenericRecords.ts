@@ -19,10 +19,10 @@ import {Field} from './Field';
 
 export class GenericRecords {
     static compact<F extends {[name: string]: Field<any>}>(
-        className: string,
+        typeName: string,
         fields: F,
         values: {[property in keyof F]: F[property] extends Field<infer T> ? T : any}
     ): GenericRecord {
-        return new CompactGenericRecordImpl(className, fields, values);
+        return new CompactGenericRecordImpl(typeName, fields, values);
     }
 }

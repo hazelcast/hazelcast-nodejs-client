@@ -117,13 +117,13 @@ describe('CompactSerialization', function () {
             const script = `
                 var map = instance_0.getMap("${mapName}");
                 var value = map.get(1.0);
-                result = value.getInt32("age").toString() + value.getInt64("id").toString();
+                result = value.class.toString() + value.age.toString() + value.id.toString();
             `;
             const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
 
             const resultString = response.result.toString();
-
-            resultString.should.be.eq('23456');
+            // due to class loader, server gets the class object itself not generic record
+            resultString.should.be.eq('class example.serialization.EmployeeDTO23456');
         });
     });
 
@@ -196,13 +196,13 @@ describe('CompactSerialization', function () {
             const script = `
                 var map = instance_0.getMap("${mapName}");
                 var value = map.get(1.0);
-                result = value.class.toString();
+                result = value.class.toString() + value.age.toString() + value.id.toString();
             `;
             const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
 
             const resultString = response.result.toString();
 
-            resultString.should.be.eq('23456');
+            resultString.should.be.eq('class example.serialization.EmployeeDTO23456');
         });
     });
 });

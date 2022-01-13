@@ -22,7 +22,7 @@ import {GenericRecord} from './GenericRecord';
  * @internal
  */
 export interface FieldKindBasedOperations {
-    writeFieldFromRecordToWriter(writer: DefaultCompactWriter, genericRecord: GenericRecord, fieldName: string) : Promise<void>;
+    writeFieldFromRecordToWriter(writer: DefaultCompactWriter, genericRecord: GenericRecord, fieldName: string) : void;
     readObject(genericRecord: GenericRecord, fieldName: string) : any;
     kindSizeInBytes(): number;
     readIndexed(record: GenericRecord, fieldName: string, index: number): any;

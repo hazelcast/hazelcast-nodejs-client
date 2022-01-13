@@ -71,6 +71,7 @@ import {CompactStreamSerializerAdapter} from './compact/CompactStreamSerializerA
 import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
+import {SchemaWriter} from './compact/SchemaWriter';
 
 /**
  * Serializes objects and deserializes data.
@@ -99,16 +100,30 @@ const defaultPartitionStrategy = (obj: any): number => {
     }
 }
 
+/**
+ * Always returns itself on property access and function calls.
+ * @internal
+ */
+const magicObject: any = new Proxy(() => {}, {
+    get() {
+        return magicObject;
+    },
+    apply() {
+        return magicObject;
+    }
+});
+
 /** @internal */
 export class SerializationServiceV1 implements SerializationService {
 
     private readonly registry: { [id: number]: Serializer };
     private readonly serializerNameToId: { [name: string]: number };
-    private readonly serializationConfig: SerializationConfigImpl;
     private readonly compactStreamSerializer: CompactStreamSerializer;
 
-    constructor(serializationConfig: SerializationConfigImpl, schemaService: SchemaService) {
-        this.serializationConfig = serializationConfig;
+    constructor(
+        private readonly serializationConfig: SerializationConfigImpl,
+        private readonly schemaService: SchemaService
+    ) {
         this.registry = {};
         this.serializerNameToId = {};
         this.compactStreamSerializer = new CompactStreamSerializer(schemaService);
@@ -355,7 +370,16 @@ export class SerializationServiceV1 implements SerializationService {
     private registerCompactSerializers(): void {
         const compactSerializers = this.serializationConfig.compactSerializers;
         for (const compactSerializer of compactSerializers) {
-            this.compactStreamSerializer.registerSerializer(compactSerializer);
+            let schema;
+            if (this.serializationConfig.registerCompactSchemas) {
+                const writer = new SchemaWriter(compactSerializer.hzTypeName || compactSerializer.hzClassName);
+                compactSerializer.write(writer, magicObject)
+                schema = writer.build();
+                this.schemaService.putLocal(schema);
+            }
+            this.compactStreamSerializer.registerSerializer(
+                compactSerializer, schema, this.serializationConfig.registerCompactSchemas
+            );
         }
     }
 

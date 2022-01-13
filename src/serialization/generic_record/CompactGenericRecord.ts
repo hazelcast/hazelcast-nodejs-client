@@ -49,11 +49,11 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
     private readonly schema;
 
     constructor(
-        className: string,
+        typeName: string,
         private readonly fields: {[name: string]: Field<any>},
         private readonly values: {[name: string]: any}
     ) {
-        const schemaWriter = new SchemaWriter(className);
+        const schemaWriter = new SchemaWriter(typeName);
         for (const [fieldName, field] of Object.entries(fields)) {
             schemaWriter.addField(new FieldDescriptor(fieldName, field.kind));
         }

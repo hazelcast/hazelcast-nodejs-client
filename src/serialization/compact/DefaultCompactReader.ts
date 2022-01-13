@@ -34,10 +34,10 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
         serializer: CompactStreamSerializer,
         input: ObjectDataInput,
         schema: Schema,
-        className: string | null,
+        typeName: string | null,
         schemaIncludedInBinary: boolean
     ) {
-        super(serializer, input, schema, className, schemaIncludedInBinary);
+        super(serializer, input, schema, typeName, schemaIncludedInBinary);
     }
 
     toSerialized(): CompactGenericRecordImpl {
@@ -183,7 +183,7 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
                     break;
             }
         }
-        return new CompactGenericRecordImpl(this.className, fields, values);
+        return new CompactGenericRecordImpl(this.typeName, fields, values);
     }
 
     readArrayOfBoolean(fieldName: string, defaultValue?: boolean[] | null): boolean[] | null {

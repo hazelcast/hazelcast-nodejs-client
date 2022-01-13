@@ -82,6 +82,13 @@ export interface SerializationConfig {
      */
     compactSerializers?: Array<CompactSerializer<any>>;
 
+
+    /**
+     * If true, locally configured serializers will be used to create schemas. After they are created they will be sent
+     * to the cluster upon connection. By default, it is true.
+     */
+    registerCompactSchemas?: boolean;
+
 }
 
 /** @internal */
@@ -96,5 +103,5 @@ export class SerializationConfigImpl implements SerializationConfig {
     compactSerializers: Array<CompactSerializer<new () => any>> = [];
     globalSerializer: Serializer = null;
     jsonStringDeserializationPolicy: JsonStringDeserializationPolicy = JsonStringDeserializationPolicy.EAGER;
-
+    registerCompactSchemas = true;
 }

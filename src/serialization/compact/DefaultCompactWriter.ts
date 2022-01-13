@@ -117,25 +117,6 @@ export class DefaultCompactWriter implements CompactWriter {
         }
     }
 
-    private writeVariableSizeFieldAsync<T>(
-        fieldName: string,
-        fieldKind: FieldKind,
-        object: T | null,
-        writeFn: (out: PositionalObjectDataOutput, value: T) => Promise<void>
-    ) : Promise<void> {
-        try {
-            if (object === null) {
-                this.setPositionAsNull(fieldName, fieldKind);
-                return Promise.resolve();
-            } else {
-                this.setPosition(fieldName, fieldKind);
-                return writeFn(this.out, object);
-            }
-        } catch (e) {
-            return Promise.reject(DefaultCompactWriter.toIllegalStateException(e));
-        }
-    }
-
     private writeArrayOfVariableSizes<T>(
         fieldName: string,
         fieldKind: FieldKind,
@@ -170,45 +151,6 @@ export class DefaultCompactWriter implements CompactWriter {
             throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
-
-    private writeArrayOfVariableSizesAsync<T>(
-        fieldName: string,
-        fieldKind: FieldKind,
-        values: T[] | null,
-        writeFn: (out: PositionalObjectDataOutput, value: T) => Promise<void>
-    ) : Promise<void> {
-        if (values === null) {
-            this.setPositionAsNull(fieldName, fieldKind);
-            return Promise.resolve();
-        }
-        try {
-            this.setPosition(fieldName, fieldKind);
-            const dataLengthOffset = this.out.position();
-            this.out.writeZeroBytes(BitsUtil.INT_SIZE_IN_BYTES);
-            const itemCount = values.length;
-            this.out.writeInt(itemCount);
-
-            const offset = this.out.position();
-            const offsets = new Array<number>(itemCount);
-            const promises = new Array<Promise<void>>(itemCount);
-            for (let i = 0; i < itemCount; i++) {
-                if (values[i] !== null) {
-                    offsets[i] = this.out.position() - offset;
-                    promises[i] = writeFn(this.out, values[i]);
-                } else {
-                    offsets[i] = NULL_OFFSET;
-                }
-            }
-            return Promise.all(promises).then(() => {
-                const dataLength = this.out.position() - offset;
-                this.out.pwriteInt(dataLengthOffset, dataLength);
-                this.writeOffsets(dataLength, offsets);
-            });
-        } catch (e) {
-            return Promise.reject(DefaultCompactWriter.toIllegalStateException(e));
-        }
-    }
-
 
     private setPositionAsNull(fieldName: string, fieldKind: FieldKind) {
         const field = this.checkFieldDefinition(fieldName, fieldKind);
@@ -264,8 +206,8 @@ export class DefaultCompactWriter implements CompactWriter {
         });
     }
 
-    writeArrayOfCompact<T>(fieldName: string, value: T[] | null): Promise<void> {
-        return this.writeArrayOfVariableSizesAsync(fieldName, FieldKind.ARRAY_OF_COMPACTS, value, (out, value) => {
+    writeArrayOfCompact<T>(fieldName: string, value: T[] | null): void {
+        return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACTS, value, (out, value) => {
             return this.serializer.writeObject(out, value, this.includeSchemaOnBinary);
         });
     }
@@ -394,8 +336,8 @@ export class DefaultCompactWriter implements CompactWriter {
         }
     }
 
-    writeCompact<T>(fieldName: string, value: T | null): Promise<void> {
-        return this.writeVariableSizeFieldAsync(fieldName, FieldKind.COMPACT, value, (out, value) => {
+    writeCompact<T>(fieldName: string, value: T | null): void {
+        return this.writeVariableSizeField(fieldName, FieldKind.COMPACT, value, (out, value) => {
             return this.serializer.writeObject(out, value, this.includeSchemaOnBinary);
         });
     }
@@ -513,14 +455,14 @@ export class DefaultCompactWriter implements CompactWriter {
         this.writeVariableSizeField(fieldName, FieldKind.TIMESTAMP_WITH_TIMEZONE, value, IOUtil.writeOffsetDateTime);
     }
 
-    writeGenericRecord(fieldName: string, value: GenericRecord): Promise<void> {
-        return this.writeVariableSizeFieldAsync(fieldName, FieldKind.COMPACT, value, (out, value) => {
+    writeGenericRecord(fieldName: string, value: GenericRecord): void {
+        return this.writeVariableSizeField(fieldName, FieldKind.COMPACT, value, (out, value) => {
             return this.serializer.writeGenericRecord(out, value as CompactGenericRecord, this.includeSchemaOnBinary);
         });
 
     }
-    writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[]) : Promise<void> {
-        return this.writeArrayOfVariableSizesAsync(fieldName, FieldKind.ARRAY_OF_COMPACTS, value, (out, value) => {
+    writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[]) : void {
+        return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACTS, value, (out, value) => {
             return this.serializer.writeGenericRecord(out, value as CompactGenericRecord, this.includeSchemaOnBinary);
         });
     }
