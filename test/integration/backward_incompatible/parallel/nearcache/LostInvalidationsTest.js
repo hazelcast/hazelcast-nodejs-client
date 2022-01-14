@@ -36,10 +36,10 @@ describe('LostInvalidationTest', function () {
         const connectionRegistration = client.getListenerService().registrations
             .get(listenerId).connectionRegistrations.get(client.connectionRegistry.getRandomConnection());
         const correlationId = connectionRegistration.correlationId;
-        const handler = client.getInvocationService().eventHandlers.get(correlationId).handler;
+        const handler = client.getInvocationService().invocationsWithEventHandlers.get(correlationId).handler;
         const deferred = deferredPromise();
         let numberOfBlockedInvalidations = 0;
-        client.getInvocationService().eventHandlers.get(correlationId).eventHandler = () => {
+        client.getInvocationService().invocationsWithEventHandlers.get(correlationId).eventHandler = () => {
             numberOfBlockedInvalidations++;
             if (notifyAfterNumberOfEvents !== undefined && notifyAfterNumberOfEvents === numberOfBlockedInvalidations) {
                 deferred.resolve();
@@ -53,7 +53,7 @@ describe('LostInvalidationTest', function () {
     }
 
     function unblockInvalidationEvents(client, metadata) {
-        client.getInvocationService().eventHandlers.get(metadata.correlationId).eventHandler = metadata.handler;
+        client.getInvocationService().invocationsWithEventHandlers.get(metadata.correlationId).eventHandler = metadata.handler;
     }
 
     before(async function () {
