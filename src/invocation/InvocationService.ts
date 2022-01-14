@@ -275,7 +275,7 @@ const backupListenerCodec: ListenerMessageCodec = {
 export class InvocationService {
 
     private readonly doInvoke: (invocation: Invocation) => void;
-    private readonly eventHandlers: Map<number, Invocation> = new Map();
+    private readonly invocationsWithEventHandlers: Map<number, Invocation> = new Map();
     private readonly pending: Map<number, Invocation> = new Map();
     readonly invocationRetryPauseMillis: number;
     readonly invocationTimeoutMillis: number;
@@ -437,7 +437,7 @@ export class InvocationService {
      * Removes the handler for all event handlers with a specific correlation id.
      */
     removeEventHandler(correlationId: number): void {
-        this.eventHandlers.delete(correlationId);
+        this.invocationsWithEventHandlers.delete(correlationId);
     }
 
     backupEventHandler(clientMessage: ClientMessage): void {
@@ -460,9 +460,9 @@ export class InvocationService {
 
         if (clientMessage.startFrame.hasEventFlag() || clientMessage.startFrame.hasBackupEventFlag()) {
             process.nextTick(() => {
-                const eventHandler = this.eventHandlers.get(correlationId);
-                if (eventHandler !== undefined) {
-                    eventHandler.eventHandler(clientMessage);
+                const invocation = this.invocationsWithEventHandlers.get(correlationId);
+                if (invocation !== undefined) {
+                    invocation.eventHandler(clientMessage);
                 }
             });
             return;
@@ -631,7 +631,7 @@ export class InvocationService {
             message.setPartitionId(-1);
         }
         if (invocation.hasOwnProperty('eventHandler')) {
-            this.eventHandlers.set(correlationId, invocation);
+            this.invocationsWithEventHandlers.set(correlationId, invocation);
         }
         this.pending.set(correlationId, invocation);
     }
