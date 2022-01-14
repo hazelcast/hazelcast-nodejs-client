@@ -630,7 +630,7 @@ export class InvocationService {
         } else {
             message.setPartitionId(-1);
         }
-        if (invocation.hasOwnProperty('handler')) {
+        if (invocation.hasOwnProperty('eventHandler')) {
             this.eventHandlers.set(correlationId, invocation);
         }
         this.pending.set(correlationId, invocation);
