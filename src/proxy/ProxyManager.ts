@@ -45,6 +45,7 @@ import {NearCacheManager} from '../nearcache/NearCacheManager';
 import {RepairingTask} from '../nearcache/RepairingTask';
 import {ClusterService} from '../invocation/ClusterService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
+import {SchemaService} from '../serialization/compact/SchemaService';
 
 /** @internal */
 export const NAMESPACE_SEPARATOR = '/';
@@ -82,7 +83,8 @@ export class ProxyManager {
         private readonly getRepairingTask: () => RepairingTask,
         private readonly clusterService: ClusterService,
         private readonly lockReferenceIdGenerator: LockReferenceIdGenerator,
-        private readonly connectionRegistry: ConnectionRegistry
+        private readonly connectionRegistry: ConnectionRegistry,
+        private readonly schemaService: SchemaService
     ) {}
 
     public init(): void {
@@ -199,7 +201,8 @@ export class ProxyManager {
                 this.getRepairingTask,
                 this.listenerService,
                 this.clusterService,
-                this.connectionRegistry
+                this.connectionRegistry,
+                this.schemaService
             );
         } else if (serviceName === ProxyManager.MULTIMAP_SERVICE) {
             localProxy = new MultiMapProxy(
@@ -212,7 +215,8 @@ export class ProxyManager {
                 this.listenerService,
                 this.clusterService,
                 this.lockReferenceIdGenerator,
-                this.connectionRegistry
+                this.connectionRegistry,
+                this.schemaService
             );
         } else if (serviceName === ProxyManager.RELIABLETOPIC_SERVICE) {
             localProxy = new ReliableTopicProxy(
@@ -226,7 +230,8 @@ export class ProxyManager {
                 this.serializationService,
                 this.listenerService,
                 this.clusterService,
-                this.connectionRegistry
+                this.connectionRegistry,
+                this.schemaService
             );
         } else if (serviceName === ProxyManager.FLAKEID_SERVICE) {
             localProxy = new FlakeIdGeneratorProxy(
@@ -239,7 +244,8 @@ export class ProxyManager {
                 this.serializationService,
                 this.listenerService,
                 this.clusterService,
-                this.connectionRegistry
+                this.connectionRegistry,
+                this.schemaService
             );
         } else {
             // This call may throw ClientOfflineError for partition specific proxies with async start
@@ -252,7 +258,8 @@ export class ProxyManager {
                 this.serializationService,
                 this.listenerService,
                 this.clusterService,
-                this.connectionRegistry
+                this.connectionRegistry,
+                this.schemaService
             );
         }
 

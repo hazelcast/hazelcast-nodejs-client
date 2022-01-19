@@ -59,6 +59,7 @@ import {SerializationService} from '../serialization/SerializationService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
+import {SchemaService} from '../serialization/compact/SchemaService';
 
 /** @internal */
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
@@ -73,7 +74,8 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         listenerService: ListenerService,
         clusterService: ClusterService,
         private lockReferenceIdGenerator: LockReferenceIdGenerator,
-        connectionRegistry: ConnectionRegistry
+        connectionRegistry: ConnectionRegistry,
+        schemaService: SchemaService
     ) {
         super(
             serviceName,
@@ -84,7 +86,8 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             serializationService,
             listenerService,
             clusterService,
-            connectionRegistry
+            connectionRegistry,
+            schemaService
         );
     }
 

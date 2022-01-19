@@ -40,6 +40,7 @@ import {InvocationService} from '../../invocation/InvocationService';
 import {ConnectionRegistry} from '../../network/ConnectionRegistry';
 import {ListenerService} from '../../listener/ListenerService';
 import {Connection} from '../../network/Connection';
+import {SchemaService} from '../../serialization/compact/SchemaService';
 
 /** @internal */
 export const TOPIC_INITIAL_BACKOFF = 100;
@@ -65,7 +66,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         serializationService: SerializationService,
         listenerService: ListenerService,
         clusterService: ClusterService,
-        connectionRegistry: ConnectionRegistry
+        connectionRegistry: ConnectionRegistry,
+        schemaService: SchemaService
     ) {
         super(
             serviceName,
@@ -76,7 +78,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             serializationService,
             listenerService,
             clusterService,
-            connectionRegistry
+            connectionRegistry,
+            schemaService
         );
         const connection: Connection = this.connectionRegistry.getRandomConnection();
         this.localAddress = connection != null ? connection.getLocalAddress() : null;

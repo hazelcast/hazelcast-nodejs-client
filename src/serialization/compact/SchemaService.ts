@@ -5,6 +5,7 @@ import {Invocation, InvocationService} from '../../invocation/InvocationService'
 import {IllegalStateError} from '../../core';
 import {ClientSendAllSchemasCodec} from '../../codec/ClientSendAllSchemasCodec';
 import {ClientFetchSchemaCodec} from '../../codec/ClientFetchSchemaCodec';
+import {ClientSendSchemaCodec} from '../../codec/ClientSendSchemaCodec';
 
 
 export interface ISchemaService {
@@ -47,19 +48,19 @@ export class SchemaService implements ISchemaService {
     }
 
 
-    // put(schema: Schema): Promise<void> {
-    //     const schemaId = schema.schemaId;
-    //     const existingSchema = this.schemas.get(schemaId);
-    //     if (existingSchema !== undefined) {
-    //         this.logger.trace('SchemaService', `Schema id ${schemaId} already exists locally`);
-    //         return Promise.resolve();
-    //     }
-    //     const message = ClientSendSchemaCodec.encodeRequest(schema);
-    //     const invocation = new Invocation(this.getInvocationService(), message);
-    //     return this.getInvocationService().invoke(invocation).then(() => {
-    //         this.putIfAbsent(schema);
-    //     });
-    // }
+    put(schema: Schema): Promise<void> {
+        const schemaId = schema.schemaId;
+        const existingSchema = this.schemas.get(schemaId.toString());
+        if (existingSchema !== undefined) {
+            this.logger.trace('SchemaService', `Schema id ${schemaId} already exists locally`);
+            return Promise.resolve();
+        }
+        const message = ClientSendSchemaCodec.encodeRequest(schema);
+        const invocation = new Invocation(this.getInvocationService(), message);
+        return this.getInvocationService().invoke(invocation).then(() => {
+            this.putIfAbsent(schema);
+        });
+    }
 
     private putIfAbsent(schema: Schema) : void {
         const schemaId = schema.schemaId;

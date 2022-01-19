@@ -24,6 +24,7 @@ import {SerializationService} from '../serialization/SerializationService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
+import {SchemaService} from '../serialization/compact/SchemaService';
 
 /** @internal */
 export class PartitionSpecificProxy extends BaseProxy {
@@ -39,7 +40,8 @@ export class PartitionSpecificProxy extends BaseProxy {
         serializationService: SerializationService,
         listenerService: ListenerService,
         clusterService: ClusterService,
-        connectionRegistry: ConnectionRegistry
+        connectionRegistry: ConnectionRegistry,
+        schemaService: SchemaService
     ) {
         super(
             serviceName,
@@ -50,7 +52,8 @@ export class PartitionSpecificProxy extends BaseProxy {
             serializationService,
             listenerService,
             clusterService,
-            connectionRegistry
+            connectionRegistry,
+            schemaService
         );
         this.partitionId = this.partitionService.getPartitionId(this.getPartitionKey());
     }

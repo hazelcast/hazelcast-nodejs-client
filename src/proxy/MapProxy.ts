@@ -93,6 +93,7 @@ import {IndexUtil} from '../util/IndexUtil';
 import {PagingPredicateHolder} from '../protocol/PagingPredicateHolder';
 import {MapEntriesWithPagingPredicateCodec} from '../codec/MapEntriesWithPagingPredicateCodec';
 import * as Long from 'long';
+import {SchemaNotReplicatedError} from '../core';
 
 type EntryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number,
                           uuid: UUID, numberOfAffectedEntries: number) => void;
@@ -248,9 +249,16 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     put(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<V> {
         assertNotNull(key);
         assertNotNull(value);
-        const keyData: Data = this.toData(key);
-        const valueData: Data = this.toData(value);
-        return this.putInternal(keyData, valueData, ttl, maxIdle);
+        try {
+            const keyData: Data = this.toData(key);
+            const valueData: Data = this.toData(value);
+            return this.putInternal(keyData, valueData, ttl, maxIdle);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.schemaService.put(e.schema).then(() => this.put(key, value, ttl, maxIdle))
+            }
+            return Promise.reject(e);
+        }
     }
 
     putAll(pairs: Array<[K, V]>): Promise<void> {
@@ -263,8 +271,15 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     get(key: K): Promise<V> {
         assertNotNull(key);
-        const keyData = this.toData(key);
-        return this.getInternal(keyData);
+        try {
+            const keyData = this.toData(key);
+            return this.getInternal(keyData);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.schemaService.put(e.schema).then(() => this.get(key))
+            }
+            return Promise.reject(e);
+        }
     }
 
     remove(key: K, value: V = null): Promise<V | boolean> {

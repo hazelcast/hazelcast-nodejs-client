@@ -215,7 +215,8 @@ export class HazelcastClient {
             () => this.getRepairingTask(),
             this.clusterService,
             this.lockReferenceIdGenerator,
-            this.connectionRegistry
+            this.connectionRegistry,
+            this.schemaService
         );
         this.statistics = new Statistics(
             logger,

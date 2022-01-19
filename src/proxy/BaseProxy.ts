@@ -26,6 +26,7 @@ import {SerializationService} from '../serialization/SerializationService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
+import {SchemaService} from '../serialization/compact/SchemaService';
 
 /**
  * Common super class for any proxy.
@@ -42,7 +43,8 @@ export abstract class BaseProxy {
         protected readonly serializationService: SerializationService,
         protected readonly listenerService: ListenerService,
         protected readonly clusterService: ClusterService,
-        protected readonly connectionRegistry: ConnectionRegistry
+        protected readonly connectionRegistry: ConnectionRegistry,
+        protected readonly schemaService: SchemaService
     ) {}
 
     getPartitionKey(): string {

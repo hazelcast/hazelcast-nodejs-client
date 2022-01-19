@@ -103,5 +103,5 @@ export class SerializationConfigImpl implements SerializationConfig {
     compactSerializers: Array<CompactSerializer<new () => any>> = [];
     globalSerializer: Serializer = null;
     jsonStringDeserializationPolicy: JsonStringDeserializationPolicy = JsonStringDeserializationPolicy.EAGER;
-    registerCompactSchemas = true;
+    registerCompactSchemas = false;
 }
