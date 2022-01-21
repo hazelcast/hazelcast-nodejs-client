@@ -2861,6 +2861,9 @@ the given JSON path.
 given JSON path.
 3. `CAST(x AS JSON)` support for VARCHAR, columns/literals and dynamic params are supported.
 
+For more information about working with JSON using SQL see
+[Working with JSON](https://docs.hazelcast.com/hazelcast/5.1-beta-1/sql/working-with-json) in Hazelcast reference manual.
+
 ### 8.7.7. Lazy SQL Row Deserialization
 
 Rows in an `SqlResult` are deserialized lazily to allow you to access part of it if there is a value that can't be deserialized.
