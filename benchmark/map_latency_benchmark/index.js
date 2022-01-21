@@ -58,12 +58,12 @@ async function runGet(map) {
 async function runBenchMark(timeArray, client, runBenchmarkFn) {
     const map = await client.getMap(MAP_NAME);
 
-    console.log('Warmup started for ', runBenchMarkFn.name);
+    console.log('Warmup started for ', runBenchmarkFn.name);
     while(!warmupEnded) {
         await runBenchmarkFn(map);
     }
 
-    console.log('Benchmark started for ', runBenchMarkFn.name);
+    console.log('Benchmark started for ', runBenchmarkFn.name);
     while(!benchmarkEnded) {
         const timeElapsed = await runBenchmarkFn(map);
         timeArray.push(timeElapsed);
