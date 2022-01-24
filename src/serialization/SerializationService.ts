@@ -71,7 +71,6 @@ import {CompactStreamSerializerAdapter} from './compact/CompactStreamSerializerA
 import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
-import {SchemaWriter} from './compact/SchemaWriter';
 
 /**
  * Serializes objects and deserializes data.
@@ -370,16 +369,7 @@ export class SerializationServiceV1 implements SerializationService {
     private registerCompactSerializers(): void {
         const compactSerializers = this.serializationConfig.compactSerializers;
         for (const compactSerializer of compactSerializers) {
-            let schema;
-            if (this.serializationConfig.registerCompactSchemas) {
-                const writer = new SchemaWriter(compactSerializer.hzTypeName || compactSerializer.hzClassName);
-                compactSerializer.write(writer, magicObject)
-                schema = writer.build();
-                this.schemaService.putLocal(schema);
-            }
-            this.compactStreamSerializer.registerSerializer(
-                compactSerializer, schema, this.serializationConfig.registerCompactSchemas
-            );
+            this.compactStreamSerializer.registerSerializer(compactSerializer);
         }
     }
 

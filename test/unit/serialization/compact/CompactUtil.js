@@ -15,7 +15,6 @@
  */
 'use strict';
 
-const { IllegalStateError } = require('../../../../lib');
 const { SerializationConfigImpl } = require('../../../../src');
 const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 
@@ -25,7 +24,7 @@ class InMemorySchemaService {
     }
 
     get(schemaId) {
-        return Promise.resolve(this.schemas[schemaId]);
+        return this.schemas[schemaId];
     }
 
     put(schema) {
@@ -34,11 +33,6 @@ class InMemorySchemaService {
         if (existingSchema === undefined) {
             this.schemas[schemaId] = schema;
         }
-
-        if (existingSchema !== undefined && !schema.equals(existingSchema)) {
-            return Promise.reject(new IllegalStateError(`Schema with id ${schemaId} already exists.`));
-        }
-        return Promise.resolve();
     }
 
     putLocal(schema) {
@@ -46,10 +40,6 @@ class InMemorySchemaService {
         const existingSchema = this.schemas[schemaId];
         if (existingSchema === undefined) {
             this.schemas[schemaId] = schema;
-        }
-
-        if (existingSchema !== undefined && !schema.equals(existingSchema)) {
-            throw new IllegalStateError(`Schema with id ${schemaId} already exists.`);
         }
     }
 }

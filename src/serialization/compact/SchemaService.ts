@@ -2,7 +2,6 @@ import * as Long from 'long';
 import {Schema} from './Schema';
 import {ILogger} from '../../logging';
 import {Invocation, InvocationService} from '../../invocation/InvocationService';
-import {IllegalStateError} from '../../core';
 import {ClientSendAllSchemasCodec} from '../../codec/ClientSendAllSchemasCodec';
 import {ClientFetchSchemaCodec} from '../../codec/ClientFetchSchemaCodec';
 import {ClientSendSchemaCodec} from '../../codec/ClientSendSchemaCodec';
@@ -69,12 +68,6 @@ export class SchemaService implements ISchemaService {
             this.logger.trace('SchemaService', `Added schema with id ${schemaId} locally`);
             this.schemas.set(schemaId.toString(), schema);
             return;
-        }
-        if (!existingSchema.equals(schema)) {
-            throw new IllegalStateError(
-                `Schema with id ${schemaId} already exists.` +
-                `Existing schema: ${JSON.stringify(existingSchema)}, New schema: ${JSON.stringify(schema)}`
-            );
         }
     }
 

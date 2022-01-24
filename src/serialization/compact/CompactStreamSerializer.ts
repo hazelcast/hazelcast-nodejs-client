@@ -21,11 +21,11 @@ import {DefaultCompactReader} from './DefaultCompactReader';
 import {SchemaService} from './SchemaService';
 import {DefaultCompactWriter} from './DefaultCompactWriter';
 import {FieldOperations} from '../generic_record/FieldOperations';
-import {SchemaWriter} from './SchemaWriter';
-import {HazelcastSerializationError, SchemaNotFoundError} from '../../core';
+import {HazelcastSerializationError, SchemaNotFoundError, SchemaNotReplicatedError} from '../../core';
 import {ObjectDataInput, ObjectDataOutput, PositionalObjectDataOutput} from '../ObjectData';
 import {IS_GENERIC_RECORD_SYMBOL} from '../generic_record/GenericRecord';
 import {CompactGenericRecord} from '../generic_record/CompactGenericRecord';
+import {SchemaWriter} from './SchemaWriter';
 
 /**
  * @internal
@@ -88,7 +88,6 @@ export class CompactStreamSerializer {
         return registration.read(genericRecord);
     }
 
-    // write won't happen with schema in Node for now
     write(output: ObjectDataOutput, object: any, schemaIncludedInBinary: boolean): void {
         if (!(output instanceof PositionalObjectDataOutput)) {
             throw new HazelcastSerializationError('Expected a positional object data output.')
@@ -104,14 +103,13 @@ export class CompactStreamSerializer {
         return this.classNameToSerializersMap.has(className);
     }
 
-    registerSerializer(serializer: CompactSerializer<new () => any>, schema: Schema, registerCompactSchemas: boolean) {
+    registerSerializer(serializer: CompactSerializer<new () => any>) {
         this.classNameToSerializersMap.set(serializer.hzClassName, serializer);
         if (serializer.hzTypeName) {
             this.typeNameToSerializersMap.set(serializer.hzTypeName, serializer);
         } else {
             this.typeNameToSerializersMap.set(serializer.hzClassName, serializer);
         }
-        this.classNameToSchemaMap.set(serializer.hzClassName, schema);
     }
 
     putToSchemaService(includeSchemaOnBinary: boolean, schema: Schema): void {
@@ -134,6 +132,7 @@ export class CompactStreamSerializer {
         output: PositionalObjectDataOutput, record: CompactGenericRecord, includeSchemaOnBinary: boolean
     ) : void {
         const schema: Schema = record.getSchema();
+        this.throwIfSchemaNotReplicatedToCluster(schema);
         this.putToSchemaService(includeSchemaOnBinary, schema)
         this.writeSchema(output, includeSchemaOnBinary, schema);
         const writer = new DefaultCompactWriter(this, output, schema, includeSchemaOnBinary);
@@ -160,33 +159,33 @@ export class CompactStreamSerializer {
     }
 
     writeObject(output: PositionalObjectDataOutput, o: any, includeSchemaOnBinary: boolean) : void {
-        const compactSerializer = this.getOrCreateSerializerFromObject(o);
+        const compactSerializer = this.getSerializerFromObject(o);
         const className = compactSerializer.hzClassName;
-
         let schema = this.classNameToSchemaMap.get(className);
         if (schema === undefined) {
             const writer = new SchemaWriter(compactSerializer.hzTypeName || className);
             compactSerializer.write(writer, o);
             schema = writer.build();
-            this.putToSchemaService(includeSchemaOnBinary, schema);
             this.classNameToSchemaMap.set(className, schema);
-            this.writeSchemaAndObject(compactSerializer, output, includeSchemaOnBinary, schema, o);
-        } else {
-            this.writeSchemaAndObject(compactSerializer, output, includeSchemaOnBinary, schema, o);
+            this.throwIfSchemaNotReplicatedToCluster(schema);
+            this.putToSchemaService(includeSchemaOnBinary, schema);
+        }
+        this.writeSchemaAndObject(compactSerializer, output, includeSchemaOnBinary, schema, o);
+    }
+
+    private throwIfSchemaNotReplicatedToCluster(schema: Schema): void {
+        // We guarantee that if Schema is not in the schemaService, it is not replicated to the cluster.
+        if (this.schemaService.get(schema.schemaId) === null) {
+            throw new SchemaNotReplicatedError(`The schema ${schema.schemaId} is not replicated yet.`, schema);
         }
     }
 
-    private getOrCreateSerializerFromObject(obj: any) : CompactSerializer<new () => any> {
+    private getSerializerFromObject(obj: any) : CompactSerializer<new () => any> {
         const serializer = this.classNameToSerializersMap.get(obj.constructor.name);
 
         if (serializer !== undefined) {
             return serializer;
-        } else {
-            if (typeof obj.getCompactSerializer === 'function') {
-                return obj.getCompactSerializer();
-            } else {
-                throw new HazelcastSerializationError(`Explicit compact serializer is needed for obj: ${JSON.stringify(obj)}`);
-            }
         }
+        throw new HazelcastSerializationError(`Explicit compact serializer is needed for obj: ${JSON.stringify(obj)}`);
     }
 }

@@ -22,7 +22,7 @@ const should = chai.should();
 const { Fields, GenericRecords, CompactGenericRecordImpl, HazelcastSerializationError } = require('../../../../lib');
 const { createSerializationService } = require('./CompactUtil');
 
-describe.skip('CompactNullablePrimitiveInteroperability', function () {
+describe('CompactNullablePrimitiveInteroperability', function () {
     const assertReadAsNullable = record => {
         record.getNullableBoolean('boolean').should.be.true;
         record.getNullableByte('byte').should.be.equal(2);
@@ -142,8 +142,8 @@ describe.skip('CompactNullablePrimitiveInteroperability', function () {
         assertReadAsNullable(record);
 
         const serializationService = createSerializationService();
-        const data = await serializationService.toData(record);
-        const serializedRecord = await serializationService.toObject(data);
+        const data = serializationService.toData(record);
+        const serializedRecord = serializationService.toObject(data);
 
         serializedRecord.should.be.instanceOf(CompactGenericRecordImpl);
         assertReadAsNullable(serializedRecord);
@@ -188,8 +188,8 @@ describe.skip('CompactNullablePrimitiveInteroperability', function () {
         assertReadAsPrimitive(record);
 
         const serializationService = createSerializationService();
-        const data = await serializationService.toData(record);
-        const serializedRecord = await serializationService.toObject(data);
+        const data = serializationService.toData(record);
+        const serializedRecord = serializationService.toObject(data);
 
         serializedRecord.should.be.instanceOf(CompactGenericRecordImpl);
         assertReadAsPrimitive(serializedRecord);
@@ -233,8 +233,8 @@ describe.skip('CompactNullablePrimitiveInteroperability', function () {
         assertReadNullAsPrimitiveThrowsException(record);
 
         const serializationService = createSerializationService();
-        const data = await serializationService.toData(record);
-        const serializedRecord = await serializationService.toObject(data);
+        const data = serializationService.toData(record);
+        const serializedRecord = serializationService.toObject(data);
 
         serializedRecord.should.be.instanceOf(CompactGenericRecordImpl);
         assertReadNullAsPrimitiveThrowsException(serializedRecord);

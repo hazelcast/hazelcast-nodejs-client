@@ -426,9 +426,16 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     set(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void> {
         assertNotNull(key);
         assertNotNull(value);
-        const keyData = this.toData(key);
-        const valueData = this.toData(value);
-        return this.setInternal(keyData, valueData, ttl, maxIdle);
+        try {
+            const keyData: Data = this.toData(key);
+            const valueData: Data = this.toData(value);
+            return this.setInternal(keyData, valueData, ttl, maxIdle);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.schemaService.put(e.schema).then(() => this.set(key, value, ttl, maxIdle))
+            }
+            return Promise.reject(e);
+        }
     }
 
     values(): Promise<ReadOnlyLazyList<V>> {
