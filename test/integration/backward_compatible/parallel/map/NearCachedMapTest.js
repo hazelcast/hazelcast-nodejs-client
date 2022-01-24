@@ -96,16 +96,15 @@ describe('NearCachedMapTest', function () {
                 expectStats(map1, 0, 2, 1);
             });
 
-            it('get returns null eventually after the entry is removed by another client', async function () {
+            it('get returns null if the entry was removed by another client', async function () {
                 if (!invalidateOnChange) {
                     this.skip();
                 }
                 await map1.get('key1');
                 await map2.remove('key1');
-                await TestUtil.assertTrueEventually(async () => {
-                    const val = await map1.get('key1');
-                    expect(val).to.be.null;
-                }, 1000);
+                const val = await TestUtil.promiseLater(5000, map1.get.bind(map1, 'key1'));
+                expectStats(map1, 0, 2, 1);
+                expect(val).to.be.null;
             });
 
             it('clear clears nearcache', async function () {
