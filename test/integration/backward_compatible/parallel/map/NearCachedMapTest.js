@@ -102,9 +102,8 @@ describe('NearCachedMapTest', function () {
                 }
                 await map1.get('key1');
                 await map2.remove('key1');
-                const val = await map1.get('key1');
                 await TestUtil.assertTrueEventually(async () => {
-                    expectStats(map1, 0, 2, 1);
+                    const val = await map1.get('key1');
                     expect(val).to.be.null;
                 }, 1000);
             });
