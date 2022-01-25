@@ -18,16 +18,11 @@
 const { Client, SqlColumnType, HazelcastJsonValue } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient({
-            properties: {
-                'hazelcast.logging.level': 'OFF'
-            }
-        });
-        const mapName = 'jsonMap' + Math.floor(Math.random() * 10000);
+    const client = await Client.newHazelcastClient();
+    const mapName = 'jsonMap' + Math.floor(Math.random() * 10000);
 
-        // In order to use the map in SQL a mapping should be created.
-        const createMappingQuery = `
+    // In order to use the map in SQL a mapping should be created.
+    const createMappingQuery = `
             CREATE OR REPLACE MAPPING ${mapName}  (
                 __key BIGINT,
                 this JSON
@@ -38,30 +33,29 @@ const { Client, SqlColumnType, HazelcastJsonValue } = require('hazelcast-client'
                 'valueFormat' = 'json'
             )
         `;
-        await client.getSql().execute(createMappingQuery);
+    await client.getSql().execute(createMappingQuery);
 
-        await client.getSql().execute(`INSERT INTO ${mapName} VALUES (1, ?)`,
-            [new HazelcastJsonValue(JSON.stringify({age: 1}))]
-        );
+    await client.getSql().execute(`INSERT INTO ${mapName} VALUES (1, ?)`,
+        [new HazelcastJsonValue(JSON.stringify({age: 1}))]
+    );
 
-        const result = await client.getSql().execute(`SELECT * FROM ${mapName}`);
-        const rowMetadata = result.rowMetadata;
-        const columns = rowMetadata.getColumns();
+    const result = await client.getSql().execute(`SELECT * FROM ${mapName}`);
+    const rowMetadata = result.rowMetadata;
+    const columns = rowMetadata.getColumns();
 
-        console.log('Columns:');
-        for (const column of columns) {
-            console.log(`${column.name}: ${SqlColumnType[column.type]}`);
-        }
-
-        console.log('\nRows from query:');
-        for await (const row of result) {
-            console.log(`${row['__key']}: ${row['this']}`);
-            console.log(`Value is of type ${row['this'].constructor.name}`);
-        }
-
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
+    console.log('Columns:');
+    for (const column of columns) {
+        console.log(`${column.name}: ${SqlColumnType[column.type]}`);
     }
-})();
+
+    console.log('\nRows from query:');
+    for await (const row of result) {
+        console.log(`${row['__key']}: ${row['this']}`);
+        console.log(`Value is of type ${row['this'].constructor.name}`);
+    }
+
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

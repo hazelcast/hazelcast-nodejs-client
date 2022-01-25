@@ -18,23 +18,21 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
-        const queue = await client.getQueue('my-distributed-queue');
+    const client = await Client.newHazelcastClient();
+    const queue = await client.getQueue('my-distributed-queue');
 
-        await queue.put('Item1');
-        await queue.put('Item2');
+    await queue.put('Item1');
+    await queue.put('Item2');
 
-        let item = await queue.peek();
-        console.log(`Peeked item: ${item}. Item is not removed from queue`);
-        item = await queue.poll();
-        console.log(`Retrieved item: ${item}. Item is removed from queue`);
-        item = await queue.poll();
-        console.log(`Retrieved item: ${item}`);
+    let item = await queue.peek();
+    console.log(`Peeked item: ${item}. Item is not removed from queue`);
+    item = await queue.poll();
+    console.log(`Retrieved item: ${item}. Item is removed from queue`);
+    item = await queue.poll();
+    console.log(`Retrieved item: ${item}`);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

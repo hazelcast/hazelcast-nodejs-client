@@ -18,25 +18,23 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
+    const client = await Client.newHazelcastClient();
 
-        client.addDistributedObjectListener((event) => {
-            console.log('Distributed object event >>>', event);
-        });
+    client.addDistributedObjectListener((event) => {
+        console.log('Distributed object event >>>', event);
+    });
 
-        const mapname = 'test';
-        // This causes a 'created' event
-        let map = await client.getMap(mapname);
-        // This causes no event because map was already created
-        map = await client.getMap(mapname);
-        // This causes a 'destroyed' event
-        await map.destroy();
+    const mapname = 'test';
+    // This causes a 'created' event
+    let map = await client.getMap(mapname);
+    // This causes no event because map was already created
+    map = await client.getMap(mapname);
+    // This causes a 'destroyed' event
+    await map.destroy();
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

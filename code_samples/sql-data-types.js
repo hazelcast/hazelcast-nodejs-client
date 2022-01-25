@@ -177,33 +177,28 @@ const objectExample = async (client, classId, factoryId) => {
 };
 
 (async () => {
-    try {
-        // Since we will use a portable, we register it:
-        const portableFactory = (classId) => {
-            if (classId === 1) {
-                return new Student();
+    // Since we will use a portable, we register it:
+    const portableFactory = (classId) => {
+        if (classId === 1) {
+            return new Student();
+        }
+        return null;
+    };
+
+    const client = await Client.newHazelcastClient({
+        serialization: {
+            portableFactories: {
+                23: portableFactory
             }
-            return null;
-        };
+        }
+    });
 
-        const client = await Client.newHazelcastClient({
-            serialization: {
-                portableFactories: {
-                    23: portableFactory
-                }
-            },
-            properties: {
-                'hazelcast.logging.level': 'OFF'
-            }
-        });
+    await varcharExample(client);
+    await bigintExample(client);
+    await objectExample(client, 1, 23);
 
-        await varcharExample(client);
-        await bigintExample(client);
-        await objectExample(client, 1, 23);
-
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

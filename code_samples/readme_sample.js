@@ -18,24 +18,22 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        // Connect to Hazelcast cluster
-        const client = await Client.newHazelcastClient();
+    // Connect to Hazelcast cluster
+    const client = await Client.newHazelcastClient();
 
-        // Get or create the 'distributed-map' on the cluster
-        const map = await client.getMap('distributed-map');
+    // Get or create the 'distributed-map' on the cluster
+    const map = await client.getMap('distributed-map');
 
-        // Put 'key', 'value' pair into the 'distributed-map'
-        await map.put('key', 'value');
+    // Put 'key', 'value' pair into the 'distributed-map'
+    await map.put('key', 'value');
 
-        // Get the value associated with the given key from the cluster
-        const value = await map.get('key');
-        console.log(value); // Outputs 'value'
+    // Get the value associated with the given key from the cluster
+    const value = await map.get('key');
+    console.log(value); // Outputs 'value'
 
-        // Shutdown the client
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    // Shutdown the client
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

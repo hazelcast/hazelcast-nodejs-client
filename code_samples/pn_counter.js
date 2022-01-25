@@ -18,18 +18,16 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
+    const client = await Client.newHazelcastClient();
 
-        const pnCounter = await client.getPNCounter('counter');
-        let value = await pnCounter.addAndGet(5);
-        console.log('Incremented counter by 5. Current value is', value.toNumber());
-        value = await pnCounter.decrementAndGet();
-        console.log('Decremented counter. Current value is', value.toNumber());
+    const pnCounter = await client.getPNCounter('counter');
+    let value = await pnCounter.addAndGet(5);
+    console.log('Incremented counter by 5. Current value is', value.toNumber());
+    value = await pnCounter.decrementAndGet();
+    console.log('Decremented counter. Current value is', value.toNumber());
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

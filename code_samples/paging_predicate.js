@@ -53,8 +53,7 @@ class Comparator {
 }
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient({
+    const client = await Client.newHazelcastClient({
             serialization: {
                 // We register our comparator object as IdentifiedDataSerializable
                 dataSerializableFactories: {
@@ -66,38 +65,37 @@ class Comparator {
                     }
                 }
             }
-        });
+    });
 
-        const map = await client.getMap('test');
+    const map = await client.getMap('test');
 
-        await map.putAll([
+    await map.putAll([
             ['a', 1], ['b', 2], ['c', 3], ['d', 4],
             ['e', 5], ['f', 6], ['g', 7]
-        ]);
-        const mapSize = await map.size();
-        console.log(`Added ${mapSize} elements`);
+    ]);
+    const mapSize = await map.size();
+    console.log(`Added ${mapSize} elements`);
 
-        const predicate = Predicates.paging(Predicates.alwaysTrue(), 2, new Comparator());
+    const predicate = Predicates.paging(Predicates.alwaysTrue(), 2, new Comparator());
 
-        predicate.setPage(0);
-        let values = await map.valuesWithPredicate(predicate);
-        console.log('Page 0:', values);
+    predicate.setPage(0);
+    let values = await map.valuesWithPredicate(predicate);
+    console.log('Page 0:', values);
 
-        predicate.setPage(1);
-        values = await map.valuesWithPredicate(predicate);
-        console.log('Page 1:', values);
+    predicate.setPage(1);
+    values = await map.valuesWithPredicate(predicate);
+    console.log('Page 1:', values);
 
-        predicate.setPage(2);
-        values = await map.valuesWithPredicate(predicate);
-        console.log('Page 2:', values);
+    predicate.setPage(2);
+    values = await map.valuesWithPredicate(predicate);
+    console.log('Page 2:', values);
 
-        predicate.setPage(3);
-        values = await map.valuesWithPredicate(predicate);
-        console.log('Page 3:', values);
+    predicate.setPage(3);
+    values = await map.valuesWithPredicate(predicate);
+    console.log('Page 3:', values);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});
