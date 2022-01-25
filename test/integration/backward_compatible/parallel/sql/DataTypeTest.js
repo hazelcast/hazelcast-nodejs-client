@@ -842,8 +842,8 @@ describe('Data type test', function () {
         [new HazelcastJsonValue(JSON.stringify({age: 3}))]);
 
         const result = await TestUtil.getSql(client).execute(
-            `SELECT * FROM ${mapName} WHERE CAST(JSON_VALUE(this, '$.age') AS DOUBLE) > ?` +
-            ' AND CAST(JSON_VALUE(this, \'$.age\') AS DOUBLE) < ? ORDER BY __key ASC',
+            `SELECT * FROM ${mapName} WHERE CAST(JSON_VALUE(this, '$.age') AS DOUBLE) > ?
+             AND CAST(JSON_VALUE(this, '$.age') AS DOUBLE) < ? ORDER BY __key ASC`,
             [1, 4]
         );
 
