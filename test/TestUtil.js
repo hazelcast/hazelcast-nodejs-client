@@ -153,11 +153,11 @@ exports.getRandomConnection = function(client) {
 exports.isServerVersionAtLeast = function(client, version) {
     let actual = BuildInfo.UNKNOWN_VERSION_ID;
     if (process.env['SERVER_VERSION']) {
-        actual = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
+        actual = exports.calculateServerVersionFromString(process.env['SERVER_VERSION']);
     } else if (client != null) {
         actual = exports.getRandomConnection(client).getConnectedServerVersion();
     }
-    const expected = BuildInfo.calculateServerVersionFromString(version);
+    const expected = exports.calculateServerVersionFromString(version);
     return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
 };
 
@@ -171,16 +171,22 @@ exports.compareServerVersionWithRC = async function (rc, version) {
     const script = 'result=com.hazelcast.instance.GeneratedBuildProperties.VERSION;';
     const result = await rc.executeOnController(null, script, Lang.JAVASCRIPT);
 
-    const rcServerVersion = BuildInfo.calculateServerVersionFromString(result.result.toString());
-    const comparedVersion = BuildInfo.calculateServerVersionFromString(version);
+    const rcServerVersion = exports.calculateServerVersionFromString(result.result.toString());
+    const comparedVersion = exports.calculateServerVersionFromString(version);
 
     return rcServerVersion - comparedVersion;
 };
 
 exports.isClientVersionAtLeast = function(version) {
-    const actual = BuildInfo.calculateServerVersionFromString(BuildInfo.getClientVersion());
-    const expected = BuildInfo.calculateServerVersionFromString(version);
+    const actual = exports.calculateServerVersionFromString(BuildInfo.getClientVersion());
+    const expected = exports.calculateServerVersionFromString(version);
     return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
+};
+
+exports.isClientVersionAtMost = function(version) {
+    const actual = exports.calculateServerVersionFromString(BuildInfo.getClientVersion());
+    const expected = exports.calculateServerVersionFromString(version);
+    return actual === BuildInfo.UNKNOWN_VERSION_ID || expected >= actual;
 };
 
 exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
@@ -534,3 +540,29 @@ exports.TestFactory = class TestFactory {
         this.clients.clear();
     }
 };
+
+/**
+ * Duplicated this from BuildInfo because the logic of it is changed in 5.1, and in backward compatibility tests older
+ * versions won't be able to access the new logic if we keep the new logic only in src/.
+ */
+exports.calculateServerVersionFromString = (versionString) => {
+    if (versionString == null) {
+        return BuildInfo.UNKNOWN_VERSION_ID;
+    }
+    const mainParts = versionString.split('-');
+    const tokens = mainParts[0].split('.');
+
+    if (tokens.length < 2) {
+        return BuildInfo.UNKNOWN_VERSION_ID;
+    }
+
+    const major = +tokens[0];
+    const minor = +tokens[1];
+    const patch = (tokens.length === 2) ? 0 : +tokens[2];
+
+    const version = BuildInfo.MAJOR_VERSION_MULTIPLIER * major + BuildInfo.MINOR_VERSION_MULTIPLIER * minor + patch;
+
+    // version is NaN when one of major, minor and patch is not a number.
+    return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
+};
+

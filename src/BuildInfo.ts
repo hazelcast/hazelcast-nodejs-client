@@ -24,25 +24,26 @@ export class BuildInfo {
     public static readonly UNKNOWN_VERSION_ID = -1;
     private static readonly MAJOR_VERSION_MULTIPLIER = 10000;
     private static readonly MINOR_VERSION_MULTIPLIER = 100;
-    private static readonly PATTERN = /^([\d]+)\.([\d]+)(?:\.([\d]+))?(-[\w]+)?(-SNAPSHOT)?(-BETA-.)?$/;
 
     public static calculateServerVersionFromString(versionString: string): number {
         if (versionString == null) {
             return BuildInfo.UNKNOWN_VERSION_ID;
         }
-        const info = BuildInfo.PATTERN.exec(versionString);
-        if (info === null) {
+        const mainParts = versionString.split('-');
+        const tokens = mainParts[0].split('.');
+
+        if (tokens.length < 2) {
             return BuildInfo.UNKNOWN_VERSION_ID;
         }
-        const major = Number.parseInt(info[1]);
-        const minor = Number.parseInt(info[2]);
-        let patch: number;
-        if (info[3] === undefined) {
-            patch = 0;
-        } else {
-            patch = Number.parseInt(info[3]);
-        }
-        return this.calculateServerVersion(major, minor, patch);
+
+        const major = +tokens[0];
+        const minor = +tokens[1];
+        const patch = (tokens.length === 2) ? 0 : +tokens[2];
+
+        const version = this.calculateServerVersion(major, minor, patch);
+
+        // version is NaN when one of major, minor and patch is not a number.
+        return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
     }
 
     public static calculateServerVersion(major: number, minor: number, patch: number): number {
