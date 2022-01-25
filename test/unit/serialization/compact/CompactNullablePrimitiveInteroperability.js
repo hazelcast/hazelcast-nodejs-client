@@ -36,9 +36,9 @@ describe('CompactNullablePrimitiveInteroperability', function () {
         record.getArrayOfNullableBooleans('booleans').should.be.deep.equal([true, false]);
 
         // NOTE: The following line is not working for now since we deserialize eagerly to make generic api sync.
-        // Fast deserialization leads to a buffer, not a number array as in the case of getArrayOfNullableBytes.
+        // Fast deserialization leads to a buffer, not a number array as in the case of getArrayOfNullableInt8.
 
-        // record.getArrayOfNullableBytes('bytes').should.be.deep.equal([1, 2]);
+        // record.getArrayOfNullableInt8('bytes').should.be.deep.equal([1, 2]);
         record.getArrayOfNullableShorts('shorts').should.be.deep.equal([1, 4]);
         record.getArrayOfNullableInts('ints').should.be.deep.equal([1, 8]);
         record.getArrayOfNullableLongs('longs').should.be.deep.equal([Long.fromNumber(1), Long.fromNumber(4444)]);

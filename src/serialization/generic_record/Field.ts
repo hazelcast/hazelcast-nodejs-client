@@ -17,7 +17,6 @@
 import * as Long from 'long';
 import {FieldKind} from './FieldKind';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
-import {GenericRecord} from './GenericRecord';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Field<T> {
@@ -27,132 +26,126 @@ export interface Field<T> {
 export const boolean: Field<boolean> = {
     kind: FieldKind.BOOLEAN
 }
-export const arrayOfBooleans: Field<boolean[]> = {
-    kind: FieldKind.ARRAY_OF_BOOLEANS
+export const arrayOfBoolean: Field<boolean[]> = {
+    kind: FieldKind.ARRAY_OF_BOOLEAN
 }
-export const byte: Field<number> = {
-    kind: FieldKind.BYTE
+export const int8: Field<number> = {
+    kind: FieldKind.INT8
 }
-export const arrayOfBytes: Field<number[]> = {
-    kind: FieldKind.ARRAY_OF_BYTES
+export const arrayOfInt8: Field<number[]> = {
+    kind: FieldKind.ARRAY_OF_INT8
 }
 export const char: Field<string> = {
     kind: FieldKind.CHAR
 }
-export const arrayOfChars: Field<string[]> = {
-    kind: FieldKind.ARRAY_OF_CHARS
+export const arrayOfChar: Field<string[]> = {
+    kind: FieldKind.ARRAY_OF_CHAR
 }
-export const short: Field<number> = {
-    kind: FieldKind.SHORT
+export const int16: Field<number> = {
+    kind: FieldKind.INT16
 }
-export const arrayOfShorts: Field<number[]> = {
-    kind: FieldKind.ARRAY_OF_SHORTS
+export const arrayOfInt16: Field<number[]> = {
+    kind: FieldKind.ARRAY_OF_INT16
 }
-export const int: Field<number> = {
-    kind: FieldKind.INT
+export const int32: Field<number> = {
+    kind: FieldKind.INT32
 }
-export const arrayOfInts: Field<number[]> = {
-    kind: FieldKind.ARRAY_OF_INTS
+export const arrayOfInt32: Field<number[]> = {
+    kind: FieldKind.ARRAY_OF_INT32
 }
-export const long: Field<Long> = {
-    kind: FieldKind.LONG
+export const int64: Field<Long> = {
+    kind: FieldKind.INT64
 }
-export const arrayOfLongs: Field<Long[]> = {
-    kind: FieldKind.ARRAY_OF_LONGS
+export const arrayOfInt64: Field<Long[]> = {
+    kind: FieldKind.ARRAY_OF_INT64
 }
-export const float: Field<number> = {
-    kind: FieldKind.FLOAT
+export const float32: Field<number> = {
+    kind: FieldKind.FLOAT32
 }
-export const arrayOfFloats: Field<number[]> = {
-    kind: FieldKind.ARRAY_OF_FLOATS
+export const arrayOfFloat32: Field<number[]> = {
+    kind: FieldKind.ARRAY_OF_FLOAT32
 }
-export const double: Field<number> = {
-    kind: FieldKind.DOUBLE
+export const float64: Field<number> = {
+    kind: FieldKind.FLOAT64
 }
-export const arrayOfDoubles: Field<number[]> = {
-    kind: FieldKind.ARRAY_OF_DOUBLES
+export const arrayOfFloat64: Field<number[]> = {
+    kind: FieldKind.ARRAY_OF_FLOAT64
 }
 export const string: Field<string> = {
     kind: FieldKind.STRING
 }
-export const arrayOfStrings: Field<string[]> = {
-    kind: FieldKind.ARRAY_OF_STRINGS
+export const arrayOfString: Field<string[]> = {
+    kind: FieldKind.ARRAY_OF_STRING
 }
 export const decimal: Field<BigDecimal> = {
     kind: FieldKind.DECIMAL
 }
-export const arrayOfDecimals: Field<BigDecimal[]> = {
-    kind: FieldKind.ARRAY_OF_DECIMALS
+export const arrayOfDecimal: Field<BigDecimal[]> = {
+    kind: FieldKind.ARRAY_OF_DECIMAL
 }
 export const time: Field<LocalTime> = {
     kind: FieldKind.TIME
 }
-export const arrayOfTimes: Field<LocalTime[]> = {
-    kind: FieldKind.ARRAY_OF_TIMES
+export const arrayOfTime: Field<LocalTime[]> = {
+    kind: FieldKind.ARRAY_OF_TIME
 }
 export const date: Field<LocalDate> = {
     kind: FieldKind.DATE
 }
-export const arrayOfDates: Field<LocalDate[]> = {
-    kind: FieldKind.ARRAY_OF_DATES
+export const arrayOfDate: Field<LocalDate[]> = {
+    kind: FieldKind.ARRAY_OF_DATE
 }
 export const timestamp: Field<LocalDateTime> = {
     kind: FieldKind.TIMESTAMP
 }
-export const arrayOfTimestamps: Field<LocalDateTime[]> = {
-    kind: FieldKind.ARRAY_OF_TIMESTAMPS
+export const arrayOfTimestamp: Field<LocalDateTime[]> = {
+    kind: FieldKind.ARRAY_OF_TIMESTAMP
 }
 export const timestampWithTimezone: Field<OffsetDateTime> = {
     kind: FieldKind.TIMESTAMP_WITH_TIMEZONE
 }
 export const arrayOfTimestampWithTimezone: Field<OffsetDateTime[]> = {
-    kind: FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONES
-}
-export const genericRecord: Field<GenericRecord> = {
-    kind: FieldKind.GENERIC_RECORD
-}
-export const arrayOfGenericRecords: Field<GenericRecord[]> = {
-    kind: FieldKind.ARRAY_OF_GENERIC_RECORDS
+    kind: FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE
 }
 export const nullableBoolean: Field<boolean | null> = {
     kind: FieldKind.NULLABLE_BOOLEAN
 }
-export const arrayOfNullableBooleans: Field<(boolean | null)[]> = {
-    kind: FieldKind.ARRAY_OF_NULLABLE_BOOLEANS
+export const arrayOfNullableBoolean: Field<(boolean | null)[]> = {
+    kind: FieldKind.ARRAY_OF_NULLABLE_BOOLEAN
 }
-export const nullableByte: Field<number | null> = {
-    kind: FieldKind.NULLABLE_BYTE
+export const nullableInt8: Field<number | null> = {
+    kind: FieldKind.NULLABLE_INT8
 }
-export const arrayOfNullableBytes: Field<(number | null)[]> = {
-    kind: FieldKind.ARRAY_OF_NULLABLE_BYTES
+export const arrayOfNullableInt8: Field<(number | null)[]> = {
+    kind: FieldKind.ARRAY_OF_NULLABLE_INT8
 }
-export const nullableShort: Field<number | null> = {
-    kind: FieldKind.NULLABLE_SHORT
+export const nullableInt16: Field<number | null> = {
+    kind: FieldKind.NULLABLE_INT16
 }
-export const arrayOfNullableShorts: Field<(number | null)[]> = {
-    kind: FieldKind.ARRAY_OF_NULLABLE_SHORTS
+export const arrayOfNullableInt16: Field<(number | null)[]> = {
+    kind: FieldKind.ARRAY_OF_NULLABLE_INT16
 }
-export const nullableInt: Field<number | null> = {
-    kind: FieldKind.NULLABLE_INT
+export const nullableInt32: Field<number | null> = {
+    kind: FieldKind.NULLABLE_INT32
 }
-export const arrayOfNullableInts: Field<(number | null)[]> = {
-    kind: FieldKind.ARRAY_OF_NULLABLE_INTS
+export const arrayOfNullableInt32: Field<(number | null)[]> = {
+    kind: FieldKind.ARRAY_OF_NULLABLE_INT32
 }
-export const nullableLong: Field<Long | null> = {
-    kind: FieldKind.NULLABLE_LONG
+export const nullableInt64: Field<Long | null> = {
+    kind: FieldKind.NULLABLE_INT64
 }
-export const arrayOfNullableLongs: Field<(Long | null)[]> = {
-    kind: FieldKind.ARRAY_OF_NULLABLE_LONGS
+export const arrayOfNullableInt64: Field<(Long | null)[]> = {
+    kind: FieldKind.ARRAY_OF_NULLABLE_INT64
 }
-export const nullableFloat: Field<number | null> = {
-    kind: FieldKind.NULLABLE_FLOAT
+export const nullableFloat32: Field<number | null> = {
+    kind: FieldKind.NULLABLE_FLOAT32
 }
-export const arrayOfNullableFloats: Field<(number | null)[]> = {
-    kind: FieldKind.ARRAY_OF_NULLABLE_FLOATS
+export const arrayOfNullableFloat32: Field<(number | null)[]> = {
+    kind: FieldKind.ARRAY_OF_NULLABLE_FLOAT32
 }
-export const nullableDouble: Field<number | null> = {
-    kind: FieldKind.NULLABLE_DOUBLE
+export const nullableFloat64: Field<number | null> = {
+    kind: FieldKind.NULLABLE_FLOAT64
 }
-export const arrayOfNullableDoubles: Field<(number | null)[]> = {
-    kind: FieldKind.ARRAY_OF_NULLABLE_DOUBLES
+export const arrayOfNullableFloat64: Field<(number | null)[]> = {
+    kind: FieldKind.ARRAY_OF_NULLABLE_FLOAT64
 }

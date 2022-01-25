@@ -17,24 +17,24 @@ class EmployeeDTOSerializer implements CompactSerializer<EmployeeDTO> {
     hzClassName = 'EmployeeDTO';
 
     read(reader: CompactReader): EmployeeDTO {
-        const age = reader.readInt('age');
-        const id = reader.readLong('id');
+        const age = reader.readInt32('age');
+        const id = reader.readInt64('id');
 
         return new EmployeeDTO(age, id);
     }
 
     write(writer: CompactWriter, instance: EmployeeDTO): void {
-        writer.writeInt('age', instance.age);
-        writer.writeLong('id', instance.id);
+        writer.writeInt32('age', instance.age);
+        writer.writeInt64('id', instance.id);
     }
 
 }
 
 async function main() {
     const client = await Client.newHazelcastClient({
-        // serialization: {
-        //     compactSerializers: [new EmployeeDTOSerializer()]
-        // }
+        serialization: {
+            compactSerializers: [new EmployeeDTOSerializer()]
+        }
     });
 
     const map = await client.getMap('test');

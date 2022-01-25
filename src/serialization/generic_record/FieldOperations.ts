@@ -60,13 +60,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_BOOLEANS]: {
+        [FieldKind.ARRAY_OF_BOOLEAN]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfBooleans(fieldName);
+                return record.getArrayOfBoolean(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfBoolean(fieldName, record.getArrayOfBooleans(fieldName));
+                    writer.writeArrayOfBoolean(fieldName, record.getArrayOfBoolean(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -82,13 +82,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.BYTE]: {
+        [FieldKind.INT8]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getByte(fieldName);
+                return record.getInt8(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeInt8(fieldName, record.getByte(fieldName));
+                    writer.writeInt8(fieldName, record.getInt8(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -104,13 +104,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_BYTES]: {
+        [FieldKind.ARRAY_OF_INT8]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfBytes(fieldName);
+                return record.getArrayOfByte(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfInt8(fieldName, record.getArrayOfBytes(fieldName));
+                    writer.writeArrayOfInt8(fieldName, record.getArrayOfByte(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -120,7 +120,7 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getByteFromArray(fieldName, index);
+                return record.getInt8FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -143,9 +143,9 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_CHARS]: {
+        [FieldKind.ARRAY_OF_CHAR]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfChars(fieldName);
+                return record.getArrayOfChar(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 return Promise.reject(
@@ -162,13 +162,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.SHORT]: {
+        [FieldKind.INT16]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getShort(fieldName);
+                return record.getInt16(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeInt16(fieldName, record.getShort(fieldName));
+                    writer.writeInt16(fieldName, record.getInt16(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -184,13 +184,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_SHORTS]: {
+        [FieldKind.ARRAY_OF_INT16]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfShorts(fieldName);
+                return record.getArrayOfShort(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfInt16(fieldName, record.getArrayOfShorts(fieldName));
+                    writer.writeArrayOfInt16(fieldName, record.getArrayOfShort(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -200,19 +200,19 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getShortFromArray(fieldName, index);
+                return record.getInt16FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.INT]: {
+        [FieldKind.INT32]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getInt(fieldName);
+                return record.getInt32(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeInt32(fieldName, record.getInt(fieldName));
+                    writer.writeInt32(fieldName, record.getInt32(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -228,13 +228,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_INTS]: {
+        [FieldKind.ARRAY_OF_INT32]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfInts(fieldName);
+                return record.getArrayOfInt(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfInt32(fieldName, record.getArrayOfInts(fieldName));
+                    writer.writeArrayOfInt32(fieldName, record.getArrayOfInt(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -244,19 +244,19 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getIntFromArray(fieldName, index);
+                return record.getInt32FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.LONG]: {
+        [FieldKind.INT64]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getLong(fieldName);
+                return record.getInt64(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeInt64(fieldName, record.getLong(fieldName));
+                    writer.writeInt64(fieldName, record.getInt64(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -272,13 +272,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_LONGS]: {
+        [FieldKind.ARRAY_OF_INT64]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfLongs(fieldName);
+                return record.getArrayOfLong(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfInt64(fieldName, record.getArrayOfLongs(fieldName));
+                    writer.writeArrayOfInt64(fieldName, record.getArrayOfLong(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -288,19 +288,19 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getLongFromArray(fieldName, index);
+                return record.getInt64FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.FLOAT]: {
+        [FieldKind.FLOAT32]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getFloat(fieldName);
+                return record.getFloat32(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeFloat32(fieldName, record.getFloat(fieldName));
+                    writer.writeFloat32(fieldName, record.getFloat32(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -316,13 +316,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_FLOATS]: {
+        [FieldKind.ARRAY_OF_FLOAT32]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfFloats(fieldName);
+                return record.getArrayOfFloat(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfFloat32(fieldName, record.getArrayOfFloats(fieldName));
+                    writer.writeArrayOfFloat32(fieldName, record.getArrayOfFloat(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -332,19 +332,19 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getFloatFromArray(fieldName, index);
+                return record.getFloat32FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.DOUBLE]: {
+        [FieldKind.FLOAT64]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getDouble(fieldName);
+                return record.getFloat64(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeFloat64(fieldName, record.getDouble(fieldName));
+                    writer.writeFloat64(fieldName, record.getFloat64(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -360,13 +360,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_DOUBLES]: {
+        [FieldKind.ARRAY_OF_FLOAT64]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfDoubles(fieldName);
+                return record.getArrayOfDouble(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfFloat64(fieldName, record.getArrayOfDoubles(fieldName));
+                    writer.writeArrayOfFloat64(fieldName, record.getArrayOfDouble(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -376,7 +376,7 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getDoubleFromArray(fieldName, index);
+                return record.getFloat64FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -404,13 +404,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_STRINGS]: {
+        [FieldKind.ARRAY_OF_STRING]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfStrings(fieldName);
+                return record.getArrayOfString(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfString(fieldName, record.getArrayOfStrings(fieldName));
+                    writer.writeArrayOfString(fieldName, record.getArrayOfString(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -448,13 +448,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_DECIMALS]: {
+        [FieldKind.ARRAY_OF_DECIMAL]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfDecimals(fieldName);
+                return record.getArrayOfDecimal(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfDecimal(fieldName, record.getArrayOfDecimals(fieldName));
+                    writer.writeArrayOfDecimal(fieldName, record.getArrayOfDecimal(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -492,13 +492,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_TIMES]: {
+        [FieldKind.ARRAY_OF_TIME]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfTimes(fieldName);
+                return record.getArrayOfTime(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfTime(fieldName, record.getArrayOfTimes(fieldName));
+                    writer.writeArrayOfTime(fieldName, record.getArrayOfTime(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -536,13 +536,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_DATES]: {
+        [FieldKind.ARRAY_OF_DATE]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfDates(fieldName);
+                return record.getArrayOfDate(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfDate(fieldName, record.getArrayOfDates(fieldName));
+                    writer.writeArrayOfDate(fieldName, record.getArrayOfDate(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -580,13 +580,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_TIMESTAMPS]: {
+        [FieldKind.ARRAY_OF_TIMESTAMP]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfTimestamps(fieldName);
+                return record.getArrayOfTimestamp(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfTimestamp(fieldName, record.getArrayOfTimestamps(fieldName));
+                    writer.writeArrayOfTimestamp(fieldName, record.getArrayOfTimestamp(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -624,13 +624,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONES]: {
+        [FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfTimestampWithTimezones(fieldName);
+                return record.getArrayOfTimestampWithTimezone(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfTimestampWithTimezone(fieldName, record.getArrayOfTimestampWithTimezones(fieldName));
+                    writer.writeArrayOfTimestampWithTimezone(fieldName, record.getArrayOfTimestampWithTimezone(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -663,12 +663,12 @@ export class FieldOperations {
                 return record.getGenericRecord(fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_COMPACTS]: {
+        [FieldKind.ARRAY_OF_COMPACT]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return (record as InternalGenericRecord).getArrayOfObjects(fieldName);
+                return (record as InternalGenericRecord).getArrayOfObject(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                return writer.writeArrayOfGenericRecords(fieldName, record.getArrayOfGenericRecords(fieldName));
+                return writer.writeArrayOfGenericRecords(fieldName, record.getArrayOfGenericRecord(fieldName));
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -677,7 +677,7 @@ export class FieldOperations {
                 return record.getObjectFromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
-                return record.getArrayOfGenericRecords(fieldName);
+                return record.getArrayOfGenericRecord(fieldName);
             }
         },
         [FieldKind.NULLABLE_BOOLEAN]: {
@@ -702,13 +702,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_NULLABLE_BOOLEANS]: {
+        [FieldKind.ARRAY_OF_NULLABLE_BOOLEAN]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableBooleans(fieldName);
+                return record.getArrayOfNullableBoolean(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfNullableBoolean(fieldName, record.getArrayOfNullableBooleans(fieldName));
+                    writer.writeArrayOfNullableBoolean(fieldName, record.getArrayOfNullableBoolean(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -724,13 +724,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.NULLABLE_BYTE]: {
+        [FieldKind.NULLABLE_INT8]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableByte(fieldName);
+                return record.getNullableInt8(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeNullableInt8(fieldName, record.getNullableByte(fieldName));
+                    writer.writeNullableInt8(fieldName, record.getNullableInt8(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -746,13 +746,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_NULLABLE_BYTES]: {
+        [FieldKind.ARRAY_OF_NULLABLE_INT8]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableBytes(fieldName);
+                return record.getArrayOfNullableInt8(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfNullableInt8(fieldName, record.getArrayOfNullableBytes(fieldName));
+                    writer.writeArrayOfNullableInt8(fieldName, record.getArrayOfNullableInt8(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -762,19 +762,19 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableByteFromArray(fieldName, index);
+                return record.getNullableInt8FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.NULLABLE_SHORT]: {
+        [FieldKind.NULLABLE_INT16]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableShort(fieldName);
+                return record.getNullableInt16(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeNullableInt16(fieldName, record.getNullableShort(fieldName));
+                    writer.writeNullableInt16(fieldName, record.getNullableInt16(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -790,13 +790,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_NULLABLE_SHORTS]: {
+        [FieldKind.ARRAY_OF_NULLABLE_INT16]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableShorts(fieldName);
+                return record.getArrayOfNullableInt16(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfNullableInt16(fieldName, record.getArrayOfNullableShorts(fieldName));
+                    writer.writeArrayOfNullableInt16(fieldName, record.getArrayOfNullableInt16(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -806,19 +806,19 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableShortFromArray(fieldName, index);
+                return record.getNullableInt16FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.NULLABLE_INT]: {
+        [FieldKind.NULLABLE_INT32]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableInt(fieldName);
+                return record.getNullableInt32(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeNullableInt32(fieldName, record.getNullableInt(fieldName));
+                    writer.writeNullableInt32(fieldName, record.getNullableInt32(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -834,13 +834,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_NULLABLE_INTS]: {
+        [FieldKind.ARRAY_OF_NULLABLE_INT32]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableInts(fieldName);
+                return record.getArrayOfNullableInt32(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfNullableInt32(fieldName, record.getArrayOfNullableInts(fieldName));
+                    writer.writeArrayOfNullableInt32(fieldName, record.getArrayOfNullableInt32(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -850,19 +850,19 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableIntFromArray(fieldName, index);
+                return record.getNullableInt32FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.NULLABLE_LONG]: {
+        [FieldKind.NULLABLE_INT64]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableLong(fieldName);
+                return record.getNullableInt64(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeNullableInt64(fieldName, record.getNullableLong(fieldName));
+                    writer.writeNullableInt64(fieldName, record.getNullableInt64(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -878,13 +878,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_NULLABLE_LONGS]: {
+        [FieldKind.ARRAY_OF_NULLABLE_INT64]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableLongs(fieldName);
+                return record.getArrayOfNullableInt64(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfNullableInt64(fieldName, record.getArrayOfNullableLongs(fieldName));
+                    writer.writeArrayOfNullableInt64(fieldName, record.getArrayOfNullableInt64(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -894,19 +894,19 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableLongFromArray(fieldName, index);
+                return record.getNullableInt64FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.NULLABLE_FLOAT]: {
+        [FieldKind.NULLABLE_FLOAT32]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableFloat(fieldName);
+                return record.getNullableFloat32(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeNullableFloat32(fieldName, record.getNullableFloat(fieldName));
+                    writer.writeNullableFloat32(fieldName, record.getNullableFloat32(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -922,13 +922,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_NULLABLE_FLOATS]: {
+        [FieldKind.ARRAY_OF_NULLABLE_FLOAT32]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableFloats(fieldName);
+                return record.getArrayOfNullableFloat32(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfNullableFloat32(fieldName, record.getArrayOfNullableFloats(fieldName));
+                    writer.writeArrayOfNullableFloat32(fieldName, record.getArrayOfNullableFloat32(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -938,19 +938,19 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableFloatFromArray(fieldName, index);
+                return record.getNullableFloat32FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.NULLABLE_DOUBLE]: {
+        [FieldKind.NULLABLE_FLOAT64]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableDouble(fieldName);
+                return record.getNullableFloat64(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeNullableFloat64(fieldName, record.getNullableDouble(fieldName));
+                    writer.writeNullableFloat64(fieldName, record.getNullableFloat64(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -966,13 +966,13 @@ export class FieldOperations {
                 return this.readObject(record, fieldName);
             }
         },
-        [FieldKind.ARRAY_OF_NULLABLE_DOUBLES]: {
+        [FieldKind.ARRAY_OF_NULLABLE_FLOAT64]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableDoubles(fieldName);
+                return record.getArrayOfNullableFloat64(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfNullableFloat64(fieldName, record.getArrayOfNullableDoubles(fieldName));
+                    writer.writeArrayOfNullableFloat64(fieldName, record.getArrayOfNullableFloat64(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -982,7 +982,7 @@ export class FieldOperations {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableDoubleFromArray(fieldName, index);
+                return record.getNullableFloat64FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);

@@ -24,17 +24,17 @@ import * as Long from 'long';
  */
 export interface InternalGenericRecord extends GenericRecord {
     getBooleanFromArray(fieldName: string, index: number): boolean | null;
-    getByteFromArray(fieldName: string, index: number): number | null;
+    getInt8FromArray(fieldName: string, index: number): number | null;
     getCharFromArray(fieldName: string, index: number): string | null;
-    getShortFromArray(fieldName: string, index: number): number | null;
-    getIntFromArray(fieldName: string, index: number): number | null;
-    getLongFromArray(fieldName: string, index: number): Long | null;
-    getFloatFromArray(fieldName: string, index: number): number | null;
-    getDoubleFromArray(fieldName: string, index: number): number | null;
+    getInt16FromArray(fieldName: string, index: number): number | null;
+    getInt32FromArray(fieldName: string, index: number): number | null;
+    getInt64FromArray(fieldName: string, index: number): Long | null;
+    getFloat32FromArray(fieldName: string, index: number): number | null;
+    getFloat64FromArray(fieldName: string, index: number): number | null;
     getStringFromArray(fieldName: string, index: number): string | null;
     getGenericRecordFromArray(fieldName: string, index: number): GenericRecord | null;
     getObjectFromArray(fieldName: string, index: number): any | null;
-    getArrayOfObjects(fieldName: string): any[];
+    getArrayOfObject(fieldName: string): any[];
     getObject(fieldName: string): any;
     getDecimalFromArray(fieldName: string, index: number): BigDecimal | null;
     getTimeFromArray(fieldName: string, index: number): LocalTime | null;
@@ -42,11 +42,11 @@ export interface InternalGenericRecord extends GenericRecord {
     getTimestampFromArray(fieldName: string, index: number): LocalDateTime | null;
     getTimestampWithTimezoneFromArray(fieldName: string, index: number): OffsetDateTime | null;
     getNullableBooleanFromArray(fieldName: string, index: number): boolean | null;
-    getNullableByteFromArray(fieldName: string, index: number): number | null;
-    getNullableShortFromArray(fieldName: string, index: number): number | null;
-    getNullableIntFromArray(fieldName: string, index: number): number | null;
-    getNullableLongFromArray(fieldName: string, index: number): Long | null;
-    getNullableFloatFromArray(fieldName: string, index: number): number | null;
-    getNullableDoubleFromArray(fieldName: string, index: number): number | null;
+    getNullableInt8FromArray(fieldName: string, index: number): number | null;
+    getNullableInt16FromArray(fieldName: string, index: number): number | null;
+    getNullableInt32FromArray(fieldName: string, index: number): number | null;
+    getNullableInt64FromArray(fieldName: string, index: number): Long | null;
+    getNullableFloat32FromArray(fieldName: string, index: number): number | null;
+    getNullableFloat64FromArray(fieldName: string, index: number): number | null;
 }
 

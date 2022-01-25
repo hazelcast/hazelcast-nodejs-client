@@ -197,117 +197,117 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeArrayOfBoolean(fieldName: string, value: boolean[] | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_BOOLEANS, value, DefaultCompactWriter.writeBooleanBits);
+        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_BOOLEAN, value, DefaultCompactWriter.writeBooleanBits);
     }
 
     writeArrayOfInt8(fieldName: string, value: Buffer | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_BYTES, value, (out, value) => {
+        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_INT8, value, (out, value) => {
             out.writeByteArray(value);
         });
     }
 
     writeArrayOfCompact<T>(fieldName: string, value: T[] | null): void {
-        return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACTS, value, (out, value) => {
+        return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
             return this.serializer.writeObject(out, value, this.includeSchemaOnBinary);
         });
     }
 
     writeArrayOfDate(fieldName: string, value: LocalDate[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DATES, value, IOUtil.writeLocalDate);
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DATE, value, IOUtil.writeLocalDate);
     }
 
     writeArrayOfDecimal(fieldName: string, value: BigDecimal[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DECIMALS, value, IOUtil.writeDecimal);
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DECIMAL, value, IOUtil.writeDecimal);
     }
 
     writeArrayOfFloat64(fieldName: string, value: number[] | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_DOUBLES, value, (out, values) => {
+        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_FLOAT64, value, (out, values) => {
             out.writeDoubleArray(values);
         });
     }
 
     writeArrayOfFloat32(fieldName: string, value: number[] | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_FLOATS, value, (out, values) => {
+        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_FLOAT32, value, (out, values) => {
             out.writeFloatArray(values);
         });
     }
 
     writeArrayOfInt32(fieldName: string, value: number[] | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_INTS, value, (out, values) => {
+        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_INT32, value, (out, values) => {
             out.writeIntArray(values);
         });
     }
 
     writeArrayOfInt64(fieldName: string, value: Long[] | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_LONGS, value, (out, values) => {
+        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_INT64, value, (out, values) => {
             out.writeLongArray(values);
         });
     }
 
     writeArrayOfNullableBoolean(fieldName: string, value: (boolean | null)[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_BOOLEANS, value, (out, value) => {
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN, value, (out, value) => {
             out.writeBoolean(value);
         });
     }
 
     writeArrayOfNullableInt8(fieldName: string, value: (number | null)[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_BYTES, value, (out, value) => {
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT8, value, (out, value) => {
             out.writeByte(value);
         });
     }
 
     writeArrayOfNullableFloat64(fieldName: string, value: (number | null)[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_DOUBLES, value, (out, value) => {
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOAT64, value, (out, value) => {
             out.writeDouble(value);
         });
     }
 
     writeArrayOfNullableFloat32(fieldName: string, value: (number | null)[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOATS, value, (out, value) => {
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOAT32, value, (out, value) => {
             out.writeFloat(value);
         });
     }
 
     writeArrayOfNullableInt32(fieldName: string, value: (number | null)[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_INTS, value, (out, value) => {
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT32, value, (out, value) => {
             out.writeInt(value);
         });
     }
 
     writeArrayOfNullableInt64(fieldName: string, value: (Long | null)[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_LONGS, value, (out, value) => {
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT64, value, (out, value) => {
             out.writeLong(value);
         });
     }
 
     writeArrayOfNullableInt16(fieldName: string, value: (number | null)[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_SHORTS, value, (out, value) => {
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT16, value, (out, value) => {
             out.writeShort(value);
         });
     }
 
     writeArrayOfInt16(fieldName: string, value: number[] | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_SHORTS, value, (out, values) => {
+        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_INT16, value, (out, values) => {
             out.writeShortArray(values);
         });
     }
 
     writeArrayOfString(fieldName: string, value: string[] | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_STRINGS, value, (out, values) => {
+        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_STRING, value, (out, values) => {
             out.writeStringArray(values);
         });
     }
 
     writeArrayOfTime(fieldName: string, value: LocalTime[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMES, value, IOUtil.writeLocalTime);
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIME, value, IOUtil.writeLocalTime);
     }
 
     writeArrayOfTimestampWithTimezone(fieldName: string, value: OffsetDateTime[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONES, value, IOUtil.writeOffsetDateTime);
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE, value, IOUtil.writeOffsetDateTime);
     }
 
     writeArrayOfTimestamp(fieldName: string, value: LocalDateTime[] | null): void {
-        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMESTAMPS, value, IOUtil.writeLocalDateTime);
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMESTAMP, value, IOUtil.writeLocalDateTime);
     }
 
     private getFixedSizeFieldPosition(fieldName: string, fieldKind: FieldKind) : number {
@@ -328,7 +328,7 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeInt8(fieldName: string, value: number): void {
-        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.BYTE);
+        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.INT8);
         try {
             this.out.pwriteByte(position, value);
         } catch (e) {
@@ -351,7 +351,7 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeFloat64(fieldName: string, value: number): void {
-        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.DOUBLE);
+        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.FLOAT64);
         try {
             this.out.pwriteDouble(position, value);
         } catch (e) {
@@ -360,7 +360,7 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeFloat32(fieldName: string, value: number): void {
-        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.FLOAT);
+        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.FLOAT32);
         try {
             this.out.pwriteFloat(position, value);
         } catch (e) {
@@ -369,7 +369,7 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeInt32(fieldName: string, value: number): void {
-        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.INT);
+        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.INT32);
         try {
             this.out.pwriteInt(position, value);
         } catch (e) {
@@ -378,7 +378,7 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeInt64(fieldName: string, value: Long): void {
-        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.LONG);
+        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.INT64);
         try {
             this.out.pwriteLong(position, value);
         } catch (e) {
@@ -393,43 +393,43 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeNullableInt8(fieldName: string, value: number | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_BYTE, value, (out, value) => {
+        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_INT8, value, (out, value) => {
             out.writeByte(value);
         });
     }
 
     writeNullableFloat64(fieldName: string, value: number | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_DOUBLE, value, (out, value) => {
+        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_FLOAT64, value, (out, value) => {
             out.writeDouble(value);
         });
     }
 
     writeNullableFloat32(fieldName: string, value: number | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_FLOAT, value, (out, value) => {
+        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_FLOAT32, value, (out, value) => {
             out.writeFloat(value);
         });
     }
 
     writeNullableInt32(fieldName: string, value: number | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_INT, value, (out, value) => {
+        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_INT32, value, (out, value) => {
             out.writeInt(value);
         });
     }
 
     writeNullableInt64(fieldName: string, value: Long | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_LONG, value, (out, value) => {
+        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_INT64, value, (out, value) => {
             out.writeLong(value);
         });
     }
 
     writeNullableInt16(fieldName: string, value: number | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_SHORT, value, (out, value) => {
+        this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_INT16, value, (out, value) => {
             out.writeShort(value);
         });
     }
 
     writeInt16(fieldName: string, value: number): void {
-        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.SHORT);
+        const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.INT16);
         try {
             this.out.pwriteShort(position, value);
         } catch (e) {
@@ -462,7 +462,7 @@ export class DefaultCompactWriter implements CompactWriter {
 
     }
     writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[]) : void {
-        return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACTS, value, (out, value) => {
+        return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
             return this.serializer.writeGenericRecord(out, value as CompactGenericRecord, this.includeSchemaOnBinary);
         });
     }

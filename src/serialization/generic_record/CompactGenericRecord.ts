@@ -122,114 +122,114 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         return this.values[fieldName];
     }
 
-    getArrayOfBooleans(fieldName: string): boolean[] {
+    getArrayOfBoolean(fieldName: string): boolean[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Booleans', FieldKind.ARRAY_OF_BOOLEANS, FieldKind.ARRAY_OF_NULLABLE_BOOLEANS
+            fieldName, 'Booleans', FieldKind.ARRAY_OF_BOOLEAN, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN
         );
     }
 
-    getArrayOfBytes(fieldName: string): Buffer {
+    getArrayOfByte(fieldName: string): Buffer {
         return Buffer.from(this.getArrayOfPrimitives(
-            fieldName, 'Bytes', FieldKind.ARRAY_OF_BYTES, FieldKind.ARRAY_OF_NULLABLE_BYTES
+            fieldName, 'Bytes', FieldKind.ARRAY_OF_INT8, FieldKind.ARRAY_OF_NULLABLE_INT8
         ));
     }
 
-    getArrayOfChars(fieldName: string): string[] {
+    getArrayOfChar(fieldName: string): string[] {
         throw new UnsupportedOperationError('Compact format does not support reading an array of chars field');
     }
 
-    getArrayOfDates(fieldName: string): LocalDate[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_DATES);
+    getArrayOfDate(fieldName: string): LocalDate[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_DATE);
     }
 
-    getArrayOfDecimals(fieldName: string): BigDecimal[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_DECIMALS);
+    getArrayOfDecimal(fieldName: string): BigDecimal[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_DECIMAL);
     }
 
-    getArrayOfDoubles(fieldName: string): number[] {
+    getArrayOfDouble(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Doubles', FieldKind.ARRAY_OF_DOUBLES, FieldKind.ARRAY_OF_NULLABLE_DOUBLES
+            fieldName, 'Doubles', FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64
         );
     }
 
-    getArrayOfFloats(fieldName: string): number[] {
+    getArrayOfFloat(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Floats', FieldKind.ARRAY_OF_FLOATS, FieldKind.ARRAY_OF_NULLABLE_FLOATS
+            fieldName, 'Floats', FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32
         );
     }
 
-    getArrayOfGenericRecords(fieldName: string): GenericRecord[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_COMPACTS);
+    getArrayOfGenericRecord(fieldName: string): GenericRecord[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_COMPACT);
     }
 
-    getArrayOfInts(fieldName: string): number[] {
+    getArrayOfInt(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Ints', FieldKind.ARRAY_OF_INTS, FieldKind.ARRAY_OF_NULLABLE_INTS
+            fieldName, 'Ints', FieldKind.ARRAY_OF_INT32, FieldKind.ARRAY_OF_NULLABLE_INT32
         );
     }
 
-    getArrayOfLongs(fieldName: string): Long[] {
+    getArrayOfLong(fieldName: string): Long[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Longs', FieldKind.ARRAY_OF_LONGS, FieldKind.ARRAY_OF_NULLABLE_LONGS
+            fieldName, 'Longs', FieldKind.ARRAY_OF_INT64, FieldKind.ARRAY_OF_NULLABLE_INT64
         );
     }
 
-    getArrayOfNullableBooleans(fieldName: string): (boolean | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_BOOLEANS, FieldKind.ARRAY_OF_NULLABLE_BOOLEANS);
+    getArrayOfNullableBoolean(fieldName: string): (boolean | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_BOOLEAN, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN);
     }
 
-    getArrayOfNullableBytes(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_BYTES, FieldKind.ARRAY_OF_NULLABLE_BYTES);
+    getArrayOfNullableInt8(fieldName: string): (number | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT8, FieldKind.ARRAY_OF_NULLABLE_INT8);
     }
 
-    getArrayOfNullableDoubles(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_DOUBLES, FieldKind.ARRAY_OF_NULLABLE_DOUBLES);
+    getArrayOfNullableFloat64(fieldName: string): (number | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64);
     }
 
-    getArrayOfNullableFloats(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_FLOATS, FieldKind.ARRAY_OF_NULLABLE_FLOATS);
+    getArrayOfNullableFloat32(fieldName: string): (number | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32);
     }
 
-    getArrayOfNullableInts(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INTS, FieldKind.ARRAY_OF_NULLABLE_INTS);
+    getArrayOfNullableInt32(fieldName: string): (number | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT32, FieldKind.ARRAY_OF_NULLABLE_INT32);
     }
 
-    getArrayOfNullableLongs(fieldName: string): (Long | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_LONGS, FieldKind.ARRAY_OF_NULLABLE_LONGS);
+    getArrayOfNullableInt64(fieldName: string): (Long | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT64, FieldKind.ARRAY_OF_NULLABLE_INT64);
     }
 
-    getArrayOfNullableShorts(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_SHORTS, FieldKind.ARRAY_OF_NULLABLE_SHORTS);
+    getArrayOfNullableInt16(fieldName: string): (number | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16);
     }
 
-    getArrayOfShorts(fieldName: string): number[] {
+    getArrayOfShort(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Shorts', FieldKind.ARRAY_OF_SHORTS, FieldKind.ARRAY_OF_NULLABLE_SHORTS
+            fieldName, 'Shorts', FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16
         );
     }
 
-    getArrayOfStrings(fieldName: string): string[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_STRINGS);
+    getArrayOfString(fieldName: string): string[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_STRING);
     }
 
-    getArrayOfTimes(fieldName: string): LocalTime[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_TIMES);
+    getArrayOfTime(fieldName: string): LocalTime[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_TIME);
     }
 
-    getArrayOfTimestampWithTimezones(fieldName: string): OffsetDateTime[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONES);
+    getArrayOfTimestampWithTimezone(fieldName: string): OffsetDateTime[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
     }
 
-    getArrayOfTimestamps(fieldName: string): LocalDateTime[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_TIMESTAMPS);
+    getArrayOfTimestamp(fieldName: string): LocalDateTime[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_TIMESTAMP);
     }
 
     getBoolean(fieldName: string): boolean {
         return this.getNonNull(fieldName, FieldKind.BOOLEAN, FieldKind.NULLABLE_BOOLEAN, 'Boolean');
     }
 
-    getByte(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.BYTE, FieldKind.NULLABLE_BYTE, 'Byte');
+    getInt8(fieldName: string): number {
+        return this.getNonNull(fieldName, FieldKind.INT8, FieldKind.NULLABLE_INT8, 'Byte');
     }
 
     getChar(fieldName: string): string {
@@ -244,8 +244,8 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         return this.get(fieldName, FieldKind.DECIMAL);
     }
 
-    getFloat(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.FLOAT, FieldKind.NULLABLE_FLOAT, 'Float');
+    getFloat32(fieldName: string): number {
+        return this.getNonNull(fieldName, FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32, 'Float');
     }
 
     getFieldKind(fieldName: string): FieldKind {
@@ -256,52 +256,52 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         return new Set(Object.keys(this.fields));
     }
 
-    getDouble(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.DOUBLE, FieldKind.NULLABLE_DOUBLE, 'Double');
+    getFloat64(fieldName: string): number {
+        return this.getNonNull(fieldName, FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64, 'Double');
     }
 
     getGenericRecord(fieldName: string): GenericRecord {
         return this.get(fieldName, FieldKind.COMPACT);
     }
 
-    getInt(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.INT, FieldKind.NULLABLE_INT, 'Int');
+    getInt32(fieldName: string): number {
+        return this.getNonNull(fieldName, FieldKind.INT32, FieldKind.NULLABLE_INT32, 'Int');
     }
 
-    getLong(fieldName: string): Long {
-        return this.getNonNull(fieldName, FieldKind.LONG, FieldKind.NULLABLE_LONG, 'Long');
+    getInt64(fieldName: string): Long {
+        return this.getNonNull(fieldName, FieldKind.INT64, FieldKind.NULLABLE_INT64, 'Long');
     }
 
     getNullableBoolean(fieldName: string): boolean | null {
         return this.get(fieldName, FieldKind.BOOLEAN, FieldKind.NULLABLE_BOOLEAN);
     }
 
-    getNullableByte(fieldName: string): number | null {
-        return this.get(fieldName, FieldKind.BYTE, FieldKind.NULLABLE_BYTE);
+    getNullableInt8(fieldName: string): number | null {
+        return this.get(fieldName, FieldKind.INT8, FieldKind.NULLABLE_INT8);
     }
 
-    getNullableDouble(fieldName: string): number | null {
-        return this.get(fieldName, FieldKind.DOUBLE, FieldKind.NULLABLE_DOUBLE);
+    getNullableFloat64(fieldName: string): number | null {
+        return this.get(fieldName, FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64);
     }
 
-    getNullableFloat(fieldName: string): number | null {
-        return this.get(fieldName, FieldKind.FLOAT, FieldKind.NULLABLE_FLOAT);
+    getNullableFloat32(fieldName: string): number | null {
+        return this.get(fieldName, FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32);
     }
 
-    getNullableInt(fieldName: string): number | null {
-        return this.get(fieldName, FieldKind.INT, FieldKind.NULLABLE_INT);
+    getNullableInt32(fieldName: string): number | null {
+        return this.get(fieldName, FieldKind.INT32, FieldKind.NULLABLE_INT32);
     }
 
-    getNullableLong(fieldName: string): Long | null {
-        return this.get(fieldName, FieldKind.LONG, FieldKind.NULLABLE_LONG);
+    getNullableInt64(fieldName: string): Long | null {
+        return this.get(fieldName, FieldKind.INT64, FieldKind.NULLABLE_INT64);
     }
 
-    getNullableShort(fieldName: string): number | null {
-        return this.get(fieldName, FieldKind.SHORT, FieldKind.NULLABLE_SHORT);
+    getNullableInt16(fieldName: string): number | null {
+        return this.get(fieldName, FieldKind.INT16, FieldKind.NULLABLE_INT16);
     }
 
-    getShort(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.SHORT, FieldKind.NULLABLE_SHORT, 'Short');
+    getInt16(fieldName: string): number {
+        return this.getNonNull(fieldName, FieldKind.INT16, FieldKind.NULLABLE_INT16, 'Short');
     }
 
     getString(fieldName: string): string {
