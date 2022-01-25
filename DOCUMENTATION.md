@@ -3698,7 +3698,7 @@ specific to those client connections.
 You can also group your clients using the client labels. These client groups can be blacklisted in Hazelcast Management Center so
 that they can be prevented from connecting to a cluster. See the
 <!-- markdownlint-disable-next-line MD013 -->
-[related section](https://docs.hazelcast.com/management-center/latest/monitor-imdg/client-filtering)
+[related section](https://docs.hazelcast.com/management-center/latest/clusters/client-filtering)
 in the Hazelcast Management Center Reference Manual for more information on this topic.
 
 You can define the client labels using the `clientLabels` config option. See the below example.

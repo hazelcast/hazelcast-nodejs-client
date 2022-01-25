@@ -22,7 +22,6 @@ const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const Long = require('long');
 const {
-    Client,
     IllegalStateError,
     SessionExpiredError
 } = require('../../../../');
@@ -33,6 +32,7 @@ const {
 const { DefaultLogger } = require('../../../../lib/logging/DefaultLogger');
 const { RaftGroupId } = require('../../../../lib/proxy/cpsubsystem/RaftGroupId');
 const { deferredPromise } = require('../../../../lib/util/Util');
+const { InvocationService } = require('../../../../lib/invocation/InvocationService');
 
 describe('CPSessionManagerTest', function () {
     afterEach(function () {
@@ -101,7 +101,6 @@ describe('CPSessionManagerTest', function () {
         const TTL_MILLIS = 1000;
         const HEARTBEAT_MILLIS = 100;
 
-        let clientStub;
         let sessionManager;
 
         function prepareGroupId() {
@@ -133,10 +132,9 @@ describe('CPSessionManagerTest', function () {
         }
 
         beforeEach(function () {
-            clientStub = sandbox.stub(Client.prototype);
             const loggerStub = sandbox.stub(DefaultLogger.prototype);
-            clientStub.getLoggingService.returns({ getLogger: () => loggerStub });
-            sessionManager = new CPSessionManager(clientStub);
+            const invocationServiceStub = sandbox.stub(InvocationService.prototype);
+            sessionManager = new CPSessionManager(loggerStub, 'clientName', invocationServiceStub);
         });
 
         afterEach(async function () {
