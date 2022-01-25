@@ -102,7 +102,7 @@ describe('NearCachedMapTest', function () {
                 }
                 await map1.get('key1');
                 await map2.remove('key1');
-                const val = await TestUtil.promiseLater(1000, map1.get.bind(map1, 'key1'));
+                const val = await TestUtil.promiseLater(5000, map1.get.bind(map1, 'key1'));
                 expectStats(map1, 0, 2, 1);
                 expect(val).to.be.null;
             });
