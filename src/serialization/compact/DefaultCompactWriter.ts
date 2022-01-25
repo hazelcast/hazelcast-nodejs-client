@@ -169,10 +169,10 @@ export class DefaultCompactWriter implements CompactWriter {
     private checkFieldDefinition(fieldName: string, fieldKind: FieldKind) : FieldDescriptor {
         const field = this.schema.fieldDefinitionMap.get(fieldName);
         if (field === undefined) {
-            throw new HazelcastSerializationError(`Invalid field name: ${fieldName} for ${JSON.stringify(this.schema)}`);
+            throw new HazelcastSerializationError(`Invalid field name: ${fieldName} for ${this.schema}`);
         }
         if (field.kind !== fieldKind) {
-            throw new HazelcastSerializationError(`Invalid field type: ${fieldName} for ${JSON.stringify(this.schema)}`);
+            throw new HazelcastSerializationError(`Invalid field type: ${fieldName} for ${this.schema}`);
         }
         return field;
     }

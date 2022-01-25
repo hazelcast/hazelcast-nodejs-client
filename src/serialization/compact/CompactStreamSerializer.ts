@@ -61,9 +61,8 @@ export class CompactStreamSerializer {
             schema = input.readObject();
             const incomingSchemaId = schema.schemaId;
             if (schemaId !== incomingSchemaId) {
-                const schemaJsonString = JSON.stringify(schema);
                 throw new HazelcastSerializationError(
-                    `Invalid schema id found. Expected ${schemaId}, actual ${incomingSchemaId} for schema ${schemaJsonString}`
+                    `Invalid schema id found. Expected ${schemaId}, actual ${incomingSchemaId} for schema ${schema}`
                 );
             }
             this.schemaService.putLocal(schema);
@@ -186,6 +185,6 @@ export class CompactStreamSerializer {
         if (serializer !== undefined) {
             return serializer;
         }
-        throw new HazelcastSerializationError(`Explicit compact serializer is needed for obj: ${JSON.stringify(obj)}`);
+        throw new HazelcastSerializationError(`Explicit compact serializer is needed for obj: ${obj}`);
     }
 }

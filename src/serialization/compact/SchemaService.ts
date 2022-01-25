@@ -80,7 +80,7 @@ export class SchemaService implements ISchemaService {
             this.logger.trace('SchemaService', 'There is no schemas to send to the cluster');
             return Promise.resolve();
         }
-        this.logger.trace('SchemaService', `Sending ${this.schemas.size} schemas to the cluster ${JSON.stringify(this.schemas)}`);
+        this.logger.trace('SchemaService', `Sending ${this.schemas.size} schemas to the cluster ${this.schemas}`);
         const message = ClientSendAllSchemasCodec.encodeRequest([...this.schemas.values()]);
         const invocation = new Invocation(this.getInvocationService(), message);
         return this.getInvocationService().invoke(invocation).then(() => {});

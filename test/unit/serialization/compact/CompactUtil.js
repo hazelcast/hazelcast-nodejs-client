@@ -17,6 +17,8 @@
 
 const { SerializationConfigImpl } = require('../../../../src');
 const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
+const Long = require('long');
+const { BigDecimal, LocalTime, LocalDate, LocalDateTime, OffsetDateTime } = require('../../../../lib');
 
 class InMemorySchemaService {
     constructor() {
@@ -173,8 +175,207 @@ const createSerializationService = (compactSerializers = []) => {
     return new SerializationServiceV1(serializationConfig, new InMemorySchemaService());
 };
 
+class NamedDTO {
+    constructor(name, myint) {
+        this.name = name;
+        this.myint = myint;
+    }
+}
+
+class InnerDTO {
+    constructor(
+        bools,
+        bb,
+        ss,
+        ii,
+        ll,
+        ff,
+        dd,
+        nn,
+        bigDecimals,
+        localTimes,
+        localDates,
+        localDateTimes,
+        offsetDateTimes,
+        nullableBools,
+        nullableBytes,
+        nullableShorts,
+        nullableIntegers,
+        nullableLongs,
+        nullableFloats,
+        nullableDoubles,
+        nullableLocalTimes,
+        nullableLocalDates,
+        nullableLocalDateTimes,
+        nullableOffsetDateTimes,
+    ) {
+        this.bools = bools;
+        this.bb = bb;
+        this.ss = ss;
+        this.ii = ii;
+        this.ll = ll;
+        this.ff = ff;
+        this.dd = dd;
+        this.nn = nn;
+        this.bigDecimals = bigDecimals;
+        this.localTimes = localTimes;
+        this.localDates = localDates;
+        this.localDateTimes = localDateTimes;
+        this.offsetDateTimes = offsetDateTimes;
+        this.nullableBools = nullableBools;
+        this.nullableBytes = nullableBytes;
+        this.nullableShorts = nullableShorts;
+        this.nullableIntegers = nullableIntegers;
+        this.nullableLongs = nullableLongs;
+        this.nullableFloats = nullableFloats;
+        this.nullableDoubles = nullableDoubles;
+        this.nullableLocalTimes = nullableLocalTimes;
+        this.nullableLocalDates = nullableLocalDates;
+        this.nullableLocalDateTimes = nullableLocalDateTimes;
+        this.nullableOffsetDateTimes = nullableOffsetDateTimes;
+    }
+}
+
+class MainDTO {
+    constructor(
+        b,
+        bool,
+        s,
+        i,
+        l,
+        f,
+        d,
+        str,
+        p,
+        bigDecimal,
+        localTime,
+        localDate,
+        localDateTime,
+        offsetDateTime,
+        nullableB,
+        nullableBool,
+        nullableS,
+        nullableI,
+        nullableL,
+        nullableF,
+        nullableD
+    ) {
+        this.b = b;
+        this.bool = bool;
+        this.s = s;
+        this.i = i;
+        this.l = l;
+        this.f = f;
+        this.d = d;
+        this.str = str;
+        this.p = p;
+        this.bigDecimal = bigDecimal;
+        this.localTime = localTime;
+        this.localDate = localDate;
+        this.localDateTime = localDateTime;
+        this.offsetDateTime = offsetDateTime;
+        this.nullableB = nullableB;
+        this.nullableBool = nullableBool;
+        this.nullableS = nullableS;
+        this.nullableI = nullableI;
+        this.nullableL = nullableL;
+        this.nullableF = nullableF;
+        this.nullableD = nullableD;
+    }
+}
+
+const createMainDTO = () => {
+    const now = new Date();
+    const getNowLocalTime = () => new LocalTime(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds() * 1000);
+    const getNowLocalDate = () => new LocalDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    const nn = new Array(2);
+    nn[0] = new NamedDTO('name', 123);
+    nn[1] = new NamedDTO('name', 123);
+    const inner = new InnerDTO(
+        [true, false], [1, 2, 3], [3, 4, 5], [9, 8, 7, 6],
+        [Long.fromNumber(0), Long.fromNumber(1), Long.fromNumber(5), Long.fromNumber(7), Long.fromNumber(9), Long.fromNumber(11)],
+        [0.6543, -3.56, 45.67], [456.456, 789.789, 321.321], nn,
+        [BigDecimal.fromString('12345'), BigDecimal.fromString('123456')],
+        [getNowLocalTime(), getNowLocalTime()], [getNowLocalDate(), getNowLocalDate()],
+        [LocalDateTime.fromDate(new Date(Date.UTC(2021, 8)))],
+        [OffsetDateTime.fromDate(new Date(Date.UTC(2021, 8)), 0)], [true, false, null], [1, 2, 3, null], [3, 4, 5, null],
+        [9, 8, 7, 6, null],
+        [Long.fromNumber(0), Long.fromNumber(1), Long.fromNumber(5), Long.fromNumber(7), Long.fromNumber(9), Long.fromNumber(11)],
+        [0.6543, -3.56, 45.67], [456.456, 789.789, 321.321], [getNowLocalTime(), getNowLocalTime()],
+        [getNowLocalDate(), getNowLocalDate(), null], [LocalDateTime.fromDate(new Date(Date.UTC(2021, 8))), null],
+        [OffsetDateTime.fromDate(new Date(Date.UTC(2021, 8)), 0)],
+    );
+    return new MainDTO(
+        113, true, -500, 56789, Long.fromNumber(-50992225), 900.5678,
+        -897543.3678909, 'this is main object created for testing!', inner,
+        BigDecimal.fromString('12312313'), getNowLocalTime(), getNowLocalDate(),
+        LocalDateTime.fromDate(new Date(Date.UTC(2021, 8))), OffsetDateTime.fromDate(new Date(Date.UTC(2021, 8)), 0),
+        113, true, -500, 56789, Long.fromNumber(-50992225), 900.5678, -897543.3678909
+    );
+};
+
+class MainDTOSerializer {
+    constructor() {
+        this.hzClassName = 'MainDTO';
+    }
+
+    read(reader) {
+        const b = reader.readInt8('b');
+        const bool = reader.readBoolean('bool');
+        const s = reader.readInt16('s');
+        const i = reader.readInt32('i');
+        const l = reader.readInt64('l');
+        const f = reader.readFloat32('f');
+        const d = reader.readFloat64('d');
+        const str = reader.readString('str');
+        const p = reader.readCompact('p');
+        const bigDecimal = reader.readDecimal('bigDecimal');
+        const localTime = reader.readTime('localTime');
+        const localDate = reader.readDate('localDate');
+        const localDateTime = reader.readTimestamp('localDateTime');
+        const offsetDateTime = reader.readTimestampWithTimezone('offsetDateTime');
+        const nullableB = reader.readNullableInt8('nullableB');
+        const nullableBool = reader.readNullableBoolean('nullableBool');
+        const nullableS = reader.readNullableInt16('nullableS');
+        const nullableI = reader.readNullableInt32('nullableI');
+        const nullableL = reader.readNullableInt64('nullableL');
+        const nullableF = reader.readNullableFloat32('nullableF');
+        const nullableD = reader.readNullableFloat64('nullableD');
+
+        return new MainDTO(
+            b, bool, s, i, l, f, d, str, p, bigDecimal, localTime, localDate, localDateTime,
+            offsetDateTime, nullableB, nullableBool, nullableS, nullableI, nullableL, nullableF, nullableD
+        );
+    }
+    write(writer, obj) {
+        writer.writeInt8('b', obj.b);
+        writer.writeBoolean('bool', obj.bool);
+        writer.writeInt16('s', obj.s);
+        writer.writeInt32('i', obj.i);
+        writer.writeInt64('l', obj.l);
+        writer.writeFloat32('f', obj.f);
+        writer.writeFloat64('d', obj.d);
+        writer.writeString('str', obj.str);
+        writer.writeCompact('p', obj.p);
+        writer.writeDecimal('bigDecimal', obj.bigDecimal);
+        writer.writeTime('localTime', obj.localTime);
+        writer.writeDate('localDate', obj.localDate);
+        writer.writeTimestamp('localDateTime', obj.localDateTime);
+        writer.writeTimestampWithTimezone('offsetDateTime', obj.offsetDateTime);
+        writer.writeNullableInt8('nullableB', obj.nullableB);
+        writer.writeNullableBoolean('nullableBool', obj.nullableBool);
+        writer.writeNullableInt16('nullableS', obj.nullableS);
+        writer.writeNullableInt32('nullableI', obj.nullableI);
+        writer.writeNullableInt64('nullableL', obj.nullableL);
+        writer.writeNullableFloat32('nullableF', obj.nullableF);
+        writer.writeNullableFloat64('nullableD', obj.nullableD);
+    }
+}
+
 module.exports = {
+    MainDTOSerializer,
     createSerializationService,
+    createMainDTO,
     Bits,
     BitsSerializer,
     Employee,

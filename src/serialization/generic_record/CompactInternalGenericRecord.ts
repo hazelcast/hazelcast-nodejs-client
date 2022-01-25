@@ -98,7 +98,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
     }
 
     private static toUnknownFieldException(fieldName: string, schema: Schema): Error {
-        return new HazelcastSerializationError(`Unknown field name: '${fieldName}' for schema ${JSON.stringify(schema)}`);
+        return new HazelcastSerializationError(`Unknown field name: '${fieldName}' for schema ${schema}`);
     }
 
     private static toIllegalStateException(e: Error) {
@@ -1054,5 +1054,15 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         return this.getVariableSizeByNameAndKind(
             fieldName, FieldKind.COMPACT, reader => this.serializer.read(reader, this.schemaIncludedInBinary)
         );
+    }
+    toString(): string {
+        const values: {[fieldName: string]: any} = {};
+        for (const field of this.schema.fields) {
+            values[field.fieldName] = FieldOperations.fieldOperations(field.kind).readObject(this, field.fieldName);
+        }
+
+        return JSON.stringify({
+            [this.schema.typeName]: values
+        });
     }
 }

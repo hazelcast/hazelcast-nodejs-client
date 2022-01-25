@@ -69,4 +69,5 @@ export interface GenericRecord {
     getArrayOfNullableInt32(fieldName: string): (number | null)[];
     getArrayOfNullableInt64(fieldName: string): (Long | null)[];
     getArrayOfNullableInt16(fieldName: string): (number | null)[];
+    toString(): string;
 }

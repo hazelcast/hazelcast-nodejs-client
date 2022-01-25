@@ -46,7 +46,7 @@ export interface CompactGenericRecord extends GenericRecord {
 export class CompactGenericRecordImpl implements CompactGenericRecord {
 
     private readonly [IS_GENERIC_RECORD_SYMBOL] = true;
-    private readonly schema;
+    private readonly schema: Schema;
 
     constructor(
         typeName: string,
@@ -63,7 +63,7 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
     private check(fieldName: string, ...kinds: FieldKind[]) : FieldKind {
         const fd = this.schema.fieldDefinitionMap.get(fieldName);
         if (fd === undefined) {
-            throw new HazelcastSerializationError(`Invalid field name: '${fieldName}' for schema ${JSON.stringify(this.schema)}`);
+            throw new HazelcastSerializationError(`Invalid field name: '${fieldName}' for schema ${this.schema}`);
         }
         let valid = false;
         const fieldKind = fd.kind;
@@ -322,6 +322,11 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
 
     hasField(fieldName: string): boolean {
         return this.fields.hasOwnProperty(fieldName);
+    }
+    toString(): string {
+        return JSON.stringify({
+            [this.schema.typeName]: this.values
+        });
     }
 }
 

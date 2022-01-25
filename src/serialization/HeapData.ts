@@ -31,6 +31,9 @@ export const HEAP_DATA_OVERHEAD: number = DATA_OFFSET;
 /** @internal */
 export class HeapData implements Data {
 
+    private static readonly TYPE_COMPACT = -55;
+    private static readonly TYPE_PORTABLE = -1;
+    private static readonly TYPE_JSON = -130
     private readonly payload: Buffer;
 
     constructor(buffer: Buffer) {
@@ -115,7 +118,14 @@ export class HeapData implements Data {
      * Returns true if the object is a portable object
      */
     isPortable(): boolean {
-        return false;
+        return this.getType() === HeapData.TYPE_PORTABLE;
     }
 
+    isJson(): boolean {
+        return this.getType() === HeapData.TYPE_JSON;
+    }
+
+    isCompact(): boolean {
+        return this.getType() === HeapData.TYPE_COMPACT;
+    }
 }

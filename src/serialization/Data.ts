@@ -66,6 +66,15 @@ export interface Data {
      */
     isPortable(): boolean;
 
+    /**
+     * Returns true if this Data is created from a {@link HazelcastJsonValue} object
+     */
+    isJson(): boolean;
+
+    /**
+     * Returns true if this Data is serialized in CompactFormat
+     */
+    isCompact(): boolean;
 }
 
 /**
