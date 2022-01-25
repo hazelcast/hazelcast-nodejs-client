@@ -42,7 +42,7 @@ const varcharExample = async (client) => {
     console.log('----------VARCHAR Example----------');
     const mapName = 'varcharMap' + Math.floor(Math.random() * 10000);
     const someMap = await client.getMap(mapName);
-    // To be able to use our map in SQL we need to create mapping for it.
+    // In order to use the map in SQL a mapping should be created.
     const createMappingQuery = `
             CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
@@ -89,7 +89,7 @@ const bigintExample = async (client) => {
     console.log('\n---------- BIGINT Example----------');
     const mapName = 'bigintMap' + Math.floor(Math.random() * 10000);
     const someMap = await client.getMap(mapName);
-    // To be able to use our map in SQL we need to create mapping for it.
+    // In order to use the map in SQL a mapping should be created.
     const createMappingQuery = `
             CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
@@ -136,7 +136,7 @@ const objectExample = async (client, classId, factoryId) => {
     console.log('\n----------OBJECT Example----------');
     const mapName = 'studentMap' + Math.floor(Math.random() * 10000);
     const someMap = await client.getMap(mapName);
-    // To be able to use our map in SQL we need to create mapping for it.
+    // In order to use the map in SQL a mapping should be created.
     const createMappingQuery = `
             CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,

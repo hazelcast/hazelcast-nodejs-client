@@ -55,7 +55,7 @@ function portableFactory(classId) {
         const client = await Client.newHazelcastClient(cfg);
         const mapName = 'decimalMap';
         const map = await client.getMap(mapName);
-        // To be able to use our map in SQL we need to create mapping for it.
+        // In order to use the map in SQL a mapping should be created.
         const createMappingQuery = `
             CREATE MAPPING ${mapName} (
                 __key VARCHAR,
