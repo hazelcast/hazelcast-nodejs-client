@@ -44,7 +44,7 @@ const varcharExample = async (client) => {
     const someMap = await client.getMap(mapName);
     // To be able to use our map in SQL we need to create mapping for it.
     const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
+            CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
                 this VARCHAR
             )
@@ -91,7 +91,7 @@ const bigintExample = async (client) => {
     const someMap = await client.getMap(mapName);
     // To be able to use our map in SQL we need to create mapping for it.
     const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
+            CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
                 this BIGINT
             )
@@ -138,7 +138,7 @@ const objectExample = async (client, classId, factoryId) => {
     const someMap = await client.getMap(mapName);
     // To be able to use our map in SQL we need to create mapping for it.
     const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
+            CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
                 age INT,
                 height DOUBLE

@@ -28,7 +28,7 @@ const { Client } = require('hazelcast-client');
         const map = await client.getMap(mapName);
         // To be able to use our map in SQL we need to create mapping for it.
         const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
+            CREATE OR REPLACE MAPPING ${mapName} (
                 __key VARCHAR,
                 this DOUBLE
             )
