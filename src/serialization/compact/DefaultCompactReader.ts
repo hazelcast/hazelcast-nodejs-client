@@ -196,9 +196,9 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
 
     readArrayOfInt8(fieldName: string, defaultValue?: Buffer | null): Buffer | null {
         if (defaultValue === undefined) {
-            return this.getArrayOfByte(fieldName);
+            return this.getArrayOfInt8(fieldName);
         } else {
-            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT8) ? this.getArrayOfByte(fieldName) : defaultValue;
+            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT8) ? this.getArrayOfInt8(fieldName) : defaultValue;
         }
     }
 
@@ -229,33 +229,33 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
 
     readArrayOfFloat64(fieldName: string, defaultValue?: number[] | null): number[] | null {
         if (defaultValue === undefined) {
-            return this.getArrayOfDouble(fieldName);
+            return this.getArrayOfFloat64(fieldName);
         } else {
-            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_FLOAT64) ? this.getArrayOfDouble(fieldName) : defaultValue;
+            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_FLOAT64) ? this.getArrayOfFloat64(fieldName) : defaultValue;
         }
     }
 
     readArrayOfFloat32(fieldName: string, defaultValue?: number[] | null): number[] | null {
         if (defaultValue === undefined) {
-            return this.getArrayOfFloat(fieldName);
+            return this.getArrayOfFloat32(fieldName);
         } else {
-            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_FLOAT32) ? this.getArrayOfFloat(fieldName) : defaultValue;
+            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_FLOAT32) ? this.getArrayOfFloat32(fieldName) : defaultValue;
         }
     }
 
     readArrayOfInt32(fieldName: string, defaultValue?: number[] | null): number[] | null {
         if (defaultValue === undefined) {
-            return this.getArrayOfInt(fieldName);
+            return this.getArrayOfInt32(fieldName);
         } else {
-            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT32) ? this.getArrayOfInt(fieldName) : defaultValue;
+            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT32) ? this.getArrayOfInt32(fieldName) : defaultValue;
         }
     }
 
     readArrayOfInt64(fieldName: string, defaultValue?: Long[] | null): Long[] | null {
         if (defaultValue === undefined) {
-            return this.getArrayOfLong(fieldName);
+            return this.getArrayOfInt64(fieldName);
         } else {
-            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT64) ? this.getArrayOfLong(fieldName) : defaultValue;
+            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT64) ? this.getArrayOfInt64(fieldName) : defaultValue;
         }
     }
 
@@ -324,9 +324,9 @@ export class DefaultCompactReader extends CompactInternalGenericRecord implement
 
     readArrayOfInt16(fieldName: string, defaultValue?: number[] | null): number[] | null {
         if (defaultValue === undefined) {
-            return this.getArrayOfShort(fieldName);
+            return this.getArrayOfInt16(fieldName);
         } else {
-            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT16) ? this.getArrayOfShort(fieldName) : defaultValue;
+            return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT16) ? this.getArrayOfInt16(fieldName) : defaultValue;
         }
     }
 

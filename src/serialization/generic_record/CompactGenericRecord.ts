@@ -128,7 +128,7 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         );
     }
 
-    getArrayOfByte(fieldName: string): Buffer {
+    getArrayOfInt8(fieldName: string): Buffer {
         return Buffer.from(this.getArrayOfPrimitives(
             fieldName, 'Bytes', FieldKind.ARRAY_OF_INT8, FieldKind.ARRAY_OF_NULLABLE_INT8
         ));
@@ -146,13 +146,13 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         return this.get(fieldName, FieldKind.ARRAY_OF_DECIMAL);
     }
 
-    getArrayOfDouble(fieldName: string): number[] {
+    getArrayOfFloat64(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
             fieldName, 'Doubles', FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64
         );
     }
 
-    getArrayOfFloat(fieldName: string): number[] {
+    getArrayOfFloat32(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
             fieldName, 'Floats', FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32
         );
@@ -162,13 +162,13 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         return this.get(fieldName, FieldKind.ARRAY_OF_COMPACT);
     }
 
-    getArrayOfInt(fieldName: string): number[] {
+    getArrayOfInt32(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
             fieldName, 'Ints', FieldKind.ARRAY_OF_INT32, FieldKind.ARRAY_OF_NULLABLE_INT32
         );
     }
 
-    getArrayOfLong(fieldName: string): Long[] {
+    getArrayOfInt64(fieldName: string): Long[] {
         return this.getArrayOfPrimitives(
             fieldName, 'Longs', FieldKind.ARRAY_OF_INT64, FieldKind.ARRAY_OF_NULLABLE_INT64
         );
@@ -202,7 +202,7 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16);
     }
 
-    getArrayOfShort(fieldName: string): number[] {
+    getArrayOfInt16(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
             fieldName, 'Shorts', FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16
         );

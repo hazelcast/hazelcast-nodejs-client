@@ -545,7 +545,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         }
     }
 
-    getArrayOfByte(fieldName: string): Buffer {
+    getArrayOfInt8(fieldName: string): Buffer {
         return this.getArrayOfPrimitives(
             fieldName,
             reader => reader.readByteArray(),
@@ -583,7 +583,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DECIMAL, IOUtil.readDecimal);
     }
 
-    getArrayOfDouble(fieldName: string): number[] {
+    getArrayOfFloat64(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
             fieldName,
             reader => reader.readDoubleArray(),
@@ -593,7 +593,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         );
     }
 
-    getArrayOfFloat(fieldName: string): number[] {
+    getArrayOfFloat32(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
             fieldName,
             reader => reader.readFloatArray(),
@@ -603,7 +603,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         );
     }
 
-    getArrayOfShort(fieldName: string): number[] {
+    getArrayOfInt16(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
             fieldName,
             reader => reader.readShortArray(),
@@ -623,7 +623,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         );
     }
 
-    getArrayOfInt(fieldName: string): number[] {
+    getArrayOfInt32(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
             fieldName,
             reader => reader.readIntArray(),
@@ -633,7 +633,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         );
     }
 
-    getArrayOfLong(fieldName: string): Long[] {
+    getArrayOfInt64(fieldName: string): Long[] {
         return this.getArrayOfPrimitives(
             fieldName,
             reader => reader.readLongArray(),

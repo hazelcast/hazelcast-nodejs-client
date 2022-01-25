@@ -106,11 +106,11 @@ export class FieldOperations {
         },
         [FieldKind.ARRAY_OF_INT8]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfByte(fieldName);
+                return record.getArrayOfInt8(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfInt8(fieldName, record.getArrayOfByte(fieldName));
+                    writer.writeArrayOfInt8(fieldName, record.getArrayOfInt8(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -186,11 +186,11 @@ export class FieldOperations {
         },
         [FieldKind.ARRAY_OF_INT16]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfShort(fieldName);
+                return record.getArrayOfInt16(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfInt16(fieldName, record.getArrayOfShort(fieldName));
+                    writer.writeArrayOfInt16(fieldName, record.getArrayOfInt16(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -230,11 +230,11 @@ export class FieldOperations {
         },
         [FieldKind.ARRAY_OF_INT32]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfInt(fieldName);
+                return record.getArrayOfInt32(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfInt32(fieldName, record.getArrayOfInt(fieldName));
+                    writer.writeArrayOfInt32(fieldName, record.getArrayOfInt32(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -274,11 +274,11 @@ export class FieldOperations {
         },
         [FieldKind.ARRAY_OF_INT64]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfLong(fieldName);
+                return record.getArrayOfInt64(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfInt64(fieldName, record.getArrayOfLong(fieldName));
+                    writer.writeArrayOfInt64(fieldName, record.getArrayOfInt64(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -318,11 +318,11 @@ export class FieldOperations {
         },
         [FieldKind.ARRAY_OF_FLOAT32]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfFloat(fieldName);
+                return record.getArrayOfFloat32(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfFloat32(fieldName, record.getArrayOfFloat(fieldName));
+                    writer.writeArrayOfFloat32(fieldName, record.getArrayOfFloat32(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
@@ -362,11 +362,11 @@ export class FieldOperations {
         },
         [FieldKind.ARRAY_OF_FLOAT64]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfDouble(fieldName);
+                return record.getArrayOfFloat64(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
-                    writer.writeArrayOfFloat64(fieldName, record.getArrayOfDouble(fieldName));
+                    writer.writeArrayOfFloat64(fieldName, record.getArrayOfFloat64(fieldName));
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);

@@ -25,30 +25,30 @@ const { createSerializationService } = require('./CompactUtil');
 describe('CompactNullablePrimitiveInteroperability', function () {
     const assertReadAsNullable = record => {
         record.getNullableBoolean('boolean').should.be.true;
-        record.getNullableByte('byte').should.be.equal(2);
-        record.getNullableShort('short').should.be.equal(4);
-        record.getNullableInt('int').should.be.equal(8);
-        record.getNullableLong('long').equals(Long.fromNumber(4444)).should.be.true;
+        record.getNullableInt8('byte').should.be.equal(2);
+        record.getNullableInt16('short').should.be.equal(4);
+        record.getNullableInt32('int').should.be.equal(8);
+        record.getNullableInt64('long').equals(Long.fromNumber(4444)).should.be.true;
         // Delta is big with floats, since we are converting a float to a double, leading to big differences.
-        record.getNullableFloat('float').should.be.closeTo(8321.321, 0.001);
-        record.getNullableDouble('double').should.be.closeTo(41231.32, 0.0000001);
+        record.getNullableFloat32('float').should.be.closeTo(8321.321, 0.001);
+        record.getNullableFloat64('double').should.be.closeTo(41231.32, 0.0000001);
 
-        record.getArrayOfNullableBooleans('booleans').should.be.deep.equal([true, false]);
+        record.getArrayOfNullableBoolean('booleans').should.be.deep.equal([true, false]);
 
         // NOTE: The following line is not working for now since we deserialize eagerly to make generic api sync.
         // Fast deserialization leads to a buffer, not a number array as in the case of getArrayOfNullableInt8.
 
         // record.getArrayOfNullableInt8('bytes').should.be.deep.equal([1, 2]);
-        record.getArrayOfNullableShorts('shorts').should.be.deep.equal([1, 4]);
-        record.getArrayOfNullableInts('ints').should.be.deep.equal([1, 8]);
-        record.getArrayOfNullableLongs('longs').should.be.deep.equal([Long.fromNumber(1), Long.fromNumber(4444)]);
+        record.getArrayOfNullableInt16('shorts').should.be.deep.equal([1, 4]);
+        record.getArrayOfNullableInt32('ints').should.be.deep.equal([1, 8]);
+        record.getArrayOfNullableInt64('longs').should.be.deep.equal([Long.fromNumber(1), Long.fromNumber(4444)]);
 
-        const floats = record.getArrayOfNullableFloats('floats');
+        const floats = record.getArrayOfNullableFloat32('floats');
         floats.length.should.be.equal(2);
         floats[0].should.be.closeTo(1.0, 0.001);
         floats[1].should.be.closeTo(8321.321, 0.001);
 
-        const doubles = record.getArrayOfNullableDoubles('doubles');
+        const doubles = record.getArrayOfNullableFloat64('doubles');
         doubles.length.should.be.equal(2);
         doubles[0].should.be.closeTo(41231.32, 0.0000001);
         doubles[1].should.be.closeTo(2.0, 0.0000001);
@@ -56,30 +56,30 @@ describe('CompactNullablePrimitiveInteroperability', function () {
 
     const assertReadAsPrimitive = record => {
         record.getBoolean('boolean').should.be.true;
-        record.getByte('byte').should.be.equal(4);
-        record.getShort('short').should.be.equal(6);
-        record.getInt('int').should.be.equal(8);
-        record.getLong('long').equals(Long.fromNumber(4444)).should.be.true;
+        record.getInt8('byte').should.be.equal(4);
+        record.getInt16('short').should.be.equal(6);
+        record.getInt32('int').should.be.equal(8);
+        record.getInt64('long').equals(Long.fromNumber(4444)).should.be.true;
         // Delta is big with floats, since we are converting a float to a double, leading to big differences.
-        record.getFloat('float').should.be.closeTo(8321.321, 0.001);
-        record.getDouble('double').should.be.closeTo(41231.32, 0.0000001);
+        record.getFloat32('float').should.be.closeTo(8321.321, 0.001);
+        record.getFloat64('double').should.be.closeTo(41231.32, 0.0000001);
 
-        record.getArrayOfBooleans('booleans').should.be.deep.equal([true, false]);
+        record.getArrayOfBoolean('booleans').should.be.deep.equal([true, false]);
 
         // NOTE: The following line is not working for now since we deserialize eagerly to make generic api sync.
         // Fast deserialization leads to a buffer, not a number array as in the case of getArrayOfBytes.
 
         // record.getArrayOfBytes('bytes').should.be.deep.equal([1, 2]);
-        record.getArrayOfShorts('shorts').should.be.deep.equal([1, 2]);
-        record.getArrayOfInts('ints').should.be.deep.equal([1, 8]);
-        record.getArrayOfLongs('longs').should.be.deep.equal([Long.fromNumber(1), Long.fromNumber(4444)]);
+        record.getArrayOfInt16('shorts').should.be.deep.equal([1, 2]);
+        record.getArrayOfInt32('ints').should.be.deep.equal([1, 8]);
+        record.getArrayOfInt64('longs').should.be.deep.equal([Long.fromNumber(1), Long.fromNumber(4444)]);
 
-        const floats = record.getArrayOfFloats('floats');
+        const floats = record.getArrayOfFloat32('floats');
         floats.length.should.be.equal(2);
         floats[0].should.be.closeTo(1.0, 0.001);
         floats[1].should.be.closeTo(8321.321, 0.001);
 
-        const doubles = record.getArrayOfDoubles('doubles');
+        const doubles = record.getArrayOfFloat64('doubles');
         doubles.length.should.be.equal(2);
         doubles[0].should.be.closeTo(41231.32, 0.0000001);
         doubles[1].should.be.closeTo(2.0, 0.0000001);
@@ -87,38 +87,38 @@ describe('CompactNullablePrimitiveInteroperability', function () {
 
     const assertReadNullAsPrimitiveThrowsException = record => {
         should.throw(() => record.getBoolean('boolean'), HazelcastSerializationError);
-        should.throw(() => record.getByte('byte'), HazelcastSerializationError);
-        should.throw(() => record.getShort('short'), HazelcastSerializationError);
-        should.throw(() => record.getInt('int'), HazelcastSerializationError);
-        should.throw(() => record.getLong('long'), HazelcastSerializationError);
-        should.throw(() => record.getFloat('float'), HazelcastSerializationError);
-        should.throw(() => record.getDouble('double'), HazelcastSerializationError);
+        should.throw(() => record.getInt8('byte'), HazelcastSerializationError);
+        should.throw(() => record.getInt16('short'), HazelcastSerializationError);
+        should.throw(() => record.getInt32('int'), HazelcastSerializationError);
+        should.throw(() => record.getInt64('long'), HazelcastSerializationError);
+        should.throw(() => record.getFloat32('float'), HazelcastSerializationError);
+        should.throw(() => record.getFloat64('double'), HazelcastSerializationError);
 
-        should.throw(() => record.getArrayOfBooleans('booleans'), HazelcastSerializationError);
-        should.throw(() => record.getArrayOfBytes('bytes'), HazelcastSerializationError);
-        should.throw(() => record.getArrayOfShorts('shorts'), HazelcastSerializationError);
-        should.throw(() => record.getArrayOfInts('ints'), HazelcastSerializationError);
-        should.throw(() => record.getArrayOfLongs('longs'), HazelcastSerializationError);
-        should.throw(() => record.getArrayOfFloats('floats'), HazelcastSerializationError);
-        should.throw(() => record.getArrayOfDoubles('doubles'), HazelcastSerializationError);
+        should.throw(() => record.getArrayOfBoolean('booleans'), HazelcastSerializationError);
+        should.throw(() => record.getArrayOfInt8('bytes'), HazelcastSerializationError);
+        should.throw(() => record.getArrayOfInt16('shorts'), HazelcastSerializationError);
+        should.throw(() => record.getArrayOfInt32('ints'), HazelcastSerializationError);
+        should.throw(() => record.getArrayOfInt64('longs'), HazelcastSerializationError);
+        should.throw(() => record.getArrayOfFloat32('floats'), HazelcastSerializationError);
+        should.throw(() => record.getArrayOfFloat64('doubles'), HazelcastSerializationError);
     };
 
     it('should write primitive read nullable', async function () {
         const schema = {
             boolean: Fields.boolean,
-            byte: Fields.byte,
-            short: Fields.short,
-            int: Fields.int,
-            long: Fields.long,
-            float: Fields.float,
-            double: Fields.double,
-            booleans: Fields.arrayOfBooleans,
-            bytes: Fields.arrayOfBytes,
-            shorts: Fields.arrayOfShorts,
-            ints: Fields.arrayOfInts,
-            longs: Fields.arrayOfLongs,
-            floats: Fields.arrayOfFloats,
-            doubles: Fields.arrayOfDoubles
+            byte: Fields.int8,
+            short: Fields.int16,
+            int: Fields.int32,
+            long: Fields.int64,
+            float: Fields.float32,
+            double: Fields.float64,
+            booleans: Fields.arrayOfBoolean,
+            bytes: Fields.arrayOfInt8,
+            shorts: Fields.arrayOfInt16,
+            ints: Fields.arrayOfInt32,
+            longs: Fields.arrayOfInt64,
+            floats: Fields.arrayOfFloat32,
+            doubles: Fields.arrayOfFloat64
         };
 
         const record = GenericRecords.compact('test', schema, {
@@ -152,19 +152,19 @@ describe('CompactNullablePrimitiveInteroperability', function () {
     it('should write nullable read primitive', async function () {
         const schema = {
             boolean: Fields.nullableBoolean,
-            byte: Fields.nullableByte,
-            short: Fields.nullableShort,
-            int: Fields.nullableInt,
-            long: Fields.nullableLong,
-            float: Fields.nullableFloat,
-            double: Fields.nullableDouble,
-            booleans: Fields.arrayOfNullableBooleans,
-            bytes: Fields.arrayOfNullableBytes,
-            shorts: Fields.arrayOfNullableShorts,
-            ints: Fields.arrayOfNullableInts,
-            longs: Fields.arrayOfNullableLongs,
-            floats: Fields.arrayOfNullableFloats,
-            doubles: Fields.arrayOfNullableDoubles
+            byte: Fields.nullableInt8,
+            short: Fields.nullableInt16,
+            int: Fields.nullableInt32,
+            long: Fields.nullableInt64,
+            float: Fields.nullableFloat32,
+            double: Fields.nullableFloat64,
+            booleans: Fields.arrayOfNullableBoolean,
+            bytes: Fields.arrayOfNullableInt8,
+            shorts: Fields.arrayOfNullableInt16,
+            ints: Fields.arrayOfNullableInt32,
+            longs: Fields.arrayOfNullableInt64,
+            floats: Fields.arrayOfNullableFloat32,
+            doubles: Fields.arrayOfNullableFloat64
         };
 
         const record = GenericRecords.compact('test', schema, {
@@ -198,19 +198,19 @@ describe('CompactNullablePrimitiveInteroperability', function () {
     it('should raise error if write null and read primitive', async function () {
         const schema = {
             boolean: Fields.nullableBoolean,
-            byte: Fields.nullableByte,
-            short: Fields.nullableShort,
-            int: Fields.nullableInt,
-            long: Fields.nullableLong,
-            float: Fields.nullableFloat,
-            double: Fields.nullableDouble,
-            booleans: Fields.arrayOfNullableBooleans,
-            bytes: Fields.arrayOfNullableBytes,
-            shorts: Fields.arrayOfNullableShorts,
-            ints: Fields.arrayOfNullableInts,
-            longs: Fields.arrayOfNullableLongs,
-            floats: Fields.arrayOfNullableFloats,
-            doubles: Fields.arrayOfNullableDoubles
+            byte: Fields.nullableInt8,
+            short: Fields.nullableInt16,
+            int: Fields.nullableInt32,
+            long: Fields.nullableInt64,
+            float: Fields.nullableFloat32,
+            double: Fields.nullableFloat64,
+            booleans: Fields.arrayOfNullableBoolean,
+            bytes: Fields.arrayOfNullableInt8,
+            shorts: Fields.arrayOfNullableInt16,
+            ints: Fields.arrayOfNullableInt32,
+            longs: Fields.arrayOfNullableInt64,
+            floats: Fields.arrayOfNullableFloat32,
+            doubles: Fields.arrayOfNullableFloat64
         };
 
         const record = GenericRecords.compact('test', schema, {
