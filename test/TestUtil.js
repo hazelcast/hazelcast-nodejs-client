@@ -74,7 +74,8 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
                         clearInterval(timeoutTimer);
                         resolve();
                     })
-                    .catch(() => {
+                    .catch(e => {
+                        console.error(e);
                         scheduleNext();
                     });
             }, intervalMs);

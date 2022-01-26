@@ -17,8 +17,12 @@
 
 const { expect } = require('chai');
 const fs = require('fs');
+const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
+const { assertTrueEventually } = require('../../../../TestUtil');
+const { MapProxy } = require('../../../../../lib/proxy/MapProxy');
 
 describe('NearCachedMapTest', function () {
     const testFactory = new TestUtil.TestFactory();
@@ -55,7 +59,8 @@ describe('NearCachedMapTest', function () {
             });
 
             afterEach(async function () {
-                return map1.destroy();
+                await map1.destroy();
+                sandbox.restore();
             });
 
             after(async function () {
@@ -102,9 +107,19 @@ describe('NearCachedMapTest', function () {
                 }
                 await map1.get('key1');
                 await map2.remove('key1');
-                const val = await TestUtil.promiseLater(5000, map1.get.bind(map1, 'key1'));
-                expectStats(map1, 0, 2, 1);
-                expect(val).to.be.null;
+                const mapProxyGetSpy = sandbox.replace(
+                    MapProxy.prototype, 'getInternal', sandbox.fake(MapProxy.prototype.getInternal)
+                );
+
+                let previousCallCount = mapProxyGetSpy.callCount;
+
+                await assertTrueEventually(async () => {
+                    previousCallCount = mapProxyGetSpy.callCount;
+                    const val = await map1.get('key1');
+                    // Client should eventually use near cache
+                    expect(mapProxyGetSpy.callCount).to.be.eq(previousCallCount);
+                    expect(val).to.be.null;
+                }, 1000);
             });
 
             it('clear clears nearcache', async function () {
