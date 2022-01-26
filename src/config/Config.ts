@@ -28,6 +28,7 @@ import {ConnectionStrategyConfig, ConnectionStrategyConfigImpl} from './Connecti
 import {LoadBalancerConfig, LoadBalancerConfigImpl} from './LoadBalancerConfig';
 import {MetricsConfig, MetricsConfigImpl} from './MetricsConfig';
 import {SecurityConfig, SecurityConfigImpl} from './SecurityConfig';
+import {Statistics} from '../statistics/Statistics';
 
 /**
  * Top level configuration object of Hazelcast client.
@@ -187,7 +188,7 @@ const DEFAULT_PROPERTIES: Properties = {
      * use `metrics` client config instead.
      */
     'hazelcast.client.statistics.enabled': false,
-    'hazelcast.client.statistics.period.seconds': 3,
+    'hazelcast.client.statistics.period.seconds': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
     'hazelcast.invalidation.reconciliation.interval.seconds': 60,
     'hazelcast.invalidation.max.tolerated.miss.count': 10,
     'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,

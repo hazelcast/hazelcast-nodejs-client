@@ -20,8 +20,8 @@ const os = require('os');
 
 const RC = require('../../../RC');
 const { BuildInfo } = require('../../../../../lib/BuildInfo');
+const { Statistics } = require('../../../../../lib/statistics/Statistics');
 const TestUtil = require('../../../../TestUtil');
-const { Statistics } = require('../../../../../src/statistics/Statistics');
 
 async function getClientStatisticsFromServer(cluster, client) {
     const clientUuid = client.getConnectionManager().getClientUuid();
@@ -76,8 +76,8 @@ describe('StatisticsTest (default period)', function () {
                     invalidateOnChange: false
                 }
             },
-            metrics: {
-                enabled: true
+            properties: {
+                'hazelcast.client.statistics.enabled': true
             },
             network: {
                 clusterMembers: [`127.0.0.1:${member.port}`]
@@ -155,9 +155,9 @@ describe('StatisticsTest (non-default period)', function () {
         const member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
-            metrics: {
-                enabled: true,
-                collectionFrequencySeconds: 2
+            properties: {
+                'hazelcast.client.statistics.enabled': true,
+                'hazelcast.client.statistics.period.seconds': 2
             },
             network: {
                 clusterMembers: [`127.0.0.1:${member.port}`]
@@ -182,5 +182,35 @@ describe('StatisticsTest (non-default period)', function () {
         await TestUtil.promiseWaitMilliseconds(2000);
         const stats2 = await getClientStatisticsFromServer(cluster, client);
         expect(stats1).not.to.be.equal(stats2);
+    });
+});
+
+describe('StatisticsTest (negative period)', function () {
+    let client;
+    let cluster;
+
+    before(async function () {
+        cluster = await testFactory.createClusterForSerialTests();
+        const member = await RC.startMember(cluster.id);
+        client = await testFactory.newHazelcastClientForSerialTests({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.client.statistics.enabled': true,
+                'hazelcast.client.statistics.period.seconds': -2
+            },
+            network: {
+                clusterMembers: [`127.0.0.1:${member.port}`]
+            }
+        });
+    });
+
+    after(async function () {
+        await testFactory.shutdownAll();
+    });
+
+    it('should be enabled via configuration', async function () {
+        await TestUtil.promiseWaitMilliseconds(1000);
+        const stats = await getClientStatisticsFromServer(cluster, client);
+        expect(stats).to.not.equal('');
     });
 });

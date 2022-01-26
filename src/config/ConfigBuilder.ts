@@ -40,7 +40,6 @@ import {LoadBalancerType} from './LoadBalancerConfig';
 import {LogLevel} from '../logging';
 import {TokenCredentialsImpl, TokenEncoding, UsernamePasswordCredentialsImpl,} from '../security';
 import {MetricsConfig} from './MetricsConfig';
-import {Statistics} from '../statistics/Statistics';
 
 /**
  * Responsible for user-defined config validation. Builds the effective config with necessary defaults.
@@ -432,13 +431,8 @@ export class ConfigBuilder {
                     'metrics.collectionFrequencySeconds in version 5.1. You cannot set both.'
                 );
             } else {
-                const period = config.properties['hazelcast.client.statistics.period.seconds'] as number;
-                if (period <= 0) {
-                    metricsConfig.collectionFrequencySeconds = Statistics.PERIOD_SECONDS_DEFAULT_VALUE;
-                } else {
-                    metricsConfig.collectionFrequencySeconds =
-                        config.properties['hazelcast.client.statistics.period.seconds'] as number;
-                }
+                metricsConfig.collectionFrequencySeconds =
+                    config.properties['hazelcast.client.statistics.period.seconds'] as number;
             }
         }
     }

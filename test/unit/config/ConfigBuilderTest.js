@@ -382,6 +382,7 @@ describe('ConfigBuilderValidationTest', function () {
             'hazelcast.client.invocation.retry.pause.millis',
             'hazelcast.client.invocation.timeout.millis',
             'hazelcast.client.internal.clean.resources.millis',
+            'hazelcast.client.statistics.period.seconds',
             'hazelcast.invalidation.reconciliation.interval.seconds',
             'hazelcast.invalidation.max.tolerated.miss.count',
             'hazelcast.invalidation.min.reconciliation.interval.seconds',
@@ -390,6 +391,7 @@ describe('ConfigBuilderValidationTest', function () {
         ];
 
         const propsAcceptingBoolean = [
+            'hazelcast.client.statistics.enabled',
             'hazelcast.client.autopipelining.enabled',
             'hazelcast.client.socket.no.delay',
             'hazelcast.client.shuffle.member.list',

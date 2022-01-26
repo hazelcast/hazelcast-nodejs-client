@@ -47,6 +47,8 @@ type GaugeDescription = {
 export class Statistics {
 
     public static readonly PERIOD_SECONDS_DEFAULT_VALUE = 3;
+    private static readonly PERIOD_SECONDS = 'hazelcast.client.statistics.period.seconds';
+
     private static readonly NEAR_CACHE_CATEGORY_PREFIX: string = 'nc.';
     private static readonly STAT_SEPARATOR: string = ',';
     private static readonly KEY_VALUE_SEPARATOR: string = '=';
@@ -81,7 +83,15 @@ export class Statistics {
         }
 
         this.registerMetrics();
-        const periodSeconds = this.metricsConfig.collectionFrequencySeconds;
+
+        let periodSeconds = this.metricsConfig.collectionFrequencySeconds;
+        if (periodSeconds <= 0) {
+            const defaultValue = Statistics.PERIOD_SECONDS_DEFAULT_VALUE;
+            this.logger.warn('Statistics', 'Provided client statistics ' + Statistics.PERIOD_SECONDS
+                + ' can not be less than or equal to 0. You provided ' + periodSeconds
+                + ' seconds as the configuration. Client will use the default value of ' + defaultValue + ' instead.');
+            periodSeconds = defaultValue;
+        }
         this.statisticsSendTask = this.schedulePeriodicStatisticsSendTask(periodSeconds);
 
         this.logger.info('Statistics', 'Client statistics is enabled with period ' + periodSeconds + ' seconds.');
