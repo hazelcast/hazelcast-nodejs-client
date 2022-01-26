@@ -540,12 +540,6 @@ describe('ConfigBuilderValidationTest', function () {
                             collectionFrequencySeconds: frequency
                         }
                     }).build()).to.throw(InvalidConfigurationError, 'must be positive');
-
-                    expect(() => new ConfigBuilder({
-                        properties: {
-                            'hazelcast.client.statistics.period.seconds': frequency,
-                        }
-                    }).build()).to.throw(InvalidConfigurationError, 'must be positive');
                 });
             });
         });
