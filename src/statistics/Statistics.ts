@@ -92,6 +92,7 @@ export class Statistics {
                 + ' seconds as the configuration. Client will use the default value of ' + defaultValue + ' instead.');
             periodSeconds = defaultValue;
         }
+
         this.statisticsSendTask = this.schedulePeriodicStatisticsSendTask(periodSeconds);
 
         this.logger.info('Statistics', 'Client statistics is enabled with period ' + periodSeconds + ' seconds.');
