@@ -23,6 +23,7 @@ const {
     LocalDateTime,
     OffsetDateTime,
 } = require('../../../lib/core/DateTimeClasses');
+const { leftZeroPadInteger } = require('../../../lib/util/DateTimeUtil');
 
 describe('DateTimeClassesTest', function () {
     describe('LocalTimeTest', function () {
@@ -317,7 +318,15 @@ describe('DateTimeClassesTest', function () {
 
         it('should convert to date correctly', function () {
             const dateTime = new LocalDateTime(new LocalDate(2000, 2, 29), new LocalTime(2, 19, 4, 6000000));
-            dateTime.asDate().toLocaleString('tr-TR').should.be.eq('29.02.2000 02:19:04');
+            const asDate = dateTime.asDate();
+            const date = leftZeroPadInteger(asDate.getDate(), 2);
+            const month = leftZeroPadInteger(asDate.getMonth() + 1, 2); // Date's month is 0-based
+            const year = leftZeroPadInteger(asDate.getFullYear(), 4);
+            const hours = leftZeroPadInteger(asDate.getHours(), 2);
+            const minutes = leftZeroPadInteger(asDate.getMinutes(), 2);
+            const seconds = leftZeroPadInteger(asDate.getSeconds(), 2);
+
+            `${date}.${month}.${year} ${hours}:${minutes}:${seconds}`.should.be.eq('29.02.2000 02:19:04');
         });
     });
     describe('OffsetDateTimeTest', function () {
@@ -362,7 +371,16 @@ describe('DateTimeClassesTest', function () {
 
         it('should convert to date correctly', function () {
             const asDate = dateTime1.asDate();
-            asDate.toLocaleString('tr-TR').should.be.eq('29.02.2000 02:02:24');
+
+            const date = leftZeroPadInteger(asDate.getDate(), 2);
+            const month = leftZeroPadInteger(asDate.getMonth() + 1, 2); // Date's month is 0-based
+            const year = leftZeroPadInteger(asDate.getFullYear(), 4);
+            const hours = leftZeroPadInteger(asDate.getHours(), 2);
+            const minutes = leftZeroPadInteger(asDate.getMinutes(), 2);
+            const seconds = leftZeroPadInteger(asDate.getSeconds(), 2);
+
+            `${date}.${month}.${year} ${hours}:${minutes}:${seconds}`.should.be.eq('29.02.2000 02:02:24');
+
             asDate.getMilliseconds().should.be.equal(6);
         });
 
