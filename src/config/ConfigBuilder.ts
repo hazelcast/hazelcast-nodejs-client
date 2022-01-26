@@ -40,6 +40,7 @@ import {LoadBalancerType} from './LoadBalancerConfig';
 import {LogLevel} from '../logging';
 import {TokenCredentialsImpl, TokenEncoding, UsernamePasswordCredentialsImpl,} from '../security';
 import {MetricsConfig} from './MetricsConfig';
+import {Statistics} from '../statistics/Statistics';
 
 /**
  * Responsible for user-defined config validation. Builds the effective config with necessary defaults.
@@ -360,7 +361,6 @@ export class ConfigBuilder {
                 tryGetBoolean(value);
                 break;
             case 'hazelcast.client.statistics.period.seconds':
-                assertPositiveNumber(value, 'Statistics period must be positive!');
                 tryGetNumber(value);
                 break;
             case 'hazelcast.invalidation.reconciliation.interval.seconds':
@@ -432,8 +432,13 @@ export class ConfigBuilder {
                     'metrics.collectionFrequencySeconds in version 5.1. You cannot set both.'
                 );
             } else {
-                metricsConfig.collectionFrequencySeconds =
-                    config.properties['hazelcast.client.statistics.period.seconds'] as number;
+                const period = config.properties['hazelcast.client.statistics.period.seconds'] as number;
+                if (period <= 0) {
+                    metricsConfig.collectionFrequencySeconds = Statistics.PERIOD_SECONDS_DEFAULT_VALUE;
+                } else {
+                    metricsConfig.collectionFrequencySeconds =
+                        config.properties['hazelcast.client.statistics.period.seconds'] as number;
+                }
             }
         }
     }
@@ -476,8 +481,8 @@ export class ConfigBuilder {
         // Throw in case both memberAdded and memberRemoved are invalid.
         if (typeof membershipListener.memberAdded !== 'function' && typeof membershipListener.memberRemoved !== 'function') {
             throw new RangeError(`Invalid membershipListener is given in 'membershipListeners': ${membershipListener}. `
-                + 'Expected at least one of \'memberAdded\' and \'memberRemoved\' properties to exist and be a'
-                + ' function.');
+                                + 'Expected at least one of \'memberAdded\' and \'memberRemoved\' properties to exist and be a'
+                                + ' function.');
         }
         this.effectiveConfig.membershipListeners.push(membershipListener);
     }
@@ -627,7 +632,7 @@ export class ConfigBuilder {
                     nearCacheConfig.evictionSamplingPoolSize = tryGetNumber(ncConfig[key]);
                 } else {
                     throw new RangeError(`Unexpected near cache config '${key}' for near cache ${name}`
-                        + 'is passed to the Hazelcast Client');
+                                       + 'is passed to the Hazelcast Client');
                 }
             }
             this.effectiveConfig.nearCaches[nearCacheConfig.name] = nearCacheConfig;

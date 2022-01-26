@@ -45,6 +45,8 @@ type GaugeDescription = {
  * @internal
  */
 export class Statistics {
+
+    public static readonly PERIOD_SECONDS_DEFAULT_VALUE = 3;
     private static readonly NEAR_CACHE_CATEGORY_PREFIX: string = 'nc.';
     private static readonly STAT_SEPARATOR: string = ',';
     private static readonly KEY_VALUE_SEPARATOR: string = '=';
