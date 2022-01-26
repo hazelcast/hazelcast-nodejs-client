@@ -17,18 +17,45 @@
 'use strict';
 
 const chai = require('chai');
-const Long = require('long');
-const should = chai.should();
-const { Fields, GenericRecords, CompactGenericRecordImpl, HazelcastSerializationError } = require('../../../../lib');
-const { createSerializationService, createMainDTO, MainDTOSerializer } = require('./CompactUtil');
+chai.should();
+const { CompactGenericRecordImpl} = require('../../../../lib');
+const { createSerializationService, createMainDTO, MainDTOSerializer, InnerDTOSerializer, NamedDTOSerializer, createCompactGenericRecord } = require('./CompactUtil');
+const { SchemaNotReplicatedError } = require('../../../../lib/core/HazelcastError');
 
 describe('GenericRecordTest', function () {
-    it('toString should produce valid JSON string', () => {
-        const serializationService = createSerializationService([new MainDTOSerializer() ]);
+    const serialize = async (serializationService, obj) => {
+        try {
+            return serializationService.toData(obj);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                await serializationService.schemaService.put(e.schema);
+            }
+            return await serialize(serializationService, obj)
+        }
+    }
+
+    it('toString should produce valid JSON string', async () => {
+        const serializationService = createSerializationService([new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]);
+        const serializationService2 = createSerializationService(); // serializationService that does not have the serializers
         const expectedDTO = createMainDTO();
         expectedDTO.nullableBool = null;
         expectedDTO.p.localDateTimes[0] = null;
-        const data = serializationService.toData(expectedDTO);
+        let data;
+
+        data = await serialize(serializationService, expectedDTO);
         data.isCompact().should.be.true;
+
+        // schema replication mimicked
+        serializationService2.schemaService.schemas = Object.assign({},serializationService.schemaService.schemas);
+
+        // GenericRecord returned from toObject
+        const genericRecord = serializationService2.toObject(data);
+        genericRecord.should.instanceOf(CompactGenericRecordImpl);
+        JSON.parse(genericRecord.toString());
+
+        // GenericRecord built by API
+        const genericRecord2 = createCompactGenericRecord(expectedDTO);
+        genericRecord2.should.instanceOf(CompactGenericRecordImpl);
+        JSON.parse(genericRecord2.toString());
     });
 });

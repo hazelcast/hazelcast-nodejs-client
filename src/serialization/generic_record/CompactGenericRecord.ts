@@ -51,7 +51,7 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
     constructor(
         typeName: string,
         private readonly fields: {[name: string]: Field<any>},
-        private readonly values: {[name: string]: any}
+        readonly values: {[name: string]: any}
     ) {
         const schemaWriter = new SchemaWriter(typeName);
         for (const [fieldName, field] of Object.entries(fields)) {
@@ -324,8 +324,51 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         return this.fields.hasOwnProperty(fieldName);
     }
     toString(): string {
+        // replaces BigDecimals with strings to avoid BigInt error of JSON.stringify.
+        // Also replaces some data types to make them more readable.
         return JSON.stringify({
             [this.schema.typeName]: this.values
+        }, (key, value) => {
+            if (value instanceof CompactGenericRecordImpl) {
+                return value.values;
+            }
+            if (value instanceof BigDecimal) {
+                return {
+                    type: 'BigDecimal',
+                    data: value.toString()
+                };
+            }
+            if (value instanceof Long) {
+                return {
+                    type: 'Long',
+                    data: value.toString()
+                };
+            }
+            if (value instanceof LocalTime) {
+                return {
+                    type: 'LocalTime',
+                    data: value.toString()
+                };
+            }
+            if (value instanceof LocalDate) {
+                return {
+                    type: 'LocalDate',
+                    data: value.toString()
+                };
+            }
+            if (value instanceof LocalDateTime) {
+                return {
+                    type: 'LocalDateTime',
+                    data: value.toString()
+                };
+            }
+            if (value instanceof OffsetDateTime) {
+                return {
+                    type: 'OffsetDateTime',
+                    data: value.toString()
+                };
+            }
+            return value;
         });
     }
 }

@@ -46,7 +46,7 @@ import {CompactUtil} from '../compact/CompactUtil';
 import {FieldOperations} from './FieldOperations';
 import {IOUtil} from '../../util/IOUtil';
 import {CompactStreamSerializer} from '../compact/CompactStreamSerializer';
-import {CompactGenericRecord} from './CompactGenericRecord';
+import {CompactGenericRecord, CompactGenericRecordImpl} from './CompactGenericRecord';
 import {InternalGenericRecord} from './InternalGenericRecord';
 import {DefaultCompactReader} from '../compact/DefaultCompactReader';
 
@@ -564,7 +564,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
     }
 
     getArrayOfTime(fieldName: string): LocalTime[] {
-        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_STRING, IOUtil.readLocalTime);
+        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIME, IOUtil.readLocalTime);
     }
 
     getArrayOfTimestampWithTimezone(fieldName: string): OffsetDateTime[] {
@@ -1055,14 +1055,59 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
             fieldName, FieldKind.COMPACT, reader => this.serializer.read(reader, this.schemaIncludedInBinary)
         );
     }
+
+    // Not used but may be used in the future.
     toString(): string {
         const values: {[fieldName: string]: any} = {};
         for (const field of this.schema.fields) {
             values[field.fieldName] = FieldOperations.fieldOperations(field.kind).readObject(this, field.fieldName);
         }
 
+        // replaces BigDecimals with strings to avoid BigInt error of JSON.stringify.
+        // Also replaces some data types to make them more readable.
         return JSON.stringify({
             [this.schema.typeName]: values
+        }, (key, value) => {
+            if (value instanceof CompactGenericRecordImpl) {
+                return value.values;
+            }
+            if (value instanceof BigDecimal) {
+                return {
+                    type: 'BigDecimal',
+                    data: value.toString()
+                };
+            }
+            if (value instanceof Long) {
+                return {
+                    type: 'Long',
+                    data: value.toString()
+                };
+            }
+            if (value instanceof LocalTime) {
+                return {
+                    type: 'LocalTime',
+                    data: value.toString()
+                };
+            }
+            if (value instanceof LocalDate) {
+                return {
+                    type: 'LocalDate',
+                    data: value.toString()
+                };
+            }
+            if (value instanceof LocalDateTime) {
+                return {
+                    type: 'LocalDateTime',
+                    data: value.toString()
+                };
+            }
+            if (value instanceof OffsetDateTime) {
+                return {
+                    type: 'OffsetDateTime',
+                    data: value.toString()
+                };
+            }
+            return value;
         });
     }
 }

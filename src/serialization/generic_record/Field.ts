@@ -17,6 +17,7 @@
 import * as Long from 'long';
 import {FieldKind} from './FieldKind';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
+import {GenericRecord} from './GenericRecord';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Field<T> {
@@ -148,4 +149,10 @@ export const nullableFloat64: Field<number | null> = {
 }
 export const arrayOfNullableFloat64: Field<(number | null)[]> = {
     kind: FieldKind.ARRAY_OF_NULLABLE_FLOAT64
+}
+export const genericRecord: Field<GenericRecord> = {
+    kind: FieldKind.COMPACT
+}
+export const arrayOfGenericRecord: Field<GenericRecord[]> = {
+    kind: FieldKind.ARRAY_OF_COMPACT
 }

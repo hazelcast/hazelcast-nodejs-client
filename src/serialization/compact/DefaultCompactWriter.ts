@@ -23,7 +23,7 @@ import {
     LocalDate,
     LocalDateTime,
     LocalTime,
-    OffsetDateTime
+    OffsetDateTime, SchemaNotReplicatedError
 } from '../../core';
 import * as Long from 'long';
 import {GenericRecord} from '../generic_record/GenericRecord';
@@ -113,6 +113,9 @@ export class DefaultCompactWriter implements CompactWriter {
                 writeFn(this.out, object);
             }
         } catch (e) {
+            if (fieldKind === FieldKind.COMPACT && e instanceof SchemaNotReplicatedError) {
+                throw e;
+            }
             throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }
@@ -148,6 +151,9 @@ export class DefaultCompactWriter implements CompactWriter {
             this.out.pwriteInt(dataLengthOffset, dataLength);
             this.writeOffsets(dataLength, offsets);
         } catch (e) {
+            if (fieldKind === FieldKind.ARRAY_OF_COMPACT && e instanceof SchemaNotReplicatedError) {
+                throw e;
+            }
             throw DefaultCompactWriter.toIllegalStateException(e);
         }
     }

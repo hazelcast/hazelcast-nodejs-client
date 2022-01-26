@@ -1,6 +1,6 @@
 'use strict';
 
-import {Client, CompactReader, CompactSerializer, CompactWriter, GenericRecords, Fields} from './lib'
+import {Client, CompactReader, CompactSerializer, CompactWriter, GenericRecords, CompactFields} from './lib'
 import * as Long from 'long';
 
 class EmployeeDTO {

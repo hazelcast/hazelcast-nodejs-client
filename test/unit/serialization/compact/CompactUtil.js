@@ -18,7 +18,9 @@
 const { SerializationConfigImpl } = require('../../../../src');
 const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 const Long = require('long');
-const { BigDecimal, LocalTime, LocalDate, LocalDateTime, OffsetDateTime } = require('../../../../lib');
+const { BigDecimal, LocalTime, LocalDate, LocalDateTime, OffsetDateTime, GenericRecords } = require('../../../../lib');
+const { CompactFields } = require('../../../../lib/serialization/generic_record');
+const Fields = require('../../../../lib/serialization/generic_record/Field');
 
 class InMemorySchemaService {
     constructor() {
@@ -26,15 +28,20 @@ class InMemorySchemaService {
     }
 
     get(schemaId) {
-        return this.schemas[schemaId];
+        const schema = this.schemas[schemaId.toString()];
+        if (schema === undefined) {
+            return null;
+        }
+        return schema;
     }
 
     put(schema) {
-        const schemaId = schema.schemaId;
+        const schemaId = schema.schemaId.toString();
         const existingSchema = this.schemas[schemaId];
         if (existingSchema === undefined) {
             this.schemas[schemaId] = schema;
         }
+        return Promise.resolve();
     }
 
     putLocal(schema) {
@@ -292,7 +299,7 @@ const createMainDTO = () => {
     nn[0] = new NamedDTO('name', 123);
     nn[1] = new NamedDTO('name', 123);
     const inner = new InnerDTO(
-        [true, false], [1, 2, 3], [3, 4, 5], [9, 8, 7, 6],
+        [true, false], Buffer.from([1, 2, 3]), [3, 4, 5], [9, 8, 7, 6],
         [Long.fromNumber(0), Long.fromNumber(1), Long.fromNumber(5), Long.fromNumber(7), Long.fromNumber(9), Long.fromNumber(11)],
         [0.6543, -3.56, 45.67], [456.456, 789.789, 321.321], nn,
         [BigDecimal.fromString('12345'), BigDecimal.fromString('123456')],
@@ -313,6 +320,111 @@ const createMainDTO = () => {
         113, true, -500, 56789, Long.fromNumber(-50992225), 900.5678, -897543.3678909
     );
 };
+
+class InnerDTOSerializer {
+    constructor() {
+        this.hzClassName = 'InnerDTO';
+    }
+
+    read(reader) {
+        const bools = reader.readArrayOfBoolean('bools');
+        const bb = reader.readArrayOfInt8('bb');
+        const ss = reader.readArrayOfInt16('ss');
+        const ii = reader.readArrayOfInt32('ii');
+        const ll = reader.readArrayOfInt64('ll');
+        const ff = reader.readArrayOfFloat32('ff');
+        const dd = reader.readArrayOfFloat64('dd');
+        const nn = reader.readArrayOfCompact('nn');
+        const bigDecimals = reader.readArrayOfDecimal('bigDecimals');
+        const localTimes = reader.readArrayOfTime('localTimes');
+        const localDates = reader.readArrayOfDate('localDates');
+        const localDateTimes = reader.readArrayOfTimestamp('localDateTimes');
+        const offsetDateTimes = reader.readArrayOfTimestampWithTimezone('offsetDateTimes');
+        const nullableBools = reader.readArrayOfNullableBoolean('nullableBools');
+        const nullableBytes = reader.readArrayOfNullableInt8('nullableBytes');
+        const nullableShorts = reader.readArrayOfNullableInt16('nullableShorts');
+        const nullableIntegers = reader.readArrayOfNullableInt32('nullableIntegers');
+        const nullableLongs = reader.readArrayOfNullableInt64('nullableLongs');
+        const nullableFloats = reader.readArrayOfNullableFloat32('nullableFloats');
+        const nullableDoubles = reader.readArrayOfNullableFloat64('nullableDoubles');
+        const nullableLocalTimes = reader.readArrayOfTime('nullableLocalTimes');
+        const nullableLocalDates = reader.readArrayOfDate('nullableLocalDates');
+        const nullableLocalDateTimes = reader.readArrayOfTimestamp('nullableLocalDateTimes');
+        const nullableOffsetDateTimes = reader.readArrayOfTimestampWithTimezone('nullableOffsetDateTimes');
+
+        return new InnerDTO(
+            bools,
+            bb,
+            ss,
+            ii,
+            ll,
+            ff,
+            dd,
+            nn,
+            bigDecimals,
+            localTimes,
+            localDates,
+            localDateTimes,
+            offsetDateTimes,
+            nullableBools,
+            nullableBytes,
+            nullableShorts,
+            nullableIntegers,
+            nullableLongs,
+            nullableFloats,
+            nullableDoubles,
+            nullableLocalTimes,
+            nullableLocalDates,
+            nullableLocalDateTimes,
+            nullableOffsetDateTimes,
+        );
+    }
+
+    write(writer, obj) {
+        writer.writeArrayOfBoolean('bools', obj.bools);
+        writer.writeArrayOfInt8('bb', obj.bb);
+        writer.writeArrayOfInt16('ss', obj.ss);
+        writer.writeArrayOfInt32('ii', obj.ii);
+        writer.writeArrayOfInt64('ll', obj.ll);
+        writer.writeArrayOfFloat32('ff', obj.ff);
+        writer.writeArrayOfFloat64('dd', obj.dd);
+        writer.writeArrayOfCompact('nn', obj.nn);
+        writer.writeArrayOfDecimal('bigDecimals', obj.bigDecimals);
+        writer.writeArrayOfTime('localTimes', obj.localTimes);
+        writer.writeArrayOfDate('localDates', obj.localDates);
+        writer.writeArrayOfTimestamp('localDateTimes', obj.localDateTimes);
+        writer.writeArrayOfTimestampWithTimezone('offsetDateTimes', obj.offsetDateTimes);
+        writer.writeArrayOfNullableBoolean('nullableBools', obj.nullableBools);
+        writer.writeArrayOfNullableInt8('nullableBytes', obj.nullableBytes);
+        writer.writeArrayOfNullableInt16('nullableShorts', obj.nullableShorts);
+        writer.writeArrayOfNullableInt32('nullableIntegers', obj.nullableIntegers);
+        writer.writeArrayOfNullableInt64('nullableLongs', obj.nullableLongs);
+        writer.writeArrayOfNullableFloat32('nullableFloats', obj.nullableFloats);
+        writer.writeArrayOfNullableFloat64('nullableDoubles', obj.nullableDoubles);
+        writer.writeArrayOfTime('nullableLocalTimes', obj.nullableLocalTimes);
+        writer.writeArrayOfDate('nullableLocalDates', obj.nullableLocalDates);
+        writer.writeArrayOfTimestamp('nullableLocalDateTimes', obj.nullableLocalDateTimes);
+        writer.writeArrayOfTimestampWithTimezone('nullableOffsetDateTimes', obj.nullableOffsetDateTimes);
+    }
+}
+
+class NamedDTOSerializer {
+    constructor() {
+        this.hzClassName = 'NamedDTO';
+    }
+
+    read(reader) {
+        const name = reader.readString('name');
+        const myint = reader.readInt32('myint');
+
+        return new NamedDTO(name, myint);
+    }
+
+    write(writer, obj) {
+        writer.writeString('name', obj.name);
+        writer.writeInt32('myint', obj.myint);
+    }
+}
 
 class MainDTOSerializer {
     constructor() {
@@ -372,7 +484,102 @@ class MainDTOSerializer {
     }
 }
 
+const createCompactGenericRecord = (mainDTO) => {
+    const innerDTO = mainDTO.p;
+    const namedRecords = new Array(innerDTO.nn.length);
+    let i = 0;
+    for (const named of innerDTO.nn) {
+        namedRecords[i] = GenericRecords.compact('named', {
+            name: CompactFields.string,
+            myint: CompactFields.int32
+        },
+        {
+            name: named.name,
+            myint: named.myint
+        });
+        i++;
+    }
+    const innerRecord = GenericRecords.compact('inner', {
+            bb: CompactFields.arrayOfInt8,
+            ss: CompactFields.arrayOfInt16,
+            ii: CompactFields.arrayOfInt32,
+            ll: CompactFields.arrayOfInt64,
+            ff: CompactFields.arrayOfFloat32,
+            dd: CompactFields.arrayOfFloat64,
+            nn: CompactFields.arrayOfGenericRecord,
+            bigDecimals: CompactFields.arrayOfDecimal,
+            localTimes: CompactFields.arrayOfTime,
+            localDates: CompactFields.arrayOfDate,
+            localDateTimes: CompactFields.arrayOfTimestamp,
+            offsetDateTimes: CompactFields.arrayOfTimestampWithTimezone
+    },
+    {
+        bb: innerDTO.bb,
+        ss: innerDTO.ss,
+        ii: innerDTO.ii,
+        ll: innerDTO.ll,
+        ff: innerDTO.ff,
+        dd: innerDTO.dd,
+        nn: namedRecords,
+        bigDecimals: innerDTO.bigDecimals,
+        localTimes: innerDTO.localTimes,
+        localDates: innerDTO.localDates,
+        localDateTimes: innerDTO.localDateTimes,
+        offsetDateTimes: innerDTO.offsetDateTimes,
+    });
+
+    return GenericRecords.compact('main', {
+            b: Fields.int8,
+            bool: Fields.boolean,
+            s: Fields.int16,
+            i: Fields.int32,
+            l: Fields.int64,
+            f: Fields.float32,
+            d: Fields.float64,
+            str: Fields.string,
+            bigDecimal: Fields.decimal,
+            p: Fields.genericRecord,
+            localTime: Fields.time,
+            localDate: Fields.date,
+            localDateTime: Fields.timestamp,
+            offsetDateTime: Fields.timestampWithTimezone,
+            nullable_b: Fields.nullableInt8,
+            nullable_bool: Fields.nullableBoolean,
+            nullable_s: Fields.nullableInt16,
+            nullable_i: Fields.nullableInt32,
+            nullable_l: Fields.nullableInt64,
+            nullable_f: Fields.nullableFloat32,
+            nullable_d: Fields.nullableFloat64
+    },
+    {
+            b: mainDTO.b,
+            bool: mainDTO.bool,
+            s: mainDTO.s,
+            i: mainDTO.i,
+            l: mainDTO.l,
+            f: mainDTO.f,
+            d: mainDTO.d,
+            str: mainDTO.str,
+            bigDecimal: mainDTO.bigDecimal,
+            p: innerRecord,
+            localTime: mainDTO.localTime,
+            localDate: mainDTO.localDate,
+            localDateTime: mainDTO.localDateTime,
+            offsetDateTime: mainDTO.offsetDateTime,
+            nullable_b: mainDTO.nullable_b,
+            nullable_bool: mainDTO.nullable_bool,
+            nullable_s: mainDTO.nullable_s,
+            nullable_i: mainDTO.nullable_i,
+            nullable_l: mainDTO.nullable_l,
+            nullable_f: mainDTO.nullable_f,
+            nullable_d: mainDTO.nullable_d
+    });
+};
+
 module.exports = {
+    createCompactGenericRecord,
+    NamedDTOSerializer,
+    InnerDTOSerializer,
     MainDTOSerializer,
     createSerializationService,
     createMainDTO,
