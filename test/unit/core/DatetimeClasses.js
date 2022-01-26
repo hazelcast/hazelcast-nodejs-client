@@ -317,7 +317,7 @@ describe('DateTimeClassesTest', function () {
 
         it('should convert to date correctly', function () {
             const dateTime = new LocalDateTime(new LocalDate(2000, 2, 29), new LocalTime(2, 19, 4, 6000000));
-            dateTime.asDate().toLocaleString('tr').should.be.eq('29.02.2000 02:19:04');
+            dateTime.asDate().toLocaleString('tr-TR').should.be.eq('29.02.2000 02:19:04');
         });
     });
     describe('OffsetDateTimeTest', function () {
@@ -362,7 +362,7 @@ describe('DateTimeClassesTest', function () {
 
         it('should convert to date correctly', function () {
             const asDate = dateTime1.asDate();
-            asDate.toLocaleString('tr').should.be.eq('29.02.2000 02:02:24');
+            asDate.toLocaleString('tr-TR').should.be.eq('29.02.2000 02:02:24');
             asDate.getMilliseconds().should.be.equal(6);
         });
 
