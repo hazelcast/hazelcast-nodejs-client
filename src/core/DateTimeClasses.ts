@@ -88,6 +88,27 @@ export class LocalTime {
     }
 
     /**
+     * Constructs a new instance from Date.
+     * @param date Must be a valid Date. So `date.getTime()` should be not NaN
+     * @throws TypeError if the passed param is not a Date
+     * @throws RangeError if an invalid Date is passed
+     */
+    static fromDate(date: Date): LocalTime {
+        if (!(date instanceof Date)) {
+            throw new TypeError('A Date is not passed');
+        }
+        if (isNaN(date.getTime())) {
+            throw new RangeError('Invalid Date is passed.');
+        }
+        return new LocalTime(
+            date.getHours(),
+            date.getMinutes(),
+            date.getSeconds(),
+            date.getMilliseconds() * 1_000_000
+        );
+    }
+
+    /**
      * Returns the string representation of this local time.
      *
      * @returns A string in the form HH:mm:ss.SSS (9 digits, nano second precision). The constructed string is
@@ -222,6 +243,26 @@ export class LocalDate {
     }
 
     /**
+     * Constructs a new instance from Date.
+     * @param date Must be a valid Date. So `date.getTime()` should be not NaN
+     * @throws TypeError if the passed param is not a Date
+     * @throws RangeError if an invalid Date is passed
+     */
+    static fromDate(date: Date): LocalDate {
+        if (!(date instanceof Date)) {
+            throw new TypeError('A Date is not passed');
+        }
+        if (isNaN(date.getTime())) {
+            throw new RangeError('Invalid Date is passed.');
+        }
+        return new LocalDate(
+            date.getFullYear(),
+            date.getMonth() + 1, // month start with 0 in Date
+            date.getDate()
+        );
+    }
+
+    /**
      * Returns the string representation of this local date.
      * @returns A string in the form yyyy:mm:dd. Values are zero padded from left
      */
@@ -278,15 +319,13 @@ export class LocalDateTime {
      */
     asDate(): Date {
         return new Date(
-            Date.UTC(
-                this.localDate.year,
-                this.localDate.month - 1, // month start with 0 in Date
-                this.localDate.date,
-                this.localTime.hour,
-                this.localTime.minute,
-                this.localTime.second,
-                Math.floor(this.localTime.nano / 1_000_000)
-            )
+            this.localDate.year,
+            this.localDate.month - 1, // month start with 0 in Date
+            this.localDate.date,
+            this.localTime.hour,
+            this.localTime.minute,
+            this.localTime.second,
+            Math.floor(this.localTime.nano / 1_000_000)
         );
     }
 
@@ -303,15 +342,7 @@ export class LocalDateTime {
         if (isNaN(date.getTime())) {
             throw new RangeError('Invalid Date is passed.');
         }
-        return LocalDateTime.from(
-            date.getUTCFullYear(),
-            date.getUTCMonth(),
-            date.getUTCDate(),
-            date.getUTCHours(),
-            date.getUTCMinutes(),
-            date.getUTCSeconds(),
-            date.getUTCMilliseconds() * 1_000_000
-        );
+        return new LocalDateTime(LocalDate.fromDate(date), LocalTime.fromDate(date));
     }
 
     /**
