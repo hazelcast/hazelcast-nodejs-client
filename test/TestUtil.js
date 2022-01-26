@@ -65,6 +65,7 @@ exports.promiseWaitMilliseconds = function (milliseconds) {
 };
 
 exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
+    let errorString = '';
     return new Promise(((resolve, reject) => {
         let intervalTimer;
         function scheduleNext() {
@@ -75,7 +76,7 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
                         resolve();
                     })
                     .catch(e => {
-                        console.error(e);
+                        errorString += e.stack + '\n';
                         scheduleNext();
                     });
             }, intervalMs);
@@ -84,7 +85,7 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
 
         const timeoutTimer = setTimeout(() => {
             clearInterval(intervalTimer);
-            reject(new Error('Rejected due to timeout of ' + timeoutMs + 'ms'));
+            reject(new Error('Rejected due to timeout of ' + timeoutMs + 'ms. Errors occurred in order: \n\n' + errorString));
         }, timeoutMs);
     }));
 };
