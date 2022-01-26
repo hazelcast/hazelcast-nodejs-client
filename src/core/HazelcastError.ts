@@ -63,7 +63,7 @@ export class HazelcastError extends Error {
         this.cause = cause;
         this.serverStackTrace = serverStackTrace;
         Error.captureStackTrace(this, HazelcastError);
-        if (cause !== undefined) {
+        if (cause !== undefined && cause !== null) {
             this.stack += '\nCaused by ' + cause.stack.toString();
         }
     }
