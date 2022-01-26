@@ -15,7 +15,8 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const { expect, should } = require('chai');
+should();
 const path = require('path');
 
 const {
@@ -448,6 +449,88 @@ describe('ConfigBuilderValidationTest', function () {
         }
 
         describe('statistics', function () {
+            it('should throw if both statistics and metrics set enabled', function () {
+                expect(() => new ConfigBuilder({
+                    metrics: {
+                        enabled: true
+                    },
+                    properties: {
+                        'hazelcast.client.statistics.enabled': true,
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'cannot set both');
+
+                expect(() => new ConfigBuilder({
+                    metrics: {
+                        enabled: true
+                    },
+                    properties: {
+                        'hazelcast.client.statistics.enabled': false,
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'cannot set both');
+
+                expect(() => new ConfigBuilder({
+                    metrics: {
+                        collectionFrequencySeconds: 1
+                    },
+                    properties: {
+                        'hazelcast.client.statistics.period.seconds': 1,
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'cannot set both');
+
+                expect(() => new ConfigBuilder({
+                    metrics: {
+                        collectionFrequencySeconds: 1
+                    },
+                    properties: {
+                        'hazelcast.client.statistics.period.seconds': 2,
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'cannot set both');
+            });
+
+            it('should behave correctly when statistics properties and metrics setting options', function () {
+                const defaultConfig = new ConfigBuilder();
+
+                // uses metrics config by default
+                defaultConfig.build().metrics.enabled.should.be.true;
+                defaultConfig.build().metrics.collectionFrequencySeconds.should.be.eq(5);
+
+                new ConfigBuilder({
+                    metrics: {
+                        enabled: true
+                    }
+                }).build().metrics.enabled.should.be.true;
+
+                new ConfigBuilder({
+                    properties: {
+                        'hazelcast.client.statistics.enabled': true,
+                    }
+                }).build().metrics.enabled.should.be.true;
+
+                new ConfigBuilder({
+                    metrics: {
+                        enabled: false
+                    }
+                }).build().metrics.enabled.should.be.false;
+
+                new ConfigBuilder({
+                    properties: {
+                        'hazelcast.client.statistics.enabled': false,
+                    }
+                }).build().metrics.enabled.should.be.false;
+
+                new ConfigBuilder({
+                    metrics: {
+                        collectionFrequencySeconds: 999
+                    }
+                }).build().metrics.collectionFrequencySeconds.should.be.eq(999);
+
+                new ConfigBuilder({
+                    properties: {
+                        'hazelcast.client.statistics.period.seconds': 999,
+                    }
+                }).build().metrics.collectionFrequencySeconds.should.be.eq(999);
+            });
+
             it('should throw error on non-positive frequency', function () {
                 [-1, 0].forEach(frequency => {
                     expect(() => new ConfigBuilder({
@@ -457,36 +540,11 @@ describe('ConfigBuilderValidationTest', function () {
                     }).build()).to.throw(InvalidConfigurationError, 'must be positive');
 
                     expect(() => new ConfigBuilder({
-                        metrics: {
-                            collectionFrequencySeconds: frequency
-                        },
                         properties: {
                             'hazelcast.client.statistics.period.seconds': frequency,
                         }
                     }).build()).to.throw(InvalidConfigurationError, 'must be positive');
                 });
-            });
-
-            it('should throw if only statistics props are given but not metrics', function () {
-                expect(() => new ConfigBuilder({
-                    properties: {
-                        'hazelcast.client.statistics.enabled': true
-                    }
-                }).build()).to.throw(InvalidConfigurationError, 'hazelcast.client.statistics.enabled property is deprecated');
-
-                expect(() => new ConfigBuilder({
-                    properties: {
-                        'hazelcast.client.statistics.period.seconds': 3,
-                    }
-                }).build()).to.throw(InvalidConfigurationError,
-                    'hazelcast.client.statistics.period.seconds property is deprecated');
-
-                expect(() => new ConfigBuilder({
-                    properties: {
-                        'hazelcast.client.statistics.enabled': true,
-                        'hazelcast.client.statistics.period.seconds': 3,
-                    }
-                }).build()).to.throw(InvalidConfigurationError, 'property is deprecated');
             });
         });
     });

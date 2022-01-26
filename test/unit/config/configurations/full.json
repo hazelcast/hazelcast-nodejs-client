@@ -18,10 +18,6 @@
         "hazelcast.client.socket.no.delay": false,
         "hazelcast.client.shuffle.member.list": false
     },
-    "metrics": {
-        "enabled": true,
-        "collectionFrequencySeconds": 4
-    },
     "clientLabels": [
         "label1",
         "label2"

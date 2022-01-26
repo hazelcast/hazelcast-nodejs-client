@@ -39,6 +39,7 @@ import {ReconnectMode} from './ConnectionStrategyConfig';
 import {LoadBalancerType} from './LoadBalancerConfig';
 import {LogLevel} from '../logging';
 import {TokenCredentialsImpl, TokenEncoding, UsernamePasswordCredentialsImpl,} from '../security';
+import {MetricsConfig} from './MetricsConfig';
 
 /**
  * Responsible for user-defined config validation. Builds the effective config with necessary defaults.
@@ -107,7 +108,7 @@ export class ConfigBuilder {
                 throw new RangeError(`Unexpected config key '${key}' is passed to the Hazelcast Client`);
             }
         }
-        ConfigBuilder.ensureMetricsConfiguredIfStatisticsConfigured(jsonObject);
+        ConfigBuilder.handleMetricsAndStatistics(jsonObject, this.effectiveConfig.metrics);
     }
 
     private handleMetrics(jsonObject: any) {
@@ -403,22 +404,37 @@ export class ConfigBuilder {
     }
 
     /**
-     * Statistics properties are deprecated and metrics will be used instead. This method will ensure metrics properties
-     * are set if statistics properties are set.
+     * Statistics properties are deprecated and metrics will be used instead. This method will ensure statistics properties
+     * and metrics config are not set at the same time. Also, it will set metricsConfig conditionally in four different cases:
+     *
+     * 1. When no config is given metrics will be enabled.
+     * 2. When only statistics props is given it will take effect.
+     * 3. When only metrics config is given it will take effect.
+     * 4. When both statistics props and metrics config are given throw.
      */
-    private static ensureMetricsConfiguredIfStatisticsConfigured(config: ClientConfig) {
-        if (config.hasOwnProperty('properties') &&
-            config.properties.hasOwnProperty('hazelcast.client.statistics.enabled') &&
-            (!config.hasOwnProperty('metrics') || !config.metrics.hasOwnProperty('enabled'))) {
-            throw new RangeError('hazelcast.client.statistics.enabled property is deprecated in version 5.1. ' +
-                'Use metrics.enabled instead.');
+    private static handleMetricsAndStatistics(config: ClientConfig, metricsConfig: MetricsConfig): void {
+        if (config.hasOwnProperty('properties') && config.properties.hasOwnProperty('hazelcast.client.statistics.enabled')) {
+            if (config.hasOwnProperty('metrics') && config.metrics.hasOwnProperty('enabled')) {
+                throw new RangeError(
+                    'hazelcast.client.statistics.enabled property is deprecated in favor of metrics.enabled in version 5.1. ' +
+                    'You cannot set both.'
+                );
+            } else {
+                metricsConfig.enabled = config.properties['hazelcast.client.statistics.enabled'] as boolean;
+            }
         }
 
-        if (config.hasOwnProperty('properties') &&
-            config.properties.hasOwnProperty('hazelcast.client.statistics.period.seconds') &&
-            (!config.hasOwnProperty('metrics') || !config.metrics.hasOwnProperty('collectionFrequencySeconds'))) {
-            throw new RangeError('hazelcast.client.statistics.period.seconds property is deprecated in version 5.1. ' +
-                'Use metrics.collectionFrequencySeconds instead.');
+        if (config.hasOwnProperty('properties')
+            && config.properties.hasOwnProperty('hazelcast.client.statistics.period.seconds')) {
+            if (config.hasOwnProperty('metrics') && config.metrics.hasOwnProperty('collectionFrequencySeconds')) {
+                throw new RangeError(
+                    'hazelcast.client.statistics.period.seconds property is deprecated in favor of ' +
+                    'metrics.collectionFrequencySeconds in version 5.1. You cannot set both.'
+                );
+            } else {
+                metricsConfig.collectionFrequencySeconds =
+                    config.properties['hazelcast.client.statistics.period.seconds'] as number;
+            }
         }
     }
 

@@ -38,6 +38,10 @@ type GaugeDescription = {
  * This class is the main entry point for collecting and sending the client
  * statistics to the cluster. If the client statistics feature is enabled,
  * it will be scheduled for periodic statistics collection and sent.
+ *
+ * Uses metricsConfig as configuration. The config from statistics properties
+ * will be used if the metrics counterpart and statistics property is set. This logic
+ * is in ConfigBuilder.
  * @internal
  */
 export class Statistics {
