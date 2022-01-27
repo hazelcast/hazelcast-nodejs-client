@@ -110,10 +110,10 @@ describe('NearCachedMapTest', function () {
                 await assertTrueEventually(async () => {
                     previousHitCount = getNearCacheStats(map1).hitCount;
                     const val = await map1.get('key1');
-                    expect(getNearCacheStats(map1).hitCount).to.be.greaterThan(previousHitCount);
                     // Client should eventually use near cache
+                    expect(getNearCacheStats(map1).hitCount).to.be.greaterThan(previousHitCount);
                     expect(val).to.be.null;
-                }, 1000, 4000);
+                }, 1000);
             });
 
             it('clear clears nearcache', async function () {
