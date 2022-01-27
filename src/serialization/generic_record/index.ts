@@ -20,7 +20,7 @@
  */
 
 export * from './CompactGenericRecord';
-export * as CompactFields from './Field';
+export * as Fields from './Field';
 export * from './FieldKind';
 export * from './GenericRecords';
 export * from './GenericRecord';
