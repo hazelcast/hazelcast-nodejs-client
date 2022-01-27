@@ -19,8 +19,8 @@ const { SerializationConfigImpl } = require('../../../../src');
 const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 const Long = require('long');
 const { BigDecimal, LocalTime, LocalDate, LocalDateTime, OffsetDateTime, GenericRecords } = require('../../../../lib');
-const { CompactFields } = require('../../../../lib/serialization/generic_record');
 const Fields = require('../../../../lib/serialization/generic_record/Field');
+const { SchemaNotReplicatedError } = require('../../../../lib/core/HazelcastError');
 
 class InMemorySchemaService {
     constructor() {
@@ -123,7 +123,11 @@ class EmployeeSerializer {
         const id = reader.readInt64('id');
         const isHired = reader.readBoolean('isHired');
         const isFired = reader.readBoolean('isFired');
-        return new Employee(age, rank, id, isHired, isFired);
+        const employee = new Employee(age, id);
+        employee.rank = rank;
+        employee.isHired = isHired;
+        employee.isFired = isFired;
+        return employee;
     }
 
     write(writer, value) {
@@ -490,8 +494,8 @@ const createCompactGenericRecord = (mainDTO) => {
     let i = 0;
     for (const named of innerDTO.nn) {
         namedRecords[i] = GenericRecords.compact('named', {
-            name: CompactFields.string,
-            myint: CompactFields.int32
+            name: Fields.string,
+            myint: Fields.int32
         },
         {
             name: named.name,
@@ -500,18 +504,18 @@ const createCompactGenericRecord = (mainDTO) => {
         i++;
     }
     const innerRecord = GenericRecords.compact('inner', {
-            bb: CompactFields.arrayOfInt8,
-            ss: CompactFields.arrayOfInt16,
-            ii: CompactFields.arrayOfInt32,
-            ll: CompactFields.arrayOfInt64,
-            ff: CompactFields.arrayOfFloat32,
-            dd: CompactFields.arrayOfFloat64,
-            nn: CompactFields.arrayOfGenericRecord,
-            bigDecimals: CompactFields.arrayOfDecimal,
-            localTimes: CompactFields.arrayOfTime,
-            localDates: CompactFields.arrayOfDate,
-            localDateTimes: CompactFields.arrayOfTimestamp,
-            offsetDateTimes: CompactFields.arrayOfTimestampWithTimezone
+            bb: Fields.arrayOfInt8,
+            ss: Fields.arrayOfInt16,
+            ii: Fields.arrayOfInt32,
+            ll: Fields.arrayOfInt64,
+            ff: Fields.arrayOfFloat32,
+            dd: Fields.arrayOfFloat64,
+            nn: Fields.arrayOfGenericRecord,
+            bigDecimals: Fields.arrayOfDecimal,
+            localTimes: Fields.arrayOfTime,
+            localDates: Fields.arrayOfDate,
+            localDateTimes: Fields.arrayOfTimestamp,
+            offsetDateTimes: Fields.arrayOfTimestampWithTimezone
     },
     {
         bb: innerDTO.bb,
@@ -576,7 +580,19 @@ const createCompactGenericRecord = (mainDTO) => {
     });
 };
 
+const serialize = async (serializationService, obj) => {
+    try {
+        return serializationService.toData(obj);
+    } catch (e) {
+        if (e instanceof SchemaNotReplicatedError) {
+            await serializationService.schemaService.put(e.schema);
+        }
+        return await serialize(serializationService, obj);
+    }
+};
+
 module.exports = {
+    serialize,
     createCompactGenericRecord,
     NamedDTOSerializer,
     InnerDTOSerializer,

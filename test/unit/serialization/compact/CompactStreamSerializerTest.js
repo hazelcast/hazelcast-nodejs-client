@@ -19,6 +19,7 @@
 const chai = require('chai');
 chai.should();
 const {
+    serialize,
     createSerializationService,
     Bits,
     BitsSerializer,
@@ -30,7 +31,7 @@ const {
 } = require('./CompactUtil');
 const Long = require('long');
 
-describe.skip('CompactStreamSerializerTest', function () {
+describe('CompactStreamSerializerTest', function () {
     it('should work with Bits', async function () {
         const serializationService = createSerializationService([new BitsSerializer()]);
 
@@ -42,7 +43,7 @@ describe.skip('CompactStreamSerializerTest', function () {
         bits.booleans[0] = true;
         bits.booleans[4] = true;
 
-        const data = await serializationService.toData(bits);
+        const data = await serialize(serializationService, bits);
 
         // hash(4) + typeid(4) + schemaId(8) + (4 byte length) + (1 bytes for 8 bits) + (4 bytes for int)
         // (4 byte length of byte array) + (1 byte for booleans array of 8 bits) + (1 byte offset bytes)
@@ -63,7 +64,7 @@ describe.skip('CompactStreamSerializerTest', function () {
         }
         const employer = new Employer('nbss', 40, HIRING_STATUS.HIRING, ids, employee, employees);
 
-        const data = await serializationService.toData(employer);
+        const data = await serialize(serializationService, employer);
         const object = await serializationService.toObject(data);
         object.should.be.deep.equal(employer);
     });

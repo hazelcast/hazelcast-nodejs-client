@@ -20,7 +20,7 @@ const chai = require('chai');
 const Long = require('long');
 const should = chai.should();
 const { Fields, GenericRecords, CompactGenericRecordImpl, HazelcastSerializationError } = require('../../../../lib');
-const { createSerializationService } = require('./CompactUtil');
+const { createSerializationService, serialize } = require('./CompactUtil');
 
 describe('CompactNullablePrimitiveInteroperability', function () {
     const assertReadAsNullable = record => {
@@ -142,7 +142,7 @@ describe('CompactNullablePrimitiveInteroperability', function () {
         assertReadAsNullable(record);
 
         const serializationService = createSerializationService();
-        const data = serializationService.toData(record);
+        const data = await serialize(serializationService, record);
         const serializedRecord = serializationService.toObject(data);
 
         serializedRecord.should.be.instanceOf(CompactGenericRecordImpl);
@@ -188,7 +188,7 @@ describe('CompactNullablePrimitiveInteroperability', function () {
         assertReadAsPrimitive(record);
 
         const serializationService = createSerializationService();
-        const data = serializationService.toData(record);
+        const data = await serialize(serializationService, record);
         const serializedRecord = serializationService.toObject(data);
 
         serializedRecord.should.be.instanceOf(CompactGenericRecordImpl);
@@ -233,7 +233,7 @@ describe('CompactNullablePrimitiveInteroperability', function () {
         assertReadNullAsPrimitiveThrowsException(record);
 
         const serializationService = createSerializationService();
-        const data = serializationService.toData(record);
+        const data = await serialize(serializationService, record);
         const serializedRecord = serializationService.toObject(data);
 
         serializedRecord.should.be.instanceOf(CompactGenericRecordImpl);

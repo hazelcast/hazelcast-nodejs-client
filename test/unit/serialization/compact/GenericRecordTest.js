@@ -19,21 +19,17 @@
 const chai = require('chai');
 chai.should();
 const { CompactGenericRecordImpl} = require('../../../../lib');
-const { createSerializationService, createMainDTO, MainDTOSerializer, InnerDTOSerializer, NamedDTOSerializer, createCompactGenericRecord } = require('./CompactUtil');
-const { SchemaNotReplicatedError } = require('../../../../lib/core/HazelcastError');
+const {
+    createSerializationService,
+    createMainDTO,
+    MainDTOSerializer,
+    InnerDTOSerializer,
+    NamedDTOSerializer,
+    createCompactGenericRecord,
+    serialize
+} = require('./CompactUtil');
 
 describe('GenericRecordTest', function () {
-    const serialize = async (serializationService, obj) => {
-        try {
-            return serializationService.toData(obj);
-        } catch (e) {
-            if (e instanceof SchemaNotReplicatedError) {
-                await serializationService.schemaService.put(e.schema);
-            }
-            return await serialize(serializationService, obj)
-        }
-    }
-
     it('toString should produce valid JSON string', async () => {
         const serializationService = createSerializationService([new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]);
         const serializationService2 = createSerializationService(); // serializationService that does not have the serializers
