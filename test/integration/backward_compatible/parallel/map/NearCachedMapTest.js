@@ -105,13 +105,10 @@ describe('NearCachedMapTest', function () {
                 await map1.get('key1');
                 await map2.remove('key1');
 
-                let previousHitCount;
-
                 await assertTrueEventually(async () => {
-                    previousHitCount = getNearCacheStats(map1).hitCount;
                     const val = await map1.get('key1');
-                    // Client should eventually use near cache
-                    expect(getNearCacheStats(map1).hitCount).to.be.greaterThan(previousHitCount);
+                    // Client should eventually fetch invalidated entry from cluster due to invalidation
+                    expect(getNearCacheStats(map1).missCount).to.be.greaterThan(1);
                     expect(val).to.be.null;
                 }, 1000);
             });
