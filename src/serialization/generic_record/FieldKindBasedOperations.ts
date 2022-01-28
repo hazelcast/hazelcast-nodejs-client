@@ -25,5 +25,4 @@ export interface FieldKindBasedOperations {
     writeFieldFromRecordToWriter(writer: DefaultCompactWriter, genericRecord: GenericRecord, fieldName: string) : void;
     readObject(genericRecord: GenericRecord, fieldName: string) : any;
     kindSizeInBytes(): number;
-    readGenericRecordOrPrimitive(genericRecord: GenericRecord, fieldName: string): any;
 }
