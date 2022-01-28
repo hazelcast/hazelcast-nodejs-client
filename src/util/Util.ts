@@ -22,6 +22,30 @@ import {BigDecimal, IllegalStateError, LocalDate, LocalDateTime, LocalTime, Memb
 import {MemberVersion} from '../core/MemberVersion';
 import {BuildInfo} from '../BuildInfo';
 
+/**
+ * Deep clones an object. Source: https://stackoverflow.com/a/34624648/9483495
+ * @param obj
+ */
+export function deepClone(obj: any) {
+    // Prevent undefined objects
+    if (!obj) {
+        return obj;
+    }
+
+    let v;
+    const cloned: any = Array.isArray(obj) ? [] : {};
+    for (const k in obj) {
+
+        // Prevent self-references to parent object
+        // if (Object.is(obj[k], obj)) continue;
+
+        v = obj[k];
+        cloned[k] = (typeof v === 'object') ? deepClone(v) : v;
+    }
+
+    return cloned;
+}
+
 /** @internal */
 export function assertNotNull(v: any): void {
     assert.notStrictEqual(v, null, 'Non null value expected.');

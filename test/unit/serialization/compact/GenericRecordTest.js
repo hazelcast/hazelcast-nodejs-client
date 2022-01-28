@@ -18,7 +18,7 @@
 
 const chai = require('chai');
 chai.should();
-const { CompactGenericRecordImpl} = require('../../../../lib');
+const { CompactGenericRecordImpl, GenericRecords } = require('../../../../lib');
 const {
     createSerializationService,
     createMainDTO,
@@ -28,6 +28,8 @@ const {
     createCompactGenericRecord,
     serialize
 } = require('./CompactUtil');
+const { Fields } = require('../../../../lib/serialization/generic_record');
+const Long = require('long');
 
 describe('GenericRecordTest', function () {
     it('toString should produce valid JSON string', async () => {
@@ -53,5 +55,33 @@ describe('GenericRecordTest', function () {
         const genericRecord2 = createCompactGenericRecord(expectedDTO);
         genericRecord2.should.instanceOf(CompactGenericRecordImpl);
         JSON.parse(genericRecord2.toString());
+    });
+
+    it('should be able to be cloned after converted to object from data', async () => {
+        const values = {
+            foo: 1,
+            bar: Long.fromNumber(1231)
+        };
+
+        const record = GenericRecords.compact('fooBarTypeName', {
+            foo: Fields.int32,
+            bar: Fields.int64
+        }, values);
+
+        const serializationService = createSerializationService();
+
+        const data = await serialize(serializationService, record);
+        const recordObj = serializationService.toObject(data);
+
+        const cloneRecord = recordObj.clone({
+            foo: 2
+        });
+
+        cloneRecord.getInt32('foo').should.be.eq(2);
+        (cloneRecord.getInt64('bar').eq(Long.fromNumber(1231))).should.be.true;
+
+        // record stays unchanged
+        record.getInt32('foo').should.be.eq(1);
+        (record.getInt64('bar').eq(Long.fromNumber(1231))).should.be.true;
     });
 });

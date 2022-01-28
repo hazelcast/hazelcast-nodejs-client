@@ -21,7 +21,7 @@ import {DefaultCompactWriter} from '../compact/DefaultCompactWriter';
 import {GenericRecord} from './GenericRecord';
 import {UnsupportedOperationError} from '../../core';
 import {BitsUtil} from '../../util/BitsUtil';
-import {InternalGenericRecord} from './InternalGenericRecord';
+import {CompactInternalGenericRecord} from './CompactInternalGenericRecord';
 
 /**
  * @internal
@@ -53,9 +53,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return 0;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -74,9 +71,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                record.getBooleanFromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -97,9 +91,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.BYTE_SIZE_IN_BYTES;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -119,9 +110,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getInt8FromArray(fieldName, index);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -135,9 +123,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return BitsUtil.CHAR_SIZE_IN_BYTES;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -154,9 +139,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getCharFromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -177,9 +159,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.SHORT_SIZE_IN_BYTES;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -198,9 +177,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getInt16FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -221,9 +197,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.INT_SIZE_IN_BYTES;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -242,9 +215,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getInt32FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -265,9 +235,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.LONG_SIZE_IN_BYTES;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -286,9 +253,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getInt64FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -309,9 +273,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.FLOAT_SIZE_IN_BYTES;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -330,9 +291,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getFloat32FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -353,9 +311,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.DOUBLE_SIZE_IN_BYTES;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -374,9 +329,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getFloat64FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -397,9 +349,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -418,9 +367,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getStringFromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -441,9 +387,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -462,9 +405,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getDecimalFromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -485,9 +425,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -506,9 +443,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getTimeFromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -529,9 +463,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -550,9 +481,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getDateFromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -573,9 +501,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -594,9 +519,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getTimestampFromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -617,9 +539,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -639,16 +558,13 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getTimestampWithTimezoneFromArray(fieldName, index);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
         },
         [FieldKind.COMPACT]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return (record as InternalGenericRecord).getObject(fieldName);
+                return (record as CompactInternalGenericRecord).getObject(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 return writer.writeGenericRecord(fieldName, record.getGenericRecord(fieldName));
@@ -656,25 +572,19 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return record.getGenericRecord(fieldName);
             }
         },
         [FieldKind.ARRAY_OF_COMPACT]: {
             readObject(record: GenericRecord, fieldName: string) {
-                return (record as InternalGenericRecord).getArrayOfObject(fieldName);
+                return (record as CompactInternalGenericRecord).getArrayOfObject(fieldName);
             },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 return writer.writeArrayOfGenericRecords(fieldName, record.getArrayOfGenericRecord(fieldName));
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getObjectFromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return record.getArrayOfGenericRecord(fieldName);
@@ -695,9 +605,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -716,9 +623,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableBooleanFromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -739,9 +643,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -760,9 +661,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableInt8FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -783,9 +681,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -804,9 +699,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableInt16FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -827,9 +719,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -848,9 +737,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableInt32FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -871,9 +757,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -892,9 +775,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableInt64FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -915,9 +795,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -936,9 +813,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableFloat32FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
@@ -959,9 +833,6 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                throw FieldOperations.notArrayKindException(fieldName);
-            },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);
             }
@@ -980,9 +851,6 @@ export class FieldOperations {
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
-            },
-            readIndexed(record: InternalGenericRecord, fieldName: string, index: number): any {
-                return record.getNullableFloat64FromArray(fieldName, index);
             },
             readGenericRecordOrPrimitive(record: GenericRecord, fieldName: string): any {
                 return this.readObject(record, fieldName);

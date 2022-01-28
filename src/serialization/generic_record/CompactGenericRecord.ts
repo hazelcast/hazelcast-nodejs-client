@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {GenericRecord, IS_GENERIC_RECORD_SYMBOL} from './GenericRecord';
+import {AbstractGenericRecord, GenericRecord} from './GenericRecord';
 import {
     BigDecimal,
     HazelcastSerializationError,
@@ -31,6 +31,7 @@ import {Schema} from '../compact/Schema';
 import {SchemaWriter} from '../compact/SchemaWriter';
 import {FieldDescriptor} from './FieldDescriptor';
 import {CompactUtil} from '../compact/CompactUtil';
+import * as Util from '../../util/Util';
 import * as Long from 'long';
 
 /**
@@ -43,9 +44,8 @@ export interface CompactGenericRecord extends GenericRecord {
 /**
  * @internal
  */
-export class CompactGenericRecordImpl implements CompactGenericRecord {
+export class CompactGenericRecordImpl extends AbstractGenericRecord implements CompactGenericRecord {
 
-    private readonly [IS_GENERIC_RECORD_SYMBOL] = true;
     private readonly schema: Schema;
 
     constructor(
@@ -53,11 +53,200 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         private readonly fields: {[name: string]: Field<any>},
         readonly values: {[name: string]: any}
     ) {
+        super();
         const schemaWriter = new SchemaWriter(typeName);
         for (const [fieldName, field] of Object.entries(fields)) {
+            this.validateField(fieldName, field.kind, this.values[fieldName]);
             schemaWriter.addField(new FieldDescriptor(fieldName, field.kind));
         }
         this.schema = schemaWriter.build();
+    }
+
+    validateField(fieldName: string, fieldKind: FieldKind, value: any, checkingElement = false): void {
+        const checkingElementStringFn =
+            (typeName: string) => `Expected a ${typeName} element in field ${fieldName}, but got: ${value}`;
+        const checkNonElementFn = (typeName: string) => `Expected ${typeName} for field ${fieldName}, but got: ${value}`;
+        const checkFn = checkingElement ? checkingElementStringFn : checkNonElementFn;
+        const throwTypeErrorWithMessage = (typeName: string) => {
+            throw new TypeError(checkFn(typeName));
+        };
+        const checkArray = () => {
+            if (!Array.isArray(value)) {
+                throw new TypeError(`Expected array for field ${fieldName}, but got: ${value}`);
+            }
+        };
+
+        const validateArray = (elementKind: FieldKind) => {
+            checkArray();
+            for (const element of value) {
+                this.validateField(fieldName, elementKind, element, true);
+            }
+        }
+
+        const validateType = (jsTypeName: string) => {
+            if (typeof value !== jsTypeName) {
+                throwTypeErrorWithMessage(jsTypeName);
+            }
+        }
+
+        const validateNullableType = (jsTypeName: string) => {
+            if (typeof value !== jsTypeName && value !== null) {
+                throwTypeErrorWithMessage(jsTypeName);
+            }
+        }
+
+        switch (fieldKind) {
+            case FieldKind.BOOLEAN:
+                validateType('boolean');
+                break
+            case FieldKind.ARRAY_OF_BOOLEAN:
+                validateArray(FieldKind.BOOLEAN);
+                break
+            case FieldKind.INT8:
+                validateType('number');
+                break
+            case FieldKind.ARRAY_OF_INT8:
+                validateArray(FieldKind.INT8);
+                break
+            case FieldKind.CHAR:
+                validateType('string');
+                break
+            case FieldKind.ARRAY_OF_CHAR:
+                validateArray(FieldKind.CHAR);
+                break
+            case FieldKind.INT16:
+                validateType('number');
+                break
+            case FieldKind.ARRAY_OF_INT16:
+                validateArray(FieldKind.INT16);
+                break
+            case FieldKind.INT32:
+                validateType('number');
+                break
+            case FieldKind.ARRAY_OF_INT32:
+                validateArray(FieldKind.INT32);
+                break
+            case FieldKind.INT64:
+                // todo
+                break
+            case FieldKind.ARRAY_OF_INT64:
+                validateArray(FieldKind.INT64);
+                break
+            case FieldKind.FLOAT32:
+                validateType('number');
+                break
+            case FieldKind.ARRAY_OF_FLOAT32:
+                validateArray(FieldKind.FLOAT32);
+                break
+            case FieldKind.FLOAT64:
+                validateType('number');
+                break
+            case FieldKind.ARRAY_OF_FLOAT64:
+                validateArray(FieldKind.FLOAT64);
+                break
+            case FieldKind.STRING:
+                validateType('string');
+                break
+            case FieldKind.ARRAY_OF_STRING:
+                validateArray(FieldKind.STRING);
+                break
+            case FieldKind.DECIMAL:
+                // todo
+                break
+            case FieldKind.ARRAY_OF_DECIMAL:
+                validateArray(FieldKind.DECIMAL);
+                break
+            case FieldKind.TIME:
+                // todo
+                break
+            case FieldKind.ARRAY_OF_TIME:
+                validateArray(FieldKind.TIME);
+                break
+            case FieldKind.DATE:
+
+                break
+            case FieldKind.ARRAY_OF_DATE:
+                validateArray(FieldKind.DATE);
+                break
+            case FieldKind.TIMESTAMP:
+                // todo
+                break
+            case FieldKind.ARRAY_OF_TIMESTAMP:
+                validateArray(FieldKind.TIMESTAMP);
+                break
+            case FieldKind.TIMESTAMP_WITH_TIMEZONE:
+
+                break
+            case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
+                validateArray(FieldKind.TIMESTAMP_WITH_TIMEZONE);
+                break
+            case FieldKind.COMPACT:
+                // todo
+                break
+            case FieldKind.ARRAY_OF_COMPACT:
+                validateArray(FieldKind.COMPACT);
+                break
+            case FieldKind.PORTABLE:
+                // todo
+                break
+            case FieldKind.ARRAY_OF_PORTABLE:
+                validateArray(FieldKind.PORTABLE);
+                break
+            case FieldKind.NULLABLE_BOOLEAN:
+                validateNullableType('boolean');
+                break
+            case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
+                validateArray(FieldKind.NULLABLE_BOOLEAN);
+                break
+            case FieldKind.NULLABLE_INT8:
+                validateNullableType('number');
+                break
+            case FieldKind.ARRAY_OF_NULLABLE_INT8:
+                validateArray(FieldKind.ARRAY_OF_NULLABLE_INT8);
+                break
+            case FieldKind.NULLABLE_INT16:
+                validateNullableType('number');
+                break
+            case FieldKind.ARRAY_OF_NULLABLE_INT16:
+                validateArray(FieldKind.NULLABLE_INT16);
+                break
+            case FieldKind.NULLABLE_INT32:
+                validateNullableType('number');
+                break
+            case FieldKind.ARRAY_OF_NULLABLE_INT32:
+                validateArray(FieldKind.NULLABLE_INT32);
+                break
+            case FieldKind.NULLABLE_INT64:
+                // todo
+                break
+            case FieldKind.ARRAY_OF_NULLABLE_INT64:
+                validateArray(FieldKind.NULLABLE_INT64);
+                break
+            case FieldKind.NULLABLE_FLOAT32:
+                validateNullableType('number');
+                break
+            case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
+                validateArray(FieldKind.NULLABLE_FLOAT32);
+                break
+            case FieldKind.NULLABLE_FLOAT64:
+                validateNullableType('number');
+                break
+            case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
+                validateArray(FieldKind.NULLABLE_FLOAT64);
+                break
+        }
+    }
+
+    clone(fieldsToUpdate?: { [fieldName: string]: any }): GenericRecord {
+        const clonedValues = Util.deepClone(this.values);
+
+        for (const fieldName in fieldsToUpdate) {
+            const fieldKind = this.getFieldKind(fieldName);
+            this.validateField(fieldName, fieldKind, fieldsToUpdate[fieldName]);
+            clonedValues[fieldName] = fieldsToUpdate[fieldName];
+        }
+
+        return new CompactGenericRecordImpl(this.schema.typeName, this.fields, clonedValues);
     }
 
     private check(fieldName: string, ...kinds: FieldKind[]) : FieldKind {
@@ -249,6 +438,9 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
     }
 
     getFieldKind(fieldName: string): FieldKind {
+        if (!this.schema.fieldDefinitionMap.has(fieldName)) {
+            throw TypeError('There is no field named as '+ fieldName);
+        }
         return this.schema.fieldDefinitionMap.get(fieldName).kind;
     }
 

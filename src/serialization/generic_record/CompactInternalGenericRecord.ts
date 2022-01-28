@@ -18,7 +18,6 @@
 import {
     BigDecimal,
     HazelcastSerializationError,
-    IllegalArgumentError,
     IllegalStateError,
     LocalDate,
     LocalDateTime,
@@ -29,7 +28,7 @@ import {
 import {GenericRecord, IS_GENERIC_RECORD_SYMBOL} from './GenericRecord';
 import * as Long from 'long';
 import {FieldKind} from './FieldKind';
-import {Schema} from '../compact/Schema';
+import {Schema} from '../compact';
 import {ObjectDataInput} from '../ObjectData';
 import {OffsetReader} from '../compact/OffsetRead';
 import {FieldDescriptor} from './FieldDescriptor';
@@ -47,13 +46,12 @@ import {FieldOperations} from './FieldOperations';
 import {IOUtil} from '../../util/IOUtil';
 import {CompactStreamSerializer} from '../compact/CompactStreamSerializer';
 import {CompactGenericRecord, CompactGenericRecordImpl} from './CompactGenericRecord';
-import {InternalGenericRecord} from './InternalGenericRecord';
 import {DefaultCompactReader} from '../compact/DefaultCompactReader';
 
 /**
  * @internal
  */
-export class CompactInternalGenericRecord implements CompactGenericRecord, InternalGenericRecord {
+export class CompactInternalGenericRecord implements CompactGenericRecord {
     protected readonly offsetReader: OffsetReader;
     protected readonly variableOffsetsPosition: number;
     protected readonly dataStartPosition: number;
@@ -97,6 +95,10 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         }
     }
 
+    clone(fieldsToUpdate?: { [fieldName: string]: any; }): GenericRecord {
+        return new DefaultCompactReader(this.serializer, this.input, this.schema, this.typeName, this.schemaIncludedInBinary);
+    }
+
     private static toUnknownFieldException(fieldName: string, schema: Schema): Error {
         return new HazelcastSerializationError(`Unknown field name: '${fieldName}' for schema ${schema}`);
     }
@@ -121,7 +123,7 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
 
     private readVariableSizeFieldPositionByNameAndKind(fieldName: string, fieldKind: FieldKind): number {
         try {
-            const fd = this.getFieldDefinition(fieldName);
+            const fd = this.getFieldDefinitionChecked(fieldName, fieldKind);
             const index = fd.index;
             const offset = this.offsetReader(this.input, this.variableOffsetsPosition, index);
             return offset === NULL_OFFSET ? NULL_OFFSET : offset + this.dataStartPosition;
@@ -243,81 +245,6 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         return values;
     }
 
-    private readLength(beginPosition: number): number {
-        try {
-            return this.input.readInt(beginPosition);
-        } catch (e) {
-            throw CompactInternalGenericRecord.toIllegalStateException(e);
-        }
-    }
-
-    private static checkArrayIndexNotNegative(index: number): number {
-        if (index < 0) {
-            throw new IllegalArgumentError(`Array index must be non-negative: ${index}`);
-        }
-        return index;
-    }
-
-    private getFixedSizeFieldFromArray<T>(
-        fieldName: string, fieldKind: FieldKind, readFn: (reader: ObjectDataInput) => T, index: number
-    ): T | null {
-        CompactInternalGenericRecord.checkArrayIndexNotNegative(index);
-
-        const position = this.readVariableSizeFieldPositionByNameAndKind(fieldName, fieldKind);
-        if (position === BitsUtil.NULL_ARRAY_LENGTH) {
-            return null;
-        }
-        if (this.readLength(position) <= index) {
-            return null;
-        }
-
-        const currentPos = this.input.position();
-        try {
-            const singleKind = FieldOperations.getSingleKind(fieldKind);
-            const kindSize = FieldOperations.fieldOperations(singleKind).kindSizeInBytes();
-            this.input.position(BitsUtil.INT_SIZE_IN_BYTES + position + index * kindSize);
-            return readFn(this.input);
-        } catch (e) {
-            throw CompactInternalGenericRecord.toIllegalStateException(e);
-        } finally {
-            this.input.position(currentPos);
-        }
-    }
-
-    private getVariableSizeFromArray<T>(
-        fieldName: string, fieldKind: FieldKind, readFn: (reader: ObjectDataInput) => T, index: number
-    ): T | null {
-        const currentPos = this.input.position();
-        try {
-            const pos = this.readVariableSizeFieldPositionByNameAndKind(fieldName, fieldKind);
-            if (pos === NULL_OFFSET) {
-                return null;
-            }
-            const dataLength = this.input.readInt(pos);
-            const itemCount = this.input.readInt(pos + BitsUtil.INT_SIZE_IN_BYTES);
-
-            CompactInternalGenericRecord.checkArrayIndexNotNegative(index);
-
-            if (itemCount <= index) {
-                return null;
-            }
-
-            const dataStartPosition = pos + 2 * BitsUtil.INT_SIZE_IN_BYTES;
-            const offsetReader = CompactInternalGenericRecord.getOffsetReader(dataLength);
-            const offsetsPosition = dataStartPosition + dataLength;
-            const indexedItemOffset = offsetReader(this.input, offsetsPosition, index);
-            if (indexedItemOffset === NULL_OFFSET) {
-                return null;
-            }
-            this.input.position(indexedItemOffset + dataStartPosition);
-            return readFn(this.input);
-        } catch (e) {
-            throw CompactInternalGenericRecord.toIllegalStateException(e);
-        } finally {
-            this.input.position(currentPos);
-        }
-    }
-
     private getArrayOfVariableSizesWithFieldDescriptor<T>(
         fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => T
     ): T[] | null {
@@ -362,145 +289,11 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
         return this.getArrayOfVariableSizesWithFieldDescriptor(fieldDefinition, readFn);
     }
 
-    getBooleanFromArray(fieldName: string, index: number): boolean | null {
-        const position = this.readVariableSizeFieldPositionByNameAndKind(fieldName, FieldKind.ARRAY_OF_BOOLEAN);
-        if (position === NULL_OFFSET) {
-            return null;
-        }
-        if (this.readLength(position) <= index) {
-            return null;
-        }
-
-        const currentPos = this.input.position();
-        try {
-            const booleanOffsetInBytes = Math.trunc(index / BitsUtil.BITS_IN_A_BYTE);
-            const booleanOffsetWithinLastByte = index % BitsUtil.BITS_IN_A_BYTE;
-            const b = this.input.readByte(BitsUtil.INT_SIZE_IN_BYTES + position + booleanOffsetInBytes);
-            return ((b >>> booleanOffsetWithinLastByte) & 1) !== 0;
-        } catch (e) {
-            throw CompactInternalGenericRecord.toIllegalStateException(e);
-        } finally {
-            this.input.position(currentPos);
-        }
-    }
-
-    getInt8FromArray(fieldName: string, index: number): number {
-        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_INT8, reader => reader.readByte(), index);
-    }
-
-    getCharFromArray(fieldName: string, index: number): string {
-        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_CHAR, reader => reader.readChar(), index);
-    }
-
-    getInt16FromArray(fieldName: string, index: number): number {
-        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_INT16, reader => reader.readShort(), index);
-    }
-
-    getInt32FromArray(fieldName: string, index: number): number {
-        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_INT32, reader => reader.readInt(), index);
-    }
-
-    getInt64FromArray(fieldName: string, index: number): Long {
-        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_INT64, reader => reader.readLong(), index);
-    }
-
-    getFloat32FromArray(fieldName: string, index: number): number {
-        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_FLOAT32, reader => reader.readFloat(), index);
-    }
-
-    getFloat64FromArray(fieldName: string, index: number): number {
-        return this.getFixedSizeFieldFromArray(fieldName, FieldKind.ARRAY_OF_FLOAT64, reader => reader.readDouble(), index);
-    }
-
-    getStringFromArray(fieldName: string, index: number): string {
-        return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_STRING, reader => reader.readString(), index);
-    }
-
-    getGenericRecordFromArray(fieldName: string, index: number): GenericRecord {
-        return this.getVariableSizeFromArray(
-            fieldName,
-            FieldKind.ARRAY_OF_COMPACT,
-            reader =>
-                new DefaultCompactReader(this.serializer, reader, this.schema, null, this.schemaIncludedInBinary).toSerialized(),
-            index
-        );
-    }
-
-    getObjectFromArray(fieldName: string, index: number): any {
-        return this.getVariableSizeFromArray(
-            fieldName, FieldKind.ARRAY_OF_COMPACT, reader => this.serializer.read(reader, this.schemaIncludedInBinary), index
-        );
-    }
-
     getArrayOfObject(fieldName: string): any[] {
         return this.getArrayOfVariableSizes(
             fieldName,
             FieldKind.ARRAY_OF_COMPACT,
             reader => this.serializer.read(reader, this.schemaIncludedInBinary)
-        );
-    }
-
-    getDecimalFromArray(fieldName: string, index: number): BigDecimal {
-        return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_DECIMAL, IOUtil.readDecimal, index);
-    }
-
-    getTimeFromArray(fieldName: string, index: number): LocalTime {
-        return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_TIME, IOUtil.readLocalTime, index);
-    }
-
-    getDateFromArray(fieldName: string, index: number): LocalDate {
-        return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_DATE, IOUtil.readLocalDate, index);
-    }
-
-    getTimestampFromArray(fieldName: string, index: number): LocalDateTime {
-        return this.getVariableSizeFromArray(fieldName, FieldKind.ARRAY_OF_TIMESTAMP, IOUtil.readLocalDateTime, index);
-    }
-
-    getTimestampWithTimezoneFromArray(fieldName: string, index: number): OffsetDateTime {
-        return this.getVariableSizeFromArray(
-            fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE, IOUtil.readOffsetDateTime, index
-        );
-    }
-
-    getNullableBooleanFromArray(fieldName: string, index: number): boolean {
-        return this.getVariableSizeFromArray(
-            fieldName, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN, reader => reader.readBoolean(), index
-        );
-    }
-
-    getNullableInt8FromArray(fieldName: string, index: number): number {
-        return this.getVariableSizeFromArray(
-            fieldName, FieldKind.ARRAY_OF_NULLABLE_INT8, reader => reader.readByte(), index
-        );
-    }
-
-    getNullableInt16FromArray(fieldName: string, index: number): number {
-        return this.getVariableSizeFromArray(
-            fieldName, FieldKind.ARRAY_OF_NULLABLE_INT16, reader => reader.readShort(), index
-        );
-    }
-
-    getNullableInt32FromArray(fieldName: string, index: number): number {
-        return this.getVariableSizeFromArray(
-            fieldName, FieldKind.ARRAY_OF_NULLABLE_INT32, reader => reader.readInt(), index
-        );
-    }
-
-    getNullableInt64FromArray(fieldName: string, index: number): Long {
-        return this.getVariableSizeFromArray(
-            fieldName, FieldKind.ARRAY_OF_NULLABLE_INT64, reader => reader.readLong(), index
-        );
-    }
-
-    getNullableFloat32FromArray(fieldName: string, index: number): number {
-        return this.getVariableSizeFromArray(
-            fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOAT32, reader => reader.readFloat(), index
-        );
-    }
-
-    getNullableFloat64FromArray(fieldName: string, index: number): number {
-        return this.getVariableSizeFromArray(
-            fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOAT64, reader => reader.readDouble(), index
         );
     }
 
@@ -909,10 +702,6 @@ export class CompactInternalGenericRecord implements CompactGenericRecord, Inter
 
     getChar(fieldName: string): string {
         throw new UnsupportedOperationError('Compact format does not support reading a char field.');
-    }
-
-    protected getClassIdentifier(): string {
-        return this.schema.typeName;
     }
 
     getDate(fieldName: string): LocalDate {
