@@ -31,6 +31,7 @@ const {
     Employer,
     HIRING_STATUS,
     MainDTOSerializer,
+    MainDTOSerializerWithDefaults,
     InnerDTOSerializer,
     NamedDTOSerializer,
     NodeDTOSerializer,
@@ -44,6 +45,16 @@ const { Fields } = require('../../../../lib/serialization/generic_record');
 describe('CompactStreamSerializerTest', function () {
     it('should work with all fields', async function (){
         const serializationService = createSerializationService([new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]);
+
+        const mainDTO = createMainDTO();
+        const data = await serialize(serializationService, mainDTO);
+        const object = serializationService.toObject(data);
+
+        object.should.deep.equal(mainDTO);
+    });
+
+    it('should work with all fields and defaults enabled serializer', async function (){
+        const serializationService = createSerializationService([new MainDTOSerializerWithDefaults(), new InnerDTOSerializer(), new NamedDTOSerializer()]);
 
         const mainDTO = createMainDTO();
         const data = await serialize(serializationService, mainDTO);

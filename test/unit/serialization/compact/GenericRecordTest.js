@@ -38,7 +38,7 @@ describe('GenericRecordTest', function () {
         const serializationService2 = createSerializationService(); // serializationService that does not have the serializers
         const expectedDTO = createMainDTO();
         expectedDTO.nullableBool = null;
-        expectedDTO.p.localDateTimes[0] = null;
+        expectedDTO.inner.localDateTimes[0] = null;
         let data;
 
         data = await serialize(serializationService, expectedDTO);

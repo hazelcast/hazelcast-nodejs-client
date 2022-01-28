@@ -299,8 +299,8 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeArrayOfString(fieldName: string, value: string[] | null): void {
-        this.writeVariableSizeField(fieldName, FieldKind.ARRAY_OF_STRING, value, (out, values) => {
-            out.writeStringArray(values);
+        this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_STRING, value, (out, value) => {
+            out.writeString(value);
         });
     }
 

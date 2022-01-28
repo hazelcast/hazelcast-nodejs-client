@@ -200,6 +200,7 @@ class InnerDTO {
         ff,
         dd,
         nn,
+        strstr,
         bigDecimals,
         localTimes,
         localDates,
@@ -225,6 +226,7 @@ class InnerDTO {
         this.ff = ff;
         this.dd = dd;
         this.nn = nn;
+        this.strstr = strstr;
         this.bigDecimals = bigDecimals;
         this.localTimes = localTimes;
         this.localDates = localDates;
@@ -254,7 +256,7 @@ class MainDTO {
         f,
         d,
         str,
-        p,
+        inner,
         bigDecimal,
         localTime,
         localDate,
@@ -276,7 +278,7 @@ class MainDTO {
         this.f = f;
         this.d = d;
         this.str = str;
-        this.p = p;
+        this.inner = inner;
         this.bigDecimal = bigDecimal;
         this.localTime = localTime;
         this.localDate = localDate;
@@ -303,7 +305,7 @@ const createMainDTO = () => {
         [true, false], Buffer.from([1, 2, 3]), [3, 4, 5], [9, 8, 7, 6],
         [Long.fromNumber(0), Long.fromNumber(1), Long.fromNumber(5), Long.fromNumber(7), Long.fromNumber(9), Long.fromNumber(11)],
         [0.6542999744415283, -3.559999942779541, 45.66999816894531], [456.456, 789.789, 321.321], nn,
-        [BigDecimal.fromString('12345'), BigDecimal.fromString('123456')],
+        ['string1', 'string2', 'string3'], [BigDecimal.fromString('12345'), BigDecimal.fromString('123456')],
         [getNowLocalTime(), getNowLocalTime()], [getNowLocalDate(), getNowLocalDate()],
         [LocalDateTime.fromDate(new Date(2021, 8))],
         [OffsetDateTime.fromDate(new Date(2021, 8), 0)], [true, false, null], [1, 2, 3, null], [3, 4, 5, null],
@@ -336,6 +338,7 @@ class InnerDTOSerializer {
         const ff = reader.readArrayOfFloat32('ff');
         const dd = reader.readArrayOfFloat64('dd');
         const nn = reader.readArrayOfCompact('nn');
+        const strstr = reader.readArrayOfString('strstr');
         const bigDecimals = reader.readArrayOfDecimal('bigDecimals');
         const localTimes = reader.readArrayOfTime('localTimes');
         const localDates = reader.readArrayOfDate('localDates');
@@ -362,6 +365,7 @@ class InnerDTOSerializer {
             ff,
             dd,
             nn,
+            strstr,
             bigDecimals,
             localTimes,
             localDates,
@@ -390,6 +394,7 @@ class InnerDTOSerializer {
         writer.writeArrayOfFloat32('ff', obj.ff);
         writer.writeArrayOfFloat64('dd', obj.dd);
         writer.writeArrayOfCompact('nn', obj.nn);
+        writer.writeArrayOfString('strstr', obj.strstr);
         writer.writeArrayOfDecimal('bigDecimals', obj.bigDecimals);
         writer.writeArrayOfTime('localTimes', obj.localTimes);
         writer.writeArrayOfDate('localDates', obj.localDates);
@@ -466,7 +471,7 @@ class MainDTOSerializer {
         const f = reader.readFloat32('f');
         const d = reader.readFloat64('d');
         const str = reader.readString('str');
-        const p = reader.readCompact('p');
+        const inner = reader.readCompact('inner');
         const bigDecimal = reader.readDecimal('bigDecimal');
         const localTime = reader.readTime('localTime');
         const localDate = reader.readDate('localDate');
@@ -481,7 +486,7 @@ class MainDTOSerializer {
         const nullableD = reader.readNullableFloat64('nullableD');
 
         return new MainDTO(
-            b, bool, s, i, l, f, d, str, p, bigDecimal, localTime, localDate, localDateTime,
+            b, bool, s, i, l, f, d, str, inner, bigDecimal, localTime, localDate, localDateTime,
             offsetDateTime, nullableB, nullableBool, nullableS, nullableI, nullableL, nullableF, nullableD
         );
     }
@@ -494,7 +499,68 @@ class MainDTOSerializer {
         writer.writeFloat32('f', obj.f);
         writer.writeFloat64('d', obj.d);
         writer.writeString('str', obj.str);
-        writer.writeCompact('p', obj.p);
+        writer.writeCompact('inner', obj.inner);
+        writer.writeDecimal('bigDecimal', obj.bigDecimal);
+        writer.writeTime('localTime', obj.localTime);
+        writer.writeDate('localDate', obj.localDate);
+        writer.writeTimestamp('localDateTime', obj.localDateTime);
+        writer.writeTimestampWithTimezone('offsetDateTime', obj.offsetDateTime);
+        writer.writeNullableInt8('nullableB', obj.nullableB);
+        writer.writeNullableBoolean('nullableBool', obj.nullableBool);
+        writer.writeNullableInt16('nullableS', obj.nullableS);
+        writer.writeNullableInt32('nullableI', obj.nullableI);
+        writer.writeNullableInt64('nullableL', obj.nullableL);
+        writer.writeNullableFloat32('nullableF', obj.nullableF);
+        writer.writeNullableFloat64('nullableD', obj.nullableD);
+    }
+}
+
+class MainDTOSerializerWithDefaults {
+    constructor() {
+        this.hzClassName = 'MainDTO';
+    }
+
+    read(reader) {
+        const b = reader.readInt8('b', 0);
+        const bool = reader.readBoolean('bool', false);
+        const s = reader.readInt16('s', 0);
+        const i = reader.readInt32('i', 0);
+        const l = reader.readInt64('l', 0);
+        const f = reader.readFloat32('f', 0);
+        const d = reader.readFloat64('d', 0);
+        const str = reader.readString('str', '');
+        const inner = reader.readCompact('inner', null);
+        const bigDecimal = reader.readDecimal('bigDecimal', new BigDecimal(0n, 0));
+        const localTime = reader.readTime('localTime', new LocalTime(0, 0, 0, 0));
+        const localDate = reader.readDate('localDate', new LocalDate(0, 1, 1));
+        const localDateTime = reader.readTimestamp('localDateTime',
+            new LocalDateTime(new LocalDate(0, 1, 1), new LocalTime(0, 0, 0, 0)));
+        const offsetDateTime = reader.readTimestampWithTimezone('offsetDateTime',
+            new OffsetDateTime(new LocalDateTime(new LocalDate(0, 1, 1), new LocalTime(0, 0, 0, 0)), 0)
+        );
+        const nullableB = reader.readNullableInt8('nullableB', null);
+        const nullableBool = reader.readNullableBoolean('nullableBool', null);
+        const nullableS = reader.readNullableInt16('nullableS', null);
+        const nullableI = reader.readNullableInt32('nullableI', null);
+        const nullableL = reader.readNullableInt64('nullableL', null);
+        const nullableF = reader.readNullableFloat32('nullableF', null);
+        const nullableD = reader.readNullableFloat64('nullableD', null);
+
+        return new MainDTO(
+            b, bool, s, i, l, f, d, str, inner, bigDecimal, localTime, localDate, localDateTime,
+            offsetDateTime, nullableB, nullableBool, nullableS, nullableI, nullableL, nullableF, nullableD
+        );
+    }
+    write(writer, obj) {
+        writer.writeInt8('b', obj.b);
+        writer.writeBoolean('bool', obj.bool);
+        writer.writeInt16('s', obj.s);
+        writer.writeInt32('i', obj.i);
+        writer.writeInt64('l', obj.l);
+        writer.writeFloat32('f', obj.f);
+        writer.writeFloat64('d', obj.d);
+        writer.writeString('str', obj.str);
+        writer.writeCompact('inner', obj.inner);
         writer.writeDecimal('bigDecimal', obj.bigDecimal);
         writer.writeTime('localTime', obj.localTime);
         writer.writeDate('localDate', obj.localDate);
@@ -511,7 +577,7 @@ class MainDTOSerializer {
 }
 
 const createCompactGenericRecord = (mainDTO) => {
-    const innerDTO = mainDTO.p;
+    const innerDTO = mainDTO.inner;
     const namedRecords = new Array(innerDTO.nn.length);
     let i = 0;
     for (const named of innerDTO.nn) {
@@ -533,6 +599,7 @@ const createCompactGenericRecord = (mainDTO) => {
             ff: Fields.arrayOfFloat32,
             dd: Fields.arrayOfFloat64,
             nn: Fields.arrayOfGenericRecord,
+            strstr: Fields.arrayOfString,
             bigDecimals: Fields.arrayOfDecimal,
             localTimes: Fields.arrayOfTime,
             localDates: Fields.arrayOfDate,
@@ -547,6 +614,7 @@ const createCompactGenericRecord = (mainDTO) => {
         ff: innerDTO.ff,
         dd: innerDTO.dd,
         nn: namedRecords,
+        strstr: innerDTO.strstr,
         bigDecimals: innerDTO.bigDecimals,
         localTimes: innerDTO.localTimes,
         localDates: innerDTO.localDates,
@@ -564,7 +632,7 @@ const createCompactGenericRecord = (mainDTO) => {
             d: Fields.float64,
             str: Fields.string,
             bigDecimal: Fields.decimal,
-            p: Fields.genericRecord,
+            inner: Fields.genericRecord,
             localTime: Fields.time,
             localDate: Fields.date,
             localDateTime: Fields.timestamp,
@@ -587,7 +655,7 @@ const createCompactGenericRecord = (mainDTO) => {
             d: mainDTO.d,
             str: mainDTO.str,
             bigDecimal: mainDTO.bigDecimal,
-            p: innerRecord,
+            inner: innerRecord,
             localTime: mainDTO.localTime,
             localDate: mainDTO.localDate,
             localDateTime: mainDTO.localDateTime,
@@ -621,6 +689,7 @@ module.exports = {
     NamedDTOSerializer,
     InnerDTOSerializer,
     MainDTOSerializer,
+    MainDTOSerializerWithDefaults,
     createSerializationService,
     createMainDTO,
     NodeDTO,
