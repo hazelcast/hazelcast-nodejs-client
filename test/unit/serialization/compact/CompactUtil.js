@@ -570,13 +570,13 @@ const createCompactGenericRecord = (mainDTO) => {
             localDate: mainDTO.localDate,
             localDateTime: mainDTO.localDateTime,
             offsetDateTime: mainDTO.offsetDateTime,
-            nullable_b: mainDTO.nullable_b,
-            nullable_bool: mainDTO.nullable_bool,
-            nullable_s: mainDTO.nullable_s,
-            nullable_i: mainDTO.nullable_i,
-            nullable_l: mainDTO.nullable_l,
-            nullable_f: mainDTO.nullable_f,
-            nullable_d: mainDTO.nullable_d
+            nullable_b: mainDTO.b,
+            nullable_bool: mainDTO.bool,
+            nullable_s: mainDTO.s,
+            nullable_i: mainDTO.i,
+            nullable_l: mainDTO.l,
+            nullable_f: mainDTO.f,
+            nullable_d: mainDTO.d
     });
 };
 

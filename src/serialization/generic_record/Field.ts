@@ -33,7 +33,7 @@ export const arrayOfBoolean: Field<boolean[]> = {
 export const int8: Field<number> = {
     kind: FieldKind.INT8
 }
-export const arrayOfInt8: Field<number[]> = {
+export const arrayOfInt8: Field<Buffer> = {
     kind: FieldKind.ARRAY_OF_INT8
 }
 export const char: Field<string> = {

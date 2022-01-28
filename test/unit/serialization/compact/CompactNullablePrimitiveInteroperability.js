@@ -130,7 +130,7 @@ describe('CompactNullablePrimitiveInteroperability', function () {
             float: 8321.321,
             double: 41231.32,
             booleans: [true, false],
-            bytes: [1, 2],
+            bytes: Buffer.from([1, 2]),
             shorts: [1, 4],
             ints: [1, 8],
             longs: [Long.fromNumber(1), Long.fromNumber(4444)],

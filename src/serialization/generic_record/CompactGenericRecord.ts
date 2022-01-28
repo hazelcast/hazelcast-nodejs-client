@@ -63,10 +63,11 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
     }
 
     validateField(fieldName: string, fieldKind: FieldKind, value: any, checkingElement = false): void {
-        const checkingElementStringFn =
+        const getErrorStringElement =
             (typeName: string) => `Expected a ${typeName} element in field ${fieldName}, but got: ${value}`;
-        const checkNonElementFn = (typeName: string) => `Expected ${typeName} for field ${fieldName}, but got: ${value}`;
-        const checkFn = checkingElement ? checkingElementStringFn : checkNonElementFn;
+        const getErrorStringForField =
+            (typeName: string) => `Expected ${typeName} for field ${fieldName}, but got: ${value}`;
+        const checkFn = checkingElement ? getErrorStringElement : getErrorStringForField;
         const throwTypeErrorWithMessage = (typeName: string) => {
             throw new TypeError(checkFn(typeName));
         };
@@ -106,7 +107,9 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 validateType('number');
                 break
             case FieldKind.ARRAY_OF_INT8:
-                validateArray(FieldKind.INT8);
+                if (!Buffer.isBuffer(value)) {
+                    throw new TypeError(getErrorStringForField('Buffer'));
+                }
                 break
             case FieldKind.CHAR:
                 validateType('string');
@@ -202,7 +205,7 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 validateNullableType('number');
                 break
             case FieldKind.ARRAY_OF_NULLABLE_INT8:
-                validateArray(FieldKind.ARRAY_OF_NULLABLE_INT8);
+                validateArray(FieldKind.NULLABLE_INT8);
                 break
             case FieldKind.NULLABLE_INT16:
                 validateNullableType('number');
