@@ -112,11 +112,9 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 }
                 break
             case FieldKind.CHAR:
-                validateType('string');
-                break
+                throw new UnsupportedOperationError('Compact format does not support writing a char field');
             case FieldKind.ARRAY_OF_CHAR:
-                validateArray(FieldKind.CHAR);
-                break
+                throw new UnsupportedOperationError('Compact format does not support writing an array of chars field');
             case FieldKind.INT16:
                 validateType('number');
                 break

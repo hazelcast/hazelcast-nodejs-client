@@ -18,7 +18,7 @@
 
 const chai = require('chai');
 chai.should();
-const { CompactGenericRecordImpl, GenericRecords } = require('../../../../lib');
+const { CompactGenericRecordImpl, GenericRecords, UnsupportedOperationError } = require('../../../../lib');
 const {
     createSerializationService,
     createMainDTO,
@@ -26,7 +26,8 @@ const {
     InnerDTOSerializer,
     NamedDTOSerializer,
     createCompactGenericRecord,
-    serialize
+    serialize,
+    mimicSchemaReplication
 } = require('./CompactUtil');
 const { Fields } = require('../../../../lib/serialization/generic_record');
 const Long = require('long');
@@ -43,8 +44,7 @@ describe('GenericRecordTest', function () {
         data = await serialize(serializationService, expectedDTO);
         data.isCompact().should.be.true;
 
-        // schema replication mimicked
-        serializationService2.schemaService.schemas = Object.assign({},serializationService.schemaService.schemas);
+        mimicSchemaReplication(serializationService, serializationService2);
 
         // GenericRecord returned from toObject
         const genericRecord = serializationService2.toObject(data);
@@ -83,5 +83,48 @@ describe('GenericRecordTest', function () {
         // record stays unchanged
         record.getInt32('foo').should.be.eq(1);
         (record.getInt64('bar').eq(Long.fromNumber(1231))).should.be.true;
+    });
+
+    it('should be able to be cloned after created via API', async () => {
+        const values = {
+            foo: 1,
+            bar: Long.fromNumber(1231)
+        };
+
+        const record = GenericRecords.compact('fooBarTypeName', {
+            foo: Fields.int32,
+            bar: Fields.int64
+        }, values);
+
+        const cloneRecord = record.clone({
+            foo: 2
+        });
+
+        cloneRecord.getInt32('foo').should.be.eq(2);
+        (cloneRecord.getInt64('bar').eq(Long.fromNumber(1231))).should.be.true;
+
+        // record stays unchanged
+        record.getInt32('foo').should.be.eq(1);
+        (record.getInt64('bar').eq(Long.fromNumber(1231))).should.be.true;
+    })
+
+    it('should not support reading and writing char field', async () => {
+        (() => GenericRecords.compact('writeChar', {
+            foo: Fields.char
+        }, {
+            foo: 'a'
+        })).should.throw(UnsupportedOperationError, /char/);
+
+        (() => GenericRecords.compact('readChar', {}, {}).getChar('foo')).should.throw(UnsupportedOperationError, /char/);
+    });
+
+    it('should not support reading and writing charArray field', async () => {
+        (() => GenericRecords.compact('writeCharArray', {
+            foo: Fields.arrayOfChar
+        }, {
+            foo: ['a', 'b']
+        })).should.throw(UnsupportedOperationError, /char/);
+
+        (() => GenericRecords.compact('readCharArray', {}, {}).getArrayOfChar('foo')).should.throw(UnsupportedOperationError, /char/);
     });
 });

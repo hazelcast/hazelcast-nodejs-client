@@ -22,6 +22,13 @@ const { BigDecimal, LocalTime, LocalDate, LocalDateTime, OffsetDateTime, Generic
 const Fields = require('../../../../lib/serialization/generic_record/Field');
 const { SchemaNotReplicatedError } = require('../../../../lib/core/HazelcastError');
 
+const mimicSchemaReplication = (serializationService1, serializationService2) => {
+    serializationService1.schemaService.schemas =
+        {...serializationService1.schemaService.schemas, ...serializationService2.schemaService.schemas};
+    serializationService2.schemaService.schemas =
+        {...serializationService1.schemaService.schemas, ...serializationService2.schemaService.schemas};
+};
+
 class InMemorySchemaService {
     constructor() {
         this.schemas = {};
@@ -118,24 +125,14 @@ class EmployeeSerializer {
     }
 
     read(reader) {
-        const age = reader.readInt32('age');
-        const rank = reader.readInt32('rank');
-        const id = reader.readInt64('id');
-        const isHired = reader.readBoolean('isHired');
-        const isFired = reader.readBoolean('isFired');
-        const employee = new Employee(age, id);
-        employee.rank = rank;
-        employee.isHired = isHired;
-        employee.isFired = isFired;
-        return employee;
+        const age = reader.readInt32('age', 0);
+        const id = reader.readInt64('id', Long.ZERO);
+        return new Employee(age, id);
     }
 
     write(writer, value) {
         writer.writeInt32('age', value.age);
-        writer.writeInt32('rank', value.rank);
         writer.writeInt64('id', value.id);
-        writer.writeBoolean('isHired', value.isHired);
-        writer.writeBoolean('isFired', value.isFired);
     }
 }
 
@@ -305,23 +302,23 @@ const createMainDTO = () => {
     const inner = new InnerDTO(
         [true, false], Buffer.from([1, 2, 3]), [3, 4, 5], [9, 8, 7, 6],
         [Long.fromNumber(0), Long.fromNumber(1), Long.fromNumber(5), Long.fromNumber(7), Long.fromNumber(9), Long.fromNumber(11)],
-        [0.6543, -3.56, 45.67], [456.456, 789.789, 321.321], nn,
+        [0.6542999744415283, -3.559999942779541, 45.66999816894531], [456.456, 789.789, 321.321], nn,
         [BigDecimal.fromString('12345'), BigDecimal.fromString('123456')],
         [getNowLocalTime(), getNowLocalTime()], [getNowLocalDate(), getNowLocalDate()],
-        [LocalDateTime.fromDate(new Date(Date.UTC(2021, 8)))],
-        [OffsetDateTime.fromDate(new Date(Date.UTC(2021, 8)), 0)], [true, false, null], [1, 2, 3, null], [3, 4, 5, null],
+        [LocalDateTime.fromDate(new Date(2021, 8))],
+        [OffsetDateTime.fromDate(new Date(2021, 8), 0)], [true, false, null], [1, 2, 3, null], [3, 4, 5, null],
         [9, 8, 7, 6, null],
         [Long.fromNumber(0), Long.fromNumber(1), Long.fromNumber(5), Long.fromNumber(7), Long.fromNumber(9), Long.fromNumber(11)],
-        [0.6543, -3.56, 45.67], [456.456, 789.789, 321.321], [getNowLocalTime(), getNowLocalTime()],
-        [getNowLocalDate(), getNowLocalDate(), null], [LocalDateTime.fromDate(new Date(Date.UTC(2021, 8))), null],
-        [OffsetDateTime.fromDate(new Date(Date.UTC(2021, 8)), 0)],
+        [0.6542999744415283, -3.559999942779541, 45.66999816894531], [456.456, 789.789, 321.321],
+        [getNowLocalTime(), getNowLocalTime()], [getNowLocalDate(), getNowLocalDate(), null],
+        [LocalDateTime.fromDate(new Date(2021, 8)), null], [OffsetDateTime.fromDate(new Date(2021, 8), 0)],
     );
     return new MainDTO(
-        113, true, -500, 56789, Long.fromNumber(-50992225), 900.5678,
+        113, true, -500, 56789, Long.fromNumber(-50992225), 900.5678100585938,
         -897543.3678909, 'this is main object created for testing!', inner,
         BigDecimal.fromString('12312313'), getNowLocalTime(), getNowLocalDate(),
-        LocalDateTime.fromDate(new Date(Date.UTC(2021, 8))), OffsetDateTime.fromDate(new Date(Date.UTC(2021, 8)), 0),
-        113, true, -500, 56789, Long.fromNumber(-50992225), 900.5678, -897543.3678909
+        LocalDateTime.fromDate(new Date(2021, 8)), OffsetDateTime.fromDate(new Date(2021, 8), 0),
+        113, true, -500, 56789, Long.fromNumber(-50992225), 900.5678100585938, -897543.3678909
     );
 };
 
@@ -427,6 +424,31 @@ class NamedDTOSerializer {
     write(writer, obj) {
         writer.writeString('name', obj.name);
         writer.writeInt32('myint', obj.myint);
+    }
+}
+
+class NodeDTO {
+    constructor(id, child) {
+        this.id = id;
+        this.child = child;
+    }
+}
+
+class NodeDTOSerializer {
+    constructor() {
+        this.hzClassName = 'NodeDTO';
+    }
+
+    read(reader) {
+        const id = reader.readInt32('id');
+        const child = reader.readCompact('child');
+
+        return new NodeDTO(id, child);
+    }
+
+    write(writer, obj) {
+        writer.writeInt32('id', obj.id);
+        writer.writeCompact('child', obj.child);
     }
 }
 
@@ -594,11 +616,14 @@ const serialize = async (serializationService, obj) => {
 module.exports = {
     serialize,
     createCompactGenericRecord,
+    mimicSchemaReplication,
+    NodeDTOSerializer,
     NamedDTOSerializer,
     InnerDTOSerializer,
     MainDTOSerializer,
     createSerializationService,
     createMainDTO,
+    NodeDTO,
     Bits,
     BitsSerializer,
     Employee,
