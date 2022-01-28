@@ -21,36 +21,11 @@ chai.should();
 
 const RC = require('../../../../RC');
 const TestUtil = require('../../../../../TestUtil');
-const { CompactSerializer, CompactReader, CompactWriter } = require('../../../../../../lib');
 const Long = require('long');
 const { Lang } = require('../../../../remote_controller/remote_controller_types');
+const { EmployeeDTOSerializer, EmployeeDTO } = require('./Employee');
 
 describe('CompactSerialization', function () {
-
-    class EmployeeDTO {
-        constructor(age, id) {
-            this.age = age; // int32
-            this.id = id; // int64
-        }
-    }
-
-    class EmployeeDTOSerializer {
-        constructor() {
-            this.hzClassName = 'EmployeeDTO'; // used to match a js object to serialize with this serializer
-            this.hzTypeName = 'example.serialization.EmployeeDTO'; // used to match schema's typeName with serializer
-        }
-
-        read(reader) {
-            const age = reader.readInt32('age');
-            const id = reader.readInt64('id');
-            return new EmployeeDTO(age, id);
-        }
-
-        write(writer, instance) {
-            writer.writeInt32('age', instance.age);
-            writer.writeInt64('id', instance.id);
-        }
-    }
 
     const testFactory = new TestUtil.TestFactory();
 
@@ -196,13 +171,14 @@ describe('CompactSerialization', function () {
             const script = `
                 var map = instance_0.getMap("${mapName}");
                 var value = map.get(1.0);
-                result = value.class.toString() + value.age.toString() + value.id.toString();
+                result = value.class.toString() + value.age.class.toString() +
+                 value.age.toString() + value.id.class.toString() + value.id.toString();
             `;
             const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
 
             const resultString = response.result.toString();
 
-            resultString.should.be.eq('class example.serialization.EmployeeDTO23456');
+            resultString.should.be.eq('class example.serialization.EmployeeDTOclass java.lang.Integer23class java.lang.Long456');
         });
     });
 });
