@@ -23,6 +23,5 @@ import {GenericRecord} from './GenericRecord';
  */
 export interface FieldKindBasedOperations {
     writeFieldFromRecordToWriter(writer: DefaultCompactWriter, genericRecord: GenericRecord, fieldName: string) : void;
-    readObject(genericRecord: GenericRecord, fieldName: string) : any;
     kindSizeInBytes(): number;
 }

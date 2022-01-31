@@ -21,7 +21,6 @@ import {DefaultCompactWriter} from '../compact/DefaultCompactWriter';
 import {GenericRecord} from './GenericRecord';
 import {UnsupportedOperationError} from '../../core';
 import {BitsUtil} from '../../util/BitsUtil';
-import {CompactInternalGenericRecord} from './CompactInternalGenericRecord';
 
 /**
  * @internal
@@ -39,9 +38,6 @@ export class FieldOperations {
 
     static readonly ALL: { [fieldKindId: number]: FieldKindBasedOperations } = {
         [FieldKind.BOOLEAN]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getBoolean(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeBoolean(fieldName, record.getBoolean(fieldName));
@@ -55,9 +51,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_BOOLEAN]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfBoolean(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfBoolean(fieldName, record.getArrayOfBoolean(fieldName));
@@ -71,9 +64,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.INT8]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getInt8(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeInt8(fieldName, record.getInt8(fieldName));
@@ -87,9 +77,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_INT8]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfInt8(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfInt8(fieldName, record.getArrayOfInt8(fieldName));
@@ -103,9 +90,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.CHAR]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getChar(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 return Promise.reject(new UnsupportedOperationError('Compact format does not support writing a char field'));
             },
@@ -114,9 +98,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_CHAR]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfChar(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 return Promise.reject(
                     new UnsupportedOperationError('Compact format does not support writing an array of chars field')
@@ -127,9 +108,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.INT16]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getInt16(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeInt16(fieldName, record.getInt16(fieldName));
@@ -143,9 +121,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_INT16]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfInt16(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfInt16(fieldName, record.getArrayOfInt16(fieldName));
@@ -159,9 +134,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.INT32]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getInt32(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeInt32(fieldName, record.getInt32(fieldName));
@@ -175,9 +147,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_INT32]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfInt32(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfInt32(fieldName, record.getArrayOfInt32(fieldName));
@@ -191,9 +160,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.INT64]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getInt64(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeInt64(fieldName, record.getInt64(fieldName));
@@ -207,9 +173,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_INT64]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfInt64(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfInt64(fieldName, record.getArrayOfInt64(fieldName));
@@ -223,9 +186,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.FLOAT32]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getFloat32(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeFloat32(fieldName, record.getFloat32(fieldName));
@@ -239,9 +199,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_FLOAT32]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfFloat32(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfFloat32(fieldName, record.getArrayOfFloat32(fieldName));
@@ -255,9 +212,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.FLOAT64]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getFloat64(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeFloat64(fieldName, record.getFloat64(fieldName));
@@ -271,9 +225,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_FLOAT64]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfFloat64(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfFloat64(fieldName, record.getArrayOfFloat64(fieldName));
@@ -287,9 +238,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.STRING]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getString(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeString(fieldName, record.getString(fieldName));
@@ -303,9 +251,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_STRING]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfString(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfString(fieldName, record.getArrayOfString(fieldName));
@@ -319,9 +264,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.DECIMAL]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getDecimal(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeDecimal(fieldName, record.getDecimal(fieldName));
@@ -335,9 +277,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_DECIMAL]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfDecimal(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfDecimal(fieldName, record.getArrayOfDecimal(fieldName));
@@ -351,9 +290,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.TIME]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getTime(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeTime(fieldName, record.getTime(fieldName));
@@ -367,9 +303,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_TIME]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfTime(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfTime(fieldName, record.getArrayOfTime(fieldName));
@@ -383,9 +316,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.DATE]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getDate(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeDate(fieldName, record.getDate(fieldName));
@@ -399,9 +329,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_DATE]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfDate(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfDate(fieldName, record.getArrayOfDate(fieldName));
@@ -415,9 +342,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.TIMESTAMP]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getTimestamp(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeTimestamp(fieldName, record.getTimestamp(fieldName));
@@ -431,9 +355,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_TIMESTAMP]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfTimestamp(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfTimestamp(fieldName, record.getArrayOfTimestamp(fieldName));
@@ -447,9 +368,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.TIMESTAMP_WITH_TIMEZONE]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getTimestampWithTimezone(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeTimestampWithTimezone(fieldName, record.getTimestampWithTimezone(fieldName));
@@ -463,9 +381,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfTimestampWithTimezone(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfTimestampWithTimezone(fieldName, record.getArrayOfTimestampWithTimezone(fieldName));
@@ -479,9 +394,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.COMPACT]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return (record as CompactInternalGenericRecord).getObject(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 return writer.writeGenericRecord(fieldName, record.getGenericRecord(fieldName));
             },
@@ -490,9 +402,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_COMPACT]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return (record as CompactInternalGenericRecord).getArrayOfObject(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 return writer.writeArrayOfGenericRecords(fieldName, record.getArrayOfGenericRecord(fieldName));
             },
@@ -501,9 +410,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.NULLABLE_BOOLEAN]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableBoolean(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeNullableBoolean(fieldName, record.getNullableBoolean(fieldName));
@@ -517,9 +423,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_NULLABLE_BOOLEAN]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableBoolean(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfNullableBoolean(fieldName, record.getArrayOfNullableBoolean(fieldName));
@@ -533,9 +436,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.NULLABLE_INT8]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableInt8(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeNullableInt8(fieldName, record.getNullableInt8(fieldName));
@@ -549,9 +449,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT8]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableInt8(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfNullableInt8(fieldName, record.getArrayOfNullableInt8(fieldName));
@@ -565,9 +462,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.NULLABLE_INT16]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableInt16(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeNullableInt16(fieldName, record.getNullableInt16(fieldName));
@@ -581,9 +475,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT16]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableInt16(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfNullableInt16(fieldName, record.getArrayOfNullableInt16(fieldName));
@@ -597,9 +488,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.NULLABLE_INT32]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableInt32(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeNullableInt32(fieldName, record.getNullableInt32(fieldName));
@@ -613,9 +501,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT32]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableInt32(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfNullableInt32(fieldName, record.getArrayOfNullableInt32(fieldName));
@@ -629,9 +514,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.NULLABLE_INT64]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableInt64(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeNullableInt64(fieldName, record.getNullableInt64(fieldName));
@@ -645,9 +527,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT64]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableInt64(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfNullableInt64(fieldName, record.getArrayOfNullableInt64(fieldName));
@@ -661,9 +540,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.NULLABLE_FLOAT32]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableFloat32(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeNullableFloat32(fieldName, record.getNullableFloat32(fieldName));
@@ -677,9 +553,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_NULLABLE_FLOAT32]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableFloat32(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfNullableFloat32(fieldName, record.getArrayOfNullableFloat32(fieldName));
@@ -693,9 +566,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.NULLABLE_FLOAT64]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getNullableFloat64(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeNullableFloat64(fieldName, record.getNullableFloat64(fieldName));
@@ -709,9 +579,6 @@ export class FieldOperations {
             },
         },
         [FieldKind.ARRAY_OF_NULLABLE_FLOAT64]: {
-            readObject(record: GenericRecord, fieldName: string) {
-                return record.getArrayOfNullableFloat64(fieldName);
-            },
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 try {
                     writer.writeArrayOfNullableFloat64(fieldName, record.getArrayOfNullableFloat64(fieldName));
