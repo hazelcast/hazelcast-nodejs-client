@@ -15,7 +15,9 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const chai = require('chai');
+const expect = chai.expect;
+chai.use(require('chai-as-promised'));
 const net = require('net');
 const {
     createAddressFromString,
