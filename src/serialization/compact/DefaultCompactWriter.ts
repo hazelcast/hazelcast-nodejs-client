@@ -47,8 +47,7 @@ export class DefaultCompactWriter implements CompactWriter {
     constructor(
         private readonly serializer: CompactStreamSerializer,
         private readonly out: PositionalObjectDataOutput,
-        private readonly schema: Schema,
-        private readonly includeSchemaOnBinary: boolean
+        private readonly schema: Schema
     ) {
         if (schema.numberVarSizeFields !== 0) {
             this.fieldOffsets = new Array<number>(schema.numberVarSizeFields);
@@ -214,7 +213,7 @@ export class DefaultCompactWriter implements CompactWriter {
 
     writeArrayOfCompact<T>(fieldName: string, value: T[] | null): void {
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
-            return this.serializer.writeObject(out, value, this.includeSchemaOnBinary);
+            return this.serializer.writeObject(out, value);
         });
     }
 
@@ -344,7 +343,7 @@ export class DefaultCompactWriter implements CompactWriter {
 
     writeCompact<T>(fieldName: string, value: T | null): void {
         return this.writeVariableSizeField(fieldName, FieldKind.COMPACT, value, (out, value) => {
-            return this.serializer.writeObject(out, value, this.includeSchemaOnBinary);
+            return this.serializer.writeObject(out, value);
         });
     }
 
@@ -463,13 +462,13 @@ export class DefaultCompactWriter implements CompactWriter {
 
     writeGenericRecord(fieldName: string, value: GenericRecord): void {
         return this.writeVariableSizeField(fieldName, FieldKind.COMPACT, value, (out, value) => {
-            return this.serializer.writeGenericRecord(out, value as CompactGenericRecord, this.includeSchemaOnBinary);
+            return this.serializer.writeGenericRecord(out, value as CompactGenericRecord);
         });
 
     }
     writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[]) : void {
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
-            return this.serializer.writeGenericRecord(out, value as CompactGenericRecord, this.includeSchemaOnBinary);
+            return this.serializer.writeGenericRecord(out, value as CompactGenericRecord);
         });
     }
 }

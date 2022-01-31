@@ -20,5 +20,7 @@ const chai = require('chai');
 chai.should();
 
 describe('RabinFingerprintTest', function () {
-    it('')
+    it('', function () {
+        console.log();
+    })
 });

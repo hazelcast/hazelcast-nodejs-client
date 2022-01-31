@@ -67,7 +67,6 @@ import {PortableSerializer} from './portable/PortableSerializer';
 import {PREDICATE_FACTORY_ID, predicateFactory} from './DefaultPredicates';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
 import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
-import {CompactStreamSerializerAdapter} from './compact/CompactStreamSerializerAdapter';
 import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
@@ -300,6 +299,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (!obj.constructor) {
             return false;
         }
+
         return this.compactStreamSerializer.isRegisteredAsCompact(obj.constructor.name);
     }
 
@@ -336,7 +336,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('bigint', new BigIntSerializer());
         this.registerIdentifiedFactories();
         this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
-        this.registerSerializer('!compact', new CompactStreamSerializerAdapter(this.compactStreamSerializer));
+        this.registerSerializer('!compact', this.compactStreamSerializer);
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
             this.registerSerializer('!json', new JsonSerializer());
         } else {

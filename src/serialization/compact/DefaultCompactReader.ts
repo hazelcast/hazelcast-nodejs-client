@@ -46,6 +46,7 @@ import {CompactUtil} from './CompactUtil';
 import {IOUtil} from '../../util/IOUtil';
 
 /**
+ * Unserialized form of a compact object. Users do not receive this object. Instead, they receive {@link CompactGenericRecordImpl}
  * @internal
  */
 export class DefaultCompactReader implements CompactReader, CompactGenericRecord {
@@ -57,8 +58,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         private readonly serializer: CompactStreamSerializer,
         private readonly input: ObjectDataInput,
         private readonly schema: Schema,
-        private readonly typeName: string | null,
-        private readonly schemaIncludedInBinary: boolean
+        private readonly typeName: string | null
     ) {
         try {
             const numberOfVariableLengthFields = schema.numberVarSizeFields;
@@ -104,7 +104,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
     }
 
     clone(fieldsToUpdate?: { [fieldName: string]: any; }): GenericRecord {
-        return new DefaultCompactReader(this.serializer, this.input, this.schema, this.typeName, this.schemaIncludedInBinary);
+        return new DefaultCompactReader(this.serializer, this.input, this.schema, this.typeName);
     }
 
     private readVariableSizeFieldPosition(fieldDescriptor: FieldDescriptor): number {
@@ -289,7 +289,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         return this.getArrayOfVariableSizes(
             fieldName,
             FieldKind.ARRAY_OF_COMPACT,
-            reader => this.serializer.read(reader, this.schemaIncludedInBinary)
+            reader => this.serializer.read(reader)
         );
     }
 
@@ -407,8 +407,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         return this.getArrayOfVariableSizes(
             fieldName,
             FieldKind.ARRAY_OF_COMPACT,
-            reader =>
-                new DefaultCompactReader(this.serializer, reader, this.schema, null, this.schemaIncludedInBinary).toSerialized()
+            reader => new DefaultCompactReader(this.serializer, reader, this.schema, null).toSerialized()
         );
     }
 
@@ -754,9 +753,8 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
     }
 
     getGenericRecord(fieldName: string): GenericRecord {
-        return this.getVariableSizeByNameAndKind(
-            fieldName, FieldKind.COMPACT, reader =>
-                new DefaultCompactReader(this.serializer, reader, this.schema, null, this.schemaIncludedInBinary).toSerialized()
+        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.COMPACT,
+                reader => new DefaultCompactReader(this.serializer, reader, this.schema, null).toSerialized()
         );
     }
 
@@ -836,9 +834,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
     }
 
     getCompact(fieldName: string): any {
-        return this.getVariableSizeByNameAndKind(
-            fieldName, FieldKind.COMPACT, reader => this.serializer.read(reader, this.schemaIncludedInBinary)
-        );
+        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.COMPACT, reader => this.serializer.read(reader));
     }
 
     toSerialized(): CompactGenericRecordImpl {
