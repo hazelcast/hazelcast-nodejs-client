@@ -15,6 +15,17 @@ for (let i = 0; i < 256; i++) {
 }
 
 /**
+ * Used in tests.
+ */
+export const RabinFingerprintBytes = (buffer: Buffer): Long => {
+    let fp: Long = INIT;
+    for (const byte of buffer) {
+        fp = RabinFingerPrintLongByte(fp, byte);
+    }
+    return fp;
+};
+
+/**
  * A very collision-resistant fingerprint method used to create automatic
  * schema ids for the Compact format.
  */

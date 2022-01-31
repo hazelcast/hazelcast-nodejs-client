@@ -110,9 +110,26 @@ export class Schema implements IdentifiedDataSerializable {
     }
 
     readData(input: DataInput): void {
+        this.typeName = input.readString();
+        const fieldDefinitionsSize = input.readInt();
+        this.fieldDefinitionMap = new Map<string, FieldDescriptor>();
+        for (let i = 0; i < fieldDefinitionsSize; i++) {
+            const name = input.readString();
+            const kind = input.readInt();
+            const fieldDescriptor = new FieldDescriptor(name, kind);
+            this.fieldDefinitionMap.set(name, fieldDescriptor);
+        }
+        this.init();
     }
 
     writeData(output: DataOutput): void {
+        output.writeString(this.typeName);
+        output.writeInt(this.fieldDefinitionMap.size);
+        const fields = this.fieldDefinitionMap.values();
+        for (const field of fields) {
+            output.writeString(field.fieldName);
+            output.writeInt(field.kind);
+        }
     }
 
     equals(other: Schema) {
