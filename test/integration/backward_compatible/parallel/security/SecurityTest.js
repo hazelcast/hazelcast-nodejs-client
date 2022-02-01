@@ -24,7 +24,12 @@ const fs = require('fs');
 const RC = require('../../../RC');
 const {IllegalStateError} = require('../../../../../lib');
 const {SimpleCredentials} = require('./SimpleCredentials');
-const {TokenEncoding} = require('../../../../../lib/security/TokenEncoding');
+
+// Lazy import is due to back compatibility
+const getTokenEncoding = () => {
+    const {TokenEncoding} = require('../../../../../lib/security/TokenEncoding');
+    return TokenEncoding;
+};
 
 describe('SecurityTest', function () {
     describe('username password credentials', function () {
@@ -34,7 +39,14 @@ describe('SecurityTest', function () {
 
         before(async function () {
             TestUtil.markEnterprise(this);
-            TestUtil.markClientVersionAtLeast(this, '5.1');
+            // Security config is added in 5.1.0, 4.2.1 and 5.0.3.
+            if (!(
+                TestUtil.isClientVersionAtLeast('5.1') ||
+                (TestUtil.isClientVersionAtLeast('5.0.3') && TestUtil.isClientVersionAtMost('5.0.99')) ||
+                (TestUtil.isClientVersionAtLeast('4.2.1') && TestUtil.isClientVersionAtMost('4.2.99'))
+            )) {
+                this.skip();
+            }
 
             cluster = await testFactory.createClusterForParallelTests(null,
                 fs.readFileSync(__dirname + '/hazelcast_username_password_credentials.xml', 'utf8'));
@@ -84,14 +96,23 @@ describe('SecurityTest', function () {
         let cluster;
         let member;
         const testFactory = new TestUtil.TestFactory();
+        let tokenEncoding;
 
         before(async function () {
             TestUtil.markEnterprise(this);
-            TestUtil.markClientVersionAtLeast(this, '5.1');
+            // Security config is added in 5.1.0, 4.2.1 and 5.0.3.
+            if (!(
+                TestUtil.isClientVersionAtLeast('5.1') ||
+                (TestUtil.isClientVersionAtLeast('5.0.3') && TestUtil.isClientVersionAtMost('5.0.99')) ||
+                (TestUtil.isClientVersionAtLeast('4.2.1') && TestUtil.isClientVersionAtMost('4.2.99'))
+            )) {
+                this.skip();
+            }
 
             cluster = await testFactory.createClusterForParallelTests(null,
                 fs.readFileSync(__dirname + '/hazelcast_token_credentials.xml', 'utf8'));
             member = await RC.startMember(cluster.id);
+            tokenEncoding = getTokenEncoding();
         });
 
         after(async function () {
@@ -108,7 +129,7 @@ describe('SecurityTest', function () {
                 security: {
                     token: {
                         token: 'dG9rZW4=',
-                        encoding: TokenEncoding.BASE64
+                        encoding: tokenEncoding.BASE64
                     }
                 }
             }, member);
@@ -121,7 +142,7 @@ describe('SecurityTest', function () {
                 security: {
                     token: {
                         token: 'dG9rZW4=',
-                        encoding: TokenEncoding.ASCII
+                        encoding: tokenEncoding.ASCII
                     }
                 },
                 connectionStrategy: {
@@ -140,7 +161,14 @@ describe('SecurityTest', function () {
 
         before(async function () {
             TestUtil.markEnterprise(this);
-            TestUtil.markClientVersionAtLeast(this, '5.1');
+            // Security config is added in 5.1.0, 4.2.1 and 5.0.3.
+            if (!(
+                TestUtil.isClientVersionAtLeast('5.1') ||
+                (TestUtil.isClientVersionAtLeast('5.0.3') && TestUtil.isClientVersionAtMost('5.0.99')) ||
+                (TestUtil.isClientVersionAtLeast('4.2.1') && TestUtil.isClientVersionAtMost('4.2.99'))
+            )) {
+                this.skip();
+            }
 
             cluster = await testFactory.createClusterForParallelTests(null,
                 fs.readFileSync(__dirname + '/hazelcast_custom_credentials.xml', 'utf8'));

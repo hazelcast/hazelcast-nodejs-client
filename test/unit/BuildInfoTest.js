@@ -40,5 +40,6 @@ describe('BuildInfo', function () {
         assert.equal(19930, BuildInfo.calculateServerVersionFromString('1.99.30'));
         assert.equal(109930, BuildInfo.calculateServerVersionFromString('10.99.30-SNAPSHOT'));
         assert.equal(109900, BuildInfo.calculateServerVersionFromString('10.99-RC1'));
+        assert.equal(50100, BuildInfo.calculateServerVersionFromString('5.1-BETA-1-SNAPSHOT'));
     });
 });
