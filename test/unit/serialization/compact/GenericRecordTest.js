@@ -28,7 +28,7 @@ const {
     createCompactGenericRecord,
     serialize,
     mimicSchemaReplication
-} = require('./CompactUtil');
+} = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { Fields } = require('../../../../lib/serialization/generic_record');
 const Long = require('long');
 

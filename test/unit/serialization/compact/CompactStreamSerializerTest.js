@@ -36,7 +36,7 @@ const {
     NamedDTOSerializer,
     NodeDTOSerializer,
     NodeDTO,
-} = require('./CompactUtil');
+} = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const Long = require('long');
 const { CompactGenericRecordImpl } = require('../../../../lib/serialization/generic_record/CompactGenericRecord');
 const { GenericRecords } = require('../../../../lib');

@@ -20,7 +20,7 @@ const chai = require('chai');
 const Long = require('long');
 const should = chai.should();
 const { Fields, GenericRecords, CompactGenericRecordImpl, HazelcastSerializationError } = require('../../../../lib');
-const { createSerializationService, serialize } = require('./CompactUtil');
+const { createSerializationService, serialize } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 
 describe('CompactNullablePrimitiveInteroperability', function () {
     const assertReadAsNullable = record => {

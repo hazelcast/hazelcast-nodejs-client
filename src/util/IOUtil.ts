@@ -30,7 +30,8 @@ export class IOUtil {
     static readDecimal(inp: DataInput): BigDecimal {
         const buffer = inp.readByteArray();
         const scale = inp.readInt();
-        return new BigDecimal(bufferToBigInt(buffer), scale);
+        const a = new BigDecimal(bufferToBigInt(buffer), scale);
+        return a;
     }
 
     static readLocalTime(inp: DataInput): LocalTime {

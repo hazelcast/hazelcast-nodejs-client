@@ -22,7 +22,7 @@ import {
     LocalDate,
     LocalDateTime,
     LocalTime,
-    OffsetDateTime,
+    OffsetDateTime, SchemaNotFoundError,
     UnsupportedOperationError
 } from '../../core';
 import * as Long from 'long';
@@ -138,6 +138,10 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             this.input.position(pos);
             return readFn(this.input);
         } catch (e) {
+            // We need to not change exception type if the nested compact's serialization fails.
+            if (e instanceof SchemaNotFoundError)  {
+                throw e;
+            }
             throw DefaultCompactReader.toIllegalStateException(e);
         } finally {
             this.input.position(currentPos);
@@ -270,6 +274,10 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             }
             return values;
         } catch (e) {
+            // We need to not change exception type if the nested compact's serialization fails.
+            if (e instanceof SchemaNotFoundError) {
+                throw e;
+            }
             throw DefaultCompactReader.toIllegalStateException(e);
         } finally {
             this.input.position(currentPos);
@@ -455,12 +463,12 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         switch (fieldKind) {
             case FieldKind.INT8:
                 try {
-                    return this.input.readByte(this.readFixedSizePosition(fd));
+                    return this.input.readInt8(this.readFixedSizePosition(fd));
                 } catch (e) {
                     throw DefaultCompactReader.toIllegalStateException(e);
                 }
             case FieldKind.NULLABLE_INT8:
-                return this.getVariableSize(fd, reader => reader.readByte());
+                return this.getVariableSize(fd, reader => reader.readInt8());
             default:
                 throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
         }
@@ -610,7 +618,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
 
     getArrayOfNullableInt8(fieldName: string): (number | null)[] {
         return this.getArrayOfNullables(
-            fieldName, reader => reader.readByte(), FieldKind.ARRAY_OF_INT8, FieldKind.ARRAY_OF_NULLABLE_INT8
+            fieldName, reader => reader.readInt8(), FieldKind.ARRAY_OF_INT8, FieldKind.ARRAY_OF_NULLABLE_INT8
         );
     }
 
@@ -684,12 +692,12 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         switch (fieldKind) {
             case FieldKind.INT8:
                 try {
-                    return this.input.readByte(this.readFixedSizePosition(fd));
+                    return this.input.readInt8(this.readFixedSizePosition(fd));
                 } catch (e) {
                     throw DefaultCompactReader.toIllegalStateException(e);
                 }
             case FieldKind.NULLABLE_INT8:
-                return this.getVariableSizeAsNonNull(fd, reader => reader.readByte(), 'Byte');
+                return this.getVariableSizeAsNonNull(fd, reader => reader.readInt8(), 'Byte');
             default:
                 throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
         }

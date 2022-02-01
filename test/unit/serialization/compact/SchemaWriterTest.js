@@ -20,10 +20,9 @@ const chai = require('chai');
 const { SchemaWriter } = require('../../../../lib/serialization/compact/SchemaWriter');
 const { FieldDescriptor } = require('../../../../lib/serialization/generic_record/FieldDescriptor');
 const { FieldKind } = require('../../../../lib');
-const { createSerializationService } = require('./CompactUtil');
-const { PositionalObjectDataOutput } = require('../../../../src/serialization/ObjectData');
-const { RabinFingerprintBytes } = require('../../../../src/serialization/compact/RabinFingerprint');
-const { UnsupportedOperationError } = require('../../../../src');
+const { createSerializationService, supportedFieldKinds } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
+const { PositionalObjectDataOutput } = require('../../../../lib/serialization/ObjectData');
+const { RabinFingerprintBytes } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const TestUtil = require('../../../TestUtil');
 chai.should();
 
@@ -49,12 +48,10 @@ describe('SchemaWriterTest', function () {
 
         const fields = [];
 
-        for (const fieldKind in FieldKind) {
-            // enums are reverse mapped.
-            if (typeof fieldKind === 'number') {
-                const name = TestUtil.randomString(5);
-                fields.push({fieldKind, name})
-                switch (fieldKind) {
+        for (const fieldKind of supportedFieldKinds) {
+            const name = TestUtil.randomString(5);
+            fields.push({fieldKind, name})
+            switch (fieldKind) {
                 case FieldKind.BOOLEAN:
                     writer.writeBoolean(name, null);
                     break;
@@ -189,13 +186,12 @@ describe('SchemaWriterTest', function () {
                 case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
                     writer.writeArrayOfNullableFloat64(name, null);
                     break;
-                }
             }
         }
 
         const schema = writer.build();
-        for (const { name, kind } of fields) {
-            schema.fieldDefinitionMap.get(name).kind.should.be.eq(kind);
+        for (const { name, fieldKind } of fields) {
+            schema.fieldDefinitionMap.get(name).kind.should.be.eq(fieldKind);
         }
     });
 });

@@ -23,9 +23,16 @@ const RC = require('../../../../RC');
 const TestUtil = require('../../../../../TestUtil');
 const Long = require('long');
 const { Lang } = require('../../../../remote_controller/remote_controller_types');
-const { EmployeeDTOSerializer, EmployeeDTO } = require('./Employee');
 
-describe('CompactSerialization', function () {
+describe('CompactSerializersLiveTest', function () {
+
+    const getCompactUtil = () => require('./CompactUtil');
+    let compactUtil;
+
+    before(function () {
+        TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        compactUtil = getCompactUtil();
+    });
 
     const testFactory = new TestUtil.TestFactory();
 
@@ -55,7 +62,7 @@ describe('CompactSerialization', function () {
             client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 serialization: {
-                    compactSerializers: [new EmployeeDTOSerializer()]
+                    compactSerializers: [new compactUtil.EmployeeDTOSerializer()]
                 }
             }, member);
             mapName = TestUtil.randomString(10);
@@ -77,7 +84,7 @@ describe('CompactSerialization', function () {
             await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
             const map = await client.getMap(mapName);
             const value = await map.get(1);
-            value.should.be.instanceof(EmployeeDTO);
+            value.should.be.instanceof(compactUtil.EmployeeDTO);
             value.age.should.be.equal(expectedAge);
             value.id.equals(expectedId).should.be.true;
         });
@@ -87,7 +94,7 @@ describe('CompactSerialization', function () {
             const expectedId = Long.fromNumber(456);
 
             const map = await client.getMap(mapName);
-            await map.set(1, new EmployeeDTO(expectedAge, expectedId));
+            await map.set(1, new compactUtil.EmployeeDTO(expectedAge, expectedId));
 
             const script = `
                 var map = instance_0.getMap("${mapName}");
@@ -134,7 +141,7 @@ describe('CompactSerialization', function () {
             client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 serialization: {
-                    compactSerializers: [new EmployeeDTOSerializer()]
+                    compactSerializers: [new compactUtil.EmployeeDTOSerializer()]
                 }
             }, member);
             mapName = TestUtil.randomString(10);
@@ -156,7 +163,7 @@ describe('CompactSerialization', function () {
             await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
             const map = await client.getMap(mapName);
             const value = await map.get(1);
-            value.should.be.instanceof(EmployeeDTO);
+            value.should.be.instanceof(compactUtil.EmployeeDTO);
             value.age.should.be.equal(expectedAge);
             value.id.equals(expectedId).should.be.true;
         });
@@ -166,7 +173,7 @@ describe('CompactSerialization', function () {
             const expectedId = Long.fromNumber(456);
 
             const map = await client.getMap(mapName);
-            await map.set(1, new EmployeeDTO(expectedAge, expectedId));
+            await map.set(1, new compactUtil.EmployeeDTO(expectedAge, expectedId));
 
             const script = `
                 var map = instance_0.getMap("${mapName}");

@@ -257,7 +257,7 @@ export class DefaultCompactWriter implements CompactWriter {
 
     writeArrayOfNullableInt8(fieldName: string, value: (number | null)[] | null): void {
         this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT8, value, (out, value) => {
-            out.writeByte(value);
+            out.writeInt8(value);
         });
     }
 
@@ -335,7 +335,7 @@ export class DefaultCompactWriter implements CompactWriter {
     writeInt8(fieldName: string, value: number): void {
         const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.INT8);
         try {
-            this.out.pwriteByte(position, value);
+            this.out.pwriteInt8(position, value);
         } catch (e) {
             throw DefaultCompactWriter.toIllegalStateException(e);
         }
@@ -399,7 +399,7 @@ export class DefaultCompactWriter implements CompactWriter {
 
     writeNullableInt8(fieldName: string, value: number | null): void {
         this.writeVariableSizeField(fieldName, FieldKind.NULLABLE_INT8, value, (out, value) => {
-            out.writeByte(value);
+            out.writeInt8(value);
         });
     }
 
