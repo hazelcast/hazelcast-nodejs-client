@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-export const FIELD_KIND_COUNT = 46;
-
 export enum FieldKind {
     BOOLEAN,
     ARRAY_OF_BOOLEAN,

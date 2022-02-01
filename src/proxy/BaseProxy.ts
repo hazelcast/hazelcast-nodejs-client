@@ -27,6 +27,7 @@ import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
 import {SchemaService} from '../serialization/compact/SchemaService';
+import {Schema} from '../serialization';
 
 /**
  * Common super class for any proxy.
@@ -67,6 +68,16 @@ export abstract class BaseProxy {
 
     destroyLocally(): Promise<void> {
         return this.postDestroy();
+    }
+
+    protected registerSchema(schema: Schema, className: string | undefined): Promise<void> {
+        if (className !== undefined) {
+            return this.schemaService.put(schema).then(() => {
+                this.serializationService.registerSchemaToClassName(schema, className);
+            })
+        } else {
+            return this.schemaService.put(schema);
+        }
     }
 
     protected postDestroy(): Promise<void> {

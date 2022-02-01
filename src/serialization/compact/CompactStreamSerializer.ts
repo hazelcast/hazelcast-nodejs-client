@@ -33,8 +33,20 @@ import {SchemaWriter} from './SchemaWriter';
 export class CompactStreamSerializer {
 
     id = -55;
+    /**
+     * Users' serializer config for classes are stored here. Used to determine if a class is compact serializable.
+     * Also used to get serializer of an object while serializing.
+     */
     private readonly classNameToSerializersMap : Map<string, CompactSerializer<new () => any>>;
+    /**
+     * Used to cache created schema of an object after initial serialization. If an object has schema,
+     * no need to create schema again and put to schema service.
+     */
     private readonly classNameToSchemaMap : Map<string, Schema>;
+    /**
+     * A table from typeName to serializer map. Serialized compact data include a type name. Deserializer of compact data is
+     * determined using this table.
+     */
     private readonly typeNameToSerializersMap: Map<string, CompactSerializer<new () => any>>;
 
     constructor(
@@ -55,17 +67,21 @@ export class CompactStreamSerializer {
         throw new SchemaNotFoundError(`The schema can not be found with id ${schemaId}`, schemaId);
     }
 
+    registerSchemaToClassName(schema: Schema, className: string): void {
+        this.classNameToSchemaMap.set(className, schema);
+    }
+
     read(input: ObjectDataInput): any {
         const schema = this.getOrReadSchema(input);
-        const registration = this.typeNameToSerializersMap.get(schema.typeName);
+        const serializer = this.typeNameToSerializersMap.get(schema.typeName);
 
-        if (registration === undefined) {
+        if (serializer === undefined) {
             // Registration does not exist, we will return a GenericRecord
             return new DefaultCompactReader(this, input, schema, null).toSerialized();
         }
 
-        const genericRecord = new DefaultCompactReader(this, input, schema, registration.hzTypeName || registration.hzClassName);
-        return registration.read(genericRecord);
+        const genericRecord = new DefaultCompactReader(this, input, schema, serializer.hzTypeName || serializer.hzClassName);
+        return serializer.read(genericRecord);
     }
 
     write(output: ObjectDataOutput, object: any): void {
@@ -104,8 +120,7 @@ export class CompactStreamSerializer {
         output: PositionalObjectDataOutput, record: CompactGenericRecord
     ) : void {
         const schema: Schema = record.getSchema();
-        this.throwIfSchemaNotReplicatedToCluster(schema);
-        this.putToSchemaService(schema)
+        this.throwIfSchemaNotReplicatedToCluster(schema, undefined);
         this.writeSchema(output, schema);
         const writer = new DefaultCompactWriter(this, output, schema);
         const fields = [...schema.getFields()];
@@ -137,17 +152,15 @@ export class CompactStreamSerializer {
             const writer = new SchemaWriter(compactSerializer.hzTypeName || className);
             compactSerializer.write(writer, o);
             schema = writer.build();
-            this.classNameToSchemaMap.set(className, schema);
-            this.throwIfSchemaNotReplicatedToCluster(schema);
-            this.putToSchemaService(schema);
+            this.throwIfSchemaNotReplicatedToCluster(schema, className);
         }
         this.writeSchemaAndObject(compactSerializer, output, schema, o);
     }
 
-    private throwIfSchemaNotReplicatedToCluster(schema: Schema): void {
+    private throwIfSchemaNotReplicatedToCluster(schema: Schema, className: string): void {
         // We guarantee that if Schema is not in the schemaService, it is not replicated to the cluster.
         if (this.schemaService.get(schema.schemaId) === null) {
-            throw new SchemaNotReplicatedError(`The schema ${schema.schemaId} is not replicated yet.`, schema);
+            throw new SchemaNotReplicatedError(`The schema ${schema.schemaId} is not replicated yet.`, schema, className);
         }
     }
 

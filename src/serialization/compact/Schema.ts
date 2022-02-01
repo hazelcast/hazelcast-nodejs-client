@@ -41,7 +41,7 @@ export class Schema implements IdentifiedDataSerializable {
     classId = SCHEMA;
     factoryId = COMPACT_FACTORY_ID;
 
-    constructor(typename: string, fields: FieldDescriptor[]) {
+    constructor(typename = '', fields: FieldDescriptor[] = []) {
         this.typeName = typename;
         this.fields = fields;
         this.fieldDefinitionMap = new Map<string, FieldDescriptor>();

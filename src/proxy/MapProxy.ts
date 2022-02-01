@@ -255,7 +255,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return this.putInternal(keyData, valueData, ttl, maxIdle);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
-                return this.schemaService.put(e.schema).then(() => this.put(key, value, ttl, maxIdle))
+                return this.registerSchema(e.schema, e.className).then(() => this.put(key, value, ttl, maxIdle));
             }
             return Promise.reject(e);
         }
@@ -276,7 +276,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return this.getInternal(keyData);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
-                return this.schemaService.put(e.schema).then(() => this.get(key))
+                return this.registerSchema(e.schema, e.className).then(() => this.get(key));
             }
             return Promise.reject(e);
         }
@@ -432,7 +432,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return this.setInternal(keyData, valueData, ttl, maxIdle);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
-                return this.schemaService.put(e.schema).then(() => this.set(key, value, ttl, maxIdle))
+                return this.registerSchema(e.schema, e.className).then(() => this.set(key, value, ttl, maxIdle));
             }
             return Promise.reject(e);
         }

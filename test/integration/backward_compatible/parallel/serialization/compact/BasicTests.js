@@ -24,6 +24,7 @@ const TestUtil = require('../../../../../TestUtil');
 const Long = require('long');
 const { Predicates } = require('../../../../../../lib/core');
 const { EmployeeDTOSerializer, EmployeeDTO } = require('./Employee');
+const { createMainDTO, MainDTOSerializer, InnerDTOSerializer, NamedDTOSerializer } = require('../../../../../unit/serialization/compact/CompactUtil');
 
 describe('CompactBasicTests', function () {
 
@@ -49,21 +50,21 @@ describe('CompactBasicTests', function () {
 
 
     before(async function () {
-        cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
-        member = await RC.startMember(cluster.id);
+        // cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
+        // member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForParallelTests({
-            clusterName: cluster.id,
+            clusterName: 'dev',
             serialization: {
-                compactSerializers: [new EmployeeDTOSerializer()]
+                compactSerializers: [new EmployeeDTOSerializer(), new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]
             }
-        }, member);
+        });
 
         client2 = await testFactory.newHazelcastClientForParallelTests({
-            clusterName: cluster.id,
+            clusterName: 'dev',
             serialization: {
-                compactSerializers: [new EmployeeDTOSerializer()]
+                compactSerializers: [new EmployeeDTOSerializer(), new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]
             }
-        }, member);
+        });
     });
 
     after(async function () {
@@ -83,6 +84,17 @@ describe('CompactBasicTests', function () {
         const employee2 = await map2.get(1);
 
         employee2.should.deep.equal(employee);
+    });
+
+    it('should work with basic test server does not have class', async function() {
+        const mainDTO = createMainDTO();
+        const map = await client.getMap(mapName);
+        await map.put(1, mainDTO);
+
+        const map2 = await client2.getMap(mapName);
+        const mainDTO2 = await map2.get(1);
+
+        mainDTO2.should.deep.equal(mainDTO);
     });
 
     it('should work with basic query', async function() {

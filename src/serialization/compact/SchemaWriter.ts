@@ -19,7 +19,12 @@ export class SchemaWriter implements CompactWriter {
     }
 
     build() : Schema {
-        return new Schema(this.typeName, this.fields);
+        return new Schema(this.typeName, this.fields.sort((field1, field2) => {
+            if (field1 === field2) {
+                return 0;
+            }
+            return field1.fieldName > field2.fieldName ? 1 : -1;
+        }));
     }
 
     writeArrayOfBoolean(fieldName: string, value: boolean[] | null): void {

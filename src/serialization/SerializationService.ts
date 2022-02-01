@@ -70,6 +70,7 @@ import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
 import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
+import {Schema} from './compact';
 
 /**
  * Serializes objects and deserializes data.
@@ -86,6 +87,8 @@ export interface SerializationService {
     readObject(inp: DataInput): any;
 
     isCompactSerializable(obj: any): boolean;
+
+    registerSchemaToClassName(schema: Schema, className: string): void;
 }
 
 type PartitionStrategy = (obj: any) => number;
@@ -427,5 +430,9 @@ export class SerializationServiceV1 implements SerializationService {
 
     private static calculatePartitionHash(object: any, strategy: PartitionStrategy): number {
         return strategy(object);
+    }
+
+    registerSchemaToClassName(schema: Schema, className: string): void {
+        this.compactStreamSerializer.registerSchemaToClassName(schema, className);
     }
 }

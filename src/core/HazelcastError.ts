@@ -91,12 +91,15 @@ export class SchemaNotFoundError extends HazelcastError {
  * @internal
  */
 export class SchemaNotReplicatedError extends HazelcastError {
-
-    schema: Schema;
-
-    constructor(msg: string, schema: Schema, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+    constructor(
+        msg: string,
+        public readonly schema: Schema,
+        // Class name is undefined when generic record schema is not replicated
+        public readonly className: string | undefined,
+        cause?: Error,
+        serverStackTrace?: ServerErrorStackElement[]
+    ) {
         super(msg, cause, serverStackTrace);
-        this.schema = schema;
     }
 }
 
