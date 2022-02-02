@@ -1,6 +1,6 @@
 # Contributing to Hazelcast
 
-**NOTE**: It is recommended to use Node 12 and above for development.
+> **WARNING: Minimum Node version for development is 12.22.**
 
 Hazelcast Node.js client is Open Source software, and licensed under the [Apache 2.0. license](LICENSE).
 The main benefit of Open Source is that you don't need to wait for a vendor to provide a fix or a feature.
