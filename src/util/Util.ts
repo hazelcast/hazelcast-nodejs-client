@@ -32,6 +32,30 @@ export function deepClone(obj: any) {
         return obj;
     }
 
+    if (obj instanceof Long) {
+        return new Long(obj.low, obj.high, obj.unsigned);
+    }
+    
+    if (obj instanceof LocalDate) {
+        return new LocalDate(obj.year, obj.month, obj.date);
+    }
+    
+    if (obj instanceof LocalTime) {
+        return new LocalTime(obj.hour, obj.minute, obj.second, obj.nano);
+    }
+
+    if (obj instanceof LocalDateTime) {
+        return new LocalDateTime(obj.localDate, obj.localTime);
+    }
+
+    if (obj instanceof OffsetDateTime) {
+        return new OffsetDateTime(obj.localDateTime, obj.offsetSeconds);
+    }
+
+    if (obj instanceof BigDecimal) {
+        return new BigDecimal(obj.unscaledValue, obj.scale);
+    }
+
     let v;
     const cloned: any = Array.isArray(obj) ? [] : {};
     for (const k in obj) {

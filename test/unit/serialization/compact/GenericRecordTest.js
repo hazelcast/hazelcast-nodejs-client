@@ -27,7 +27,8 @@ const {
     NamedDTOSerializer,
     createCompactGenericRecord,
     serialize,
-    mimicSchemaReplication
+    mimicSchemaReplication,
+    validationTestParams
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { Fields } = require('../../../../lib/serialization/generic_record');
 const Long = require('long');
@@ -126,5 +127,67 @@ describe('GenericRecordTest', function () {
         })).should.throw(UnsupportedOperationError, /char/);
 
         (() => GenericRecords.compact('readCharArray', {}, {}).getArrayOfChar('foo')).should.throw(UnsupportedOperationError, /char/);
+    });
+
+    describe('validation', function () {
+        describe('construction', function () {
+            it('should throw error if type name is not a string', function () {
+                (() => GenericRecords.compact(1, {
+                    foo: Fields.int32
+                }, {foo: 1})).should.throw(TypeError, /Type name/);
+            });
+
+            it('should throw error if values does not have some fields', function () {
+                (() => GenericRecords.compact('foo', {
+                    foo: Fields.int32,
+                    bar: Fields.int64
+                }, {foo: 12})).should.throw(TypeError, 'bar');
+            });
+
+            it('should throw error if value has invalid type and should not throw if value has valid type', function () {
+                for (const value of Object.values(validationTestParams)) {
+                    const [validValues, invalidValues] = value.values;
+                    const field = value.field;
+
+                    invalidValues.forEach(invalidValue => {
+                        (() => GenericRecords.compact('typeName', {
+                            foo: field
+                        }, {foo: invalidValue})).should.throw(TypeError);
+                    });
+
+                    validValues.forEach(validValue => {
+                        (() => GenericRecords.compact('typeName', {
+                            foo: field
+                        }, {foo: validValue})).should.not.throw();
+                    });
+                }
+            });
+        });
+
+        describe('cloning', function () {
+            it('should throw error if wrong type of replacement value is given, should not otherwise', function () {
+                for (const value of Object.values(validationTestParams)) {
+                    const [validValues, invalidValues] = value.values;
+                    const field = value.field;
+                    const record = GenericRecords.compact('typeName', {
+                        foo: field
+                    }, {foo: validValues[0]});
+
+                    invalidValues.forEach(invalidValue => {
+                        (() => record.clone({
+                            foo: invalidValue
+                        })).should.throw(TypeError);
+                    });
+
+                    validValues.forEach(validValue => {
+                        (() => record.clone({
+                            foo: validValue
+                        })).should.not.throw();
+                    });
+
+                    (() => record.clone()).should.not.throw();
+                }
+            });
+        });
     });
 });

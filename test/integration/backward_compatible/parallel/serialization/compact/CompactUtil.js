@@ -32,6 +32,237 @@ const mimicSchemaReplication = (serializationService1, serializationService2) =>
         {...serializationService1.schemaService.schemas, ...serializationService2.schemaService.schemas};
 };
 
+class Employee {
+    constructor(age, id) {
+        this.age = age;
+        this.rank = age;
+        this.id = id;
+        this.isHired = true;
+        this.isFired = false;
+    }
+}
+
+class EmployeeSerializer {
+    constructor() {
+        this.hzClassName = 'Employee';
+    }
+
+    read(reader) {
+        const age = reader.readInt32('age', 0);
+        const id = reader.readInt64('id', Long.ZERO);
+        return new Employee(age, id);
+    }
+
+    write(writer, value) {
+        writer.writeInt32('age', value.age);
+        writer.writeInt64('id', value.id);
+    }
+}
+
+const objects = [{}, {a: 1}, new Employee(1, Long.ONE)];
+const numbers = [1, 2, 1.123123, -1.32312, 0, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER];
+const buffers = [Buffer.from([1, 2]), Buffer.from([]), [], Buffer.from([1]), null];
+const strings = ['1', 'asdasd', null, ''];
+const arrayOfStrings = [[...strings], null, []];
+const longs = [Long.ONE, Long.ZERO, Long.fromNumber(122)];
+const nullableLongs = [...longs, null];
+const arrayOfLongs = [[...longs], [], null];
+const arrayOfNullableLongs = [[...nullableLongs], ...arrayOfLongs, [], null, [Long.ONE, null], [null, null], [null]];
+const booleans = [true, false];
+const nullableNumbers = [...numbers, null];
+const nullableBooleans = [...booleans, null];
+const bigDecimals = [BigDecimal.fromString('111.1231231231231231231111131231231233123'), BigDecimal.fromString('0'), null];
+const arrayOfBigDecimals = [[...bigDecimals], null, []];
+const localDates = [new LocalDate(2022, 12, 12), null];
+const localTimes = [new LocalTime(12, 20, 20, 1212), null];
+const localDateTimes = [new LocalDateTime(new LocalDate(2022, 12, 12), new LocalTime(12, 20, 20, 1212)), null];
+const offsetDateTimes = [
+    new OffsetDateTime(new LocalDateTime(new LocalDate(2022, 12, 12), new LocalTime(12, 20, 20, 1212)), 10800), null
+];
+const arrayOfNumbers = [[], [1, 2, 1.123123], [-1.32312, 0], [Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER], null];
+const arrayOfBooleans = [[true], [false, true], null, []];
+const arrayOfNullableNumbers = [[...nullableNumbers], ...arrayOfNumbers, [1, 2, 3, null], [null, null], [null], null, []];
+const arrayOfNullableBooleans = [[...nullableBooleans], ...arrayOfBooleans, [true, null], [null], [null, null], null, []];
+const arrayOfLocalDates = [[], [new LocalDate(2022, 12, 12)], [new LocalDate(2022, 12, 12), new LocalDate(2021, 12, 12)], null];
+const arrayOfLocalTimes = [[], [new LocalTime(12, 20, 20, 1212), new LocalTime(10, 20, 20, 1212)], null];
+const arrayOfLocalDateTimes = [[],
+    [new LocalDateTime(new LocalDate(2022, 12, 12), new LocalTime(12, 20, 20, 1212)),
+        new LocalDateTime(new LocalDate(2012, 12, 12), new LocalTime(10, 20, 20, 1212))], null];
+const arrayOfOffsetDateTimes = [[], [
+    new OffsetDateTime(new LocalDateTime(new LocalDate(2022, 12, 12), new LocalTime(12, 20, 20, 1212)), 10800),
+    new OffsetDateTime(new LocalDateTime(new LocalDate(12, 12, 12), new LocalTime(2, 20, 20, 2)), 3)
+], null];
+
+const genericRecords = [
+    GenericRecords.compact('a', {foo: Fields.int8}, {foo: 1}), null, GenericRecords.compact('b', {bar: Fields.int16}, {bar: 2})
+];
+const arrayOfGenericRecords = [[...genericRecords], [], null, [GenericRecords.compact('c', {}, {})]];
+const all = [...objects, ...numbers, ...strings, ...arrayOfStrings, ...longs, ...nullableLongs, ...arrayOfLongs,
+    ...arrayOfNullableLongs, ...booleans, ...nullableNumbers, ...nullableBooleans, ...bigDecimals, ...arrayOfBigDecimals,
+    ...localDates, ...localTimes, ...localDateTimes, ...offsetDateTimes, ...arrayOfNumbers, ...arrayOfBooleans,
+    ...arrayOfNullableNumbers, ...arrayOfNullableBooleans, ...arrayOfLocalDates, ...arrayOfLocalTimes, ...arrayOfLocalDateTimes,
+    ...arrayOfOffsetDateTimes, ...genericRecords, ...arrayOfGenericRecords
+];
+
+const isEmptyArray = (value) => Array.isArray(value) && value.length === 0;
+const isAllNullArray = (value) => {
+    if (Array.isArray(value)) {
+        let seenNonNull = false;
+        for (const item of value) {
+            if (item !== null) {
+                seenNonNull = true;
+            }
+        }
+        return !seenNonNull;
+    }
+    return false;
+};
+
+const validationTestParams= {
+    // The first array in value holds valid values, the second holds invalid values.
+    'Fields.boolean': {values: [
+        all.filter(value => booleans.includes(value)),
+        all.filter(value => !booleans.includes(value))], field: Fields.boolean},
+    'Fields.arrayOfBoolean': {values: [
+        all.filter(value => arrayOfBooleans.includes(value)),
+        all.filter(value => !arrayOfBooleans.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfBoolean},
+    'Fields.int8': {values: [
+        all.filter(value => numbers.includes(value)),
+        all.filter(value => !numbers.includes(value))], field: Fields.int8},
+    'Fields.arrayOfInt8': {values: [
+        all.filter(value => buffers.includes(value)),
+        all.filter(value => !buffers.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfInt8},
+    'Fields.int16': {values: [
+        all.filter(value => numbers.includes(value)),
+        all.filter(value => !numbers.includes(value))], field: Fields.int16},
+    'Fields.arrayOfInt16': {values: [
+        all.filter(value => arrayOfNumbers.includes(value)),
+        all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfInt16},
+    'Fields.int32': {values: [
+        all.filter(value => numbers.includes(value)),
+        all.filter(value => !numbers.includes(value))], field: Fields.int32},
+    'Fields.arrayOfInt32': {values: [
+        all.filter(value => arrayOfNumbers.includes(value)),
+        all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))
+    ], field: Fields.arrayOfInt32},
+    'Fields.int64': {values: [
+        all.filter(value => longs.includes(value)),
+        all.filter(value => !longs.includes(value))], field: Fields.int64},
+    'Fields.arrayOfInt64': {values: [
+        all.filter(value => arrayOfLongs.includes(value)),
+        all.filter(value => !arrayOfLongs.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfInt64},
+    'Fields.float32': {values: [
+        all.filter(value => numbers.includes(value)),
+        all.filter(value => !numbers.includes(value))], field: Fields.float32},
+    'Fields.arrayOfFloat32': {values: [
+        all.filter(value => arrayOfNumbers.includes(value)),
+        all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfFloat32},
+    'Fields.float64': {values: [
+        all.filter(value => numbers.includes(value)),
+        all.filter(value => !numbers.includes(value))], field: Fields.float64},
+    'Fields.arrayOfFloat64': {values: [
+        all.filter(value => arrayOfNumbers.includes(value)),
+        all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfFloat64},
+    'Fields.string': {values: [
+        all.filter(value => strings.includes(value)),
+        all.filter(value => !strings.includes(value))], field: Fields.string},
+    'Fields.arrayOfString': {values: [
+        all.filter(value => arrayOfStrings.includes(value)),
+        all.filter(value => !arrayOfStrings.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfString},
+    'Fields.decimal': {values: [
+        all.filter(value => bigDecimals.includes(value)),
+        all.filter(value => !bigDecimals.includes(value))], field: Fields.decimal},
+    'Fields.arrayOfDecimal': {values: [
+        all.filter(value => arrayOfBigDecimals.includes(value)),
+        all.filter(value => !arrayOfBigDecimals.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfDecimal},
+    'Fields.time': {values: [
+        all.filter(value => localTimes.includes(value)),
+        all.filter(value => !localTimes.includes(value))], field: Fields.time},
+    'Fields.arrayOfTime': {values: [
+        all.filter(value => arrayOfLocalTimes.includes(value)),
+        all.filter(value => !arrayOfLocalTimes.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfTime},
+    'Fields.date': {values: [
+        all.filter(value => localDates.includes(value)),
+        all.filter(value => !localDates.includes(value))], field: Fields.date},
+    'Fields.arrayOfDate': {values: [
+        all.filter(value => arrayOfLocalDates.includes(value)),
+        all.filter(value => !arrayOfLocalDates.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfDate},
+    'Fields.timestamp': {values: [
+        all.filter(value => localDateTimes.includes(value)),
+        all.filter(value => !localDateTimes.includes(value))], field: Fields.timestamp},
+    'Fields.arrayOfTimestamp': {values: [
+        all.filter(value => arrayOfLocalDateTimes.includes(value)),
+        all.filter(value => !arrayOfLocalDateTimes.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfTimestamp},
+    'Fields.timestampWithTimezone': {values: [
+        all.filter(value => offsetDateTimes.includes(value)),
+        all.filter(value => !offsetDateTimes.includes(value))], field: Fields.timestampWithTimezone},
+    'Fields.arrayOfTimestampWithTimezone': {values: [
+        all.filter(value => arrayOfOffsetDateTimes.includes(value)),
+        all.filter(value => !arrayOfOffsetDateTimes.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfTimestampWithTimezone},
+    'Fields.nullableBoolean': {values: [
+        all.filter(value => nullableBooleans.includes(value)),
+        all.filter(value => !nullableBooleans.includes(value))], field: Fields.nullableBoolean},
+    'Fields.arrayOfNullableBoolean': {values: [
+        all.filter(value => arrayOfNullableBooleans.includes(value)),
+        all.filter(value => !arrayOfNullableBooleans.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfNullableBoolean},
+    'Fields.nullableInt8': {values: [
+        all.filter(value => nullableNumbers.includes(value)),
+        all.filter(value => !nullableNumbers.includes(value))], field: Fields.nullableInt8},
+    'Fields.arrayOfNullableInt8': {values: [
+        all.filter(value => arrayOfNullableNumbers.includes(value)),
+        all.filter(value => !arrayOfNullableNumbers.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfNullableInt8},
+    'Fields.nullableInt16': {values: [
+        all.filter(value => nullableNumbers.includes(value)),
+        all.filter(value => !nullableNumbers.includes(value))], field: Fields.nullableInt16},
+    'Fields.arrayOfNullableInt16': {values: [
+        all.filter(value => arrayOfNullableNumbers.includes(value)),
+        all.filter(value => !arrayOfNullableNumbers.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfNullableInt16},
+    'Fields.nullableInt32': {values: [
+        all.filter(value => nullableNumbers.includes(value)),
+        all.filter(value => !nullableNumbers.includes(value))], field: Fields.nullableInt32},
+    'Fields.arrayOfNullableInt32': {values: [
+        all.filter(value => arrayOfNullableNumbers.includes(value)),
+        all.filter(value => !arrayOfNullableNumbers.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfNullableInt32},
+    'Fields.nullableInt64': {values: [
+        all.filter(value => nullableLongs.includes(value)),
+        all.filter(value => !nullableLongs.includes(value))], field: Fields.nullableInt64},
+    'Fields.arrayOfNullableInt64': {values: [
+        all.filter(value => arrayOfNullableLongs.includes(value)),
+        all.filter(value => !arrayOfNullableLongs.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfNullableInt64},
+    'Fields.nullableFloat32': {values: [
+        all.filter(value => nullableNumbers.includes(value)),
+        all.filter(value => !nullableNumbers.includes(value))], field: Fields.nullableFloat32},
+    'Fields.arrayOfNullableFloat32': {values: [
+        all.filter(value => arrayOfNullableNumbers.includes(value)),
+        all.filter(value => !arrayOfNullableNumbers.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfNullableFloat32},
+    'Fields.nullableFloat64': {values: [
+        all.filter(value => nullableNumbers.includes(value)),
+        all.filter(value => !nullableNumbers.includes(value))], field: Fields.nullableFloat64},
+    'Fields.arrayOfNullableFloat64': {values: [
+        all.filter(value => arrayOfNullableNumbers.includes(value)),
+        all.filter(value => !arrayOfNullableNumbers.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfNullableFloat64},
+    'Fields.genericRecord': {values: [
+        all.filter(value => genericRecords.includes(value)),
+        all.filter(value => !genericRecords.includes(value))], field: Fields.genericRecord},
+    'Fields.arrayOfGenericRecord': {values: [
+        all.filter(value => arrayOfGenericRecords.includes(value)),
+        all.filter(value => !arrayOfGenericRecords.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
+    ], field: Fields.arrayOfGenericRecord},
+};
+
 class EmployeeDTO {
     constructor(age, id) {
         this.age = age; // int32
@@ -134,33 +365,6 @@ class BitsSerializer {
         writer.writeBoolean('h', value.h);
         writer.writeInt32('id', value.id);
         writer.writeArrayOfBoolean('booleans', value.booleans);
-    }
-}
-
-class Employee {
-    constructor(age, id) {
-        this.age = age;
-        this.rank = age;
-        this.id = id;
-        this.isHired = true;
-        this.isFired = false;
-    }
-}
-
-class EmployeeSerializer {
-    constructor() {
-        this.hzClassName = 'Employee';
-    }
-
-    read(reader) {
-        const age = reader.readInt32('age', 0);
-        const id = reader.readInt64('id', Long.ZERO);
-        return new Employee(age, id);
-    }
-
-    write(writer, value) {
-        writer.writeInt32('age', value.age);
-        writer.writeInt64('id', value.id);
     }
 }
 
@@ -1095,6 +1299,7 @@ module.exports = {
     mimicSchemaReplication,
     createSerializationService,
     createMainDTO,
+    validationTestParams,
     referenceObjects,
     varSizeFields,
     fixedSizeFields,

@@ -50,9 +50,9 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
     private readonly schema: Schema;
 
     constructor(
-        typeName: string,
-        private readonly fields: {[name: string]: Field<any>},
-        readonly values: {[name: string]: any}
+        typeName = '',
+        private readonly fields: {[name: string]: Field<any>} = {},
+        readonly values: {[name: string]: any} = {}
     ) {
         super();
         const schemaWriter = new SchemaWriter(typeName);
@@ -72,16 +72,18 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
         const throwTypeErrorWithMessage = (typeName: string) => {
             throw new TypeError(checkFn(typeName));
         };
-        const checkArray = () => {
-            if (!Array.isArray(value)) {
-                throw new TypeError(`Expected array for field ${fieldName}, but got: ${value}`);
+        const checkArrayOrNull = () => {
+            if (!Array.isArray(value) && value !== null) {
+                throw new TypeError(`Expected an array or null for field ${fieldName}, but got: ${value}`);
             }
         };
 
         const validateArray = (elementKind: FieldKind) => {
-            checkArray();
-            for (const element of value) {
-                this.validateField(fieldName, elementKind, element, true);
+            checkArrayOrNull();
+            if (value !== null) {
+                for (const element of value) {
+                    this.validateField(fieldName, elementKind, element, true);
+                }
             }
         }
 
@@ -108,8 +110,8 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 validateType('number');
                 break
             case FieldKind.ARRAY_OF_INT8:
-                if (!Buffer.isBuffer(value)) {
-                    throw new TypeError(getErrorStringForField('Buffer'));
+                if (!Buffer.isBuffer(value) && value !== null) {
+                    throw new TypeError(getErrorStringForField('Buffer or null'));
                 }
                 break
             case FieldKind.CHAR:
@@ -149,53 +151,55 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 validateArray(FieldKind.FLOAT64);
                 break
             case FieldKind.STRING:
-                validateType('string');
+                if (typeof value !== 'string' && value !== null) {
+                    throwTypeErrorWithMessage('String or null');
+                }
                 break
             case FieldKind.ARRAY_OF_STRING:
                 validateArray(FieldKind.STRING);
                 break
             case FieldKind.DECIMAL:
-                if (!(value instanceof BigDecimal)) {
-                    throwTypeErrorWithMessage('BigDecimal');
+                if (!(value instanceof BigDecimal) && value !== null) {
+                    throwTypeErrorWithMessage('BigDecimal or null');
                 }
                 break
             case FieldKind.ARRAY_OF_DECIMAL:
                 validateArray(FieldKind.DECIMAL);
                 break
             case FieldKind.TIME:
-                if (!(value instanceof LocalTime)) {
-                    throwTypeErrorWithMessage('LocalTime');
+                if (!(value instanceof LocalTime) && value !== null) {
+                    throwTypeErrorWithMessage('LocalTime or null');
                 }
                 break
             case FieldKind.ARRAY_OF_TIME:
                 validateArray(FieldKind.TIME);
                 break
             case FieldKind.DATE:
-                if (!(value instanceof LocalDate)) {
-                    throwTypeErrorWithMessage('LocalDate');
+                if (!(value instanceof LocalDate) && value !== null) {
+                    throwTypeErrorWithMessage('LocalDate or null');
                 }
                 break
             case FieldKind.ARRAY_OF_DATE:
                 validateArray(FieldKind.DATE);
                 break
             case FieldKind.TIMESTAMP:
-                if (!(value instanceof LocalDateTime)) {
-                    throwTypeErrorWithMessage('LocalDateTime');
+                if (!(value instanceof LocalDateTime) && value !== null) {
+                    throwTypeErrorWithMessage('LocalDateTime or null');
                 }
                 break
             case FieldKind.ARRAY_OF_TIMESTAMP:
                 validateArray(FieldKind.TIMESTAMP);
                 break
             case FieldKind.TIMESTAMP_WITH_TIMEZONE:
-                if (!(value instanceof OffsetDateTime)) {
-                    throwTypeErrorWithMessage('OffsetDateTime');
+                if (!(value instanceof OffsetDateTime) && value !== null) {
+                    throwTypeErrorWithMessage('OffsetDateTime or null');
                 }
                 break
             case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
                 validateArray(FieldKind.TIMESTAMP_WITH_TIMEZONE);
                 break
             case FieldKind.COMPACT:
-                if (!SerializationServiceV1.isCompactSerializable(value)) {
+                if (value !== null && !SerializationServiceV1.isCompactSerializable(value)) {
                     throwTypeErrorWithMessage('Compact');
                 }
                 break
