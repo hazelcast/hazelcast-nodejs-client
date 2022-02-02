@@ -22,7 +22,7 @@ export const IS_GENERIC_RECORD_SYMBOL = Symbol('IS_GENERIC_RECORD');
 
 
 /**
- * All generic records must implement this. This adds {@link IS_GENERIC_RECORD_SYMBOL} to all generic records.
+ * All generic records must extend this. This adds {@link IS_GENERIC_RECORD_SYMBOL} to all generic records.
  * @internal
  */
 export abstract class AbstractGenericRecord implements GenericRecord {

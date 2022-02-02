@@ -37,7 +37,7 @@ export class CompactStreamSerializer {
      * Users' serializer config for classes are stored here. Used to determine if a class is compact serializable.
      * Also used to get serializer of an object while serializing.
      */
-    private readonly classNameToSerializersMap : Map<string, CompactSerializer<new () => any>>;
+    private static readonly classNameToSerializersMap : Map<string, CompactSerializer<new () => any>> = new Map();
     /**
      * Used to cache created schema of an object after initial serialization. If an object has schema,
      * no need to create schema again and put to schema service.
@@ -52,7 +52,6 @@ export class CompactStreamSerializer {
     constructor(
         private readonly schemaService: SchemaService
     ) {
-        this.classNameToSerializersMap = new Map<string, CompactSerializer<new () => any>>();
         this.classNameToSchemaMap = new Map<string, Schema>();
         this.typeNameToSerializersMap = new Map<string, CompactSerializer<new () => any>>();
     }
@@ -95,12 +94,12 @@ export class CompactStreamSerializer {
         }
     }
 
-    isRegisteredAsCompact(className: string) : boolean {
-        return this.classNameToSerializersMap.has(className);
+    static isRegisteredAsCompact(className: string) : boolean {
+        return CompactStreamSerializer.classNameToSerializersMap.has(className);
     }
 
     registerSerializer(serializer: CompactSerializer<new () => any>) {
-        this.classNameToSerializersMap.set(serializer.hzClassName, serializer);
+        CompactStreamSerializer.classNameToSerializersMap.set(serializer.hzClassName, serializer);
         if (serializer.hzTypeName) {
             this.typeNameToSerializersMap.set(serializer.hzTypeName, serializer);
         } else {
@@ -145,7 +144,7 @@ export class CompactStreamSerializer {
     }
 
     writeObject(output: PositionalObjectDataOutput, o: any) : void {
-        const compactSerializer = this.getSerializerFromObject(o);
+        const compactSerializer = CompactStreamSerializer.getSerializerFromObject(o);
         const className = compactSerializer.hzClassName;
         let schema = this.classNameToSchemaMap.get(className);
         if (schema === undefined) {
@@ -164,8 +163,8 @@ export class CompactStreamSerializer {
         }
     }
 
-    private getSerializerFromObject(obj: any) : CompactSerializer<new () => any> {
-        const serializer = this.classNameToSerializersMap.get(obj.constructor.name);
+    private static getSerializerFromObject(obj: any) : CompactSerializer<new () => any> {
+        const serializer = CompactStreamSerializer.classNameToSerializersMap.get(obj.constructor.name);
 
         if (serializer !== undefined) {
             return serializer;

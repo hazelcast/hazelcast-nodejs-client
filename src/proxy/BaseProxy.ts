@@ -155,13 +155,6 @@ export abstract class BaseProxy {
     }
 
     /**
-     * Returns true if object is compact serializable, false otherwise.
-     */
-    protected isCompactSerializable(object: any): boolean {
-        return this.serializationService.isCompactSerializable(object);
-    }
-
-    /**
      * De-serializes an object from binary form according to serialization settings of the client.
      */
     protected toObject(data: Data): any {

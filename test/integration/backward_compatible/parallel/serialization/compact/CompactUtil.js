@@ -18,7 +18,9 @@
 const { SerializationConfigImpl } = require('../../../../../../src');
 const { SerializationServiceV1 } = require('../../../../../../lib/serialization/SerializationService');
 const Long = require('long');
-const { BigDecimal, LocalTime, LocalDate, LocalDateTime, OffsetDateTime, FieldKind, GenericRecords } = require('../../../../../../lib');
+const {
+    BigDecimal, LocalTime, LocalDate, LocalDateTime, OffsetDateTime, FieldKind, GenericRecords
+} = require('../../../../../../lib');
 const { FieldOperations } = require('../../../../../../lib/serialization/generic_record/FieldOperations');
 const Fields = require('../../../../../../lib/serialization/generic_record/Field');
 const { SchemaNotReplicatedError } = require('../../../../../../lib/core/HazelcastError');
@@ -52,25 +54,6 @@ class EmployeeDTOSerializer {
     write(writer, instance) {
         writer.writeInt32('age', instance.age);
         writer.writeInt64('id', instance.id);
-    }
-}
-
-class Empty {
-    constructor() {
-    }
-}
-
-class EmptySerializer {
-    constructor() {
-        this.hzClassName = 'Empty';
-    }
-
-    read() {
-        return new Empty();
-    }
-
-    write() {
-
     }
 }
 
@@ -1122,8 +1105,6 @@ module.exports = {
     MainDTOSerializerWithDefaults,
     Flexible,
     FlexibleSerializer,
-    Empty,
-    EmptySerializer,
     supportedFieldKinds,
     NodeDTO,
     Bits,

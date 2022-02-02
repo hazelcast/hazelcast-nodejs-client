@@ -33,6 +33,7 @@ import {FieldDescriptor} from './FieldDescriptor';
 import {CompactUtil} from '../compact/CompactUtil';
 import * as Util from '../../util/Util';
 import * as Long from 'long';
+import {SerializationServiceV1} from '../SerializationService';
 
 /**
  * @internal
@@ -128,7 +129,9 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 validateArray(FieldKind.INT32);
                 break
             case FieldKind.INT64:
-                // todo
+                if (!Long.isLong(value)) {
+                    throwTypeErrorWithMessage('Long');
+                }
                 break
             case FieldKind.ARRAY_OF_INT64:
                 validateArray(FieldKind.INT64);
@@ -152,44 +155,55 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 validateArray(FieldKind.STRING);
                 break
             case FieldKind.DECIMAL:
-                // todo
+                if (!(value instanceof BigDecimal)) {
+                    throwTypeErrorWithMessage('BigDecimal');
+                }
                 break
             case FieldKind.ARRAY_OF_DECIMAL:
                 validateArray(FieldKind.DECIMAL);
                 break
             case FieldKind.TIME:
-                // todo
+                if (!(value instanceof LocalTime)) {
+                    throwTypeErrorWithMessage('LocalTime');
+                }
                 break
             case FieldKind.ARRAY_OF_TIME:
                 validateArray(FieldKind.TIME);
                 break
             case FieldKind.DATE:
-
+                if (!(value instanceof LocalDate)) {
+                    throwTypeErrorWithMessage('LocalDate');
+                }
                 break
             case FieldKind.ARRAY_OF_DATE:
                 validateArray(FieldKind.DATE);
                 break
             case FieldKind.TIMESTAMP:
-                // todo
+                if (!(value instanceof LocalDateTime)) {
+                    throwTypeErrorWithMessage('LocalDateTime');
+                }
                 break
             case FieldKind.ARRAY_OF_TIMESTAMP:
                 validateArray(FieldKind.TIMESTAMP);
                 break
             case FieldKind.TIMESTAMP_WITH_TIMEZONE:
-
+                if (!(value instanceof OffsetDateTime)) {
+                    throwTypeErrorWithMessage('OffsetDateTime');
+                }
                 break
             case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
                 validateArray(FieldKind.TIMESTAMP_WITH_TIMEZONE);
                 break
             case FieldKind.COMPACT:
-                // todo
+                if (!SerializationServiceV1.isCompactSerializable(value)) {
+                    throwTypeErrorWithMessage('Compact');
+                }
                 break
             case FieldKind.ARRAY_OF_COMPACT:
                 validateArray(FieldKind.COMPACT);
                 break
             case FieldKind.PORTABLE:
-                // todo
-                break
+                throw new TypeError('Compact format does not support writing a portable field');
             case FieldKind.ARRAY_OF_PORTABLE:
                 validateArray(FieldKind.PORTABLE);
                 break
@@ -218,7 +232,9 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 validateArray(FieldKind.NULLABLE_INT32);
                 break
             case FieldKind.NULLABLE_INT64:
-                // todo
+                if (!Long.isLong(value) && value !== null) {
+                    throwTypeErrorWithMessage('Long or null');
+                }
                 break
             case FieldKind.ARRAY_OF_NULLABLE_INT64:
                 validateArray(FieldKind.NULLABLE_INT64);
@@ -242,8 +258,6 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
         const clonedValues = Util.deepClone(this.values);
 
         for (const fieldName in fieldsToUpdate) {
-            const fieldKind = this.getFieldKind(fieldName);
-            this.validateField(fieldName, fieldKind, fieldsToUpdate[fieldName]);
             clonedValues[fieldName] = fieldsToUpdate[fieldName];
         }
 

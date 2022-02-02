@@ -86,8 +86,6 @@ export interface SerializationService {
 
     readObject(inp: DataInput): any;
 
-    isCompactSerializable(obj: any): boolean;
-
     registerSchemaToClassName(schema: Schema, className: string): void;
 }
 
@@ -235,7 +233,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (serializer === null) {
             serializer = this.lookupGlobalSerializer();
         }
-        if (serializer === null && this.isCompactSerializable(obj)) {
+        if (serializer === null && SerializationServiceV1.isCompactSerializable(obj)) {
             serializer = this.findSerializerByName('!compact', false);
         }
         if (serializer === null) {
@@ -250,7 +248,7 @@ export class SerializationServiceV1 implements SerializationService {
 
     private lookupDefaultSerializer(obj: any): Serializer {
         let serializer: Serializer = null;
-        if (this.isCompactSerializable(obj)) {
+        if (SerializationServiceV1.isCompactSerializable(obj)) {
             return this.findSerializerByName('!compact', false);
         }
         if (SerializationServiceV1.isIdentifiedDataSerializable(obj)) {
@@ -294,7 +292,7 @@ export class SerializationServiceV1 implements SerializationService {
             && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
-    isCompactSerializable(obj: any): boolean {
+    static isCompactSerializable(obj: any): boolean {
         if (obj instanceof CompactGenericRecordImpl) {
             return true;
         }
@@ -303,7 +301,7 @@ export class SerializationServiceV1 implements SerializationService {
             return false;
         }
 
-        return this.compactStreamSerializer.isRegisteredAsCompact(obj.constructor.name);
+        return CompactStreamSerializer.isRegisteredAsCompact(obj.constructor.name);
     }
 
     private registerDefaultSerializers(): void {

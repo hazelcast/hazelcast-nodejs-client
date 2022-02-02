@@ -102,11 +102,11 @@ describe('CompactTest', function () {
     });
 
     it('should be able to read and write all fields', async function() {
-        await shouldReadAndWrite(compactUtil.createMainDTO(), [new compactUtil.MainDTOSerializer(), new compactUtil.InnerDTOSerializer(), new compactUtil.NamedDTOSerializer()]);
+        await shouldReadAndWrite(new compactUtil.Flexible(compactUtil.referenceObjects), [new compactUtil.FlexibleSerializer(compactUtil.supportedFieldKinds), new compactUtil.EmployeeSerializer()]);
     });
 
     it('should be able to read and write empty class', async function() {
-        await shouldReadAndWrite(new compactUtil.Empty(), [new compactUtil.EmptySerializer()]);
+        await shouldReadAndWrite(new compactUtil.Flexible({}), []);
     });
 
     it('should be able to read and write class with only variable size fields', async function() {
@@ -125,6 +125,38 @@ describe('CompactTest', function () {
             fields[fieldName] = compactUtil.referenceObjects[fieldName];
         }
         await shouldReadAndWrite(new compactUtil.Flexible(fields), [new compactUtil.FlexibleSerializer(compactUtil.fixedSizeFields), new compactUtil.EmployeeSerializer()]);
+    });
+
+    [['small', 1], ['medium', 20], ['large', 42]].forEach(([size, elementCount]) => {
+        it(`should read and write ${size} object`, async function() {
+            const referenceObjects = {
+                [fieldKind[fieldKind.ARRAY_OF_STRING]]: new Array(elementCount).fill(0).map(i => TestUtil.randomString((i + 1) * 100)),
+                [fieldKind[fieldKind.INT32]]: 32,
+                [fieldKind[fieldKind.STRING]]: 'test',
+            }
+
+            referenceObjects[fieldKind[fieldKind.ARRAY_OF_STRING]].push(null);
+            await shouldReadAndWrite(new compactUtil.Flexible(referenceObjects), [new compactUtil.FlexibleSerializer([fieldKind.ARRAY_OF_STRING, fieldKind.INT32, fieldKind.STRING])]);
+        });
+    });
+
+
+    [0, 1, 8, 10, 100, 1000].forEach((elementCount) => {
+        it(`should read and write bool array with size ${elementCount}`, async function() {
+            const referenceObjects = {
+                [fieldKind[fieldKind.ARRAY_OF_BOOLEAN]]: new Array(elementCount).fill(0).map(() => Math.random() > 0.5),
+            }
+
+            await shouldReadAndWrite(new compactUtil.Flexible(referenceObjects), [new compactUtil.FlexibleSerializer([fieldKind.ARRAY_OF_BOOLEAN])]);
+        });
+
+        it(`should read and write bool array with size ${elementCount}`, async function() {
+            const referenceObjects = {
+                [fieldKind[fieldKind.ARRAY_OF_BOOLEAN]]: new Array(elementCount).fill(0).map(() => Math.random() > 0.5),
+            }
+
+            await shouldReadAndWrite(new compactUtil.Flexible(referenceObjects), [new compactUtil.FlexibleSerializer([fieldKind.ARRAY_OF_BOOLEAN])]);
+        });
     });
 
     it('should allow basic query', async function() {
