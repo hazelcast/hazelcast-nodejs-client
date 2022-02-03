@@ -1,4 +1,3 @@
-/* eslint-disable */
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -25,7 +24,6 @@ const Long = require('long');
 const { Lang } = require('../../../../remote_controller/remote_controller_types');
 
 describe('CompactSerializersLiveTest', function () {
-
     const getCompactUtil = () => require('./CompactUtil');
     let compactUtil;
 
@@ -37,7 +35,6 @@ describe('CompactSerializersLiveTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     describe('CompactSerializers with Server No Config Test', function () {
-
         let cluster;
         let client;
         let mapName;
@@ -54,7 +51,6 @@ describe('CompactSerializersLiveTest', function () {
                 </serialization>
             </hazelcast>
         `;
-
 
         before(async function () {
             cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
@@ -110,7 +106,6 @@ describe('CompactSerializersLiveTest', function () {
     });
 
     describe('CompactSerializers with Server Explicit Config Test', function () {
-
         let cluster;
         let client;
         let mapName;
@@ -126,7 +121,10 @@ describe('CompactSerializersLiveTest', function () {
                 <serialization>
                     <compact-serialization enabled="true">
                          <registered-classes>
-                            <class type-name="example.serialization.EmployeeDTO" serializer="example.serialization.EmployeeDTOSerializer">
+                            <class 
+                             type-name="example.serialization.EmployeeDTO"
+                             serializer="example.serialization.EmployeeDTOSerializer"
+                             >
                                 example.serialization.EmployeeDTO
                             </class>
                     </registered-classes>

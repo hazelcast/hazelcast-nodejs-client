@@ -1,4 +1,3 @@
-/* eslint-disable */
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -20,7 +19,9 @@ const chai = require('chai');
 const { FieldKind } = require('../../../../lib');
 const { FieldDescriptor } = require('../../../../lib/serialization/generic_record/FieldDescriptor');
 const { ObjectDataOutput, ObjectDataInput } = require('../../../../lib/serialization/ObjectData');
-const { createSerializationService } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
+const {
+    createSerializationService
+} = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { Schema } = require('../../../../lib/serialization/compact/Schema');
 const { RabinFingerprint64 } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const { BitsUtil } = require('../../../../lib/util/BitsUtil');
@@ -32,7 +33,7 @@ const verifySchema = (typeName, schema, fields, rabinFingerPrint, fieldDefinitio
     schema.fieldDefinitionMap.size.should.be.eq(fields.length);
     schema.fieldDefinitionMap.should.be.deep.eq(fieldDefinitionMap);
     RabinFingerprint64(schema).eq(rabinFingerPrint).should.be.true;
-}
+};
 
 describe('SchemaTest', function () {
     it('should construct from readData and serialize via writeData', function () {
@@ -55,7 +56,7 @@ describe('SchemaTest', function () {
         verifySchema('something', schema2, fields, RabinFingerprint64(schema), schema.fieldDefinitionMap);
     });
 
-    it('construct correctly when no arguments given', function (){
+    it('construct correctly when no arguments given', function () {
         const schema = new Schema();
         schema.typeName.should.be.eq('');
         schema.fields.should.be.deep.eq([]);
@@ -69,7 +70,9 @@ describe('SchemaTest', function () {
             boolFields[i] = new FieldDescriptor(i.toString(), FieldKind.BOOLEAN);
         }
 
-        const fields = [...boolFields, new FieldDescriptor('fixSized', FieldKind.INT32), new FieldDescriptor('varSized', FieldKind.STRING)];
+        const fields = [
+            ...boolFields, new FieldDescriptor('fixSized', FieldKind.INT32), new FieldDescriptor('varSized', FieldKind.STRING)
+        ];
         const schema = new Schema('something', fields);
 
         schema.numberVarSizeFields.should.be.eq(1);
@@ -94,6 +97,5 @@ describe('SchemaTest', function () {
 
             bitPositionSoFar += 1;
         }
-
     });
 });

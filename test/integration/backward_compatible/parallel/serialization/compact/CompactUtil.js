@@ -59,7 +59,14 @@ class EmployeeSerializer {
     }
 }
 
-const objects = [{}, {a: 1}, new Employee(1, Long.ONE)];
+class NonCompactClass {
+    constructor(a, b) {
+        this.a = a;
+        this.b = b;
+    }
+}
+
+const objects = [{}, {a: 1}, new NonCompactClass(1, Long.ONE)];
 const numbers = [1, 2, 1.123123, -1.32312, 0, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER];
 const buffers = [Buffer.from([1, 2]), Buffer.from([]), [], Buffer.from([1]), null];
 const strings = ['1', 'asdasd', null, ''];

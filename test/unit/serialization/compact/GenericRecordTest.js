@@ -1,4 +1,3 @@
-/* eslint-disable */
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -30,9 +29,8 @@ const {
     mimicSchemaReplication,
     validationTestParams
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
-const { Fields } = require('../../../../lib/serialization/generic_record');
+const { Fields, FieldKind } = require('../../../../lib/serialization/generic_record');
 const Long = require('long');
-
 
 const testIntRange = (invalidValueFn, validValueFn) => {
     for (const test of [
@@ -55,18 +53,18 @@ const testIntRange = (invalidValueFn, validValueFn) => {
         test.invalidValues.forEach(invalidValue => invalidValueFn(test.field, invalidValue));
         test.validValues.forEach(validValue => validValueFn(test.field, validValue));
     }
-}
+};
 
 describe('GenericRecordTest', function () {
-    it('toString should produce valid JSON string', async () => {
-        const serializationService = createSerializationService([new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]);
+    it('toString should produce valid JSON string', async function() {
+        const serializationService = createSerializationService(
+            [new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]
+        );
         const serializationService2 = createSerializationService(); // serializationService that does not have the serializers
         const expectedDTO = createMainDTO();
         expectedDTO.nullableBool = null;
         expectedDTO.inner.localDateTimes[0] = null;
-        let data;
-
-        data = await serialize(serializationService, expectedDTO);
+        const data = await serialize(serializationService, expectedDTO);
         data.isCompact().should.be.true;
 
         mimicSchemaReplication(serializationService, serializationService2);
@@ -82,7 +80,7 @@ describe('GenericRecordTest', function () {
         JSON.parse(genericRecord2.toString());
     });
 
-    it('should be able to be cloned after converted to object from data', async () => {
+    it('should be able to be cloned after converted to object from data', async function() {
         const values = {
             foo: 1,
             bar: Long.fromNumber(1231)
@@ -110,7 +108,7 @@ describe('GenericRecordTest', function () {
         (record.getInt64('bar').eq(Long.fromNumber(1231))).should.be.true;
     });
 
-    it('should be able to be cloned after created via API', async () => {
+    it('should be able to be cloned after created via API', async function() {
         const values = {
             foo: 1,
             bar: Long.fromNumber(1231)
@@ -131,9 +129,9 @@ describe('GenericRecordTest', function () {
         // record stays unchanged
         record.getInt32('foo').should.be.eq(1);
         (record.getInt64('bar').eq(Long.fromNumber(1231))).should.be.true;
-    })
+    });
 
-    it('should not support reading and writing char field', async () => {
+    it('should not support reading and writing char field', async function() {
         (() => GenericRecords.compact('writeChar', {
             foo: Fields.char
         }, {
@@ -143,14 +141,15 @@ describe('GenericRecordTest', function () {
         (() => GenericRecords.compact('readChar', {}, {}).getChar('foo')).should.throw(UnsupportedOperationError, /char/);
     });
 
-    it('should not support reading and writing charArray field', async () => {
+    it('should not support reading and writing charArray field', async function() {
         (() => GenericRecords.compact('writeCharArray', {
             foo: Fields.arrayOfChar
         }, {
             foo: ['a', 'b']
         })).should.throw(UnsupportedOperationError, /char/);
 
-        (() => GenericRecords.compact('readCharArray', {}, {}).getArrayOfChar('foo')).should.throw(UnsupportedOperationError, /char/);
+        (() => GenericRecords.compact('readCharArray', {}, {}).getArrayOfChar('foo'))
+        .should.throw(UnsupportedOperationError, /char/);
     });
 
     describe('validation', function () {
@@ -173,15 +172,15 @@ describe('GenericRecordTest', function () {
                     (() => {
                         GenericRecords.compact('typeName', {
                             foo: field
-                        }, {foo: invalidValue})
+                        }, {foo: invalidValue});
                     }).should.throw(RangeError, 'range');
                 }, (field, validValue) => {
-                        (() => {
-                            GenericRecords.compact('typeName', {
+                    (() => {
+                        GenericRecords.compact('typeName', {
                                 foo: field
-                            }, {foo: validValue})
-                        }).should.not.throw();
-                    }
+                        }, {foo: validValue});
+                    }).should.not.throw();
+                }
                 );
             });
 
@@ -189,23 +188,31 @@ describe('GenericRecordTest', function () {
                 for (const value of Object.values(validationTestParams)) {
                     const [validValues, invalidValues] = value.values;
                     const field = value.field;
-
-
+                    const fieldKindName = FieldKind[field.kind];
 
                     invalidValues.forEach(invalidValue => {
                         try {
                             GenericRecords.compact('typeName', {
                                 foo: field
                             }, {foo: invalidValue});
-                        } catch(e) {
-                            if (e instanceof RangeError && e.message.includes('Generic record field validation error: Expected a number in range')) {
+                        } catch (e) {
+                            if (e instanceof RangeError &&
+                                 e.message.includes('Generic record field validation error: Expected a number in range')) {
                                 return;
                             }
                         }
 
+                        const invalidValueStr = JSON.stringify(invalidValue, (key, value) =>
+                            typeof value === 'bigint'
+                                ? 'BigInt: ' + value.toString()
+                                : value // return everything else unchanged
+                        );
+
                         (() => GenericRecords.compact('typeName', {
                             foo: field
-                        }, {foo: invalidValue})).should.throw(TypeError);
+                        }, {foo: invalidValue})).should.throw(TypeError, undefined,
+                            `Using invalid value ${invalidValueStr} with ${fieldKindName}` +
+                             ' must have thrown, but it did not.');
                     });
 
                     validValues.forEach(validValue => {
@@ -213,15 +220,24 @@ describe('GenericRecordTest', function () {
                             GenericRecords.compact('typeName', {
                                 foo: field
                             }, {foo: validValue});
-                        } catch(e) {
-                            if (e instanceof RangeError && e.message.includes('Generic record field validation error: Expected a number in range')) {
+                        } catch (e) {
+                            if (e instanceof RangeError &&
+                                 e.message.includes('Generic record field validation error: Expected a number in range')) {
                                 return;
                             }
                         }
 
+                        const validValueStr = JSON.stringify(validValue, (key, value) =>
+                            typeof value === 'bigint'
+                                ? 'BigInt: ' + value.toString()
+                                : value // return everything else unchanged
+                        );
+
                         (() => GenericRecords.compact('typeName', {
                             foo: field
-                        }, {foo: validValue})).should.not.throw();
+                        }, {foo: validValue})).should.not.throw(undefined, undefined,
+                            `Using valid value ${validValueStr} with ${fieldKindName}` +
+                            ' must have thrown, but it did not.');
                     });
                 }
             });
@@ -230,18 +246,18 @@ describe('GenericRecordTest', function () {
         describe('cloning', function () {
             it('should throw RangeError if provided integer is out of range and should not otherwise', function () {
                 testIntRange((field, invalidValue) => {
-                        (() => {
-                            GenericRecords.compact('typeName', {
+                    (() => {
+                        GenericRecords.compact('typeName', {
                                 foo: field
-                            }, {foo: 0}).clone({foo: invalidValue})
-                        }).should.throw(RangeError, 'range');
-                    }, (field, validValue) => {
-                        (() => {
-                            GenericRecords.compact('typeName', {
+                        }, {foo: 0}).clone({foo: invalidValue});
+                    }).should.throw(RangeError, 'range');
+                }, (field, validValue) => {
+                    (() => {
+                        GenericRecords.compact('typeName', {
                                 foo: field
-                            }, {foo: 0}).clone({foo: validValue})
-                        }).should.not.throw();
-                    }
+                        }, {foo: 0}).clone({foo: validValue});
+                    }).should.not.throw();
+                }
                 );
             });
 
@@ -252,33 +268,52 @@ describe('GenericRecordTest', function () {
                     const record = GenericRecords.compact('typeName', {
                         foo: field
                     }, {foo: validValues[0]});
+                    const fieldKindName = FieldKind[field.kind];
 
                     invalidValues.forEach(invalidValue => {
                         try {
                             record.clone({ foo: invalidValue });
-                        } catch(e) {
-                            if (e instanceof RangeError && e.message.includes('Generic record field validation error: Expected a number in range')) {
+                        } catch (e) {
+                            if (e instanceof RangeError &&
+                                 e.message.includes('Generic record field validation error: Expected a number in range')) {
                                 return;
                             }
                         }
 
+                        const invalidValueStr = JSON.stringify(invalidValue, (key, value) =>
+                            typeof value === 'bigint'
+                                ? 'BigInt: ' + value.toString()
+                                : value // return everything else unchanged
+                        );
+
                         (() => record.clone({
                             foo: invalidValue
-                        })).should.throw(TypeError);
+                        })).should.throw(TypeError, undefined,
+                            `Using invalid value ${invalidValueStr} with ${fieldKindName}` +
+                            ' must have thrown, but it did not.');
                     });
 
                     validValues.forEach(validValue => {
                         try {
                             record.clone({ foo: validValue });
-                        } catch(e) {
-                            if (e instanceof RangeError && e.message.includes('Generic record field validation error: Expected a number in range')) {
+                        } catch (e) {
+                            if (e instanceof RangeError &&
+                                 e.message.includes('Generic record field validation error: Expected a number in range')) {
                                 return;
                             }
                         }
 
+                        const validValueStr = JSON.stringify(validValue, (key, value) =>
+                            typeof value === 'bigint'
+                                ? 'BigInt: ' + value.toString()
+                                : value // return everything else unchanged
+                        );
+
                         (() => record.clone({
                             foo: validValue
-                        })).should.not.throw();
+                        })).should.not.throw(undefined, undefined,
+                            `Using valid value ${validValueStr} with ${fieldKindName}`+
+                            ' must have thrown, but it did not.');
                     });
 
                     (() => record.clone()).should.not.throw();

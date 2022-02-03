@@ -1,4 +1,3 @@
-/* eslint-disable */
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -20,7 +19,10 @@ const chai = require('chai');
 const { SchemaWriter } = require('../../../../lib/serialization/compact/SchemaWriter');
 const { FieldDescriptor } = require('../../../../lib/serialization/generic_record/FieldDescriptor');
 const { FieldKind } = require('../../../../lib');
-const { createSerializationService, supportedFieldKinds } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
+const {
+    createSerializationService,
+    supportedFieldKinds
+} = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { PositionalObjectDataOutput } = require('../../../../lib/serialization/ObjectData');
 const { RabinFingerprintBytes } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const TestUtil = require('../../../TestUtil');
@@ -43,14 +45,14 @@ describe('SchemaWriterTest', function () {
         fingerprint64.eq(schema.schemaId).should.be.true;
     });
 
-    it('should use RabinFingerprint to compute schema id', function () {
+    it('should store and retrieve field descriptors correctly', function () {
         const writer = new SchemaWriter('typeName');
 
         const fields = [];
 
         for (const fieldKind of supportedFieldKinds) {
             const name = TestUtil.randomString(5);
-            fields.push({fieldKind, name})
+            fields.push({fieldKind, name});
             switch (fieldKind) {
                 case FieldKind.BOOLEAN:
                     writer.writeBoolean(name, null);

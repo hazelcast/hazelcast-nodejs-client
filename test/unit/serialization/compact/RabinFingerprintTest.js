@@ -1,4 +1,3 @@
-/* eslint-disable */
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -16,12 +15,15 @@
  */
 'use strict';
 
-const { RabinFingerPrintLongByte, RabinFingerPrintLongInt, INIT } = require('../../../../lib/serialization/compact/RabinFingerprint');
+const {
+    RabinFingerPrintLongByte,
+    RabinFingerPrintLongInt,
+    INIT
+} = require('../../../../lib/serialization/compact/RabinFingerprint');
 const chai = require('chai');
 const Long = require('long');
 const { RabinFingerPrintLongString } = require('../../../../src/serialization/compact/RabinFingerprint');
 const { SchemaWriter } = require('../../../../lib/serialization/compact/SchemaWriter');
-const { LocalDateTime } = require('../../../../lib');
 chai.should();
 
 describe('RabinFingerprintTest', function () {
@@ -59,18 +61,17 @@ describe('RabinFingerprintTest', function () {
         });
     });
 
-
     [
-        ['0', "hazelcast", '8164249978089638648'],
-        ['-31231241235', "üğişçö", '6128923854942458838'],
-        ['41231542121235', "😀 😃 😄", '-6875080751809013377'],
-        [INIT, "STUdent", '1896492170246289820'],
-        [INIT, "aü😄", '-2084249746924383631'],
-        [INIT, "", '-2316162475121075004'],
-        ['-123321', "xyz", '2601391163390439688'],
-        ['132132123132132', "    ç", '-7699875372487088773'],
-        ['42', "42", '7764866287864698590'],
-        ['-42', "-42", '-3434092993477103253'],
+        ['0', 'hazelcast', '8164249978089638648'],
+        ['-31231241235', 'üğişçö', '6128923854942458838'],
+        ['41231542121235', '😀 😃 😄', '-6875080751809013377'],
+        [INIT, 'STUdent', '1896492170246289820'],
+        [INIT, 'aü😄', '-2084249746924383631'],
+        [INIT, '', '-2316162475121075004'],
+        ['-123321', 'xyz', '2601391163390439688'],
+        ['132132123132132', '    ç', '-7699875372487088773'],
+        ['42', '42', '7764866287864698590'],
+        ['-42', '-42', '-3434092993477103253'],
     ].forEach(params => {
         it(`string test ${params}`, function () {
             if (params[0] === INIT) {
@@ -90,5 +91,4 @@ describe('RabinFingerprintTest', function () {
         const schema = writer.build();
         schema.schemaId.eq(Long.fromString('-5445839760245891300')).should.be.true;
     });
-
 });

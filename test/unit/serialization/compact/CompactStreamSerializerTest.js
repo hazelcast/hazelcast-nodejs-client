@@ -1,4 +1,3 @@
-/* eslint-disable */
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -43,8 +42,10 @@ const { GenericRecords } = require('../../../../lib');
 const { Fields } = require('../../../../lib/serialization/generic_record');
 
 describe('CompactStreamSerializerTest', function () {
-    it('should work with all fields', async function (){
-        const serializationService = createSerializationService([new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]);
+    it('should work with all fields', async function () {
+        const serializationService = createSerializationService(
+            [new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]
+        );
 
         const mainDTO = createMainDTO();
         const data = await serialize(serializationService, mainDTO);
@@ -53,8 +54,10 @@ describe('CompactStreamSerializerTest', function () {
         object.should.deep.equal(mainDTO);
     });
 
-    it('should work with all fields and defaults enabled serializer', async function (){
-        const serializationService = createSerializationService([new MainDTOSerializerWithDefaults(), new InnerDTOSerializer(), new NamedDTOSerializer()]);
+    it('should work with all fields and defaults enabled serializer', async function () {
+        const serializationService = createSerializationService(
+            [new MainDTOSerializerWithDefaults(), new InnerDTOSerializer(), new NamedDTOSerializer()]
+        );
 
         const mainDTO = createMainDTO();
         const data = await serialize(serializationService, mainDTO);
@@ -63,7 +66,7 @@ describe('CompactStreamSerializerTest', function () {
         object.should.deep.equal(mainDTO);
     });
 
-    it('should work with recursive fields', async function (){
+    it('should work with recursive fields', async function () {
         const serializationService = createSerializationService([new NodeDTOSerializer()]);
 
         const node = new NodeDTO(0, new NodeDTO(1, new NodeDTO(2, null)));
@@ -73,7 +76,7 @@ describe('CompactStreamSerializerTest', function () {
         object.should.deep.equal(node);
     });
 
-    it('should deserialize to generic record when serializer is not registered', async function (){
+    it('should deserialize to generic record when serializer is not registered', async function () {
         const serializationService = createSerializationService([new EmployeeSerializer()]);
 
         const employee = new Employee(30, Long.ONE);
@@ -90,13 +93,13 @@ describe('CompactStreamSerializerTest', function () {
         (object.getInt64('id').eq(Long.ONE)).should.be.true;
     });
 
-    it('should work with evolved schema when field added', async function (){
+    it('should work with evolved schema when field added', async function () {
         class EmployeeSerializerV2 {
             constructor() {
                 this.hzClassName = 'Employee';
             }
 
-            read(reader) {
+            read() {
                 // no-op
             }
 
@@ -122,13 +125,13 @@ describe('CompactStreamSerializerTest', function () {
         (actual.id.eq(expected.id)).should.be.true;
     });
 
-    it('should work with evolved schema when field removed and default value set', async function (){
+    it('should work with evolved schema when field removed and default value set', async function () {
         class EmployeeSerializerV2 {
             constructor() {
                 this.hzClassName = 'Employee';
             }
 
-            read(reader) {
+            read() {
                 // no-op
             }
 
@@ -152,7 +155,7 @@ describe('CompactStreamSerializerTest', function () {
         (actual.id.eq(Long.ZERO)).should.be.true;
     });
 
-    it('should work with evolved schema with generic records', async function (){
+    it('should work with evolved schema with generic records', async function () {
         const serializationService = createSerializationService();
         const record = GenericRecords.compact('fooBarTypeName', {
             foo: Fields.int32,
