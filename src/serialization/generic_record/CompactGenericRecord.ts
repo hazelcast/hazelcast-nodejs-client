@@ -65,9 +65,11 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
 
     validateField(fieldName: string, fieldKind: FieldKind, value: any, checkingElement = false): void {
         const getErrorStringElement =
-            (typeName: string) => `Expected a ${typeName} element in field ${fieldName}, but got: ${value}`;
+            (typeName: string) => 'Generic record field validation error: ' +
+                `Expected a ${typeName} element in field ${fieldName}, but got: ${value}`;
         const getErrorStringForField =
-            (typeName: string) => `Expected ${typeName} for field ${fieldName}, but got: ${value}`;
+            (typeName: string) => 'Generic record field validation error: ' +
+                `Expected ${typeName} for field ${fieldName}, but got: ${value}`;
         const checkFn = checkingElement ? getErrorStringElement : getErrorStringForField;
         const throwTypeErrorWithMessage = (typeName: string) => {
             throw new TypeError(checkFn(typeName));
@@ -99,6 +101,19 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
             }
         }
 
+        const validateNumberRange = (min: number, max: number) => {
+            if (value < min || value > max) {
+                throw new RangeError(
+                    'Generic record field validation error: ' +
+                    `Expected a number in range [${min}, ${max}] for field ${fieldName}, but got: ${value}`
+                );
+            }
+        }
+
+        const validateInt8Range = () => validateNumberRange(-128, 127);
+        const validateInt16Range = () => validateNumberRange(-32768, 32767);
+        const validateInt32Range = () => validateNumberRange(-2147483648, 2147483647);
+
         switch (fieldKind) {
             case FieldKind.BOOLEAN:
                 validateType('boolean');
@@ -108,6 +123,7 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 break
             case FieldKind.INT8:
                 validateType('number');
+                validateInt8Range();
                 break
             case FieldKind.ARRAY_OF_INT8:
                 if (!Buffer.isBuffer(value) && value !== null) {
@@ -120,12 +136,14 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 throw new UnsupportedOperationError('Compact format does not support writing an array of chars field');
             case FieldKind.INT16:
                 validateType('number');
+                validateInt16Range();
                 break
             case FieldKind.ARRAY_OF_INT16:
                 validateArray(FieldKind.INT16);
                 break
             case FieldKind.INT32:
                 validateType('number');
+                validateInt32Range();
                 break
             case FieldKind.ARRAY_OF_INT32:
                 validateArray(FieldKind.INT32);
@@ -219,18 +237,21 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
                 break
             case FieldKind.NULLABLE_INT8:
                 validateNullableType('number');
+                validateInt8Range();
                 break
             case FieldKind.ARRAY_OF_NULLABLE_INT8:
                 validateArray(FieldKind.NULLABLE_INT8);
                 break
             case FieldKind.NULLABLE_INT16:
                 validateNullableType('number');
+                validateInt16Range();
                 break
             case FieldKind.ARRAY_OF_NULLABLE_INT16:
                 validateArray(FieldKind.NULLABLE_INT16);
                 break
             case FieldKind.NULLABLE_INT32:
                 validateNullableType('number');
+                validateInt32Range();
                 break
             case FieldKind.ARRAY_OF_NULLABLE_INT32:
                 validateArray(FieldKind.NULLABLE_INT32);

@@ -33,6 +33,30 @@ const {
 const { Fields } = require('../../../../lib/serialization/generic_record');
 const Long = require('long');
 
+
+const testIntRange = (invalidValueFn, validValueFn) => {
+    for (const test of [
+        {
+            field: Fields.int8,
+            validValues: [-128, 127, 12, 0, 122],
+            invalidValues: [11111111, -129, -1232, 128, 1000]
+        },
+        {
+            field: Fields.int16,
+            validValues: [-128, 127, 12, 0, 122, -32768, 32767, 10000, -10000],
+            invalidValues: [11111111, 32768, 52768, -32769, -132768]
+        },
+        {
+            field: Fields.int32,
+            validValues: [-128, 127, 12, 0, 122, -32768, 32767, 10000, -10000, 1234567890, -1234567890, -2147483648, 2147483647],
+            invalidValues: [Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER, -2147483649, 2147483648, 2147483648213]
+        }
+    ]) {
+        test.invalidValues.forEach(invalidValue => invalidValueFn(test.field, invalidValue));
+        test.validValues.forEach(validValue => validValueFn(test.field, validValue));
+    }
+}
+
 describe('GenericRecordTest', function () {
     it('toString should produce valid JSON string', async () => {
         const serializationService = createSerializationService([new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]);
@@ -144,18 +168,57 @@ describe('GenericRecordTest', function () {
                 }, {foo: 12})).should.throw(TypeError, 'bar');
             });
 
-            it('should throw error if value has invalid type and should not throw if value has valid type', function () {
+            it('should throw RangeError if provided integer is out of range and should not otherwise', function () {
+                testIntRange((field, invalidValue) => {
+                    (() => {
+                        GenericRecords.compact('typeName', {
+                            foo: field
+                        }, {foo: invalidValue})
+                    }).should.throw(RangeError, 'range');
+                }, (field, validValue) => {
+                        (() => {
+                            GenericRecords.compact('typeName', {
+                                foo: field
+                            }, {foo: validValue})
+                        }).should.not.throw();
+                    }
+                );
+            });
+
+            it('should throw TypeError if value has invalid type and should not throw if value has valid type', function () {
                 for (const value of Object.values(validationTestParams)) {
                     const [validValues, invalidValues] = value.values;
                     const field = value.field;
 
+
+
                     invalidValues.forEach(invalidValue => {
+                        try {
+                            GenericRecords.compact('typeName', {
+                                foo: field
+                            }, {foo: invalidValue});
+                        } catch(e) {
+                            if (e instanceof RangeError && e.message.includes('Generic record field validation error: Expected a number in range')) {
+                                return;
+                            }
+                        }
+
                         (() => GenericRecords.compact('typeName', {
                             foo: field
                         }, {foo: invalidValue})).should.throw(TypeError);
                     });
 
                     validValues.forEach(validValue => {
+                        try {
+                            GenericRecords.compact('typeName', {
+                                foo: field
+                            }, {foo: validValue});
+                        } catch(e) {
+                            if (e instanceof RangeError && e.message.includes('Generic record field validation error: Expected a number in range')) {
+                                return;
+                            }
+                        }
+
                         (() => GenericRecords.compact('typeName', {
                             foo: field
                         }, {foo: validValue})).should.not.throw();
@@ -165,6 +228,23 @@ describe('GenericRecordTest', function () {
         });
 
         describe('cloning', function () {
+            it('should throw RangeError if provided integer is out of range and should not otherwise', function () {
+                testIntRange((field, invalidValue) => {
+                        (() => {
+                            GenericRecords.compact('typeName', {
+                                foo: field
+                            }, {foo: 0}).clone({foo: invalidValue})
+                        }).should.throw(RangeError, 'range');
+                    }, (field, validValue) => {
+                        (() => {
+                            GenericRecords.compact('typeName', {
+                                foo: field
+                            }, {foo: 0}).clone({foo: validValue})
+                        }).should.not.throw();
+                    }
+                );
+            });
+
             it('should throw error if wrong type of replacement value is given, should not otherwise', function () {
                 for (const value of Object.values(validationTestParams)) {
                     const [validValues, invalidValues] = value.values;
@@ -174,12 +254,28 @@ describe('GenericRecordTest', function () {
                     }, {foo: validValues[0]});
 
                     invalidValues.forEach(invalidValue => {
+                        try {
+                            record.clone({ foo: invalidValue });
+                        } catch(e) {
+                            if (e instanceof RangeError && e.message.includes('Generic record field validation error: Expected a number in range')) {
+                                return;
+                            }
+                        }
+
                         (() => record.clone({
                             foo: invalidValue
                         })).should.throw(TypeError);
                     });
 
                     validValues.forEach(validValue => {
+                        try {
+                            record.clone({ foo: validValue });
+                        } catch(e) {
+                            if (e instanceof RangeError && e.message.includes('Generic record field validation error: Expected a number in range')) {
+                                return;
+                            }
+                        }
+
                         (() => record.clone({
                             foo: validValue
                         })).should.not.throw();
