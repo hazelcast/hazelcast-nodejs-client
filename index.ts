@@ -1,6 +1,6 @@
 'use strict';
 
-import {Client, CompactReader, CompactSerializer, CompactWriter, GenericRecords, CompactFields} from './lib'
+import {Client, CompactReader, CompactSerializer, CompactWriter} from './lib'
 import * as Long from 'long';
 
 class EmployeeDTO {
@@ -14,7 +14,7 @@ class EmployeeDTO {
 }
 
 class EmployeeDTOSerializer implements CompactSerializer<EmployeeDTO> {
-    hzClassName = 'EmployeeDTO';
+    hzClass = EmployeeDTO;
 
     read(reader: CompactReader): EmployeeDTO {
         const age = reader.readInt32('age');

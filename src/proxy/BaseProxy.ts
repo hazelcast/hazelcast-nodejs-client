@@ -70,10 +70,10 @@ export abstract class BaseProxy {
         return this.postDestroy();
     }
 
-    protected registerSchema(schema: Schema, className: string | undefined): Promise<void> {
-        if (className !== undefined) {
+    protected registerSchema(schema: Schema, clazz: (new (...args: any[]) => any) | undefined): Promise<void> {
+        if (clazz !== undefined) {
             return this.schemaService.put(schema).then(() => {
-                this.serializationService.registerSchemaToClassName(schema, className);
+                this.serializationService.registerSchemaToClass(schema, clazz);
             })
         } else {
             return this.schemaService.put(schema);

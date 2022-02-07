@@ -44,7 +44,7 @@ class Employee {
 
 class EmployeeSerializer {
     constructor() {
-        this.hzClassName = 'Employee';
+        this.hzClass = Employee;
     }
 
     read(reader) {
@@ -279,7 +279,7 @@ class EmployeeDTO {
 
 class EmployeeDTOSerializer {
     constructor() {
-        this.hzClassName = 'EmployeeDTO'; // used to match a js object to serialize with this serializer
+        this.hzClass = EmployeeDTO; // used to match a js object to serialize with this serializer
         this.hzTypeName = 'example.serialization.EmployeeDTO'; // used to match schema's typeName with serializer
     }
 
@@ -343,7 +343,7 @@ class Bits {
 
 class BitsSerializer {
     constructor() {
-        this.hzClassName = 'Bits';
+        this.hzClass = Bits;
     }
 
     read(reader) {
@@ -393,7 +393,7 @@ class Employer {
 
 class EmployerSerializer {
     constructor() {
-        this.hzClassName = 'Employer';
+        this.hzClass = Employer;
     }
 
     read(reader) {
@@ -570,7 +570,7 @@ class Flexible {
 class FlexibleSerializer {
     constructor(fieldKinds) {
         this.fieldKinds = fieldKinds;
-        this.hzClassName = 'Flexible';
+        this.hzClass = Flexible;
     }
 
     read(reader) {
@@ -891,7 +891,7 @@ const createMainDTO = () => {
 
 class InnerDTOSerializer {
     constructor() {
-        this.hzClassName = 'InnerDTO';
+        this.hzClass = InnerDTO;
     }
 
     read(reader) {
@@ -981,7 +981,7 @@ class InnerDTOSerializer {
 
 class NamedDTOSerializer {
     constructor() {
-        this.hzClassName = 'NamedDTO';
+        this.hzClass = NamedDTO;
     }
 
     read(reader) {
@@ -1006,7 +1006,7 @@ class NodeDTO {
 
 class NodeDTOSerializer {
     constructor() {
-        this.hzClassName = 'NodeDTO';
+        this.hzClass = NodeDTO;
     }
 
     read(reader) {
@@ -1024,7 +1024,7 @@ class NodeDTOSerializer {
 
 class MainDTOSerializer {
     constructor() {
-        this.hzClassName = 'MainDTO';
+        this.hzClass = MainDTO;
     }
 
     read(reader) {
@@ -1082,7 +1082,7 @@ class MainDTOSerializer {
 
 class MainDTOSerializerWithDefaults {
     constructor() {
-        this.hzClassName = 'MainDTO';
+        this.hzClass = MainDTO;
     }
 
     read(reader) {

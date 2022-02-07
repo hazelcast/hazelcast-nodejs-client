@@ -86,7 +86,7 @@ export interface SerializationService {
 
     readObject(inp: DataInput): any;
 
-    registerSchemaToClassName(schema: Schema, className: string): void;
+    registerSchemaToClass(schema: Schema, className: new (...args: any[]) => any): void;
 }
 
 type PartitionStrategy = (obj: any) => number;
@@ -301,7 +301,7 @@ export class SerializationServiceV1 implements SerializationService {
             return false;
         }
 
-        return CompactStreamSerializer.isRegisteredAsCompact(obj.constructor.name);
+        return CompactStreamSerializer.isRegisteredAsCompact(obj.constructor);
     }
 
     private registerDefaultSerializers(): void {
@@ -430,7 +430,7 @@ export class SerializationServiceV1 implements SerializationService {
         return strategy(object);
     }
 
-    registerSchemaToClassName(schema: Schema, className: string): void {
-        this.compactStreamSerializer.registerSchemaToClassName(schema, className);
+    registerSchemaToClass(schema: Schema, clazz: new (...args: any[]) => any): void {
+        this.compactStreamSerializer.registerSchemaToClass(schema, clazz);
     }
 }

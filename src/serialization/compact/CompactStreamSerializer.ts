@@ -37,23 +37,24 @@ export class CompactStreamSerializer {
      * Users' serializer config for classes are stored here. Used to determine if a class is compact serializable.
      * Also used to get serializer of an object while serializing.
      */
-    private static readonly classNameToSerializersMap : Map<string, CompactSerializer<new () => any>> = new Map();
+    private static readonly classToSerializersMap:
+     Map<new (...args: any[]) => any, CompactSerializer<new (...args: any[]) => any>> = new Map();
     /**
      * Used to cache created schema of an object after initial serialization. If an object has schema,
      * no need to create schema again and put to schema service.
      */
-    private readonly classNameToSchemaMap : Map<string, Schema>;
+    private readonly classToSchemaMap : Map<new (...args: any[]) => any, Schema>;
     /**
      * A table from typeName to serializer map. Serialized compact data include a type name. Deserializer of compact data is
      * determined using this table.
      */
-    private readonly typeNameToSerializersMap: Map<string, CompactSerializer<new () => any>>;
+    private readonly typeNameToSerializersMap: Map<string, CompactSerializer<new (...args: any[]) => any>>;
 
     constructor(
         private readonly schemaService: SchemaService
     ) {
-        this.classNameToSchemaMap = new Map<string, Schema>();
-        this.typeNameToSerializersMap = new Map<string, CompactSerializer<new () => any>>();
+        this.classToSchemaMap = new Map<new (...args: any[]) => any, Schema>();
+        this.typeNameToSerializersMap = new Map<string, CompactSerializer<new (...args: any[]) => any>>();
     }
 
     getOrReadSchema(input: ObjectDataInput): Schema {
@@ -66,8 +67,8 @@ export class CompactStreamSerializer {
         throw new SchemaNotFoundError(`The schema can not be found with id ${schemaId}`, schemaId);
     }
 
-    registerSchemaToClassName(schema: Schema, className: string): void {
-        this.classNameToSchemaMap.set(className, schema);
+    registerSchemaToClass(schema: Schema, clazz: new (...args: any[]) => any): void {
+        this.classToSchemaMap.set(clazz, schema);
     }
 
     read(input: ObjectDataInput): any {
@@ -79,7 +80,7 @@ export class CompactStreamSerializer {
             return new DefaultCompactReader(this, input, schema, null).toSerialized();
         }
 
-        const genericRecord = new DefaultCompactReader(this, input, schema, serializer.hzTypeName || serializer.hzClassName);
+        const genericRecord = new DefaultCompactReader(this, input, schema, serializer.hzTypeName || serializer.hzClass.name);
         return serializer.read(genericRecord);
     }
 
@@ -94,16 +95,16 @@ export class CompactStreamSerializer {
         }
     }
 
-    static isRegisteredAsCompact(className: string) : boolean {
-        return CompactStreamSerializer.classNameToSerializersMap.has(className);
+    static isRegisteredAsCompact(clazz: new() => any) : boolean {
+        return CompactStreamSerializer.classToSerializersMap.has(clazz);
     }
 
-    registerSerializer(serializer: CompactSerializer<new () => any>) {
-        CompactStreamSerializer.classNameToSerializersMap.set(serializer.hzClassName, serializer);
+    registerSerializer(serializer: CompactSerializer<new (...args: any[]) => any>) {
+        CompactStreamSerializer.classToSerializersMap.set(serializer.hzClass, serializer);
         if (serializer.hzTypeName) {
             this.typeNameToSerializersMap.set(serializer.hzTypeName, serializer);
         } else {
-            this.typeNameToSerializersMap.set(serializer.hzClassName, serializer);
+            this.typeNameToSerializersMap.set(serializer.hzClass.name, serializer);
         }
     }
 
@@ -132,7 +133,7 @@ export class CompactStreamSerializer {
     }
 
     writeSchemaAndObject(
-        compactSerializer: CompactSerializer<new () => any>,
+        compactSerializer: CompactSerializer<new (...args: any[]) => any>,
         output: PositionalObjectDataOutput,
         schema: Schema,
         o: any
@@ -145,26 +146,26 @@ export class CompactStreamSerializer {
 
     writeObject(output: PositionalObjectDataOutput, o: any) : void {
         const compactSerializer = CompactStreamSerializer.getSerializerFromObject(o);
-        const className = compactSerializer.hzClassName;
-        let schema = this.classNameToSchemaMap.get(className);
+        const clazz = compactSerializer.hzClass;
+        let schema = this.classToSchemaMap.get(clazz);
         if (schema === undefined) {
-            const writer = new SchemaWriter(compactSerializer.hzTypeName || className);
+            const writer = new SchemaWriter(compactSerializer.hzTypeName || clazz.name);
             compactSerializer.write(writer, o);
             schema = writer.build();
-            this.throwIfSchemaNotReplicatedToCluster(schema, className);
+            this.throwIfSchemaNotReplicatedToCluster(schema, clazz);
         }
         this.writeSchemaAndObject(compactSerializer, output, schema, o);
     }
 
-    private throwIfSchemaNotReplicatedToCluster(schema: Schema, className: string): void {
+    private throwIfSchemaNotReplicatedToCluster(schema: Schema, clazz: new (...args: any[]) => any): void {
         // We guarantee that if Schema is not in the schemaService, it is not replicated to the cluster.
         if (this.schemaService.get(schema.schemaId) === null) {
-            throw new SchemaNotReplicatedError(`The schema ${schema.schemaId} is not replicated yet.`, schema, className);
+            throw new SchemaNotReplicatedError(`The schema ${schema.schemaId} is not replicated yet.`, schema, clazz);
         }
     }
 
-    private static getSerializerFromObject(obj: any) : CompactSerializer<new () => any> {
-        const serializer = CompactStreamSerializer.classNameToSerializersMap.get(obj.constructor.name);
+    private static getSerializerFromObject(obj: any) : CompactSerializer<new (...args: any[]) => any> {
+        const serializer = CompactStreamSerializer.classToSerializersMap.get(obj.constructor);
 
         if (serializer !== undefined) {
             return serializer;

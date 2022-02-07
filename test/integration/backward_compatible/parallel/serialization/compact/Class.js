@@ -13,13 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {CompactReader} from './CompactReader';
-import {CompactWriter} from './CompactWriter';
-
-export interface CompactSerializer<C> {
-    hzClass: new (...args: any[]) => any;
-    hzTypeName?: string;
-    read(reader: CompactReader): C;
-    write(writer: CompactWriter, instance: C): void;
+'use strict';
+class A {
+    constructor(age) {
+        this.age = age;
+    }
 }
+class ASerializer {
+    constructor() {
+        this.hzTypeName = 'A';
+        this.hzClass = A;
+    }
+
+    read(reader) {
+        const age = reader.readInt32('age');
+        return new A(age);
+    }
+    write(writer, obj) {
+        writer.writeInt32('age', obj.age);
+    }
+}
+module.exports = {ASerializer, A};

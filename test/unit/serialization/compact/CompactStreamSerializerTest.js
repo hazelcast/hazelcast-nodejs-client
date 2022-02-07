@@ -96,7 +96,7 @@ describe('CompactStreamSerializerTest', function () {
     it('should work with evolved schema when field added', async function () {
         class EmployeeSerializerV2 {
             constructor() {
-                this.hzClassName = 'Employee';
+                this.hzClass = Employee;
             }
 
             read() {
@@ -128,7 +128,7 @@ describe('CompactStreamSerializerTest', function () {
     it('should work with evolved schema when field removed and default value set', async function () {
         class EmployeeSerializerV2 {
             constructor() {
-                this.hzClassName = 'Employee';
+                this.hzClass = Employee;
             }
 
             read() {

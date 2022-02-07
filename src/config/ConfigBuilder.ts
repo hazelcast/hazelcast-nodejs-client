@@ -460,9 +460,9 @@ export class ConfigBuilder {
         const serializersArray = tryGetArray(customSerializers);
 
         for (const serializer of serializersArray) {
-            if (typeof serializer.hzClassName !== 'string') {
+            if (typeof serializer.hzClass !== 'function') {
                 throw new RangeError(
-                    `Invalid compact serializer given: ${serializer}. Expected a 'hzClassName' property that is a string.`
+                    `Invalid compact serializer given: ${serializer}. Expected a 'hzClass' property that is a function.`
                 );
             }
             if (typeof serializer.read !== 'function') {

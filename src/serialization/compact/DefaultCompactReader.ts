@@ -208,7 +208,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
 
     private getFieldDefinition(fieldName: string): FieldDescriptor {
         const fd = this.schema.fieldDefinitionMap.get(fieldName);
-        if (fd === null) {
+        if (fd === undefined) {
             throw DefaultCompactReader.toUnknownFieldException(fieldName, this.schema);
         }
         return fd;

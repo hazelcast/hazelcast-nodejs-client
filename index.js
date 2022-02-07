@@ -47,16 +47,16 @@ var EmployeeDTO = /** @class */ (function () {
 }());
 var EmployeeDTOSerializer = /** @class */ (function () {
     function EmployeeDTOSerializer() {
-        this.hzClassName = 'EmployeeDTO';
+        this.hzClass = EmployeeDTO;
     }
     EmployeeDTOSerializer.prototype.read = function (reader) {
-        var age = reader.readInt('age');
-        var id = reader.readLong('id');
+        var age = reader.readInt32('age');
+        var id = reader.readInt64('id');
         return new EmployeeDTO(age, id);
     };
     EmployeeDTOSerializer.prototype.write = function (writer, instance) {
-        writer.writeInt('age', instance.age);
-        writer.writeLong('id', instance.id);
+        writer.writeInt32('age', instance.age);
+        writer.writeInt64('id', instance.id);
     };
     return EmployeeDTOSerializer;
 }());
@@ -66,9 +66,9 @@ function main() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, lib_1.Client.newHazelcastClient({
-                    // serialization: {
-                    //     compactSerializers: [new EmployeeDTOSerializer()]
-                    // }
+                        serialization: {
+                            compactSerializers: [new EmployeeDTOSerializer()]
+                        }
                     })];
                 case 1:
                     client = _a.sent();
@@ -86,4 +86,3 @@ function main() {
     });
 }
 main()["catch"](console.error);
-//# sourceMappingURL=index.js.map

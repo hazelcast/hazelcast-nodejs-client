@@ -21,15 +21,18 @@ chai.should();
 const RC = require('../../../../RC');
 const TestUtil = require('../../../../../TestUtil');
 const Long = require('long');
+const {A, ASerializer} = require('./Class');
+const B = require('./SameNamedClass').A;
+const BSerializer = require('./SameNamedClass').ASerializer;
 const { Predicates } = require('../../../../../../lib/core');
-const { EmployeeDTOSerializer } = require('./CompactUtil');
+const { EmployeeDTOSerializer, FlexibleSerializer, Flexible, EmployeeSerializer } = require('./CompactUtil');
 const { CompactStreamSerializer } = require('../../../../../../lib/serialization/compact/CompactStreamSerializer');
 
 describe('CompactTest', function () {
     const getCompactUtil = () => require('./CompactUtil');
     const getFieldKind = () => require('../../../../../../lib/serialization/generic_record/FieldKind').FieldKind;
-    let compactUtil;
-    let fieldKind;
+    let CompactUtil;
+    let FieldKind;
 
     const testFactory = new TestUtil.TestFactory();
 
@@ -52,8 +55,8 @@ describe('CompactTest', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        compactUtil = getCompactUtil();
-        fieldKind = getFieldKind();
+        CompactUtil = getCompactUtil();
+        FieldKind = getFieldKind();
         cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
         member = await RC.startMember(cluster.id);
     });
@@ -94,62 +97,76 @@ describe('CompactTest', function () {
         readObj.should.deep.equal(obj);
     };
 
+    const putEntry = async (mapName, fieldKind, value) => {
+        const client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            serialization: {
+                compactSerializers: [new FlexibleSerializer([fieldKind]), new EmployeeSerializer()]
+            }
+        }, member);
+
+        const map = await client.getMap(mapName);
+        const fields = {[FieldKind[fieldKind]]: value};
+        await map.set('key', new Flexible(fields));
+        return {client, map};
+    };
+
     it('should work with basic test', async function () {
         await shouldReadAndWrite(
-            new compactUtil.EmployeeDTO(30, Long.fromString('102310312')), [new compactUtil.EmployeeDTOSerializer()]
+            new CompactUtil.EmployeeDTO(30, Long.fromString('102310312')), [new CompactUtil.EmployeeDTOSerializer()]
         );
     });
 
     it('should be able to read and write all fields', async function () {
         await shouldReadAndWrite(
-            new compactUtil.Flexible(compactUtil.referenceObjects),
-            [new compactUtil.FlexibleSerializer(compactUtil.supportedFieldKinds), new compactUtil.EmployeeSerializer()]
+            new CompactUtil.Flexible(CompactUtil.referenceObjects),
+            [new CompactUtil.FlexibleSerializer(CompactUtil.supportedFieldKinds), new CompactUtil.EmployeeSerializer()]
         );
     });
 
     it('should be able to read and write empty class', async function () {
         // Clear serializer list
-        CompactStreamSerializer.classNameToSerializersMap.clear();
-        await shouldReadAndWrite(new compactUtil.Flexible({}), []);
+        CompactStreamSerializer.classToSerializersMap.clear();
+        await shouldReadAndWrite(new CompactUtil.Flexible({}), []);
     });
 
     it('should be able to read and write class with only variable size fields', async function () {
         const fields = {};
-        for (const field of compactUtil.varSizeFields) {
-            const fieldName = fieldKind[field];
-            fields[fieldName] = compactUtil.referenceObjects[fieldName];
+        for (const field of CompactUtil.varSizeFields) {
+            const fieldName = FieldKind[field];
+            fields[fieldName] = CompactUtil.referenceObjects[fieldName];
         }
         await shouldReadAndWrite(
-            new compactUtil.Flexible(fields),
-            [new compactUtil.FlexibleSerializer(compactUtil.varSizeFields), new compactUtil.EmployeeSerializer()]
+            new CompactUtil.Flexible(fields),
+            [new CompactUtil.FlexibleSerializer(CompactUtil.varSizeFields), new CompactUtil.EmployeeSerializer()]
         );
     });
 
     it('should be able to read and write class with only fixed size fields', async function () {
         const fields = {};
-        for (const field of compactUtil.fixedSizeFields) {
-            const fieldName = fieldKind[field];
-            fields[fieldName] = compactUtil.referenceObjects[fieldName];
+        for (const field of CompactUtil.fixedSizeFields) {
+            const fieldName = FieldKind[field];
+            fields[fieldName] = CompactUtil.referenceObjects[fieldName];
         }
         await shouldReadAndWrite(
-            new compactUtil.Flexible(fields),
-            [new compactUtil.FlexibleSerializer(compactUtil.fixedSizeFields), new compactUtil.EmployeeSerializer()]
+            new CompactUtil.Flexible(fields),
+            [new CompactUtil.FlexibleSerializer(CompactUtil.fixedSizeFields), new CompactUtil.EmployeeSerializer()]
         );
     });
 
     [['small', 1], ['medium', 20], ['large', 42]].forEach(([size, elementCount]) => {
         it(`should read and write ${size} object`, async function () {
             const referenceObjects = {
-                [fieldKind[fieldKind.ARRAY_OF_STRING]]: new Array(elementCount).fill(0)
+                [FieldKind[FieldKind.ARRAY_OF_STRING]]: new Array(elementCount).fill(0)
                     .map(i => TestUtil.randomString((i + 1) * 100)),
-                [fieldKind[fieldKind.INT32]]: 32,
-                [fieldKind[fieldKind.STRING]]: 'test',
+                [FieldKind[FieldKind.INT32]]: 32,
+                [FieldKind[FieldKind.STRING]]: 'test',
             };
 
-            referenceObjects[fieldKind[fieldKind.ARRAY_OF_STRING]].push(null);
+            referenceObjects[FieldKind[FieldKind.ARRAY_OF_STRING]].push(null);
             await shouldReadAndWrite(
-                new compactUtil.Flexible(referenceObjects),
-                [new compactUtil.FlexibleSerializer([fieldKind.ARRAY_OF_STRING, fieldKind.INT32, fieldKind.STRING])]
+                new CompactUtil.Flexible(referenceObjects),
+                [new CompactUtil.FlexibleSerializer([FieldKind.ARRAY_OF_STRING, FieldKind.INT32, FieldKind.STRING])]
             );
         });
     });
@@ -157,21 +174,21 @@ describe('CompactTest', function () {
     [0, 1, 8, 10, 100, 1000].forEach((elementCount) => {
         it(`should read and write bool array with size ${elementCount}`, async function () {
             const referenceObjects = {
-                [fieldKind[fieldKind.ARRAY_OF_BOOLEAN]]: new Array(elementCount).fill(0).map(() => Math.random() > 0.5),
+                [FieldKind[FieldKind.ARRAY_OF_BOOLEAN]]: new Array(elementCount).fill(0).map(() => Math.random() > 0.5),
             };
 
             await shouldReadAndWrite(
-                new compactUtil.Flexible(referenceObjects), [new compactUtil.FlexibleSerializer([fieldKind.ARRAY_OF_BOOLEAN])]
+                new CompactUtil.Flexible(referenceObjects), [new CompactUtil.FlexibleSerializer([FieldKind.ARRAY_OF_BOOLEAN])]
             );
         });
 
         it(`should read and write bool array with size ${elementCount}`, async function () {
             const referenceObjects = {
-                [fieldKind[fieldKind.ARRAY_OF_BOOLEAN]]: new Array(elementCount).fill(0).map(() => Math.random() > 0.5),
+                [FieldKind[FieldKind.ARRAY_OF_BOOLEAN]]: new Array(elementCount).fill(0).map(() => Math.random() > 0.5),
             };
 
             await shouldReadAndWrite(
-                new compactUtil.Flexible(referenceObjects), [new compactUtil.FlexibleSerializer([fieldKind.ARRAY_OF_BOOLEAN])]
+                new CompactUtil.Flexible(referenceObjects), [new CompactUtil.FlexibleSerializer([FieldKind.ARRAY_OF_BOOLEAN])]
             );
         });
 
@@ -185,7 +202,7 @@ describe('CompactTest', function () {
 
             class Serializer {
                 constructor(fieldNames) {
-                    this.hzClassName = 'Flexible';
+                    this.hzClass = CompactUtil.Flexible;
                     this.fieldNames = fieldNames;
                 }
 
@@ -194,7 +211,7 @@ describe('CompactTest', function () {
                     for (const fieldName of this.fieldNames) {
                         fields[fieldName] = reader.readBoolean(fieldName);
                     }
-                    return new compactUtil.Flexible(fields);
+                    return new CompactUtil.Flexible(fields);
                 }
 
                 write(writer, obj) {
@@ -204,8 +221,22 @@ describe('CompactTest', function () {
                 }
             }
 
-            await shouldReadAndWrite(new compactUtil.Flexible(allFields), [new Serializer(fieldNames)]);
+            await shouldReadAndWrite(new CompactUtil.Flexible(allFields), [new Serializer(fieldNames)]);
         });
+    });
+
+    it('should read and write with one field', async function() {
+        for (const fieldKind of CompactUtil.supportedFieldKinds) {
+            if (!isNaN(+fieldKind)) {
+                const fieldName = FieldKind[fieldKind];
+                const value = CompactUtil.referenceObjects[fieldName];
+
+                const {client, map} = await putEntry(mapName, +fieldKind, value);
+                const obj = await map.get('key');
+                obj[fieldName].should.be.deep.eq(value);
+                await client.shutdown();
+            }
+        }
     });
 
     it('should allow basic query', async function () {
@@ -226,7 +257,7 @@ describe('CompactTest', function () {
         const map = await client.getMap(mapName);
 
         for (let i = 0; i < 100; i++) {
-            const employee = new compactUtil.EmployeeDTO(i, Long.fromString('102310312'));
+            const employee = new CompactUtil.EmployeeDTO(i, Long.fromString('102310312'));
             await map.put(i, employee);
         }
 
@@ -234,6 +265,12 @@ describe('CompactTest', function () {
         const size = (await map2.keySetWithPredicate(Predicates.sql('age > 19'))).length;
 
         size.should.be.equal(80);
+    });
+
+    it('should work with same-named different classes by giving different typenames', async function() {
+        A.name.should.be.eq(B.name);
+        await shouldReadAndWrite(new A(1), [new ASerializer(), new BSerializer()]);
+        await shouldReadAndWrite(new B('1'), [new ASerializer(), new BSerializer()]);
     });
 });
 
