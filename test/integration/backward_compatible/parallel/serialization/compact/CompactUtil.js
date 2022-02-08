@@ -551,11 +551,16 @@ for (const fieldKindStr in FieldKind) {
 
 const fixedSizeFields = [];
 const varSizeFields = [];
+const arrayOfNullableFieldKinds = [];
 for (const fieldKind of supportedFieldKinds) {
     if (FieldOperations.ALL[fieldKind].kindSizeInBytes() === FieldOperations.VARIABLE_SIZE) {
         varSizeFields.push(fieldKind);
     } else {
         fixedSizeFields.push(fieldKind);
+    }
+
+    if (FieldKind[fieldKind].startsWith('ARRAY_OF_NULLABLE')) {
+        arrayOfNullableFieldKinds.push(fieldKind);
     }
 }
 
@@ -568,7 +573,8 @@ class Flexible {
 }
 
 class FlexibleSerializer {
-    constructor(fieldKinds) {
+    constructor(fieldKinds, fieldNameMap = {}) {
+        this.fieldNameMap = fieldNameMap;
         this.fieldKinds = fieldKinds;
         this.hzClass = Flexible;
     }
@@ -576,140 +582,143 @@ class FlexibleSerializer {
     read(reader) {
         const fields = {};
         for (const fieldKind of this.fieldKinds) {
+            const baseName = FieldKind[fieldKind];
+            const fieldName = Object.prototype.hasOwnProperty.call(this.fieldNameMap, baseName) ?
+                this.fieldNameMap[baseName] : baseName;
             switch (fieldKind) {
             case FieldKind.BOOLEAN:
-                fields[FieldKind[fieldKind]] = reader.readBoolean(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readBoolean(fieldName);
                 break;
             case FieldKind.ARRAY_OF_BOOLEAN:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfBoolean(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfBoolean(fieldName);
                 break;
             case FieldKind.INT8:
-                fields[FieldKind[fieldKind]] = reader.readInt8(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readInt8(fieldName);
                 break;
             case FieldKind.ARRAY_OF_INT8:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfInt8(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfInt8(fieldName);
                 break;
             case FieldKind.CHAR:
                 throw new Error('Char field is not supported in compact');
             case FieldKind.ARRAY_OF_CHAR:
                 throw new Error('Char field is not supported in compact');
             case FieldKind.INT16:
-                fields[FieldKind[fieldKind]] = reader.readInt16(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readInt16(fieldName);
                 break;
             case FieldKind.ARRAY_OF_INT16:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfInt16(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfInt16(fieldName);
                 break;
             case FieldKind.INT32:
-                fields[FieldKind[fieldKind]] = reader.readInt32(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readInt32(fieldName);
                 break;
             case FieldKind.ARRAY_OF_INT32:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfInt32(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfInt32(fieldName);
                 break;
             case FieldKind.INT64:
-                fields[FieldKind[fieldKind]] = reader.readInt64(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readInt64(fieldName);
                 break;
             case FieldKind.ARRAY_OF_INT64:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfInt64(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfInt64(fieldName);
                 break;
             case FieldKind.FLOAT32:
-                fields[FieldKind[fieldKind]] = reader.readFloat32(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readFloat32(fieldName);
                 break;
             case FieldKind.ARRAY_OF_FLOAT32:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfFloat32(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfFloat32(fieldName);
                 break;
             case FieldKind.FLOAT64:
-                fields[FieldKind[fieldKind]] = reader.readFloat64(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readFloat64(fieldName);
                 break;
             case FieldKind.ARRAY_OF_FLOAT64:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfFloat64(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfFloat64(fieldName);
                 break;
             case FieldKind.STRING:
-                fields[FieldKind[fieldKind]] = reader.readString(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readString(fieldName);
                 break;
             case FieldKind.ARRAY_OF_STRING:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfString(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfString(fieldName);
                 break;
             case FieldKind.DECIMAL:
-                fields[FieldKind[fieldKind]] = reader.readDecimal(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readDecimal(fieldName);
                 break;
             case FieldKind.ARRAY_OF_DECIMAL:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfDecimal(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfDecimal(fieldName);
                 break;
             case FieldKind.TIME:
-                fields[FieldKind[fieldKind]] = reader.readTime(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readTime(fieldName);
                 break;
             case FieldKind.ARRAY_OF_TIME:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfTime(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfTime(fieldName);
                 break;
             case FieldKind.DATE:
-                fields[FieldKind[fieldKind]] = reader.readDate(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readDate(fieldName);
                 break;
             case FieldKind.ARRAY_OF_DATE:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfDate(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfDate(fieldName);
                 break;
             case FieldKind.TIMESTAMP:
-                fields[FieldKind[fieldKind]] = reader.readTimestamp(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readTimestamp(fieldName);
                 break;
             case FieldKind.ARRAY_OF_TIMESTAMP:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfTimestamp(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfTimestamp(fieldName);
                 break;
             case FieldKind.TIMESTAMP_WITH_TIMEZONE:
-                fields[FieldKind[fieldKind]] = reader.readTimestampWithTimezone(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readTimestampWithTimezone(fieldName);
                 break;
             case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfTimestampWithTimezone(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfTimestampWithTimezone(fieldName);
                 break;
             case FieldKind.COMPACT:
-                fields[FieldKind[fieldKind]] = reader.readCompact(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readCompact(fieldName);
                 break;
             case FieldKind.ARRAY_OF_COMPACT:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfCompact(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfCompact(fieldName);
                 break;
             case FieldKind.PORTABLE:
                 throw new Error('Portable field is not supported in compact');
             case FieldKind.ARRAY_OF_PORTABLE:
                 throw new Error('Portable field is not supported in compact');
             case FieldKind.NULLABLE_BOOLEAN:
-                fields[FieldKind[fieldKind]] = reader.readNullableBoolean(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readNullableBoolean(fieldName);
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfNullableBoolean(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfNullableBoolean(fieldName);
                 break;
             case FieldKind.NULLABLE_INT8:
-                fields[FieldKind[fieldKind]] = reader.readNullableInt8(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readNullableInt8(fieldName);
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT8:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfNullableInt8(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfNullableInt8(fieldName);
                 break;
             case FieldKind.NULLABLE_INT16:
-                fields[FieldKind[fieldKind]] = reader.readNullableInt16(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readNullableInt16(fieldName);
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT16:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfNullableInt16(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfNullableInt16(fieldName);
                 break;
             case FieldKind.NULLABLE_INT32:
-                fields[FieldKind[fieldKind]] = reader.readNullableInt32(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readNullableInt32(fieldName);
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT32:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfNullableInt32(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfNullableInt32(fieldName);
                 break;
             case FieldKind.NULLABLE_INT64:
-                fields[FieldKind[fieldKind]] = reader.readNullableInt64(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readNullableInt64(fieldName);
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT64:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfNullableInt64(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfNullableInt64(fieldName);
                 break;
             case FieldKind.NULLABLE_FLOAT32:
-                fields[FieldKind[fieldKind]] = reader.readNullableFloat32(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readNullableFloat32(fieldName);
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfNullableFloat32(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfNullableFloat32(fieldName);
                 break;
             case FieldKind.NULLABLE_FLOAT64:
-                fields[FieldKind[fieldKind]] = reader.readNullableFloat64(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readNullableFloat64(fieldName);
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
-                fields[FieldKind[fieldKind]] = reader.readArrayOfNullableFloat64(FieldKind[fieldKind]);
+                fields[fieldName] = reader.readArrayOfNullableFloat64(fieldName);
                 break;
             }
         }
@@ -718,7 +727,9 @@ class FlexibleSerializer {
 
     write(writer, instance) {
         for (const fieldKind of this.fieldKinds) {
-            const fieldName = FieldKind[fieldKind];
+            const baseName = FieldKind[fieldKind];
+            const fieldName = Object.prototype.hasOwnProperty.call(this.fieldNameMap, baseName) ?
+                this.fieldNameMap[baseName] : baseName;
             switch (fieldKind) {
             case FieldKind.BOOLEAN:
                 writer.writeBoolean(fieldName, instance[fieldName]);
@@ -1310,6 +1321,7 @@ module.exports = {
     referenceObjects,
     varSizeFields,
     fixedSizeFields,
+    arrayOfNullableFieldKinds,
     NodeDTOSerializer,
     NamedDTOSerializer,
     InnerDTOSerializer,

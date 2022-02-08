@@ -19,11 +19,10 @@ import {CompactWriter} from './CompactWriter';
 import {
     BigDecimal,
     HazelcastSerializationError,
-    IllegalStateError,
     LocalDate,
     LocalDateTime,
     LocalTime,
-    OffsetDateTime, SchemaNotReplicatedError
+    OffsetDateTime,
 } from '../../core';
 import * as Long from 'long';
 import {GenericRecord} from '../generic_record/GenericRecord';
@@ -63,23 +62,15 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     end(): void {
-        try {
-            if (this.schema.numberVarSizeFields === 0) {
-                // There are no variable size fields
-                return;
-            }
-            const position = this.out.position();
-            const dataLength = position - this.dataStartPosition;
-            this.writeOffsets(dataLength, this.fieldOffsets);
-            // write dataLength
-            this.out.pwriteInt(this.dataStartPosition - BitsUtil.INT_SIZE_IN_BYTES, dataLength);
-        } catch (e) {
-            throw DefaultCompactWriter.toIllegalStateException(e);
+        if (this.schema.numberVarSizeFields === 0) {
+            // There are no variable size fields
+            return;
         }
-    }
-
-    private static toIllegalStateException(e : Error) {
-        return new IllegalStateError('IOException is not expected from BufferObjectDataOutput ', e);
+        const position = this.out.position();
+        const dataLength = position - this.dataStartPosition;
+        this.writeOffsets(dataLength, this.fieldOffsets);
+        // write dataLength
+        this.out.pwriteInt(this.dataStartPosition - BitsUtil.INT_SIZE_IN_BYTES, dataLength);
     }
 
     private writeOffsets(dataLength: number, offsets: Array<number>) {
@@ -104,18 +95,11 @@ export class DefaultCompactWriter implements CompactWriter {
         object: T | null,
         writeFn: (out: PositionalObjectDataOutput, value: T) => void
     ) : void {
-        try {
-            if (object === null) {
-                this.setPositionAsNull(fieldName, fieldKind);
-            } else {
-                this.setPosition(fieldName, fieldKind);
-                writeFn(this.out, object);
-            }
-        } catch (e) {
-            if (fieldKind === FieldKind.COMPACT && e instanceof SchemaNotReplicatedError) {
-                throw e;
-            }
-            throw DefaultCompactWriter.toIllegalStateException(e);
+        if (object === null) {
+            this.setPositionAsNull(fieldName, fieldKind);
+        } else {
+            this.setPosition(fieldName, fieldKind);
+            writeFn(this.out, object);
         }
     }
 
@@ -129,32 +113,25 @@ export class DefaultCompactWriter implements CompactWriter {
             this.setPositionAsNull(fieldName, fieldKind);
             return;
         }
-        try {
-            this.setPosition(fieldName, fieldKind);
-            const dataLengthOffset = this.out.position();
-            this.out.writeZeroBytes(BitsUtil.INT_SIZE_IN_BYTES);
-            const itemCount = values.length;
-            this.out.writeInt(itemCount);
+        this.setPosition(fieldName, fieldKind);
+        const dataLengthOffset = this.out.position();
+        this.out.writeZeroBytes(BitsUtil.INT_SIZE_IN_BYTES);
+        const itemCount = values.length;
+        this.out.writeInt(itemCount);
 
-            const offset = this.out.position();
-            const offsets = new Array<number>(itemCount);
-            for (let i = 0; i < itemCount; i++) {
-                if (values[i] !== null) {
-                    offsets[i] = this.out.position() - offset;
-                    writeFn(this.out, values[i]);
-                } else {
-                    offsets[i] = NULL_OFFSET;
-                }
+        const offset = this.out.position();
+        const offsets = new Array<number>(itemCount);
+        for (let i = 0; i < itemCount; i++) {
+            if (values[i] !== null) {
+                offsets[i] = this.out.position() - offset;
+                writeFn(this.out, values[i]);
+            } else {
+                offsets[i] = NULL_OFFSET;
             }
-            const dataLength = this.out.position() - offset;
-            this.out.pwriteInt(dataLengthOffset, dataLength);
-            this.writeOffsets(dataLength, offsets);
-        } catch (e) {
-            if (fieldKind === FieldKind.ARRAY_OF_COMPACT && e instanceof SchemaNotReplicatedError) {
-                throw e;
-            }
-            throw DefaultCompactWriter.toIllegalStateException(e);
         }
+        const dataLength = this.out.position() - offset;
+        this.out.pwriteInt(dataLengthOffset, dataLength);
+        this.writeOffsets(dataLength, offsets);
     }
 
     private setPositionAsNull(fieldName: string, fieldKind: FieldKind) {
@@ -325,20 +302,12 @@ export class DefaultCompactWriter implements CompactWriter {
         const offsetInBytes = fieldDefinition.offset;
         const offsetInBits = fieldDefinition.bitOffset;
         const writeOffset = offsetInBytes + this.dataStartPosition;
-        try {
-            this.out.pwriteBooleanBit(writeOffset, offsetInBits, value);
-        } catch (e) {
-            throw DefaultCompactWriter.toIllegalStateException(e);
-        }
+        this.out.pwriteBooleanBit(writeOffset, offsetInBits, value);
     }
 
     writeInt8(fieldName: string, value: number): void {
         const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.INT8);
-        try {
-            this.out.pwriteInt8(position, value);
-        } catch (e) {
-            throw DefaultCompactWriter.toIllegalStateException(e);
-        }
+        this.out.pwriteInt8(position, value);
     }
 
     writeCompact<T>(fieldName: string, value: T | null): void {
@@ -357,38 +326,22 @@ export class DefaultCompactWriter implements CompactWriter {
 
     writeFloat64(fieldName: string, value: number): void {
         const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.FLOAT64);
-        try {
-            this.out.pwriteDouble(position, value);
-        } catch (e) {
-            throw DefaultCompactWriter.toIllegalStateException(e);
-        }
+        this.out.pwriteDouble(position, value);
     }
 
     writeFloat32(fieldName: string, value: number): void {
         const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.FLOAT32);
-        try {
-            this.out.pwriteFloat(position, value);
-        } catch (e) {
-            throw DefaultCompactWriter.toIllegalStateException(e);
-        }
+        this.out.pwriteFloat(position, value);
     }
 
     writeInt32(fieldName: string, value: number): void {
         const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.INT32);
-        try {
-            this.out.pwriteInt(position, value);
-        } catch (e) {
-            throw DefaultCompactWriter.toIllegalStateException(e);
-        }
+        this.out.pwriteInt(position, value);
     }
 
     writeInt64(fieldName: string, value: Long): void {
         const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.INT64);
-        try {
-            this.out.pwriteLong(position, value);
-        } catch (e) {
-            throw DefaultCompactWriter.toIllegalStateException(e);
-        }
+        this.out.pwriteLong(position, value);
     }
 
     writeNullableBoolean(fieldName: string, value: boolean | null): void {
@@ -435,11 +388,7 @@ export class DefaultCompactWriter implements CompactWriter {
 
     writeInt16(fieldName: string, value: number): void {
         const position = this.getFixedSizeFieldPosition(fieldName, FieldKind.INT16);
-        try {
-            this.out.pwriteShort(position, value);
-        } catch (e) {
-            throw DefaultCompactWriter.toIllegalStateException(e);
-        }
+        this.out.pwriteShort(position, value);
     }
 
     writeString(fieldName: string, value: string | null): void {

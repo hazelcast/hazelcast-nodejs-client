@@ -16,7 +16,7 @@
 'use strict';
 
 const chai = require('chai');
-chai.should();
+const should = chai.should();
 
 const RC = require('../../../../RC');
 const TestUtil = require('../../../../../TestUtil');
@@ -24,39 +24,54 @@ const Long = require('long');
 const {A, ASerializer} = require('./Class');
 const B = require('./SameNamedClass').A;
 const BSerializer = require('./SameNamedClass').ASerializer;
-const { Predicates } = require('../../../../../../lib/core');
-const { EmployeeDTOSerializer, FlexibleSerializer, Flexible, EmployeeSerializer } = require('./CompactUtil');
-const { CompactStreamSerializer } = require('../../../../../../lib/serialization/compact/CompactStreamSerializer');
+const { Predicates, HazelcastSerializationError } = require('../../../../../../lib/core');
 
 describe('CompactTest', function () {
-    const getCompactUtil = () => require('./CompactUtil');
-    const getFieldKind = () => require('../../../../../../lib/serialization/generic_record/FieldKind').FieldKind;
-    let CompactUtil;
-    let FieldKind;
-
     const testFactory = new TestUtil.TestFactory();
 
     let cluster;
     let mapName;
     let member;
+
+    let supportedFieldKinds;
+    let variableSizeFieldKinds;
+    let arrayOfNullableFieldKinds;
+
+    let CompactUtil;
+    let FieldKind;
+    let CompactStreamSerializer;
+
+    try {
+        CompactUtil = require('./CompactUtil');
+        FieldKind = require('../../../../../../lib/serialization/generic_record/FieldKind').FieldKind;
+        CompactStreamSerializer = require('../../../../../../lib/serialization/compact/CompactStreamSerializer')
+        .CompactStreamSerializer;
+        variableSizeFieldKinds = CompactUtil.varSizeFields;
+        supportedFieldKinds = CompactUtil.supportedFieldKinds;
+        arrayOfNullableFieldKinds = CompactUtil.arrayOfNullableFieldKinds;
+    } catch (e) {
+        variableSizeFieldKinds = [];
+        supportedFieldKinds = [];
+    }
+
     const COMPACT_ENABLED_ZERO_CONFIG_XML = `
-        <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://www.hazelcast.com/schema/config
-            http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
-            <network>
-                <port>0</port>
-            </network>
-            <serialization>
-                <compact-serialization enabled="true" />
-            </serialization>
-        </hazelcast>
-    `;
+            <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
+                <network>
+                    <port>0</port>
+                </network>
+                <serialization>
+                    <compact-serialization enabled="true" />
+                </serialization>
+            </hazelcast>
+        `;
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        CompactUtil = getCompactUtil();
-        FieldKind = getFieldKind();
+        variableSizeFieldKinds = CompactUtil.varSizeFields;
+        supportedFieldKinds = CompactUtil.supportedFieldKinds;
         cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
         member = await RC.startMember(cluster.id);
     });
@@ -101,14 +116,14 @@ describe('CompactTest', function () {
         const client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
-                compactSerializers: [new FlexibleSerializer([fieldKind]), new EmployeeSerializer()]
+                compactSerializers: [new CompactUtil.FlexibleSerializer([fieldKind]), new CompactUtil.EmployeeSerializer()]
             }
         }, member);
 
         const map = await client.getMap(mapName);
         const fields = {[FieldKind[fieldKind]]: value};
-        await map.set('key', new Flexible(fields));
-        return {client, map};
+        await map.set('key', new CompactUtil.Flexible(fields));
+        return map;
     };
 
     it('should work with basic test', async function () {
@@ -225,32 +240,76 @@ describe('CompactTest', function () {
         });
     });
 
-    it('should read and write with one field', async function() {
-        for (const fieldKind of CompactUtil.supportedFieldKinds) {
-            if (!isNaN(+fieldKind)) {
-                const fieldName = FieldKind[fieldKind];
-                const value = CompactUtil.referenceObjects[fieldName];
+    supportedFieldKinds.forEach(fieldKind => {
+        it(`should read and write with one field. Field: ${FieldKind[fieldKind]}`, async function() {
+            const fieldName = FieldKind[fieldKind];
+            const value = CompactUtil.referenceObjects[fieldName];
 
-                const {client, map} = await putEntry(mapName, +fieldKind, value);
-                const obj = await map.get('key');
-                obj[fieldName].should.be.deep.eq(value);
-                await client.shutdown();
-            }
-        }
+            const map = await putEntry(mapName, +fieldKind, value);
+            const obj = await map.get('key');
+            obj[fieldName].should.be.deep.eq(value);
+        });
+    });
+
+    variableSizeFieldKinds.forEach(fieldKind => {
+        it(`should be able write null and then read variable size fields. Field: ${FieldKind[fieldKind]}`, async function() {
+            const fieldName = FieldKind[fieldKind];
+
+            const map = await putEntry(mapName, +fieldKind, null);
+            const obj = await map.get('key');
+            should.equal(obj[fieldName], null);
+        });
+    });
+
+    arrayOfNullableFieldKinds.forEach(fieldKind => {
+        it(`should be able read and write a field that is an array of nullables. Field: ${FieldKind[fieldKind]}`,
+            async function() {
+            const fieldName = FieldKind[fieldKind];
+            const value = [null, ...CompactUtil.referenceObjects[fieldName], null];
+            value.splice(2, 0, null);
+
+            const map = await putEntry(mapName, +fieldKind, value);
+            const obj = await map.get('key');
+            obj[fieldName].should.be.deep.eq(value);
+        });
+    });
+
+    supportedFieldKinds.forEach(fieldKind => {
+        it(`should throw when field name does not exist. Field: ${FieldKind[fieldKind]}`, async function() {
+            const fieldName = FieldKind[fieldKind];
+            const value = CompactUtil.referenceObjects[fieldName];
+
+            await putEntry(mapName, +fieldKind, value);
+            const client2 = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [new CompactUtil.FlexibleSerializer([fieldKind], {
+                        [FieldKind[fieldKind]]: 'not-a-field'
+                    }), new CompactUtil.EmployeeSerializer()]
+                }
+            }, member);
+
+            const map = await client2.getMap(mapName);
+            const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+                await map.get('key');
+            });
+            error.should.be.instanceOf(HazelcastSerializationError);
+            error.message.includes('No field with name').should.be.true;
+        });
     });
 
     it('should allow basic query', async function () {
         const client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
-                compactSerializers: [new EmployeeDTOSerializer()]
+                compactSerializers: [new CompactUtil.EmployeeDTOSerializer()]
             }
         }, member);
 
         const client2 = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
-                compactSerializers: [new EmployeeDTOSerializer()]
+                compactSerializers: [new CompactUtil.EmployeeDTOSerializer()]
             }
         }, member);
 

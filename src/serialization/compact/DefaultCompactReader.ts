@@ -18,11 +18,11 @@
 import {CompactReader} from './CompactReader';
 import {
     BigDecimal,
-    HazelcastSerializationError, IllegalStateError,
+    HazelcastSerializationError,
     LocalDate,
     LocalDateTime,
     LocalTime,
-    OffsetDateTime, SchemaNotFoundError,
+    OffsetDateTime,
     UnsupportedOperationError
 } from '../../core';
 import * as Long from 'long';
@@ -60,46 +60,40 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         private readonly schema: Schema,
         private readonly typeName: string | null
     ) {
-        try {
-            const numberOfVariableLengthFields = schema.numberVarSizeFields;
-            let finalPosition;
-            if (numberOfVariableLengthFields !== 0) {
-                const dataLength = input.readInt();
-                this.dataStartPosition = this.input.position();
-                this.variableOffsetsPosition = this.dataStartPosition + dataLength;
-                if (dataLength < BYTE_OFFSET_READER_RANGE) {
-                    this.offsetReader = BYTE_OFFSET_READER;
-                    finalPosition = this.variableOffsetsPosition + numberOfVariableLengthFields;
-                } else if (dataLength < SHORT_OFFSET_READER_RANGE) {
-                    this.offsetReader = SHORT_OFFSET_READER;
-                    finalPosition = this.variableOffsetsPosition + numberOfVariableLengthFields * BitsUtil.SHORT_SIZE_IN_BYTES;
-                } else {
-                    this.offsetReader = INT_OFFSET_READER;
-                    finalPosition = this.variableOffsetsPosition + numberOfVariableLengthFields * BitsUtil.INT_SIZE_IN_BYTES;
-                }
+        const numberOfVariableLengthFields = schema.numberVarSizeFields;
+        let finalPosition;
+        if (numberOfVariableLengthFields !== 0) {
+            const dataLength = input.readInt();
+            this.dataStartPosition = this.input.position();
+            this.variableOffsetsPosition = this.dataStartPosition + dataLength;
+            if (dataLength < BYTE_OFFSET_READER_RANGE) {
+                this.offsetReader = BYTE_OFFSET_READER;
+                finalPosition = this.variableOffsetsPosition + numberOfVariableLengthFields;
+            } else if (dataLength < SHORT_OFFSET_READER_RANGE) {
+                this.offsetReader = SHORT_OFFSET_READER;
+                finalPosition = this.variableOffsetsPosition + numberOfVariableLengthFields * BitsUtil.SHORT_SIZE_IN_BYTES;
             } else {
                 this.offsetReader = INT_OFFSET_READER;
-                this.variableOffsetsPosition = 0;
-                this.dataStartPosition = input.position();
-                finalPosition = this.dataStartPosition + schema.fixedSizeFieldsLength;
+                finalPosition = this.variableOffsetsPosition + numberOfVariableLengthFields * BitsUtil.INT_SIZE_IN_BYTES;
             }
-            //set the position to final so that the next one to read something from `input` can start from
-            //correct position
-            this.input.position(finalPosition);
-        } catch (e) {
-            throw DefaultCompactReader.toIllegalStateException(e);
+        } else {
+            this.offsetReader = INT_OFFSET_READER;
+            this.variableOffsetsPosition = 0;
+            this.dataStartPosition = input.position();
+            finalPosition = this.dataStartPosition + schema.fixedSizeFieldsLength;
         }
+        //set the position to final so that the next one to read something from `input` can start from
+        //correct position
+        this.input.position(finalPosition);
     }
 
-    private static toUnknownFieldException(fieldName: string, schema: Schema): Error {
-        return new HazelcastSerializationError(`Unknown field name: '${fieldName}' for schema ${schema}`);
+    private static toUnknownFieldError(fieldName: string, schema: Schema): Error {
+        return new HazelcastSerializationError(
+            `No field with name '${fieldName}' in compact schema ${schema.fieldDefinitionMap}`
+        );
     }
 
-    private static toIllegalStateException(e: Error) {
-        return new IllegalStateError('IOException is not expected since we get from a well known format and position', e);
-    }
-
-    private static toUnexpectedFieldKind(fieldKind: FieldKind, fieldName: string): Error {
+    private static toUnexpectedFieldKindError(fieldKind: FieldKind, fieldName: string): Error {
         return new HazelcastSerializationError(`Unknown fieldKind: '${fieldKind}' for field: ${fieldName}`);
     }
 
@@ -108,24 +102,16 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
     }
 
     private readVariableSizeFieldPosition(fieldDescriptor: FieldDescriptor): number {
-        try {
-            const index = fieldDescriptor.index;
-            const offset = this.offsetReader(this.input, this.variableOffsetsPosition, index);
-            return offset === NULL_OFFSET ? NULL_OFFSET : offset + this.dataStartPosition;
-        } catch (e) {
-            throw DefaultCompactReader.toIllegalStateException(e);
-        }
+        const index = fieldDescriptor.index;
+        const offset = this.offsetReader(this.input, this.variableOffsetsPosition, index);
+        return offset === NULL_OFFSET ? NULL_OFFSET : offset + this.dataStartPosition;
     }
 
     private readVariableSizeFieldPositionByNameAndKind(fieldName: string, fieldKind: FieldKind): number {
-        try {
-            const fd = this.getFieldDefinitionChecked(fieldName, fieldKind);
-            const index = fd.index;
-            const offset = this.offsetReader(this.input, this.variableOffsetsPosition, index);
-            return offset === NULL_OFFSET ? NULL_OFFSET : offset + this.dataStartPosition;
-        } catch (e) {
-            throw DefaultCompactReader.toIllegalStateException(e);
-        }
+        const fd = this.getFieldDefinitionChecked(fieldName, fieldKind);
+        const index = fd.index;
+        const offset = this.offsetReader(this.input, this.variableOffsetsPosition, index);
+        return offset === NULL_OFFSET ? NULL_OFFSET : offset + this.dataStartPosition;
     }
 
     private getVariableSizeByNameAndKind<R>(fieldName: string, fieldKind: FieldKind, readFn: (reader: ObjectDataInput) => R): R {
@@ -137,12 +123,6 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             }
             this.input.position(pos);
             return readFn(this.input);
-        } catch (e) {
-            // We need to not change exception type if the nested compact's serialization fails.
-            if (e instanceof SchemaNotFoundError)  {
-                throw e;
-            }
-            throw DefaultCompactReader.toIllegalStateException(e);
         } finally {
             this.input.position(currentPos);
         }
@@ -157,8 +137,6 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             }
             this.input.position(pos);
             return readFn(this.input);
-        } catch (e) {
-            throw DefaultCompactReader.toIllegalStateException(e);
         } finally {
             this.input.position(currentPos);
         }
@@ -199,8 +177,6 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             }
             this.input.position(dataStartPosition - BitsUtil.INT_SIZE_IN_BYTES);
             return readFn(this.input);
-        } catch (e) {
-            throw DefaultCompactReader.toIllegalStateException(e);
         } finally {
             this.input.position(currentPos);
         }
@@ -209,15 +185,15 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
     private getFieldDefinition(fieldName: string): FieldDescriptor {
         const fd = this.schema.fieldDefinitionMap.get(fieldName);
         if (fd === undefined) {
-            throw DefaultCompactReader.toUnknownFieldException(fieldName, this.schema);
+            throw DefaultCompactReader.toUnknownFieldError(fieldName, this.schema);
         }
         return fd;
     }
 
     private getFieldDefinitionChecked(fieldName: string, fieldKind: FieldKind): FieldDescriptor {
-        const fd = this.schema.fieldDefinitionMap.get(fieldName);
+        const fd = this.getFieldDefinition(fieldName);
         if (fd.kind !== fieldKind) {
-            throw DefaultCompactReader.toUnexpectedFieldKind(fd.kind, fieldName);
+            throw DefaultCompactReader.toUnexpectedFieldKindError(fd.kind, fieldName);
         }
         return fd;
     }
@@ -273,12 +249,6 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
                 }
             }
             return values;
-        } catch (e) {
-            // We need to not change exception type if the nested compact's serialization fails.
-            if (e instanceof SchemaNotFoundError) {
-                throw e;
-            }
-            throw DefaultCompactReader.toIllegalStateException(e);
         } finally {
             this.input.position(currentPos);
         }
@@ -324,7 +294,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         } else if (fieldKind === nullableKind) {
             return this.getNullableArrayAsPrimitiveArray(fd, readFn, methodSuffix);
         } else {
-            throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+            throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -338,7 +308,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
                 return this.getNullableArrayAsPrimitiveArray(fd, (input) => input.readBooleanArray(), 'Booleans');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -453,7 +423,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_BOOLEAN:
                 return this.getVariableSize(fd, reader => reader.readBoolean());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -462,15 +432,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.INT8:
-                try {
-                    return this.input.readInt8(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readInt8(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_INT8:
                 return this.getVariableSize(fd, reader => reader.readInt8());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -479,15 +445,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.FLOAT64:
-                try {
-                    return this.input.readDouble(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readDouble(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_FLOAT64:
                 return this.getVariableSize(fd, reader => reader.readDouble());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -496,15 +458,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.FLOAT32:
-                try {
-                    return this.input.readFloat(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readFloat(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_FLOAT32:
                 return this.getVariableSize(fd, reader => reader.readFloat());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -513,15 +471,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.INT32:
-                try {
-                    return this.input.readInt(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readInt(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_INT32:
                 return this.getVariableSize(fd, reader => reader.readInt());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -530,15 +484,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.INT64:
-                try {
-                    return this.input.readLong(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readLong(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_INT64:
                 return this.getVariableSize(fd, reader => reader.readLong());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -547,15 +497,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.INT16:
-                try {
-                    return this.input.readShort(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readShort(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_INT16:
                 return this.getVariableSize(fd, reader => reader.readShort());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -572,7 +518,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
                     fieldName, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN, reader => reader.readBoolean()
                 );
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -594,8 +540,6 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             }
 
             return values;
-        } catch (e) {
-            throw DefaultCompactReader.toIllegalStateException(e);
         } finally {
             this.input.position(currentPos);
         }
@@ -612,7 +556,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case nullableField:
                 return this.getArrayOfVariableSizesWithFieldDescriptor(fd, readFn);
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -661,7 +605,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_BOOLEAN:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readBoolean(), 'Boolean');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -675,15 +619,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
     }
 
     private getBooleanWithFieldDescriptor(fieldDescriptor: FieldDescriptor): boolean {
-        try {
-            const booleanOffset = fieldDescriptor.offset;
-            const bitOffset = fieldDescriptor.bitOffset;
-            const getOffset = booleanOffset + this.dataStartPosition;
-            const lastByte = this.input.readByte(getOffset);
-            return ((lastByte >>> bitOffset) & 1) !== 0;
-        } catch (e) {
-            DefaultCompactReader.toIllegalStateException(e);
-        }
+        const booleanOffset = fieldDescriptor.offset;
+        const bitOffset = fieldDescriptor.bitOffset;
+        const getOffset = booleanOffset + this.dataStartPosition;
+        const lastByte = this.input.readByte(getOffset);
+        return ((lastByte >>> bitOffset) & 1) !== 0;
     }
 
     getInt8(fieldName: string): number {
@@ -691,15 +631,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.INT8:
-                try {
-                    return this.input.readInt8(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readInt8(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_INT8:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readInt8(), 'Byte');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -720,15 +656,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.FLOAT64:
-                try {
-                    return this.input.readDouble(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readDouble(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_FLOAT64:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readDouble(), 'Double');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -748,15 +680,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.FLOAT32:
-                try {
-                    return this.input.readFloat(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readFloat(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_FLOAT32:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readFloat(), 'Float');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -771,15 +699,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.INT32:
-                try {
-                    return this.input.readInt(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readInt(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_INT32:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readInt(), 'Int');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -788,15 +712,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.INT64:
-                try {
-                    return this.input.readLong(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readLong(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_INT64:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readLong(), 'Long');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
@@ -809,15 +729,11 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.INT16:
-                try {
-                    return this.input.readShort(this.readFixedSizePosition(fd));
-                } catch (e) {
-                    throw DefaultCompactReader.toIllegalStateException(e);
-                }
+                return this.input.readShort(this.readFixedSizePosition(fd));
             case FieldKind.NULLABLE_INT16:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readShort(), 'Short');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKind(fieldKind, fieldName);
+                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
         }
     }
 
