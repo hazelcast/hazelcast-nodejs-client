@@ -89,12 +89,25 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
 
     private static toUnknownFieldError(fieldName: string, schema: Schema): Error {
         return new HazelcastSerializationError(
-            `No field with name '${fieldName}' in compact schema ${schema.fieldDefinitionMap}`
+            `No field with name '${fieldName}' in compact schema ${JSON.stringify(schema.fieldDefinitionMap)}`
         );
     }
 
-    private static toUnexpectedFieldKindError(fieldKind: FieldKind, fieldName: string): Error {
-        return new HazelcastSerializationError(`Unknown fieldKind: '${fieldKind}' for field: ${fieldName}`);
+    private static toUnexpectedFieldKindError(usedFieldKind: FieldKind, actualFieldKind: FieldKind, fieldName: string): Error {
+        const usedFieldKindName = FieldKind[usedFieldKind];
+        const actualFieldKindName = FieldKind[actualFieldKind];
+        return new HazelcastSerializationError('Mismatched field kinds while reading a compact field: '
+        + `Requested field kind for ${fieldName} is ${usedFieldKindName} but the field's actual type is ${actualFieldKindName}`);
+    }
+
+    private static toFieldKindIsNotOneOfError(
+        actualFieldKind: FieldKind, fieldName: string, expectedFieldKinds: FieldKind[]
+    ): Error {
+        const expectedFieldKindNames = expectedFieldKinds.map((fieldKind: FieldKind) => FieldKind[fieldKind]).join(', ');
+        const actualFieldKindName = FieldKind[actualFieldKind];
+        return new HazelcastSerializationError(
+            `The kind of field ${fieldName} must be one of ${expectedFieldKindNames} but it is ${actualFieldKindName}`
+        );
     }
 
     clone(fieldsToUpdate?: { [fieldName: string]: any; }): GenericRecord {
@@ -193,7 +206,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
     private getFieldDefinitionChecked(fieldName: string, fieldKind: FieldKind): FieldDescriptor {
         const fd = this.getFieldDefinition(fieldName);
         if (fd.kind !== fieldKind) {
-            throw DefaultCompactReader.toUnexpectedFieldKindError(fd.kind, fieldName);
+            throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fd.kind, fieldName);
         }
         return fd;
     }
@@ -294,7 +307,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         } else if (fieldKind === nullableKind) {
             return this.getNullableArrayAsPrimitiveArray(fd, readFn, methodSuffix);
         } else {
-            throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+            throw DefaultCompactReader.toFieldKindIsNotOneOfError(fieldKind, fieldName, [primitiveKind, nullableKind]);
         }
     }
 
@@ -308,7 +321,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
                 return this.getNullableArrayAsPrimitiveArray(fd, (input) => input.readBooleanArray(), 'Booleans');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.ARRAY_OF_BOOLEAN, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN]
+                );
         }
     }
 
@@ -423,7 +438,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_BOOLEAN:
                 return this.getVariableSize(fd, reader => reader.readBoolean());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.BOOLEAN, FieldKind.NULLABLE_BOOLEAN]
+                );
         }
     }
 
@@ -436,7 +453,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_INT8:
                 return this.getVariableSize(fd, reader => reader.readInt8());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT8, FieldKind.NULLABLE_INT8]
+                );
         }
     }
 
@@ -449,7 +468,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_FLOAT64:
                 return this.getVariableSize(fd, reader => reader.readDouble());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64]
+                );
         }
     }
 
@@ -462,7 +483,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_FLOAT32:
                 return this.getVariableSize(fd, reader => reader.readFloat());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32]
+                );
         }
     }
 
@@ -475,7 +498,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_INT32:
                 return this.getVariableSize(fd, reader => reader.readInt());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT32, FieldKind.NULLABLE_INT32]
+                );
         }
     }
 
@@ -488,7 +513,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_INT64:
                 return this.getVariableSize(fd, reader => reader.readLong());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT64, FieldKind.NULLABLE_INT64]
+                );
         }
     }
 
@@ -501,7 +528,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_INT16:
                 return this.getVariableSize(fd, reader => reader.readShort());
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT16, FieldKind.NULLABLE_INT16]
+                );
         }
     }
 
@@ -518,7 +547,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
                     fieldName, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN, reader => reader.readBoolean()
                 );
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.ARRAY_OF_BOOLEAN, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN]
+                );
         }
     }
 
@@ -556,7 +587,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case nullableField:
                 return this.getArrayOfVariableSizesWithFieldDescriptor(fd, readFn);
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [primitiveKind, nullableField]
+                );
         }
     }
 
@@ -605,7 +638,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_BOOLEAN:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readBoolean(), 'Boolean');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.BOOLEAN, FieldKind.NULLABLE_BOOLEAN]
+                );
         }
     }
 
@@ -635,7 +670,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_INT8:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readInt8(), 'Byte');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT8, FieldKind.NULLABLE_INT8]
+                );
         }
     }
 
@@ -660,7 +697,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_FLOAT64:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readDouble(), 'Double');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64]
+                );
         }
     }
 
@@ -684,7 +723,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_FLOAT32:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readFloat(), 'Float');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32]
+                );
         }
     }
 
@@ -703,7 +744,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_INT32:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readInt(), 'Int');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT32, FieldKind.NULLABLE_INT32]
+                );
         }
     }
 
@@ -716,7 +759,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_INT64:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readLong(), 'Long');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT64, FieldKind.NULLABLE_INT64]
+                );
         }
     }
 
@@ -733,7 +778,9 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             case FieldKind.NULLABLE_INT16:
                 return this.getVariableSizeAsNonNull(fd, reader => reader.readShort(), 'Short');
             default:
-                throw DefaultCompactReader.toUnexpectedFieldKindError(fieldKind, fieldName);
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT16, FieldKind.NULLABLE_INT16]
+                );
         }
     }
 

@@ -21,7 +21,7 @@ const should = chai.should();
 const RC = require('../../../../RC');
 const TestUtil = require('../../../../../TestUtil');
 const Long = require('long');
-const {A, ASerializer} = require('./Class');
+const { A, ASerializer } = require('./Class');
 const B = require('./SameNamedClass').A;
 const BSerializer = require('./SameNamedClass').ASerializer;
 const { Predicates, HazelcastSerializationError } = require('../../../../../../lib/core');
@@ -33,9 +33,12 @@ describe('CompactTest', function () {
     let mapName;
     let member;
 
-    let supportedFieldKinds;
-    let variableSizeFieldKinds;
-    let arrayOfNullableFieldKinds;
+    let supportedFields;
+    let varSizeFields;
+    let arrayOfNullableFields;
+    let nullableFixedSizeFields;
+    let fixedSizeFields;
+    let arrayOfNullableFixedSizeFields;
 
     let CompactUtil;
     let FieldKind;
@@ -45,13 +48,21 @@ describe('CompactTest', function () {
         CompactUtil = require('./CompactUtil');
         FieldKind = require('../../../../../../lib/serialization/generic_record/FieldKind').FieldKind;
         CompactStreamSerializer = require('../../../../../../lib/serialization/compact/CompactStreamSerializer')
-        .CompactStreamSerializer;
-        variableSizeFieldKinds = CompactUtil.varSizeFields;
-        supportedFieldKinds = CompactUtil.supportedFieldKinds;
-        arrayOfNullableFieldKinds = CompactUtil.arrayOfNullableFieldKinds;
+            .CompactStreamSerializer;
+
+        varSizeFields = CompactUtil.varSizeFields;
+        supportedFields = CompactUtil.supportedFields;
+        arrayOfNullableFields = CompactUtil.arrayOfNullableFields;
+        nullableFixedSizeFields = CompactUtil.nullableFixedSizeFields;
+        fixedSizeFields = CompactUtil.fixedSizeFields;
+        arrayOfNullableFixedSizeFields = Object.values(CompactUtil.fixedSizedArrayToNullableFixedSizeArray);
     } catch (e) {
-        variableSizeFieldKinds = [];
-        supportedFieldKinds = [];
+        varSizeFields = [];
+        supportedFields = [];
+        nullableFixedSizeFields = [];
+        fixedSizeFields = [];
+        arrayOfNullableFields = [];
+        arrayOfNullableFixedSizeFields = [];
     }
 
     const COMPACT_ENABLED_ZERO_CONFIG_XML = `
@@ -70,8 +81,8 @@ describe('CompactTest', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        variableSizeFieldKinds = CompactUtil.varSizeFields;
-        supportedFieldKinds = CompactUtil.supportedFieldKinds;
+        varSizeFields = CompactUtil.varSizeFields;
+        supportedFields = CompactUtil.supportedFieldKinds;
         cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
         member = await RC.startMember(cluster.id);
     });
@@ -112,16 +123,22 @@ describe('CompactTest', function () {
         readObj.should.deep.equal(obj);
     };
 
-    const putEntry = async (mapName, fieldKind, value) => {
+    const putEntry = async (mapName, fieldKind, value, readerFieldNameMap = {}, writerFieldNameMap = {}) => {
         const client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
-                compactSerializers: [new CompactUtil.FlexibleSerializer([fieldKind]), new CompactUtil.EmployeeSerializer()]
+                compactSerializers: [
+                    new CompactUtil.FlexibleSerializer([fieldKind], readerFieldNameMap, writerFieldNameMap),
+                    new CompactUtil.EmployeeSerializer()
+                ]
             }
         }, member);
 
         const map = await client.getMap(mapName);
-        const fields = {[FieldKind[fieldKind]]: value};
+        const baseName = FieldKind[fieldKind];
+        const fieldName = Object.prototype.hasOwnProperty.call(writerFieldNameMap, baseName) ?
+            writerFieldNameMap[baseName] : baseName;
+        const fields = { [fieldName]: value };
         await map.set('key', new CompactUtil.Flexible(fields));
         return map;
     };
@@ -240,19 +257,8 @@ describe('CompactTest', function () {
         });
     });
 
-    supportedFieldKinds.forEach(fieldKind => {
-        it(`should read and write with one field. Field: ${FieldKind[fieldKind]}`, async function() {
-            const fieldName = FieldKind[fieldKind];
-            const value = CompactUtil.referenceObjects[fieldName];
-
-            const map = await putEntry(mapName, +fieldKind, value);
-            const obj = await map.get('key');
-            obj[fieldName].should.be.deep.eq(value);
-        });
-    });
-
-    variableSizeFieldKinds.forEach(fieldKind => {
-        it(`should be able write null and then read variable size fields. Field: ${FieldKind[fieldKind]}`, async function() {
+    varSizeFields.forEach(fieldKind => {
+        it(`should be able write null and then read variable size fields. Field: ${FieldKind[fieldKind]}`, async function () {
             const fieldName = FieldKind[fieldKind];
 
             const map = await putEntry(mapName, +fieldKind, null);
@@ -261,21 +267,21 @@ describe('CompactTest', function () {
         });
     });
 
-    arrayOfNullableFieldKinds.forEach(fieldKind => {
+    arrayOfNullableFields.forEach(fieldKind => {
         it(`should be able read and write a field that is an array of nullables. Field: ${FieldKind[fieldKind]}`,
-            async function() {
-            const fieldName = FieldKind[fieldKind];
-            const value = [null, ...CompactUtil.referenceObjects[fieldName], null];
-            value.splice(2, 0, null);
+            async function () {
+                const fieldName = FieldKind[fieldKind];
+                const value = [null, ...CompactUtil.referenceObjects[fieldName], null];
+                value.splice(2, 0, null);
 
-            const map = await putEntry(mapName, +fieldKind, value);
-            const obj = await map.get('key');
-            obj[fieldName].should.be.deep.eq(value);
-        });
+                const map = await putEntry(mapName, +fieldKind, value);
+                const obj = await map.get('key');
+                obj[fieldName].should.be.deep.eq(value);
+            });
     });
 
-    supportedFieldKinds.forEach(fieldKind => {
-        it(`should throw when field name does not exist. Field: ${FieldKind[fieldKind]}`, async function() {
+    supportedFields.forEach(fieldKind => {
+        it(`should throw when field name does not exist. Field: ${FieldKind[fieldKind]}`, async function () {
             const fieldName = FieldKind[fieldKind];
             const value = CompactUtil.referenceObjects[fieldName];
 
@@ -284,7 +290,7 @@ describe('CompactTest', function () {
                 clusterName: cluster.id,
                 serialization: {
                     compactSerializers: [new CompactUtil.FlexibleSerializer([fieldKind], {
-                        [FieldKind[fieldKind]]: 'not-a-field'
+                        [fieldName]: 'not-a-field'
                     }), new CompactUtil.EmployeeSerializer()]
                 }
             }, member);
@@ -295,6 +301,155 @@ describe('CompactTest', function () {
             });
             error.should.be.instanceOf(HazelcastSerializationError);
             error.message.includes('No field with name').should.be.true;
+        });
+
+        it(`should read and write with one field. Field: ${FieldKind[fieldKind]}`, async function () {
+            const fieldName = FieldKind[fieldKind];
+            const value = CompactUtil.referenceObjects[fieldName];
+
+            const map = await putEntry(mapName, +fieldKind, value);
+            const obj = await map.get('key');
+            obj[fieldName].should.be.deep.eq(value);
+        });
+
+        it(`should throw when a field is tried to be read with a wrong reader method. Field: ${FieldKind[fieldKind]}`,
+            async function () {
+                const fieldName = FieldKind[fieldKind];
+                const wrongFieldKind = supportedFields[
+                    (supportedFields.indexOf(fieldKind) + 1) % supportedFields.length
+                ];
+                const value = CompactUtil.referenceObjects[fieldName];
+
+                await putEntry(mapName, +fieldKind, value, undefined, {
+                    [fieldName]: 'someField'
+                });
+                const client2 = await testFactory.newHazelcastClientForParallelTests({
+                    clusterName: cluster.id,
+                    serialization: {
+                        compactSerializers: [new CompactUtil.FlexibleSerializer([wrongFieldKind], {
+                            [FieldKind[wrongFieldKind]]: 'someField'
+                        }), new CompactUtil.EmployeeSerializer()]
+                    }
+                }, member);
+
+                const map = await client2.getMap(mapName);
+                const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+                    await map.get('key');
+                });
+                const regex = /(Mismatched field kinds)|(The kind of field \S+ must be one of)/;
+                error.should.be.instanceOf(HazelcastSerializationError);
+                regex.test(error.message).should.be.true;
+            });
+    });
+
+    fixedSizeFields.forEach(fieldKind => {
+        it(`should be able write a fix sized field then read it as nullable fix sized field. Field: ${FieldKind[fieldKind]}`,
+            async function () {
+            const fieldName = FieldKind[fieldKind];
+            const nullableFieldKind = CompactUtil.fixedFieldToNullableFixedField[fieldKind];
+            const value = CompactUtil.referenceObjects[fieldName];
+
+            await putEntry(mapName, +fieldKind, value, undefined, {
+                [fieldName]: 'someField'
+            });
+
+            const client2 = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [new CompactUtil.FlexibleSerializer([nullableFieldKind], {
+                        [FieldKind[nullableFieldKind]]: 'someField'
+                    }), new CompactUtil.EmployeeSerializer()]
+                }
+            }, member);
+
+            const map = await client2.getMap(mapName);
+            const obj = await map.get('key');
+            obj.someField.should.be.deep.eq(value);
+        });
+    });
+
+    nullableFixedSizeFields.forEach(fieldKind => {
+        it(`should be able write a nullable fix sized field then read it as fix sized field. Field: ${FieldKind[fieldKind]}`,
+            async function () {
+            const fieldName = FieldKind[fieldKind];
+            const fixedFieldKind = CompactUtil.fixedNullableFieldToFixedField[fieldKind];
+            const value = CompactUtil.referenceObjects[fieldName];
+
+            await putEntry(mapName, +fieldKind, value, undefined, {
+                [fieldName]: 'someField'
+            });
+
+            const client2 = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [new CompactUtil.FlexibleSerializer([fixedFieldKind], {
+                        [FieldKind[fixedFieldKind]]: 'someField'
+                    }), new CompactUtil.EmployeeSerializer()]
+                }
+            }, member);
+
+            const map = await client2.getMap(mapName);
+            const obj = await map.get('key');
+            obj.someField.should.be.deep.eq(value);
+        });
+
+        it('should throw when a nullable fix sized field is written as null then read as fix sized field. '
+        + `Field: ${FieldKind[fieldKind]}`,
+        async function () {
+            const fieldName = FieldKind[fieldKind];
+            const fixedFieldKind = CompactUtil.fixedNullableFieldToFixedField[fieldKind];
+            const value = null;
+
+            await putEntry(mapName, +fieldKind, value, undefined, {
+                [fieldName]: 'someField'
+            });
+
+            const client2 = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [new CompactUtil.FlexibleSerializer([fixedFieldKind], {
+                        [FieldKind[fixedFieldKind]]: 'someField'
+                    }), new CompactUtil.EmployeeSerializer()]
+                }
+            }, member);
+
+            const map = await client2.getMap(mapName);
+            const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+                await map.get('key');
+            });
+            error.should.be.instanceOf(HazelcastSerializationError);
+            error.message.includes('null value can not be read').should.be.true;
+        });
+    });
+
+    arrayOfNullableFixedSizeFields.forEach(fieldKind => {
+        it('should throw when a nullable fix sized array with nulls is written and then read as a fix sized array field. ' +
+         `Field: ${FieldKind[fieldKind]}`,
+        async function () {
+            const fieldName = FieldKind[fieldKind];
+            const arrayOfFixedSizeField = CompactUtil.nullableFixedSizeArrayToFixedSizeArray[fieldKind];
+            const arrayOfFixedSizeFieldName = FieldKind[arrayOfFixedSizeField];
+            const value = [null];
+
+            await putEntry(mapName, +fieldKind, value, undefined, {
+                [fieldName]: 'someField'
+            });
+
+            const client2 = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [new CompactUtil.FlexibleSerializer([arrayOfFixedSizeField], {
+                        [arrayOfFixedSizeFieldName]: 'someField'
+                    }), new CompactUtil.EmployeeSerializer()]
+                }
+            }, member);
+
+            const map = await client2.getMap(mapName);
+            const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+                await map.get('key');
+            });
+            error.should.be.instanceOf(HazelcastSerializationError);
+            error.message.includes('null value can not be read').should.be.true;
         });
     });
 
@@ -326,7 +481,7 @@ describe('CompactTest', function () {
         size.should.be.equal(80);
     });
 
-    it('should work with same-named different classes by giving different typenames', async function() {
+    it('should work with same-named different classes by giving different typenames', async function () {
         A.name.should.be.eq(B.name);
         await shouldReadAndWrite(new A(1), [new ASerializer(), new BSerializer()]);
         await shouldReadAndWrite(new B('1'), [new ASerializer(), new BSerializer()]);

@@ -533,7 +533,7 @@ class MainDTO {
     }
 }
 
-const supportedFieldKinds = [];
+const supportedFields = [];
 
 for (const fieldKindStr in FieldKind) {
     const fieldKind = +fieldKindStr;
@@ -544,23 +544,66 @@ for (const fieldKindStr in FieldKind) {
             fieldKind !== FieldKind.ARRAY_OF_PORTABLE &&
             fieldKind !== FieldKind.PORTABLE
         ) {
-            supportedFieldKinds.push(fieldKind);
+            supportedFields.push(fieldKind);
         }
     }
 }
 
+const fixedFieldToNullableFixedField = {
+    [FieldKind.BOOLEAN]: FieldKind.NULLABLE_BOOLEAN,
+    [FieldKind.INT8]: FieldKind.NULLABLE_INT8,
+    [FieldKind.INT16]: FieldKind.NULLABLE_INT16,
+    [FieldKind.INT32]: FieldKind.NULLABLE_INT32,
+    [FieldKind.INT64]: FieldKind.NULLABLE_INT64,
+    [FieldKind.FLOAT32]: FieldKind.NULLABLE_FLOAT32,
+    [FieldKind.FLOAT64]: FieldKind.NULLABLE_FLOAT64,
+};
+
+const fixedNullableFieldToFixedField = {
+    [FieldKind.NULLABLE_BOOLEAN]: FieldKind.BOOLEAN,
+    [FieldKind.NULLABLE_INT8]: FieldKind.INT8,
+    [FieldKind.NULLABLE_INT16]: FieldKind.INT16,
+    [FieldKind.NULLABLE_INT32]: FieldKind.INT32,
+    [FieldKind.NULLABLE_INT64]: FieldKind.INT64,
+    [FieldKind.NULLABLE_FLOAT32]: FieldKind.FLOAT32,
+    [FieldKind.NULLABLE_FLOAT64]: FieldKind.FLOAT64,
+};
+
+const fixedSizedArrayToNullableFixedSizeArray = {
+    [FieldKind.ARRAY_OF_BOOLEAN]: FieldKind.ARRAY_OF_NULLABLE_BOOLEAN,
+    [FieldKind.ARRAY_OF_INT8]: FieldKind.ARRAY_OF_NULLABLE_INT8,
+    [FieldKind.ARRAY_OF_INT16]: FieldKind.ARRAY_OF_NULLABLE_INT16,
+    [FieldKind.ARRAY_OF_INT32]: FieldKind.ARRAY_OF_NULLABLE_INT32,
+    [FieldKind.ARRAY_OF_INT64]: FieldKind.ARRAY_OF_NULLABLE_INT64,
+    [FieldKind.ARRAY_OF_FLOAT32]: FieldKind.ARRAY_OF_NULLABLE_FLOAT32,
+    [FieldKind.ARRAY_OF_FLOAT64]: FieldKind.ARRAY_OF_NULLABLE_FLOAT64,
+};
+
+const nullableFixedSizeArrayToFixedSizeArray = {
+    [FieldKind.ARRAY_OF_NULLABLE_BOOLEAN]: FieldKind.ARRAY_OF_BOOLEAN,
+    [FieldKind.ARRAY_OF_NULLABLE_INT8]: FieldKind.ARRAY_OF_INT8,
+    [FieldKind.ARRAY_OF_NULLABLE_INT16]: FieldKind.ARRAY_OF_INT16,
+    [FieldKind.ARRAY_OF_NULLABLE_INT32]: FieldKind.ARRAY_OF_INT32,
+    [FieldKind.ARRAY_OF_NULLABLE_INT64]: FieldKind.ARRAY_OF_INT64,
+    [FieldKind.ARRAY_OF_NULLABLE_FLOAT32]: FieldKind.ARRAY_OF_FLOAT32,
+    [FieldKind.ARRAY_OF_NULLABLE_FLOAT64]: FieldKind.ARRAY_OF_FLOAT64,
+};
+
+const nullableFixedSizeFields = [];
 const fixedSizeFields = [];
 const varSizeFields = [];
-const arrayOfNullableFieldKinds = [];
-for (const fieldKind of supportedFieldKinds) {
+const arrayOfNullableFields = [];
+
+for (const fieldKind of supportedFields) {
     if (FieldOperations.ALL[fieldKind].kindSizeInBytes() === FieldOperations.VARIABLE_SIZE) {
         varSizeFields.push(fieldKind);
     } else {
+        nullableFixedSizeFields.push(fixedFieldToNullableFixedField[fieldKind]);
         fixedSizeFields.push(fieldKind);
     }
 
     if (FieldKind[fieldKind].startsWith('ARRAY_OF_NULLABLE')) {
-        arrayOfNullableFieldKinds.push(fieldKind);
+        arrayOfNullableFields.push(fieldKind);
     }
 }
 
@@ -573,8 +616,9 @@ class Flexible {
 }
 
 class FlexibleSerializer {
-    constructor(fieldKinds, fieldNameMap = {}) {
-        this.fieldNameMap = fieldNameMap;
+    constructor(fieldKinds, readerFieldNameMap = {}, writerFieldNameMap = {}) {
+        this.readerFieldNameMap = readerFieldNameMap;
+        this.writerFieldNameMap = writerFieldNameMap;
         this.fieldKinds = fieldKinds;
         this.hzClass = Flexible;
     }
@@ -583,8 +627,8 @@ class FlexibleSerializer {
         const fields = {};
         for (const fieldKind of this.fieldKinds) {
             const baseName = FieldKind[fieldKind];
-            const fieldName = Object.prototype.hasOwnProperty.call(this.fieldNameMap, baseName) ?
-                this.fieldNameMap[baseName] : baseName;
+            const fieldName = Object.prototype.hasOwnProperty.call(this.readerFieldNameMap, baseName) ?
+                this.readerFieldNameMap[baseName] : baseName;
             switch (fieldKind) {
             case FieldKind.BOOLEAN:
                 fields[fieldName] = reader.readBoolean(fieldName);
@@ -728,8 +772,8 @@ class FlexibleSerializer {
     write(writer, instance) {
         for (const fieldKind of this.fieldKinds) {
             const baseName = FieldKind[fieldKind];
-            const fieldName = Object.prototype.hasOwnProperty.call(this.fieldNameMap, baseName) ?
-                this.fieldNameMap[baseName] : baseName;
+            const fieldName = Object.prototype.hasOwnProperty.call(this.writerFieldNameMap, baseName) ?
+                this.writerFieldNameMap[baseName] : baseName;
             switch (fieldKind) {
             case FieldKind.BOOLEAN:
                 writer.writeBoolean(fieldName, instance[fieldName]);
@@ -1320,8 +1364,13 @@ module.exports = {
     validationTestParams,
     referenceObjects,
     varSizeFields,
+    nullableFixedSizeFields,
     fixedSizeFields,
-    arrayOfNullableFieldKinds,
+    arrayOfNullableFields,
+    nullableFixedSizeArrayToFixedSizeArray,
+    fixedNullableFieldToFixedField,
+    fixedFieldToNullableFixedField,
+    fixedSizedArrayToNullableFixedSizeArray,
     NodeDTOSerializer,
     NamedDTOSerializer,
     InnerDTOSerializer,
@@ -1329,7 +1378,7 @@ module.exports = {
     MainDTOSerializerWithDefaults,
     Flexible,
     FlexibleSerializer,
-    supportedFieldKinds,
+    supportedFields,
     NodeDTO,
     Bits,
     BitsSerializer,
