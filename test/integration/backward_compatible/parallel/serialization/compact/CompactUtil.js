@@ -610,13 +610,14 @@ for (const fieldKind of supportedFields) {
 class Flexible {
     constructor(fields) {
         for (const field in fields) {
-            this[field] = fields[field];
+            this[field] = fields[field].value;
         }
     }
 }
 
 class FlexibleSerializer {
-    constructor(fieldKinds, readerFieldNameMap = {}, writerFieldNameMap = {}) {
+    constructor(fieldKinds, readerFieldNameMap = {}, writerFieldNameMap = {}, useDefaultValue = false) {
+        this.useDefaultValue = useDefaultValue;
         this.readerFieldNameMap = readerFieldNameMap;
         this.writerFieldNameMap = writerFieldNameMap;
         this.fieldKinds = fieldKinds;
@@ -629,140 +630,142 @@ class FlexibleSerializer {
             const baseName = FieldKind[fieldKind];
             const fieldName = Object.prototype.hasOwnProperty.call(this.readerFieldNameMap, baseName) ?
                 this.readerFieldNameMap[baseName] : baseName;
+            const defaultValue = this.useDefaultValue ? referenceObjects[baseName].default : undefined;
+
             switch (fieldKind) {
             case FieldKind.BOOLEAN:
-                fields[fieldName] = reader.readBoolean(fieldName);
+                fields[fieldName] = {value: reader.readBoolean(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_BOOLEAN:
-                fields[fieldName] = reader.readArrayOfBoolean(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfBoolean(fieldName, defaultValue)};
                 break;
             case FieldKind.INT8:
-                fields[fieldName] = reader.readInt8(fieldName);
+                fields[fieldName] = {value: reader.readInt8(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_INT8:
-                fields[fieldName] = reader.readArrayOfInt8(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfInt8(fieldName, defaultValue)};
                 break;
             case FieldKind.CHAR:
                 throw new Error('Char field is not supported in compact');
             case FieldKind.ARRAY_OF_CHAR:
                 throw new Error('Char field is not supported in compact');
             case FieldKind.INT16:
-                fields[fieldName] = reader.readInt16(fieldName);
+                fields[fieldName] = {value: reader.readInt16(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_INT16:
-                fields[fieldName] = reader.readArrayOfInt16(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfInt16(fieldName, defaultValue)};
                 break;
             case FieldKind.INT32:
-                fields[fieldName] = reader.readInt32(fieldName);
+                fields[fieldName] = {value: reader.readInt32(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_INT32:
-                fields[fieldName] = reader.readArrayOfInt32(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfInt32(fieldName, defaultValue)};
                 break;
             case FieldKind.INT64:
-                fields[fieldName] = reader.readInt64(fieldName);
+                fields[fieldName] = {value: reader.readInt64(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_INT64:
-                fields[fieldName] = reader.readArrayOfInt64(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfInt64(fieldName, defaultValue)};
                 break;
             case FieldKind.FLOAT32:
-                fields[fieldName] = reader.readFloat32(fieldName);
+                fields[fieldName] = {value: reader.readFloat32(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_FLOAT32:
-                fields[fieldName] = reader.readArrayOfFloat32(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfFloat32(fieldName, defaultValue)};
                 break;
             case FieldKind.FLOAT64:
-                fields[fieldName] = reader.readFloat64(fieldName);
+                fields[fieldName] = {value: reader.readFloat64(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_FLOAT64:
-                fields[fieldName] = reader.readArrayOfFloat64(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfFloat64(fieldName, defaultValue)};
                 break;
             case FieldKind.STRING:
-                fields[fieldName] = reader.readString(fieldName);
+                fields[fieldName] = {value: reader.readString(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_STRING:
-                fields[fieldName] = reader.readArrayOfString(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfString(fieldName, defaultValue)};
                 break;
             case FieldKind.DECIMAL:
-                fields[fieldName] = reader.readDecimal(fieldName);
+                fields[fieldName] = {value: reader.readDecimal(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_DECIMAL:
-                fields[fieldName] = reader.readArrayOfDecimal(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfDecimal(fieldName, defaultValue)};
                 break;
             case FieldKind.TIME:
-                fields[fieldName] = reader.readTime(fieldName);
+                fields[fieldName] = {value: reader.readTime(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_TIME:
-                fields[fieldName] = reader.readArrayOfTime(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfTime(fieldName, defaultValue)};
                 break;
             case FieldKind.DATE:
-                fields[fieldName] = reader.readDate(fieldName);
+                fields[fieldName] = {value: reader.readDate(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_DATE:
-                fields[fieldName] = reader.readArrayOfDate(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfDate(fieldName, defaultValue)};
                 break;
             case FieldKind.TIMESTAMP:
-                fields[fieldName] = reader.readTimestamp(fieldName);
+                fields[fieldName] = {value: reader.readTimestamp(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_TIMESTAMP:
-                fields[fieldName] = reader.readArrayOfTimestamp(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfTimestamp(fieldName, defaultValue)};
                 break;
             case FieldKind.TIMESTAMP_WITH_TIMEZONE:
-                fields[fieldName] = reader.readTimestampWithTimezone(fieldName);
+                fields[fieldName] = {value: reader.readTimestampWithTimezone(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
-                fields[fieldName] = reader.readArrayOfTimestampWithTimezone(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfTimestampWithTimezone(fieldName, defaultValue)};
                 break;
             case FieldKind.COMPACT:
-                fields[fieldName] = reader.readCompact(fieldName);
+                fields[fieldName] = {value: reader.readCompact(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_COMPACT:
-                fields[fieldName] = reader.readArrayOfCompact(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfCompact(fieldName, defaultValue)};
                 break;
             case FieldKind.PORTABLE:
                 throw new Error('Portable field is not supported in compact');
             case FieldKind.ARRAY_OF_PORTABLE:
                 throw new Error('Portable field is not supported in compact');
             case FieldKind.NULLABLE_BOOLEAN:
-                fields[fieldName] = reader.readNullableBoolean(fieldName);
+                fields[fieldName] = {value: reader.readNullableBoolean(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
-                fields[fieldName] = reader.readArrayOfNullableBoolean(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfNullableBoolean(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_INT8:
-                fields[fieldName] = reader.readNullableInt8(fieldName);
+                fields[fieldName] = {value: reader.readNullableInt8(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT8:
-                fields[fieldName] = reader.readArrayOfNullableInt8(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfNullableInt8(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_INT16:
-                fields[fieldName] = reader.readNullableInt16(fieldName);
+                fields[fieldName] = {value: reader.readNullableInt16(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT16:
-                fields[fieldName] = reader.readArrayOfNullableInt16(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfNullableInt16(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_INT32:
-                fields[fieldName] = reader.readNullableInt32(fieldName);
+                fields[fieldName] = {value: reader.readNullableInt32(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT32:
-                fields[fieldName] = reader.readArrayOfNullableInt32(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfNullableInt32(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_INT64:
-                fields[fieldName] = reader.readNullableInt64(fieldName);
+                fields[fieldName] = {value: reader.readNullableInt64(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT64:
-                fields[fieldName] = reader.readArrayOfNullableInt64(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfNullableInt64(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_FLOAT32:
-                fields[fieldName] = reader.readNullableFloat32(fieldName);
+                fields[fieldName] = {value: reader.readNullableFloat32(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
-                fields[fieldName] = reader.readArrayOfNullableFloat32(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfNullableFloat32(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_FLOAT64:
-                fields[fieldName] = reader.readNullableFloat64(fieldName);
+                fields[fieldName] = {value: reader.readNullableFloat64(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
-                fields[fieldName] = reader.readArrayOfNullableFloat64(fieldName);
+                fields[fieldName] = {value: reader.readArrayOfNullableFloat64(fieldName, defaultValue)};
                 break;
             }
         }
@@ -1302,57 +1305,61 @@ const serialize = async (serializationService, obj) => {
 };
 
 const referenceObjects = {
-    [FieldKind[FieldKind.BOOLEAN]]: true,
-    [FieldKind[FieldKind.ARRAY_OF_BOOLEAN]]: [true, false, true, true, true, false, true, true, false],
-    [FieldKind[FieldKind.INT8]]: -32,
-    [FieldKind[FieldKind.ARRAY_OF_INT8]]: Buffer.from([42, -128, -1, 127]),
-    [FieldKind[FieldKind.INT16]]: -456,
-    [FieldKind[FieldKind.ARRAY_OF_INT16]]: [-4231, 12343, 0],
-    [FieldKind[FieldKind.INT32]]: 21212121,
-    [FieldKind[FieldKind.ARRAY_OF_INT32]]: [-1, 1, 0, 9999999],
-    [FieldKind[FieldKind.INT64]]: Long.fromNumber(123456789),
-    [FieldKind[FieldKind.ARRAY_OF_INT64]]: [Long.fromNumber(11), Long.fromNumber(-123456789)],
-    [FieldKind[FieldKind.FLOAT32]]: 12.5,
-    [FieldKind[FieldKind.ARRAY_OF_FLOAT32]]: [
+    [FieldKind[FieldKind.BOOLEAN]]: {default: false, value: true},
+    [FieldKind[FieldKind.ARRAY_OF_BOOLEAN]]: {default: [], value: [true, false, true, true, true, false, true, true, false]},
+    [FieldKind[FieldKind.INT8]]: {default: 0, value: -32},
+    [FieldKind[FieldKind.ARRAY_OF_INT8]]: {default: Buffer.from([]), value: Buffer.from([42, -128, -1, 127])},
+    [FieldKind[FieldKind.INT16]]: {default: 0, value: -456},
+    [FieldKind[FieldKind.ARRAY_OF_INT16]]: {default: [], value: [-4231, 12343, 0]},
+    [FieldKind[FieldKind.INT32]]: {default: 0, value: 21212121},
+    [FieldKind[FieldKind.ARRAY_OF_INT32]]: {default: [], value: [-1, 1, 0, 9999999]},
+    [FieldKind[FieldKind.INT64]]: {default: Long.ZERO, value: Long.fromNumber(123456789)},
+    [FieldKind[FieldKind.ARRAY_OF_INT64]]: {default: [], value: [Long.fromNumber(11), Long.fromNumber(-123456789)]},
+    [FieldKind[FieldKind.FLOAT32]]: {default: 0, value: 12.5},
+    [FieldKind[FieldKind.ARRAY_OF_FLOAT32]]: {default: [], value: [
         -13.130000114440918,
         12345.669921875,
         0.10000000149011612,
         9876543,
         -99999.9921875,
-    ],
-    [FieldKind[FieldKind.FLOAT64]]: 12345678.90123,
-    [FieldKind[FieldKind.ARRAY_OF_FLOAT64]]: [-12345.67],
-    [FieldKind[FieldKind.STRING]]: 'üğişçöa',
-    [FieldKind[FieldKind.ARRAY_OF_STRING]]: ['17', '😊 😇 🙂', 'abc'],
-    [FieldKind[FieldKind.DECIMAL]]: BigDecimal.fromString('123.456'),
-    [FieldKind[FieldKind.ARRAY_OF_DECIMAL]]: [BigDecimal.fromString('0'), BigDecimal.fromString('-123456.789')],
-    [FieldKind[FieldKind.TIME]]: new LocalTime(2, 3, 4, 5),
-    [FieldKind[FieldKind.ARRAY_OF_TIME]]: [new LocalTime(8, 7, 6, 5)],
-    [FieldKind[FieldKind.DATE]]: new LocalDate(2022, 1, 1),
-    [FieldKind[FieldKind.ARRAY_OF_DATE]]: [new LocalDate(2021, 11, 11), new LocalDate(2020, 3, 3)],
-    [FieldKind[FieldKind.TIMESTAMP]]: LocalDateTime.from(2022, 2, 2, 3, 3, 3, 4000),
-    [FieldKind[FieldKind.ARRAY_OF_TIMESTAMP]]: [LocalDateTime.from(1990, 2, 12, 13, 14, 54, 98765000)],
-    [FieldKind[FieldKind.TIMESTAMP_WITH_TIMEZONE]]: OffsetDateTime.from(200, 10, 10, 16, 44, 42, 12345000, 7200),
-    [FieldKind[FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE]]: [OffsetDateTime.from(2001, 1, 10, 12, 24, 2, 45, -7200)],
-    [FieldKind[FieldKind.COMPACT]]: new Employee(42, Long.fromString('42')),
-    [FieldKind[FieldKind.ARRAY_OF_COMPACT]]: [new Employee(42, Long.fromString('42')), new Employee(123, Long.fromString('123'))],
-    [FieldKind[FieldKind.NULLABLE_BOOLEAN]]: false,
-    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_BOOLEAN]]: [false, false, true],
-    [FieldKind[FieldKind.NULLABLE_INT8]]: -34,
-    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_INT8]]: [-32, 32],
-    [FieldKind[FieldKind.NULLABLE_INT16]]: 36,
-    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_INT16]]: [37, -37, 0, 12345],
-    [FieldKind[FieldKind.NULLABLE_INT32]]: -38,
-    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_INT32]]: [-39, 2134567, -8765432, 39],
-    [FieldKind[FieldKind.NULLABLE_INT64]]: Long.fromNumber(-4040),
-    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_INT64]]: [1, 41, -1, 12312312312, -9312912391].map(x => Long.fromNumber(x)),
-    [FieldKind[FieldKind.NULLABLE_FLOAT32]]: 42.400001525878906,
-    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_FLOAT32]]: [
-        -43.400001525878906,
-        434.42999267578125
-    ],
-    [FieldKind[FieldKind.NULLABLE_FLOAT64]]: 44.12,
-    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_FLOAT64]]: [45.678, -4567.8, 0.12345],
+    ]},
+    [FieldKind[FieldKind.FLOAT64]]: {default: 0, value: 12345678.90123},
+    [FieldKind[FieldKind.ARRAY_OF_FLOAT64]]: {default: [], value: [-12345.67]},
+    [FieldKind[FieldKind.STRING]]: {default: '', value: 'üğişçöa'},
+    [FieldKind[FieldKind.ARRAY_OF_STRING]]: {default: [], value: ['17', '😊 😇 🙂', 'abc']},
+    [FieldKind[FieldKind.DECIMAL]]: {default: BigDecimal.fromString('0'), value: BigDecimal.fromString('123.456')},
+    [FieldKind[FieldKind.ARRAY_OF_DECIMAL]]: {default: [],
+         value: [BigDecimal.fromString('0'), BigDecimal.fromString('-123456.789')]},
+    [FieldKind[FieldKind.TIME]]: {default: new LocalTime(0, 0, 0, 0), value: new LocalTime(2, 3, 4, 5)},
+    [FieldKind[FieldKind.ARRAY_OF_TIME]]: {default: [], value: [new LocalTime(8, 7, 6, 5)]},
+    [FieldKind[FieldKind.DATE]]: {default: new LocalDate(0, 1, 1), value: new LocalDate(2022, 1, 1)},
+    [FieldKind[FieldKind.ARRAY_OF_DATE]]: {default: [], value: [new LocalDate(2021, 11, 11), new LocalDate(2020, 3, 3)]},
+    [FieldKind[FieldKind.TIMESTAMP]]: {default: LocalDateTime.from(0, 1, 1, 0, 0, 0, 0),
+         value: LocalDateTime.from(2022, 2, 2, 3, 3, 3, 4000)},
+    [FieldKind[FieldKind.ARRAY_OF_TIMESTAMP]]: {default: [], value: [LocalDateTime.from(1990, 2, 12, 13, 14, 54, 98765000)]},
+    [FieldKind[FieldKind.TIMESTAMP_WITH_TIMEZONE]]: {default: OffsetDateTime.from(0, 1, 1, 0, 0, 0, 0, 0),
+         value: OffsetDateTime.from(200, 10, 10, 16, 44, 42, 12345000, 7200)},
+    [FieldKind[FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE]]: {default: [],
+         value: [OffsetDateTime.from(2001, 1, 10, 12, 24, 2, 45, -7200)]},
+    [FieldKind[FieldKind.COMPACT]]: {default: new Employee(0, Long.ZERO), value: new Employee(42, Long.fromString('42'))},
+    [FieldKind[FieldKind.ARRAY_OF_COMPACT]]: {default: [],
+         value: [new Employee(42, Long.fromString('42')), new Employee(123, Long.fromString('123'))]},
+    [FieldKind[FieldKind.NULLABLE_BOOLEAN]]: {default: null, value: false},
+    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_BOOLEAN]]: {default: [], value: [false, false, true]},
+    [FieldKind[FieldKind.NULLABLE_INT8]]: {default: null, value: -34},
+    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_INT8]]: {default: [], value: [-32, 32]},
+    [FieldKind[FieldKind.NULLABLE_INT16]]: {default: null, value: 36},
+    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_INT16]]: {default: [], value: [37, -37, 0, 12345]},
+    [FieldKind[FieldKind.NULLABLE_INT32]]: {default: null, value: -38},
+    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_INT32]]: {default: [], value: [-39, 2134567, -8765432, 39]},
+    [FieldKind[FieldKind.NULLABLE_INT64]]: {default: null, value: Long.fromNumber(-4040)},
+    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_INT64]]: {default: [],
+         value: [1, 41, -1, 12312312312, -9312912391].map(x => Long.fromNumber(x))},
+    [FieldKind[FieldKind.NULLABLE_FLOAT32]]: {default: null, value: 42.400001525878906},
+    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_FLOAT32]]: {default: [],
+        value: [-43.400001525878906, 434.42999267578125]},
+    [FieldKind[FieldKind.NULLABLE_FLOAT64]]: {default: null, value: 44.12},
+    [FieldKind[FieldKind.ARRAY_OF_NULLABLE_FLOAT64]]: {default: [], value: [45.678, -4567.8, 0.12345]},
 };
 
 module.exports = {

@@ -81,8 +81,6 @@ describe('CompactTest', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        varSizeFields = CompactUtil.varSizeFields;
-        supportedFields = CompactUtil.supportedFieldKinds;
         cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
         member = await RC.startMember(cluster.id);
     });
@@ -123,12 +121,14 @@ describe('CompactTest', function () {
         readObj.should.deep.equal(obj);
     };
 
-    const putEntry = async (mapName, fieldKind, value, readerFieldNameMap = {}, writerFieldNameMap = {}) => {
+    const putEntry = async (
+        mapName, fieldKind, value, readerFieldNameMap = {}, writerFieldNameMap = {}, useDefaultValue = false
+    ) => {
         const client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
                 compactSerializers: [
-                    new CompactUtil.FlexibleSerializer([fieldKind], readerFieldNameMap, writerFieldNameMap),
+                    new CompactUtil.FlexibleSerializer([fieldKind], readerFieldNameMap, writerFieldNameMap, useDefaultValue),
                     new CompactUtil.EmployeeSerializer()
                 ]
             }
@@ -138,7 +138,7 @@ describe('CompactTest', function () {
         const baseName = FieldKind[fieldKind];
         const fieldName = Object.prototype.hasOwnProperty.call(writerFieldNameMap, baseName) ?
             writerFieldNameMap[baseName] : baseName;
-        const fields = { [fieldName]: value };
+        const fields = { [fieldName]: {value: value} };
         await map.set('key', new CompactUtil.Flexible(fields));
         return map;
     };
@@ -152,7 +152,7 @@ describe('CompactTest', function () {
     it('should be able to read and write all fields', async function () {
         await shouldReadAndWrite(
             new CompactUtil.Flexible(CompactUtil.referenceObjects),
-            [new CompactUtil.FlexibleSerializer(CompactUtil.supportedFieldKinds), new CompactUtil.EmployeeSerializer()]
+            [new CompactUtil.FlexibleSerializer(supportedFields), new CompactUtil.EmployeeSerializer()]
         );
     });
 
@@ -189,13 +189,13 @@ describe('CompactTest', function () {
     [['small', 1], ['medium', 20], ['large', 42]].forEach(([size, elementCount]) => {
         it(`should read and write ${size} object`, async function () {
             const referenceObjects = {
-                [FieldKind[FieldKind.ARRAY_OF_STRING]]: new Array(elementCount).fill(0)
-                    .map(i => TestUtil.randomString((i + 1) * 100)),
-                [FieldKind[FieldKind.INT32]]: 32,
-                [FieldKind[FieldKind.STRING]]: 'test',
+                [FieldKind[FieldKind.ARRAY_OF_STRING]]: {value: new Array(elementCount).fill(0)
+                    .map(i => TestUtil.randomString((i + 1) * 100))},
+                [FieldKind[FieldKind.INT32]]: {value: 32},
+                [FieldKind[FieldKind.STRING]]: {value: 'test'},
             };
 
-            referenceObjects[FieldKind[FieldKind.ARRAY_OF_STRING]].push(null);
+            referenceObjects[FieldKind[FieldKind.ARRAY_OF_STRING]].value.push(null);
             await shouldReadAndWrite(
                 new CompactUtil.Flexible(referenceObjects),
                 [new CompactUtil.FlexibleSerializer([FieldKind.ARRAY_OF_STRING, FieldKind.INT32, FieldKind.STRING])]
@@ -206,7 +206,7 @@ describe('CompactTest', function () {
     [0, 1, 8, 10, 100, 1000].forEach((elementCount) => {
         it(`should read and write bool array with size ${elementCount}`, async function () {
             const referenceObjects = {
-                [FieldKind[FieldKind.ARRAY_OF_BOOLEAN]]: new Array(elementCount).fill(0).map(() => Math.random() > 0.5),
+                [FieldKind[FieldKind.ARRAY_OF_BOOLEAN]]: {value: new Array(elementCount).fill(0).map(() => Math.random() > 0.5)},
             };
 
             await shouldReadAndWrite(
@@ -216,7 +216,7 @@ describe('CompactTest', function () {
 
         it(`should read and write bool array with size ${elementCount}`, async function () {
             const referenceObjects = {
-                [FieldKind[FieldKind.ARRAY_OF_BOOLEAN]]: new Array(elementCount).fill(0).map(() => Math.random() > 0.5),
+                [FieldKind[FieldKind.ARRAY_OF_BOOLEAN]]: {value: new Array(elementCount).fill(0).map(() => Math.random() > 0.5)},
             };
 
             await shouldReadAndWrite(
@@ -228,7 +228,7 @@ describe('CompactTest', function () {
             const allFields = {};
             const fieldNames = new Array(elementCount);
             for (let i = 0; i < elementCount; i++) {
-                allFields[i] = Math.random() > 0.5;
+                allFields[i] = {value: Math.random() > 0.5};
                 fieldNames[i] = i.toString();
             }
 
@@ -241,7 +241,7 @@ describe('CompactTest', function () {
                 read(reader) {
                     const fields = {};
                     for (const fieldName of this.fieldNames) {
-                        fields[fieldName] = reader.readBoolean(fieldName);
+                        fields[fieldName] = {value: reader.readBoolean(fieldName)};
                     }
                     return new CompactUtil.Flexible(fields);
                 }
@@ -271,7 +271,7 @@ describe('CompactTest', function () {
         it(`should be able read and write a field that is an array of nullables. Field: ${FieldKind[fieldKind]}`,
             async function () {
                 const fieldName = FieldKind[fieldKind];
-                const value = [null, ...CompactUtil.referenceObjects[fieldName], null];
+                const value = [null, ...CompactUtil.referenceObjects[fieldName].value, null];
                 value.splice(2, 0, null);
 
                 const map = await putEntry(mapName, +fieldKind, value);
@@ -283,7 +283,7 @@ describe('CompactTest', function () {
     supportedFields.forEach(fieldKind => {
         it(`should throw when field name does not exist. Field: ${FieldKind[fieldKind]}`, async function () {
             const fieldName = FieldKind[fieldKind];
-            const value = CompactUtil.referenceObjects[fieldName];
+            const value = CompactUtil.referenceObjects[fieldName].value;
 
             await putEntry(mapName, +fieldKind, value);
             const client2 = await testFactory.newHazelcastClientForParallelTests({
@@ -305,7 +305,7 @@ describe('CompactTest', function () {
 
         it(`should read and write with one field. Field: ${FieldKind[fieldKind]}`, async function () {
             const fieldName = FieldKind[fieldKind];
-            const value = CompactUtil.referenceObjects[fieldName];
+            const value = CompactUtil.referenceObjects[fieldName].value;
 
             const map = await putEntry(mapName, +fieldKind, value);
             const obj = await map.get('key');
@@ -318,7 +318,7 @@ describe('CompactTest', function () {
                 const wrongFieldKind = supportedFields[
                     (supportedFields.indexOf(fieldKind) + 1) % supportedFields.length
                 ];
-                const value = CompactUtil.referenceObjects[fieldName];
+                const value = CompactUtil.referenceObjects[fieldName].value;
 
                 await putEntry(mapName, +fieldKind, value, undefined, {
                     [fieldName]: 'someField'
@@ -340,6 +340,63 @@ describe('CompactTest', function () {
                 error.should.be.instanceOf(HazelcastSerializationError);
                 regex.test(error.message).should.be.true;
             });
+
+        it(`should not read default value when field exist. Field: ${FieldKind[fieldKind]}`, async function() {
+            const fieldName = FieldKind[fieldKind];
+            const value = CompactUtil.referenceObjects[fieldName].value;
+
+            const map = await putEntry(mapName, +fieldKind, value, undefined, undefined, true);
+            const obj = await map.get('key');
+            obj[fieldName].should.be.deep.eq(value);
+        });
+
+        it(`should read default value when field names do not match. Field: ${FieldKind[fieldKind]}`, async function() {
+            const fieldName = FieldKind[fieldKind];
+            const value = CompactUtil.referenceObjects[fieldName].value;
+
+            const map = await putEntry(mapName, +fieldKind, value, undefined, {
+                [fieldName]: 'someField'
+            }, true);
+            const obj = await map.get('key');
+            if (obj[fieldName] === null) {
+                should.equal(CompactUtil.referenceObjects[fieldName].default, null);
+            } else {
+                obj[fieldName].should.be.deep.eq(CompactUtil.referenceObjects[fieldName].default);
+            }
+        });
+
+        it('should read default value when field name exist but with a different field kind.' +
+        `Field: ${FieldKind[fieldKind]}`, async function() {
+            const fieldName = FieldKind[fieldKind];
+            const wrongFieldKind = supportedFields[
+                (supportedFields.indexOf(fieldKind) + 1) % supportedFields.length
+            ];
+            const wrongFieldKindName = FieldKind[wrongFieldKind];
+            const expectedValue = CompactUtil.referenceObjects[wrongFieldKindName].default;
+            const value = CompactUtil.referenceObjects[fieldName].value;
+
+            await putEntry(mapName, +fieldKind, value, undefined, {
+                [fieldName]: 'someField'
+            });
+
+            const client2 = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [new CompactUtil.FlexibleSerializer([wrongFieldKind], {
+                        [FieldKind[wrongFieldKind]]: 'someField'
+                    }, undefined, true), new CompactUtil.EmployeeSerializer()]
+                }
+            }, member);
+
+            const map = await client2.getMap(mapName);
+
+            const obj = await map.get('key');
+            if (obj.someField === null) {
+                should.equal(CompactUtil.referenceObjects[wrongFieldKindName].default, null);
+            } else {
+                obj.someField.should.be.deep.eq(expectedValue);
+            }
+        });
     });
 
     fixedSizeFields.forEach(fieldKind => {
@@ -347,7 +404,7 @@ describe('CompactTest', function () {
             async function () {
             const fieldName = FieldKind[fieldKind];
             const nullableFieldKind = CompactUtil.fixedFieldToNullableFixedField[fieldKind];
-            const value = CompactUtil.referenceObjects[fieldName];
+            const value = CompactUtil.referenceObjects[fieldName].value;
 
             await putEntry(mapName, +fieldKind, value, undefined, {
                 [fieldName]: 'someField'
@@ -373,7 +430,7 @@ describe('CompactTest', function () {
             async function () {
             const fieldName = FieldKind[fieldKind];
             const fixedFieldKind = CompactUtil.fixedNullableFieldToFixedField[fieldKind];
-            const value = CompactUtil.referenceObjects[fieldName];
+            const value = CompactUtil.referenceObjects[fieldName].value;
 
             await putEntry(mapName, +fieldKind, value, undefined, {
                 [fieldName]: 'someField'
@@ -485,6 +542,28 @@ describe('CompactTest', function () {
         A.name.should.be.eq(B.name);
         await shouldReadAndWrite(new A(1), [new ASerializer(), new BSerializer()]);
         await shouldReadAndWrite(new B('1'), [new ASerializer(), new BSerializer()]);
+    });
+
+    describe('SchemaEvolution', function() {
+        it('should work when a variable size field is added', async function() {
+
+        });
+
+        it('should work when a variable size field is removed', async function() {
+
+        });
+
+        it('should work when a fixed size field is removed', async function() {
+
+        });
+    });
+
+    it('should do when a compact written and read during cluster restart', async function() {
+
+    });
+
+    it('should received compact data with events', async function() {
+
     });
 });
 

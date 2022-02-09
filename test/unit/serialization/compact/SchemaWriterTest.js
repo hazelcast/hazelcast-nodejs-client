@@ -21,7 +21,7 @@ const { FieldDescriptor } = require('../../../../lib/serialization/generic_recor
 const { FieldKind } = require('../../../../lib');
 const {
     createSerializationService,
-    supportedFieldKinds
+    supportedFields
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { PositionalObjectDataOutput } = require('../../../../lib/serialization/ObjectData');
 const { RabinFingerprintBytes } = require('../../../../lib/serialization/compact/RabinFingerprint');
@@ -50,7 +50,7 @@ describe('SchemaWriterTest', function () {
 
         const fields = [];
 
-        for (const fieldKind of supportedFieldKinds) {
+        for (const fieldKind of supportedFields) {
             const name = TestUtil.randomString(5);
             fields.push({fieldKind, name});
             switch (fieldKind) {
