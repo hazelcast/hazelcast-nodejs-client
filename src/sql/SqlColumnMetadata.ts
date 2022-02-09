@@ -66,7 +66,7 @@ export enum SqlColumnType {
      */
     NULL,
 
-    /** JSON type, represented by {@link HazelcastJsonValue} */
+    /** JSON type, represented by {@link HazelcastJsonValue} and JS objects */
     JSON
 }
 

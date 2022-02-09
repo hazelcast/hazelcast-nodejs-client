@@ -2827,7 +2827,7 @@ for await (const row of sqlResult) {
 }
 ```
 
-The "json-flat" value format means that top level fields of the json object is treated as separate columns. There is also "json"
+The "json-flat" value format means that top level fields of the JSON object is treated as separate columns. There is also "json"
 value format which we cover in the next section.
 
 ### 8.7.7. JSON Data Type
@@ -2846,7 +2846,7 @@ The corresponding result type for JSON type is `HazelcastJsonValue` as well:
 const result = await client.getSql().execute('SELECT * FROM test');
 
 const rowMetadata = result.rowMetadata;
-rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.JSON);
+console.log(rowMetadata.getColumn(rowMetadata.findColumn('this')).type === SqlColumnType.JSON) // true
 
 for await (const row of result) {
     console.log(row);
@@ -2855,7 +2855,7 @@ for await (const row of result) {
 
 Supported operations:
 
-1. `JSON_QUERY(jsonArg VARCHAR|JSON, jsonPath VARCHAR ... <extended syntax> ): returns JSON`: returns a json-object/array by
+1. `JSON_QUERY(jsonArg VARCHAR|JSON, jsonPath VARCHAR ... <extended syntax> ): returns JSON`: returns a JSON-object/array by
 the given JSON path.
 2. `JSON_VALUE(jsonArg VARCHAR|JSON, jsonPath VARCHAR ... ): returns VARCHAR`: returns a primitive value as varchar by the
 given JSON path.
