@@ -89,7 +89,7 @@ export class LocalTime {
 
     /**
      * Constructs a new instance from Date.
-     * @param date Must be a valid Date. So `date.getTime()` should be not NaN
+     * @param date must be a valid Date. `date.getTime()` should be not NaN
      * @throws TypeError if the passed param is not a Date
      * @throws RangeError if an invalid Date is passed
      */
@@ -244,7 +244,7 @@ export class LocalDate {
 
     /**
      * Constructs a new instance from Date.
-     * @param date Must be a valid Date. So `date.getTime()` should be not NaN
+     * @param date must be a valid Date. `date.getTime()` should be not NaN
      * @throws TypeError if the passed param is not a Date
      * @throws RangeError if an invalid Date is passed
      */
@@ -331,7 +331,7 @@ export class LocalDateTime {
 
     /**
      * Constructs a new instance from Date.
-     * @param date Must be a valid Date. So `date.getTime()` should be not NaN
+     * @param date must be a valid Date. `date.getTime()` should be not NaN
      * @throws TypeError if the passed param is not a Date
      * @throws RangeError if an invalid Date is passed
      */
@@ -406,7 +406,7 @@ export class OffsetDateTime {
 
     /**
      * Constructs a new instance from Date and offset seconds.
-     * @param date Must be a valid Date. So `date.getTime()` should be not NaN
+     * @param date must be a valid Date. `date.getTime()` should be not NaN
      * @param offsetSeconds Offset in seconds, must be between [-64800, 64800]
      * @throws TypeError if a wrong type is passed as argument
      * @throws RangeError if an invalid argument value is passed

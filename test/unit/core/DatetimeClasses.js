@@ -118,6 +118,21 @@ describe('DateTimeClassesTest', function () {
             const localTime2 = LocalTime.fromDate(new Date(2000, 0, 29, 2, 3, 4, 6));
             localTime2.toString().should.be.eq('02:03:04.006000000');
         });
+
+        it('should throw when constructed from fromDate with a non-date thing', function () {
+            const nonDateThings = [1, null, '', {}, [], function() {}, class A {}, LocalDateTime.fromDate(new Date())];
+            nonDateThings.forEach(nonDateThing => {
+                (() => LocalTime.fromDate(nonDateThing)).should.throw(TypeError, 'A Date is not passed');
+            });
+        });
+
+        it('should throw when constructed from fromDate with an invalid date', function () {
+            const invalidDates = [new Date('aa'), new Date({}), new Date(undefined)];
+            invalidDates.forEach(invalidDate => {
+                isNaN(invalidDate.getTime).should.be.true;
+                (() => LocalTime.fromDate(invalidDate)).should.throw(RangeError, 'Invalid Date is passed');
+            });
+        });
     });
     describe('LocalDateTest', function () {
         it('should throw RangeError if year is not an integer between -999_999_999-999_999_999(inclusive)', function () {
@@ -235,6 +250,21 @@ describe('DateTimeClassesTest', function () {
             date3.toString().should.be.eq('-2000-03-29');
             const date4 = LocalDate.fromDate(new Date(-2000, 0, 29, 2, 3, 4, 6));
             date4.toString().should.be.eq('-2000-01-29');
+        });
+
+        it('should throw when constructed from fromDate with a non-date thing', function () {
+            const nonDateThings = [1, null, '', {}, [], function() {}, class A {}, LocalDateTime.fromDate(new Date())];
+            nonDateThings.forEach(nonDateThing => {
+                (() => LocalDate.fromDate(nonDateThing)).should.throw(TypeError, 'A Date is not passed');
+            });
+        });
+
+        it('should throw when constructed from fromDate with an invalid date', function () {
+            const invalidDates = [new Date('aa'), new Date({}), new Date(undefined)];
+            invalidDates.forEach(invalidDate => {
+                isNaN(invalidDate.getTime).should.be.true;
+                (() => LocalDate.fromDate(invalidDate)).should.throw(RangeError, 'Invalid Date is passed');
+            });
         });
     });
     describe('LocalDateTimeTest', function () {
