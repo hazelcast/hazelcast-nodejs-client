@@ -83,7 +83,7 @@ export class SchemaService implements ISchemaService {
         this.logger.trace('SchemaService', `Sending ${this.schemas.size} schemas to the cluster ${this.schemas}`);
         const message = ClientSendAllSchemasCodec.encodeRequest([...this.schemas.values()]);
         const invocation = new Invocation(this.getInvocationService(), message);
-        return this.getInvocationService().invoke(invocation).then(() => {});
+        return this.getInvocationService().invokeUrgent(invocation).then(() => {});
     }
 
 }

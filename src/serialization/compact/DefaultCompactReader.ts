@@ -89,7 +89,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
 
     private static toUnknownFieldError(fieldName: string, schema: Schema): Error {
         return new HazelcastSerializationError(
-            `No field with name '${fieldName}' in compact schema ${JSON.stringify(schema.fieldDefinitionMap)}`
+            `No field with the name '${fieldName}' in compact schema ${JSON.stringify(schema.fieldDefinitionMap)}`
         );
     }
 

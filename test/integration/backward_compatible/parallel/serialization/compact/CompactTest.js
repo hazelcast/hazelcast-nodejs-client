@@ -26,9 +26,21 @@ const B = require('./SameNamedClass').A;
 const BSerializer = require('./SameNamedClass').ASerializer;
 const { Predicates, HazelcastSerializationError } = require('../../../../../../lib/core');
 
-describe('CompactTest', function () {
-    const testFactory = new TestUtil.TestFactory();
+const COMPACT_ENABLED_ZERO_CONFIG_XML = `
+    <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.hazelcast.com/schema/config
+        http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
+        <network>
+            <port>0</port>
+        </network>
+        <serialization>
+            <compact-serialization enabled="true" />
+        </serialization>
+    </hazelcast>
+`;
 
+describe('CompactTest', function () {
     let cluster;
     let mapName;
     let member;
@@ -43,6 +55,8 @@ describe('CompactTest', function () {
     let CompactUtil;
     let FieldKind;
     let CompactStreamSerializer;
+
+    const testFactory = new TestUtil.TestFactory();
 
     try {
         CompactUtil = require('./CompactUtil');
@@ -64,20 +78,6 @@ describe('CompactTest', function () {
         arrayOfNullableFields = [];
         arrayOfNullableFixedSizeFields = [];
     }
-
-    const COMPACT_ENABLED_ZERO_CONFIG_XML = `
-            <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
-                <network>
-                    <port>0</port>
-                </network>
-                <serialization>
-                    <compact-serialization enabled="true" />
-                </serialization>
-            </hazelcast>
-        `;
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
@@ -545,25 +545,216 @@ describe('CompactTest', function () {
     });
 
     describe('SchemaEvolution', function() {
-        it('should work when a variable size field is added', async function() {
+        const verifyAddingAField = async (existingFields, newFieldName, newFieldValue, newFieldKind) => {
+            const v1FieldKinds = [];
+            const v1FieldNameMap = {};
+            const v1Fields = {};
 
+            for (const fieldName in existingFields) {
+                const v = existingFields[fieldName];
+                v1FieldNameMap[FieldKind[v.fieldKind]] = fieldName;
+                v1Fields[fieldName] = {value: v.value};
+                v1FieldKinds.push(v.fieldKind);
+            }
+            const v1Serializer = new CompactUtil.FlexibleSerializer(v1FieldKinds, v1FieldNameMap, v1FieldNameMap);
+            const v1Client = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [v1Serializer]
+                }
+            }, member);
+            const v1Map = await v1Client.getMap(mapName);
+            await v1Map.put('key1', new CompactUtil.Flexible(v1Fields));
+
+            const v2FieldKinds = [...v1FieldKinds, newFieldKind];
+            const v2FieldNameMap = {
+                ...v1FieldNameMap,
+                [FieldKind[newFieldKind]]: newFieldName
+            };
+            const v2Serializer = new CompactUtil.FlexibleSerializer(v2FieldKinds, v2FieldNameMap, v2FieldNameMap);
+            const v2Client = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [v2Serializer]
+                }
+            }, member);
+            const v2Fields = {...v1Fields, [newFieldName]: {value: newFieldValue}};
+            const v2Map = await v2Client.getMap(mapName);
+            await v2Map.put('key2', new CompactUtil.Flexible(v2Fields));
+
+            const carefulV2Serializer = new CompactUtil.FlexibleSerializer(v2FieldKinds, v2FieldNameMap, v2FieldNameMap, true);
+            const carefulV2Client = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [carefulV2Serializer]
+                }
+            }, member);
+            const carefulV2Map = await carefulV2Client.getMap(mapName);
+
+            // Old client can read data written by the new client
+            const v1Obj = await v1Map.get('key2');
+            for (const fieldName in v1Fields) {
+                v1Obj[fieldName].should.be.eq(v2Fields[fieldName].value);
+            }
+
+            // New client cannot read data written by the old client, since there is no such field on the old data
+
+            const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+                await v2Map.get('key1');
+            });
+            error.should.be.instanceOf(HazelcastSerializationError);
+            error.message.includes('No field with the name').should.be.true;
+
+            // However, if it has default value, everything should work
+            const carefulV2Obj = await carefulV2Map.get('key1');
+            for (const fieldName in v2Fields) {
+                const fieldKindName = Object.prototype.hasOwnProperty.call(existingFields, fieldName) ?
+                    FieldKind[existingFields[fieldName]] : FieldKind[newFieldKind];
+                carefulV2Obj[fieldName].should.satisfy(
+                    v => Object.prototype.hasOwnProperty.call(v1Fields, fieldName) ?
+                        v === v1Fields[fieldName].value :
+                        v === CompactUtil.referenceObjects[fieldKindName].default
+                );
+            }
+        };
+
+        const verifyRemovingAField = async (existingFields, removedFieldName) => {
+            const v1FieldKinds = [];
+            const v1FieldNameMap = {};
+            const v1Fields = {};
+            const v2FieldKinds = [];
+
+            for (const fieldName in existingFields) {
+                const v = existingFields[fieldName];
+                v1FieldNameMap[FieldKind[v.fieldKind]] = fieldName;
+                v1Fields[fieldName] = {value: v.value};
+                v1FieldKinds.push(v.fieldKind);
+                if (fieldName !== removedFieldName) {
+                    v2FieldKinds.push(v.fieldKind);
+                }
+            }
+            const v1Serializer = new CompactUtil.FlexibleSerializer(v1FieldKinds, v1FieldNameMap, v1FieldNameMap);
+            const v1Client = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [v1Serializer]
+                }
+            }, member);
+            const v1Map = await v1Client.getMap(mapName);
+            await v1Map.put('key1', new CompactUtil.Flexible(v1Fields));
+
+            const v2FieldNameMap = {
+                ...v1FieldNameMap
+            };
+            delete v2FieldNameMap[FieldKind[existingFields[removedFieldName].fieldKind]];
+            const v2Serializer = new CompactUtil.FlexibleSerializer(v2FieldKinds, v2FieldNameMap, v2FieldNameMap);
+            const v2Client = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [v2Serializer]
+                }
+            }, member);
+            const v2Fields = {...v1Fields};
+            delete v2Fields[removedFieldName];
+            const v2Map = await v2Client.getMap(mapName);
+            await v2Map.put('key2', new CompactUtil.Flexible(v2Fields));
+
+            const carefulV1Serializer = new CompactUtil.FlexibleSerializer(v1FieldKinds, v1FieldNameMap, v1FieldNameMap, true);
+            const carefulV1Client = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [carefulV1Serializer]
+                }
+            }, member);
+            const carefulV1Map = await carefulV1Client.getMap(mapName);
+
+            // Old client cannot read data written by the new client since there is no such field on the new data
+            const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+                await v1Map.get('key2');
+            });
+            error.should.be.instanceOf(HazelcastSerializationError);
+            error.message.includes('No field with the name').should.be.true;
+
+            // However, if it has default value, everything should work
+            const carefulV1Obj = await carefulV1Map.get('key2');
+            for (const fieldName in v1Fields) {
+                const fieldKindName = FieldKind[existingFields[fieldName].fieldKind];
+                const expectedValue = v1Fields[fieldName].value;
+                carefulV1Obj[fieldName].should.satisfy(
+                    v => (Long.isLong(expectedValue) ? v.eq(expectedValue) : v === expectedValue)
+                     || v === CompactUtil.referenceObjects[fieldKindName].default
+                );
+            }
+
+            // New client can read data written by the old client
+            const v2Obj = await v2Map.get('key1');
+            for (const fieldName in v2Fields) {
+                const expectedValue = v1Fields[fieldName].value;
+                if (Long.isLong(expectedValue)) {
+                    v2Obj[fieldName].eq(expectedValue).should.be.true;
+                } else {
+                    v2Obj[fieldName].should.be.eq(expectedValue);
+                }
+            }
+
+            Object.prototype.hasOwnProperty.call(v2Obj, removedFieldName).should.be.false;
+        };
+
+        it('should work when a variable size field is added', async function() {
+            await verifyAddingAField({
+                field1: { value: 42, fieldKind: FieldKind.INT32},
+                field2: { value: '42', fieldKind: FieldKind.STRING}
+            }, 'field3', [true, false, true], FieldKind.ARRAY_OF_BOOLEAN);
+        });
+
+        it('should work when a fixed size field is added', async function() {
+            await verifyAddingAField({
+                field1: { value: 42, fieldKind: FieldKind.INT32},
+                field2: { value: '42', fieldKind: FieldKind.STRING}
+            }, 'field3', Long.fromNumber(24), FieldKind.INT64);
         });
 
         it('should work when a variable size field is removed', async function() {
-
+            await verifyRemovingAField({
+                field1: { value: Long.fromNumber(1234), fieldKind: FieldKind.INT64},
+                field2: { value: 'hey', fieldKind: FieldKind.STRING}
+            }, 'field2');
         });
 
         it('should work when a fixed size field is removed', async function() {
-
+            await verifyRemovingAField({
+                field1: { value: Long.fromNumber(1234), fieldKind: FieldKind.INT64},
+                field2: { value: 'hey', fieldKind: FieldKind.STRING}
+            }, 'field2');
         });
     });
 
-    it('should do when a compact written and read during cluster restart', async function() {
+    it.skip('should received compact data with events', async function() {
+        const client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            serialization: {
+                compactSerializers: [new CompactUtil.FlexibleSerializer([FieldKind.INT32])]
+            }
+        }, member);
+        const client2 = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+        }, member);
 
-    });
+        const map = await client.getMap(mapName);
+        const map2 = await client2.getMap(mapName);
 
-    it('should received compact data with events', async function() {
+        let counter = 0;
 
+        await map2.addEntryListener({added: (entryEvent) => {
+            console.log(entryEvent);
+            counter++;
+        }}, undefined, true);
+
+        await map.put(1, new CompactUtil.Flexible({INT32: 1}));
+
+        await TestUtil.assertTrueEventually(async () => {
+            counter.should.be.eq(1);
+        });
     });
 });
 
