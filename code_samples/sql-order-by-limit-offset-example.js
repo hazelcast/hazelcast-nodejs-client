@@ -19,7 +19,7 @@ const { Client } = require('hazelcast-client');
 
 (async () => {
     const client = await Client.newHazelcastClient();
-    const mapName = 'myMap' + Math.floor(Math.random() * 10000);
+    const mapName = 'myMap';
     const map = await client.getMap(mapName);
     // In order to use the map in SQL a mapping should be created.
     const createMappingQuery = `

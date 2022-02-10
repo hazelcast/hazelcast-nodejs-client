@@ -19,7 +19,7 @@ const { Client, SqlColumnType, HazelcastJsonValue } = require('hazelcast-client'
 
 (async () => {
     const client = await Client.newHazelcastClient();
-    const mapName = 'jsonMap' + Math.floor(Math.random() * 10000);
+    const mapName = 'jsonMap';
 
     // In order to use the map in SQL a mapping should be created.
     const createMappingQuery = `

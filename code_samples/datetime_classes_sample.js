@@ -66,7 +66,7 @@ function portableFactory(classId) {
     const map = await client.getMap(mapName);
     // In order to use the map in SQL a mapping should be created.
     const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
+            CREATE OR REPLACE MAPPING ${mapName} (
                 __key VARCHAR,
                 this TIMESTAMP WITH TIME ZONE
             )
