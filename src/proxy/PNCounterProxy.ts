@@ -92,10 +92,10 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
                         'because the cluster does not contain any data members');
                 }
             }
-            return this.encodeInvokeInternal<any>(target, codec, x => x, ...codecArgs).then((result) => {
+            return this.encodeInvokeInternal<any>(target, codec, (result: any) => {
                 this.updateObservedReplicaTimestamps(result.replicaTimestamps);
                 return result.value;
-            }).catch((err) => {
+            }, ...codecArgs).catch((err) => {
                 if (excludedAddresses === PNCounterProxy.EMPTY_ARRAY) {
                     excludedAddresses = [];
                 }

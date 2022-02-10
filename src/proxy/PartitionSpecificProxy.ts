@@ -58,7 +58,9 @@ export class PartitionSpecificProxy extends BaseProxy {
         this.partitionId = this.partitionService.getPartitionId(this.getPartitionKey());
     }
 
-    protected encodeInvoke(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
-        return this.encodeInvokeOnPartition(codec, this.partitionId, x => x, ...codecArguments);
+    protected encodeInvoke<V>(
+        codec: any, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]
+    ): Promise<V> {
+        return this.encodeInvokeOnPartition(codec, this.partitionId, handler, ...codecArguments);
     }
 }

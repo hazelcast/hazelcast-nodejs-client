@@ -49,7 +49,6 @@ import {
     ReadOnlyLazyList,
     UUID
 } from '../core';
-import * as SerializationUtil from '../serialization/SerializationUtil';
 import {MultiMapPutAllCodec} from '../codec/MultiMapPutAllCodec';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 import {ProxyManager} from './ProxyManager';
@@ -142,7 +141,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     entrySet(): Promise<Array<[K, V]>> {
         return this.encodeInvokeOnRandomTarget(MultiMapEntrySetCodec, (clientMessage) => {
             const response = MultiMapEntrySetCodec.decodeResponse(clientMessage);
-            return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response);
+            return this.deserializeEntryList(this.toObject.bind(this), response);
         });
     }
 
@@ -283,7 +282,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
         const dataPairs: Array<[Data, Data[]]> = [];
         for (const pair of pairs) {
-            const valuesData = SerializationUtil.serializeList(this.toData.bind(this), pair[1]);
+            const valuesData = this.serializeList(pair[1]);
             dataPairs.push([this.toData(pair[0]), valuesData]);
         }
 

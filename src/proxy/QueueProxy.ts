@@ -62,8 +62,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
         items.forEach(function (item): void {
             rawList.push(toData(item));
         });
-        return this.encodeInvoke(QueueAddAllCodec, rawList)
-            .then(QueueAddAllCodec.decodeResponse);
+        return this.encodeInvoke(QueueAddAllCodec, QueueAddAllCodec.decodeResponse, rawList);
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
@@ -92,31 +91,27 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     clear(): Promise<void> {
-        return this.encodeInvoke(QueueClearCodec).then(() => {});
+        return this.encodeInvoke(QueueClearCodec, () => {});
     }
 
     contains(item: E): Promise<boolean> {
         const itemData = this.toData(item);
-        return this.encodeInvoke(QueueContainsCodec, itemData)
-            .then(QueueContainsCodec.decodeResponse);
+        return this.encodeInvoke(QueueContainsCodec, QueueContainsCodec.decodeResponse, itemData);
     }
 
     containsAll(items: E[]): Promise<boolean> {
         const toData = this.toData.bind(this);
         const rawItems: Data[] = items.map<Data>(toData);
-        return this.encodeInvoke(QueueContainsAllCodec, rawItems)
-            .then(QueueContainsAllCodec.decodeResponse);
+        return this.encodeInvoke(QueueContainsAllCodec, QueueContainsAllCodec.decodeResponse, rawItems);
     }
 
     drainTo(arr: E[], maxElements: number = null): Promise<number> {
         const toObject = this.toObject.bind(this);
         let promise: Promise<any>;
         if (maxElements === null) {
-            promise = this.encodeInvoke(QueueDrainToCodec)
-                .then(QueueDrainToCodec.decodeResponse);
+            promise = this.encodeInvoke(QueueDrainToCodec, QueueDrainToCodec.decodeResponse);
         } else {
-            promise = this.encodeInvoke(QueueDrainToMaxSizeCodec, maxElements)
-                .then(QueueDrainToMaxSizeCodec.decodeResponse);
+            promise = this.encodeInvoke(QueueDrainToMaxSizeCodec, QueueDrainToMaxSizeCodec.decodeResponse, maxElements);
         }
         return promise.then(function (rawArr: Data[]): number {
             rawArr.forEach(function (rawItem): void {
@@ -127,53 +122,46 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvoke(QueueIsEmptyCodec)
-            .then(QueueIsEmptyCodec.decodeResponse);
+        return this.encodeInvoke(QueueIsEmptyCodec, QueueIsEmptyCodec.decodeResponse);
     }
 
     offer(item: E, time = 0): Promise<boolean> {
         const itemData = this.toData(item);
-        return this.encodeInvoke(QueueOfferCodec, itemData, time)
-            .then(QueueOfferCodec.decodeResponse);
+        return this.encodeInvoke(QueueOfferCodec, QueueOfferCodec.decodeResponse, itemData, time);
     }
 
     peek(): Promise<E> {
-        return this.encodeInvoke(QueuePeekCodec)
-            .then((clientMessage) => {
-                const response = QueuePeekCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvoke(QueuePeekCodec, (clientMessage) => {
+            const response = QueuePeekCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        });
     }
 
     poll(time = 0): Promise<E> {
-        return this.encodeInvoke(QueuePollCodec, time)
-            .then((clientMessage) => {
-                const response = QueuePollCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvoke(QueuePollCodec, (clientMessage) => {
+            const response = QueuePollCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, time);
     }
 
     put(item: E): Promise<void> {
         const itemData = this.toData(item);
-        return this.encodeInvoke(QueuePutCodec, itemData).then(() => {});
+        return this.encodeInvoke(QueuePutCodec, () => {}, itemData);
     }
 
     remainingCapacity(): Promise<number> {
-        return this.encodeInvoke(QueueRemainingCapacityCodec)
-            .then(QueueRemainingCapacityCodec.decodeResponse);
+        return this.encodeInvoke(QueueRemainingCapacityCodec, QueueRemainingCapacityCodec.decodeResponse);
     }
 
     remove(item: E): Promise<boolean> {
         const itemData = this.toData(item);
-        return this.encodeInvoke(QueueRemoveCodec, itemData)
-            .then(QueueRemoveCodec.decodeResponse);
+        return this.encodeInvoke(QueueRemoveCodec, QueueRemoveCodec.decodeResponse, itemData);
     }
 
     removeAll(items: E[]): Promise<boolean> {
         const toData = this.toData.bind(this);
         const rawItems = items.map<Data>(toData);
-        return this.encodeInvoke(QueueCompareAndRemoveAllCodec, rawItems)
-            .then(QueueCompareAndRemoveAllCodec.decodeResponse);
+        return this.encodeInvoke(QueueCompareAndRemoveAllCodec, QueueCompareAndRemoveAllCodec.decodeResponse, rawItems);
     }
 
     removeItemListener(registrationId: string): Promise<boolean> {
@@ -183,29 +171,25 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     retainAll(items: E[]): Promise<boolean> {
         const toData = this.toData.bind(this);
         const rawItems = items.map<Data>(toData);
-        return this.encodeInvoke(QueueCompareAndRetainAllCodec, rawItems)
-            .then(QueueCompareAndRetainAllCodec.decodeResponse);
+        return this.encodeInvoke(QueueCompareAndRetainAllCodec, QueueCompareAndRetainAllCodec.decodeResponse, rawItems);
     }
 
     size(): Promise<number> {
-        return this.encodeInvoke(QueueSizeCodec)
-            .then(QueueSizeCodec.decodeResponse);
+        return this.encodeInvoke(QueueSizeCodec, QueueSizeCodec.decodeResponse);
     }
 
     take(): Promise<E> {
-        return this.encodeInvoke(QueueTakeCodec)
-            .then((clientMessage) => {
-                const response = QueueTakeCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvoke(QueueTakeCodec, (clientMessage) => {
+            const response = QueueTakeCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        });
     }
 
     toArray(): Promise<E[]> {
-        return this.encodeInvoke(QueueIteratorCodec)
-            .then((clientMessage) => {
-                const response = QueueIteratorCodec.decodeResponse(clientMessage);
-                return response.map(this.toObject.bind(this));
-            });
+        return this.encodeInvoke(QueueIteratorCodec, (clientMessage) => {
+            const response = QueueIteratorCodec.decodeResponse(clientMessage);
+            return response.map(this.toObject.bind(this));
+        });
     }
 
     private createEntryListener(name: string, includeValue: boolean): ListenerMessageCodec {

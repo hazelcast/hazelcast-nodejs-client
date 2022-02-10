@@ -84,6 +84,20 @@ export abstract class BaseProxy {
         return Promise.resolve();
     }
 
+    protected serializeList(input: any[]): Data[] {
+        return input.map((each) => {
+            return this.toData(each);
+        });
+    }
+
+    protected deserializeEntryList<K, V>(toObject: (data: Data) => any, entrySet: Array<[Data, Data]>): Array<[K, V]> {
+        const deserializedSet: Array<[K, V]> = [];
+        entrySet.forEach(function (entry): void {
+            deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
+        });
+        return deserializedSet;
+    }
+
     /**
      * Encodes a request from a codec and invokes it on owner node of given key.
      */

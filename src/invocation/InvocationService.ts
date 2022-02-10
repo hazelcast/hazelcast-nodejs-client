@@ -125,7 +125,7 @@ export class Invocation {
      * If this is an event listener registration, handler should be set to the function to be called on events.
      * Otherwise, should be set to null.
      */
-    eventHandler: (...args: any[]) => any;
+    eventHandler: (clientMessage: ClientMessage) => any;
 
     /**
      * Handler is responsible for handling the client message and return the object user expects.
@@ -388,7 +388,7 @@ export class InvocationService {
         connection: Connection,
         request: ClientMessage,
         handler: (clientMessage: ClientMessage) => V,
-        eventHandler?: (...args: any[]) => any
+        eventHandler?: (clientMessage: ClientMessage) => any
     ): Promise<V> {
         const invocation = new Invocation(this, request);
         invocation.connection = connection;
@@ -452,6 +452,18 @@ export class InvocationService {
         });
     }
 
+    fetchSchema(schemaId: Long, eventHandlerFn: (clientMessage: ClientMessage) => any, clientMessage: ClientMessage): void {
+        this.schemaService.fetchSchema(schemaId).then(() => {
+            // Reset nextFrame since we tried to parse the message once.
+            clientMessage.resetNextFrame();
+            eventHandlerFn(clientMessage);
+        }).catch(err => {
+            this.logger.error(
+                'InvocationService', `The schema needed for an event could not be fetched ${err}`
+            );
+        });
+    }
+
     /**
      * Extracts codec specific properties in a protocol message and resolves waiting promise.
      */
@@ -462,7 +474,19 @@ export class InvocationService {
             process.nextTick(() => {
                 const invocation = this.invocationsWithEventHandlers.get(correlationId);
                 if (invocation !== undefined) {
-                    invocation.eventHandler(clientMessage);
+                    try {
+                        invocation.eventHandler(clientMessage);
+                    } catch (e) {
+                        if (e instanceof SchemaNotFoundError) {
+                            // We need to fetch the schema to deserialize compact.
+                            this.logger.trace(
+                                'SchemaService', `Could not find schema id ${e.schemaId} locally, will search on the cluster`
+                            );
+                            this.fetchSchema(e.schemaId, invocation.eventHandler.bind(this), clientMessage);
+                        } else {
+                            throw e;
+                        }
+                    }
                 }
             });
             return;

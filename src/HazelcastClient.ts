@@ -315,8 +315,7 @@ export class HazelcastClient {
             .then((resp) => {
                 responseMessage = resp;
                 return this.proxyManager.getDistributedObjects();
-            })
-            .then((distributedObjects) => {
+            }).then((distributedObjects) => {
                 localDistributedObjects = new Set<string>();
                 distributedObjects.forEach((obj) => {
                     localDistributedObjects.add(obj.getServiceName() + NAMESPACE_SEPARATOR + obj.getName());

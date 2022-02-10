@@ -49,7 +49,6 @@ import {ReplicatedMap} from './ReplicatedMap';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {MapEvent, MapEventListener} from './MapListener';
 import {ClientMessage} from '../protocol/ClientMessage';
-import {deserializeEntryList} from '../serialization/SerializationUtil';
 
 type EntryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data,
                           eventType: number, uuid: UUID, numberOfAffectedEntries: number) => void
@@ -96,18 +95,15 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         assertNotNull(value);
 
         const valueData = this.toData(value);
-        return this.encodeInvoke(ReplicatedMapContainsValueCodec, valueData)
-            .then(ReplicatedMapContainsValueCodec.decodeResponse);
+        return this.encodeInvoke(ReplicatedMapContainsValueCodec, ReplicatedMapContainsValueCodec.decodeResponse, valueData);
     }
 
     size(): Promise<number> {
-        return this.encodeInvoke(ReplicatedMapSizeCodec)
-            .then(ReplicatedMapSizeCodec.decodeResponse);
+        return this.encodeInvoke(ReplicatedMapSizeCodec, ReplicatedMapSizeCodec.decodeResponse);
     }
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvoke(ReplicatedMapIsEmptyCodec)
-            .then(ReplicatedMapIsEmptyCodec.decodeResponse);
+        return this.encodeInvoke(ReplicatedMapIsEmptyCodec, ReplicatedMapIsEmptyCodec.decodeResponse);
     }
 
     remove(key: K): Promise<V> {
@@ -136,31 +132,28 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
 
     keySet(): Promise<K[]> {
         const toObject = this.toObject.bind(this);
-        return this.encodeInvoke(ReplicatedMapKeySetCodec)
-            .then((clientMessage) => {
-                const response = ReplicatedMapKeySetCodec.decodeResponse(clientMessage);
-                return response.map(toObject);
-            });
+        return this.encodeInvoke(ReplicatedMapKeySetCodec, (clientMessage) => {
+            const response = ReplicatedMapKeySetCodec.decodeResponse(clientMessage);
+            return response.map(toObject);
+        });
     }
 
     values(comparator?: ListComparator<V>): Promise<ReadOnlyLazyList<V>> {
-        return this.encodeInvoke(ReplicatedMapValuesCodec)
-            .then((clientMessage) => {
-                const valuesData = ReplicatedMapValuesCodec.decodeResponse(clientMessage);
-                if (comparator) {
-                    const desValues = valuesData.map(this.toObject.bind(this));
-                    return new ReadOnlyLazyList(desValues.sort(comparator), this.serializationService);
-                }
-                return new ReadOnlyLazyList(valuesData, this.serializationService);
-            });
+        return this.encodeInvoke(ReplicatedMapValuesCodec, (clientMessage) => {
+            const valuesData = ReplicatedMapValuesCodec.decodeResponse(clientMessage);
+            if (comparator) {
+                const desValues = valuesData.map(this.toObject.bind(this));
+                return new ReadOnlyLazyList(desValues.sort(comparator), this.serializationService);
+            }
+            return new ReadOnlyLazyList(valuesData, this.serializationService);
+        });
     }
 
     entrySet(): Promise<Array<[K, V]>> {
-        return this.encodeInvoke(ReplicatedMapEntrySetCodec)
-            .then((clientMessage) => {
-                const response = ReplicatedMapEntrySetCodec.decodeResponse(clientMessage);
-                return deserializeEntryList(this.toObject.bind(this), response);
-            });
+        return this.encodeInvoke(ReplicatedMapEntrySetCodec, (clientMessage) => {
+            const response = ReplicatedMapEntrySetCodec.decodeResponse(clientMessage);
+            return this.deserializeEntryList(this.toObject.bind(this), response);
+        });
     }
 
     addEntryListenerToKeyWithPredicate(listener: EntryListener<K, V>, key: K, predicate: Predicate): Promise<string> {

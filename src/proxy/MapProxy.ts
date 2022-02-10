@@ -81,7 +81,6 @@ import {Data} from '../serialization/Data';
 import {PagingPredicateImpl} from '../serialization/DefaultPredicates';
 import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import {Portable} from '../serialization/Portable';
-import * as SerializationUtil from '../serialization/SerializationUtil';
 import {assertArray, assertNotNull} from '../util/Util';
 import {BaseProxy} from './BaseProxy';
 import {IMap} from './IMap';
@@ -128,11 +127,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return Promise.resolve([]);
         } else {
             const toObject = this.toObject.bind(this);
-            const keysData = SerializationUtil.serializeList(this.toData.bind(this), keys);
+            const keysData = this.serializeList(keys);
             const proData = this.toData(entryProcessor);
             return this.encodeInvokeOnRandomTarget(MapExecuteOnKeysCodec, (clientMessage) => {
                 const response = MapExecuteOnKeysCodec.decodeResponse(clientMessage);
-                return SerializationUtil.deserializeEntryList(toObject, response);
+                return this.deserializeEntryList(toObject, response);
             }, proData, keysData);
         }
     }
@@ -153,13 +152,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         if (predicate == null) {
             return this.encodeInvokeOnRandomTarget(MapExecuteOnAllKeysCodec, (clientMessage) => {
                 const response = MapExecuteOnAllKeysCodec.decodeResponse(clientMessage);
-                return SerializationUtil.deserializeEntryList(toObject, response);
+                return this.deserializeEntryList(toObject, response);
             }, proData);
         } else {
             const predData = this.toData(predicate);
             return this.encodeInvokeOnRandomTarget(MapExecuteWithPredicateCodec, (clientMessage) => {
                 const response = MapExecuteWithPredicateCodec.decodeResponse(clientMessage);
-                return SerializationUtil.deserializeEntryList(toObject, response);
+                return this.deserializeEntryList(toObject, response);
             }, proData, predData);
         }
 
@@ -176,13 +175,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return this.encodeInvokeOnRandomTarget(MapEntriesWithPagingPredicateCodec, (clientMessage) => {
                 const response = MapEntriesWithPagingPredicateCodec.decodeResponse(clientMessage);
                 predicate.setAnchorList(response.anchorDataList.asAnchorList(serializationService));
-                return SerializationUtil.deserializeEntryList(toObject, response.response);
+                return this.deserializeEntryList(toObject, response.response);
             }, pagingPredicateHolder);
         } else {
             const pData = this.toData(predicate);
             return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, (clientMessage) => {
                 const response = MapEntriesWithPredicateCodec.decodeResponse(clientMessage);
-                return SerializationUtil.deserializeEntryList(toObject, response);
+                return this.deserializeEntryList(toObject, response);
             }, pData);
         }
     }
@@ -328,7 +327,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     entrySet(): Promise<any[]> {
         return this.encodeInvokeOnRandomTarget(MapEntrySetCodec, (clientMessage) => {
             const response = MapEntrySetCodec.decodeResponse(clientMessage);
-            return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response);
+            return this.deserializeEntryList(this.toObject.bind(this), response);
         });
     }
 

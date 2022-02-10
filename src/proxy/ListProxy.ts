@@ -44,6 +44,7 @@ import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {
     ReadOnlyLazyList,
+    SchemaNotReplicatedError,
     UUID
 } from '../core';
 
@@ -51,112 +52,184 @@ import {
 export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
     add(element: E): Promise<boolean> {
-        return this.encodeInvoke(ListAddCodec, this.toData(element))
-            .then(ListAddAllCodec.decodeResponse);
+        try {
+            return this.encodeInvoke(ListAddCodec, ListAddAllCodec.decodeResponse, this.toData(element));
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.add(element));
+            }
+            return Promise.reject(e);
+        }
     }
 
     addAll(elements: E[]): Promise<boolean> {
-        return this.encodeInvoke(ListAddAllCodec, this.serializeList(elements))
-            .then(ListAddAllCodec.decodeResponse);
+        try {
+            return this.encodeInvoke(ListAddAllCodec, ListAddAllCodec.decodeResponse, this.serializeList(elements));
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.addAll(elements));
+            }
+            return Promise.reject(e);
+        }
     }
 
     addAllAt(index: number, elements: E[]): Promise<boolean> {
-        return this.encodeInvoke(ListAddAllWithIndexCodec, index, this.serializeList(elements))
-            .then(ListAddAllWithIndexCodec.decodeResponse);
+        try {
+            return this.encodeInvoke(
+                ListAddAllWithIndexCodec, ListAddAllWithIndexCodec.decodeResponse, index, this.serializeList(elements)
+            );
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.addAllAt(index, elements));
+            }
+            return Promise.reject(e);
+        }
     }
 
     addAt(index: number, element: E): Promise<void> {
-        return this.encodeInvoke(ListAddWithIndexCodec, index, this.toData(element))
-            .then(() => {});
+        try {
+            return this.encodeInvoke(ListAddWithIndexCodec, () => {}, index, this.toData(element));
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.addAt(index, element));
+            }
+            return Promise.reject(e);
+        }
     }
 
     clear(): Promise<void> {
-        return this.encodeInvoke(ListClearCodec).then(() => {});
+        return this.encodeInvoke(ListClearCodec, () => {});
     }
 
     contains(entry: E): Promise<boolean> {
-        return this.encodeInvoke(ListContainsCodec, this.toData(entry))
-            .then(ListContainsCodec.decodeResponse);
+        try {
+            return this.encodeInvoke(ListContainsCodec, ListContainsCodec.decodeResponse, this.toData(entry));
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.contains(entry));
+            }
+            return Promise.reject(e);
+        }
     }
 
     containsAll(elements: E[]): Promise<boolean> {
-        return this.encodeInvoke(ListContainsAllCodec, this.serializeList(elements))
-            .then(ListContainsAllCodec.decodeResponse);
+        try {
+            return this.encodeInvoke(ListContainsAllCodec, ListContainsAllCodec.decodeResponse, this.serializeList(elements));
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.containsAll(elements));
+            }
+            return Promise.reject(e);
+        }
     }
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvoke(ListIsEmptyCodec)
-            .then(ListIsEmptyCodec.decodeResponse);
+        return this.encodeInvoke(ListIsEmptyCodec, ListIsEmptyCodec.decodeResponse);
     }
 
     remove(entry: E): Promise<boolean> {
-        return this.encodeInvoke(ListRemoveCodec, this.toData(entry))
-            .then(ListRemoveCodec.decodeResponse);
+        try {
+            return this.encodeInvoke(ListRemoveCodec, ListRemoveCodec.decodeResponse, this.toData(entry));
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.remove(entry));
+            }
+            return Promise.reject(e);
+        }
     }
 
     removeAll(elements: E[]): Promise<boolean> {
-        return this.encodeInvoke(ListCompareAndRemoveAllCodec, this.serializeList(elements))
-            .then(ListCompareAndRemoveAllCodec.decodeResponse);
+        try {
+            return this.encodeInvoke(
+                ListCompareAndRemoveAllCodec, ListCompareAndRemoveAllCodec.decodeResponse, this.serializeList(elements)
+            );
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.removeAll(elements));
+            }
+            return Promise.reject(e);
+        }
     }
 
     retainAll(elements: E[]): Promise<boolean> {
-        return this.encodeInvoke(ListCompareAndRetainAllCodec, this.serializeList(elements))
-            .then(ListCompareAndRetainAllCodec.decodeResponse);
+        try {
+            return this.encodeInvoke(
+                ListCompareAndRetainAllCodec, ListCompareAndRetainAllCodec.decodeResponse, this.serializeList(elements)
+            );
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.retainAll(elements));
+            }
+            return Promise.reject(e);
+        }
     }
 
     removeAt(index: number): Promise<E> {
-        return this.encodeInvoke(ListRemoveWithIndexCodec, index)
-            .then((clientMessage) => {
-                const response = ListRemoveWithIndexCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvoke(ListRemoveWithIndexCodec, (clientMessage) => {
+            const response = ListRemoveWithIndexCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, index);
     }
 
     get(index: number): Promise<E> {
-        return this.encodeInvoke(ListGetCodec, index)
-            .then((clientMessage) => {
-                const response = ListGetCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvoke(ListGetCodec, (clientMessage) => {
+            const response = ListGetCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, index);
     }
 
     set(index: number, element: E): Promise<E> {
-        return this.encodeInvoke(ListSetCodec, index, this.toData(element))
-            .then((clientMessage) => {
+        try {
+            return this.encodeInvoke(ListSetCodec, (clientMessage) => {
                 const response = ListSetCodec.decodeResponse(clientMessage);
                 return this.toObject(response);
-            });
+            }, index, this.toData(element));
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.set(index, element));
+            }
+            return Promise.reject(e);
+        }
     }
 
     indexOf(element: E): Promise<number> {
-        return this.encodeInvoke(ListIndexOfCodec, this.toData(element))
-            .then(ListIndexOfCodec.decodeResponse);
+        try {
+            return this.encodeInvoke(ListIndexOfCodec, ListIndexOfCodec.decodeResponse, this.toData(element));
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.indexOf(element));
+            }
+            return Promise.reject(e);
+        }
     }
 
     lastIndexOf(element: E): Promise<number> {
-        return this.encodeInvoke(ListLastIndexOfCodec, this.toData(element))
-            .then(ListLastIndexOfCodec.decodeResponse);
+        try {
+            return this.encodeInvoke(ListLastIndexOfCodec, ListLastIndexOfCodec.decodeResponse, this.toData(element));
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.indexOf(element));
+            }
+            return Promise.reject(e);
+        }
     }
 
     size(): Promise<number> {
-        return this.encodeInvoke(ListSizeCodec)
-            .then(ListSizeCodec.decodeResponse);
+        return this.encodeInvoke(ListSizeCodec, ListSizeCodec.decodeResponse);
     }
 
     subList(start: number, end: number): Promise<ReadOnlyLazyList<E>> {
-        return this.encodeInvoke(ListSubCodec, start, end)
-            .then((clientMessage) => {
-                const response = ListSubCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<E>(response, this.serializationService);
-            });
+        return this.encodeInvoke(ListSubCodec, (clientMessage) => {
+            const response = ListSubCodec.decodeResponse(clientMessage);
+            return new ReadOnlyLazyList<E>(response, this.serializationService);
+        }, start, end);
     }
 
     toArray(): Promise<E[]> {
-        return this.encodeInvoke(ListGetAllCodec)
-            .then((clientMessage) => {
-                const response = ListGetAllCodec.decodeResponse(clientMessage);
-                return response.map<E>(this.toObject.bind(this));
-            });
+        return this.encodeInvoke(ListGetAllCodec, (clientMessage) => {
+            const response = ListGetAllCodec.decodeResponse(clientMessage);
+            return response.map<E>(this.toObject.bind(this));
+        });
     }
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
@@ -181,12 +254,6 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
     removeItemListener(registrationId: string): Promise<boolean> {
         return this.listenerService.deregisterListener(registrationId);
-    }
-
-    private serializeList(input: E[]): Data[] {
-        return input.map((each) => {
-            return this.toData(each);
-        });
     }
 
     private createItemListener(name: string, includeValue: boolean): ListenerMessageCodec {
