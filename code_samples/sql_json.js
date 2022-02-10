@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const { Client, SqlColumnType, HazelcastJsonValue } = require('hazelcast-client');
+const { Client, SqlColumnType } = require('hazelcast-client');
 
 (async () => {
     const client = await Client.newHazelcastClient();
@@ -35,8 +35,9 @@ const { Client, SqlColumnType, HazelcastJsonValue } = require('hazelcast-client'
         `;
     await client.getSql().execute(createMappingQuery);
 
+    // You need to use HazelcastJsonValue as parameter if you configured a global serializer
     await client.getSql().execute(`INSERT INTO ${mapName} VALUES (1, ?)`,
-        [new HazelcastJsonValue(JSON.stringify({age: 1}))]
+        [{age: 1}]
     );
 
     const result = await client.getSql().execute(`SELECT * FROM ${mapName}`);

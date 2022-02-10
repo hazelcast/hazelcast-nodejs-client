@@ -2834,13 +2834,14 @@ value format which we cover in the next section.
 
 JSON is a first-class SQL type with IMap and Kafka Connector support, usable in most contexts, similarly to any other type.
 
-In order to send a JSON parameter use a `HazelcastJsonValue` object:
+In order to send a JSON parameter you can use a regular JavaScript object (You need to use a `HazelcastJsonValue` object
+ if you configured a global serializer):
 
 ```javascript
-await client.getSql().execute('INSERT INTO test VALUES (2, ?)', [new HazelcastJsonValue(JSON.stringify({age: 3}))]);
+await client.getSql().execute('INSERT INTO test VALUES (2, ?)', [{age: 3}]);
 ```
 
-The corresponding result type for JSON type is `HazelcastJsonValue` as well:
+The corresponding result type for JSON type is `HazelcastJsonValue`:
 
 ```javascript
 const result = await client.getSql().execute('SELECT * FROM test');
