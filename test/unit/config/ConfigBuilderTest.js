@@ -451,42 +451,51 @@ describe('ConfigBuilderValidationTest', function () {
         }
 
         describe('statistics', function () {
-            it('should throw if both statistics and metrics set enabled', function () {
-                expect(() => new ConfigBuilder({
-                    metrics: {
-                        enabled: true
-                    },
-                    properties: {
-                        'hazelcast.client.statistics.enabled': true,
-                    }
-                }).build()).to.throw(InvalidConfigurationError, 'cannot set both');
-
-                expect(() => new ConfigBuilder({
+            it('should use statistics if both statistics and metrics set enabled', function () {
+                expect(new ConfigBuilder({
                     metrics: {
                         enabled: true
                     },
                     properties: {
                         'hazelcast.client.statistics.enabled': false,
                     }
-                }).build()).to.throw(InvalidConfigurationError, 'cannot set both');
+                }).build().metrics.enabled).to.be.false;
 
-                expect(() => new ConfigBuilder({
+                expect(new ConfigBuilder({
                     metrics: {
-                        collectionFrequencySeconds: 1
+                        enabled: false
                     },
                     properties: {
-                        'hazelcast.client.statistics.period.seconds': 1,
+                        'hazelcast.client.statistics.enabled': true,
                     }
-                }).build()).to.throw(InvalidConfigurationError, 'cannot set both');
+                }).build().metrics.enabled).to.be.true;
 
-                expect(() => new ConfigBuilder({
+                expect(new ConfigBuilder({
+                    metrics: {
+                        enabled: true
+                    },
+                    properties: {
+                        'hazelcast.client.statistics.enabled': true,
+                    }
+                }).build().metrics.enabled).to.be.true;
+
+                expect(new ConfigBuilder({
+                    metrics: {
+                        enabled: false
+                    },
+                    properties: {
+                        'hazelcast.client.statistics.enabled': false,
+                    }
+                }).build().metrics.enabled).to.be.false;
+
+                () => new ConfigBuilder({
                     metrics: {
                         collectionFrequencySeconds: 1
                     },
                     properties: {
                         'hazelcast.client.statistics.period.seconds': 2,
                     }
-                }).build()).to.throw(InvalidConfigurationError, 'cannot set both');
+                }).build().metrics.collectionFrequencySeconds.should.be.eq(2);
             });
 
             it('should behave correctly when statistics properties and metrics setting options', function () {
