@@ -738,6 +738,9 @@ describe('CompactTest', function () {
         }, member);
         const client2 = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
+            serialization: {
+                compactSerializers: [new CompactUtil.FlexibleSerializer([FieldKind.INT32])]
+            }
         }, member);
 
         const map = await client.getMap(mapName);
