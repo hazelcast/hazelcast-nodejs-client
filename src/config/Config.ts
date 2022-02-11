@@ -23,11 +23,12 @@ import {NearCacheConfig, NearCacheConfigImpl} from './NearCacheConfig';
 import {Properties} from './Properties';
 import {ReliableTopicConfig, ReliableTopicConfigImpl} from './ReliableTopicConfig';
 import {SerializationConfig, SerializationConfigImpl} from './SerializationConfig';
-import {Statistics} from '../statistics/Statistics';
 import {ILogger} from '../logging/ILogger';
 import {ConnectionStrategyConfig, ConnectionStrategyConfigImpl} from './ConnectionStrategyConfig';
 import {LoadBalancerConfig, LoadBalancerConfigImpl} from './LoadBalancerConfig';
+import {MetricsConfig, MetricsConfigImpl} from './MetricsConfig';
 import {SecurityConfig, SecurityConfigImpl} from './SecurityConfig';
+import {Statistics} from '../statistics/Statistics';
 
 /**
  * Top level configuration object of Hazelcast client.
@@ -156,6 +157,11 @@ export interface ClientConfig {
     properties?: Properties;
 
     /**
+     * Metrics config. Using this config, you can enable client metrics collection and change the frequency of sending client
+     * metrics to the cluster. You can monitor clients using Hazelcast Management Center once the metrics collection is enabled.
+     */
+    metrics?: MetricsConfig;
+    /**
      * Contains configuration for the client to use different kinds
      * of credential types during authentication, such as username/password,
      * token, or custom credentials.
@@ -175,6 +181,12 @@ const DEFAULT_PROPERTIES: Properties = {
     'hazelcast.client.invocation.timeout.millis': 120000,
     'hazelcast.client.internal.clean.resources.millis': 100,
     'hazelcast.client.cloud.url': 'https://coordinator.hazelcast.cloud',
+    /**
+     * `hazelcast.client.statistics.enabled` and `hazelcast.client.period.seconds` are
+     * @deprecated since 5.1
+     *
+     * use `metrics` client config instead.
+     */
     'hazelcast.client.statistics.enabled': false,
     'hazelcast.client.statistics.period.seconds': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
     'hazelcast.invalidation.reconciliation.interval.seconds': 60,
@@ -210,6 +222,7 @@ export class ClientConfigImpl implements ClientConfig {
     clientLabels: string[] = [];
     loadBalancer = new LoadBalancerConfigImpl();
     backupAckToClientEnabled = true;
+    metrics = new MetricsConfigImpl();
     security = new SecurityConfigImpl();
 
     private configPatternMatcher = new ConfigPatternMatcher();
