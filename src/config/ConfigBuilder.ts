@@ -19,6 +19,7 @@ import {InvalidConfigurationError} from '../core';
 import {TopicOverloadPolicy} from '../proxy';
 import {
     assertNonNegativeNumber,
+    assertPositiveNumber,
     tryGetArray,
     tryGetBoolean,
     tryGetEnum,
@@ -38,6 +39,7 @@ import {ReconnectMode} from './ConnectionStrategyConfig';
 import {LoadBalancerType} from './LoadBalancerConfig';
 import {LogLevel} from '../logging';
 import {TokenCredentialsImpl, TokenEncoding, UsernamePasswordCredentialsImpl,} from '../security';
+import {MetricsConfig} from './MetricsConfig';
 
 /**
  * Responsible for user-defined config validation. Builds the effective config with necessary defaults.
@@ -98,10 +100,27 @@ export class ConfigBuilder {
                 this.effectiveConfig.customCredentials = value;
             } else if (key === 'backupAckToClientEnabled') {
                 this.effectiveConfig.backupAckToClientEnabled = tryGetBoolean(value);
+            } else if (key === 'metrics') {
+                this.handleMetrics(value);
             } else if (key === 'security') {
                 this.handleSecurity(value);
             } else {
                 throw new RangeError(`Unexpected config key '${key}' is passed to the Hazelcast Client`);
+            }
+        }
+        ConfigBuilder.overrideMetricsViaStatistics(jsonObject, this.effectiveConfig.metrics);
+    }
+
+    private handleMetrics(jsonObject: any) {
+        for (const key in jsonObject) {
+            if (key === 'enabled') {
+                this.effectiveConfig.metrics.enabled = tryGetBoolean(jsonObject[key]);
+            } else if (key === 'collectionFrequencySeconds') {
+                const collectionFrequencySeconds = jsonObject[key];
+                assertPositiveNumber(collectionFrequencySeconds, 'Metrics collection frequency must be positive!');
+                this.effectiveConfig.metrics.collectionFrequencySeconds = collectionFrequencySeconds;
+            } else {
+                throw new RangeError(`Unexpected metrics config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
@@ -383,6 +402,28 @@ export class ConfigBuilder {
         }
     }
 
+    /**
+     * When this method runs, metrics config is already parsed in metricsConfig. This method will override
+     * metrics config with statistics config.  There are four different cases:
+     *
+     * 1. When no config is given metrics will be enabled. Because this is the default behaviour in metrics.
+     * 2. When only statistics props is given statistics config will take effect. So backward compatibility is kept.
+     * 3. When only metrics config is given metrics config will take effect.
+     * 4. When both statistics props and metrics config are given statistics config will take effect.
+     *
+     * The behaviour is inline with Java client's behaviour.
+     */
+    private static overrideMetricsViaStatistics(config: ClientConfig, metricsConfig: MetricsConfig): void {
+        if (config.hasOwnProperty('properties') && config.properties.hasOwnProperty('hazelcast.client.statistics.enabled')) {
+            metricsConfig.enabled = config.properties['hazelcast.client.statistics.enabled'] as boolean;
+        }
+
+        if (config.hasOwnProperty('properties')
+            && config.properties.hasOwnProperty('hazelcast.client.statistics.period.seconds')) {
+            metricsConfig.collectionFrequencySeconds = config.properties['hazelcast.client.statistics.period.seconds'] as number;
+        }
+    }
+
     private handleProperties(jsonObject: any): void {
         if (typeof jsonObject !== 'object') {
             throw new RangeError(`Expected 'properties' to be an object but it is a: ${typeof jsonObject}`);
@@ -572,7 +613,7 @@ export class ConfigBuilder {
                     nearCacheConfig.evictionSamplingPoolSize = tryGetNumber(ncConfig[key]);
                 } else {
                     throw new RangeError(`Unexpected near cache config '${key}' for near cache ${name}`
-                              + 'is passed to the Hazelcast Client');
+                                       + 'is passed to the Hazelcast Client');
                 }
             }
             this.effectiveConfig.nearCaches[nearCacheConfig.name] = nearCacheConfig;

@@ -11,7 +11,7 @@ how to use Hazelcast features. The following lists the samples with their brief 
 
 **atomic_reference.js** — Usage of distributed Atomic Reference.
 
-**client_statistics.js** — Configuring client statistics for Hazelcast Management Center.
+**client_metrics.js** — Configuring client metrics for Hazelcast Management Center.
 
 **count_down_latch.js** — Usage of distributed Count Down Latch.
 

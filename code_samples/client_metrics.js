@@ -24,9 +24,9 @@ const { Client } = require('hazelcast-client');
                 // Enable near cache with all defaults
                 'nearCachedMap': {}
             },
-            properties: {
-                'hazelcast.client.statistics.enabled': true,
-                'hazelcast.client.statistics.period.seconds': 2
+            metrics: {
+                enabled: true,
+                collectionFrequencySeconds: 2
             }
         });
         const ncMap = await client.getMap('nearCachedMap');
