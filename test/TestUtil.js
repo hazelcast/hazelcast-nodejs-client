@@ -400,6 +400,35 @@ exports.createMappingForPortable = async (
     await exports.getSql(client).execute(createMappingQuery);
 };
 
+/**
+ * Creates portable mapping for SQL queries. In 5.0, users started to write explicit mapping for SQL queries against maps.
+ * @param keyFormat Key format
+ * @param columns Columns as a dict where keys are column names, and values are case insensitive value formats.
+ * @param client Client instance
+ * @param mapName Map name
+ * @param typeName Compact type name
+ */
+exports.createMappingForCompact = async (
+    keyFormat, columns, client, mapName, typeName
+) => {
+    const columnsString = Object.entries(columns).map(column => `${column[0]} ${column[1].toUpperCase()}`).join(',\n');
+
+    const createMappingQuery = `
+            CREATE MAPPING ${mapName} (
+                __key ${keyFormat.toUpperCase()}${Object.keys(columns).length > 0 ? ',' : ''}
+                ${columnsString}
+            )
+            TYPE IMAP
+            OPTIONS (
+                'keyFormat' = '${keyFormat}',
+                'valueFormat' = 'compact',
+                'valueCompactTypeName' = '${typeName}'
+            )
+        `;
+
+    await exports.getSql(client).execute(createMappingQuery);
+};
+
 exports.getRowMetadata = async (result) => {
     if (exports.isClientVersionAtLeast('5.0')) {
         return result.rowMetadata;

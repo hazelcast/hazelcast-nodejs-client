@@ -181,7 +181,8 @@ export class HazelcastClient {
             this.errorFactory,
             this.lifecycleService,
             this.connectionRegistry,
-            this.schemaService
+            this.schemaService,
+            this.serializationService
         );
         this.connectionManager = new ConnectionManager(
             this,

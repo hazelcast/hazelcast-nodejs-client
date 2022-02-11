@@ -150,7 +150,7 @@ describe('CompactAPISerializationTest', function () {
     });
 
     [nearCachedMap1, nearCachedMap2, map].forEach(obj => {
-        describe('Map/NearCache: ' + obj.getName(), function() {
+        describe('Map/NearCache', function() {
             it('containsKey', async function() {
                 await obj.containsKey(car1);
             });

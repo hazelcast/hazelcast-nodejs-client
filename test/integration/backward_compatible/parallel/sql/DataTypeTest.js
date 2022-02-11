@@ -62,6 +62,7 @@ describe('Data type test', function () {
     let mapName;
     let member;
     let serverVersionNewerThanFive;
+    let CompactUtil;
 
     const clientVersionNewerThanFive = TestUtil.isClientVersionAtLeast('5.0');
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
@@ -82,6 +83,11 @@ describe('Data type test', function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
         member = await RC.startMember(cluster.id);
+        try {
+            CompactUtil = require('../../parallel/serialization/compact/CompactUtil');
+        } catch (e) {
+            // no-op
+        }
     });
 
     const basicSetup = async (testFn) => {
@@ -813,5 +819,56 @@ describe('Data type test', function () {
             (rows[i]['height'] - expectedValues[i].height).should.be.lessThan(1e-5);
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
+    });
+    it('should be able to decode/serialize OBJECT(compact)', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        const SqlColumnType = TestUtil.getSqlColumnType();
+        client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            serialization: {
+                compactSerializers: [new CompactUtil.EmployeeSerializer()]
+            }
+        }, member);
+        TestUtil.markServerVersionAtLeast(this, client, '5.0');
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
+        await TestUtil.createMappingForCompact(
+            'double',
+            {this: 'object'},
+            client,
+            mapName,
+            'Employee'
+        );
+
+        const employee1 = new CompactUtil.Employee(19, long.fromNumber(1));
+        const employee2 = new CompactUtil.Employee(25, long.fromNumber(2));
+        const employee3 = new CompactUtil.Employee(32, long.fromNumber(3));
+
+        let counter = 1;
+        for (const employee of [employee1, employee2, employee3]) {
+            await TestUtil.getSql(client).execute(
+                `INSERT INTO ${mapName} (__key, this) VALUES  (?, ?)`,
+                [counter, employee]
+            );
+            counter++;
+        }
+
+        const result = await TestUtil.getSql(client).execute(
+            `SELECT * FROM ${mapName} WHERE age > ?`,
+            [employee1.age]
+        );
+
+        const rowMetadata = await TestUtil.getRowMetadata(result);
+        rowMetadata.getColumn(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.INTEGER);
+        rowMetadata.getColumn(rowMetadata.findColumn('id')).type.should.be.eq(SqlColumnType.BIGINT);
+
+        const rows = [];
+
+        for await (const row of result) {
+            rows.push(row);
+        }
+
+        rows.length.should.be.eq(2);
     });
 });

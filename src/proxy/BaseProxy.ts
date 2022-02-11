@@ -71,13 +71,7 @@ export abstract class BaseProxy {
     }
 
     protected registerSchema(schema: Schema, clazz: (new (...args: any[]) => any) | undefined): Promise<void> {
-        if (clazz !== undefined) {
-            return this.schemaService.put(schema).then(() => {
-                this.serializationService.registerSchemaToClass(schema, clazz);
-            })
-        } else {
-            return this.schemaService.put(schema);
-        }
+        return this.invocationService.registerSchema(schema, clazz);
     }
 
     protected postDestroy(): Promise<void> {

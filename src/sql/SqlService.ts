@@ -16,7 +16,7 @@
 import {SqlResult, SqlResultImpl} from './SqlResult';
 import {ConnectionManager} from '../network/ConnectionManager';
 import {SqlExpectedResultType, SqlStatement, SqlStatementOptions} from './SqlStatement';
-import {HazelcastSqlException, IllegalArgumentError} from '../core';
+import {HazelcastSqlException, IllegalArgumentError, SchemaNotReplicatedError} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
 import {SqlQueryId} from './SqlQueryId';
 import {SerializationService} from '../serialization/SerializationService';
@@ -276,7 +276,16 @@ export class SqlServiceImpl implements SqlService {
             if (Array.isArray(sqlStatement.params)) { // params can be undefined
                 serializedParams = new Array(sqlStatement.params.length);
                 for (let i = 0; i < sqlStatement.params.length; i++) {
-                    serializedParams[i] = this.serializationService.toData(sqlStatement.params[i]);
+                    try {
+                        serializedParams[i] = this.serializationService.toData(sqlStatement.params[i]);
+                    }  catch (e) {
+                        if (e instanceof SchemaNotReplicatedError) {
+                            return this.invocationService.registerSchema(
+                                e.schema, e.clazz).then(() => this.executeStatement(sqlStatement)
+                            );
+                        }
+                        return Promise.reject(e);
+                    }
                 }
             } else {
                 serializedParams = [];

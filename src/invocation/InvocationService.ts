@@ -1,3 +1,4 @@
+import { SerializationService } from './../serialization/SerializationService';
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -48,6 +49,7 @@ import {LifecycleService} from '../LifecycleService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import * as Long from 'long';
 import {SchemaService} from '../serialization/compact/SchemaService';
+import { Schema } from '../serialization/compact/Schema';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -220,16 +222,6 @@ export class Invocation {
         this.complete(this.pendingResponseMessage);
     }
 
-    fetchSchema(schemaId: Long, invocation: Invocation, clientMessage: ClientMessage): void {
-        this.invocationService.schemaService.fetchSchema(schemaId).then(() => {
-            // Reset nextFrame since we tried to parse the message once.
-            clientMessage.resetNextFrame();
-            invocation.complete(clientMessage);
-        }).catch(err => {
-            invocation.completeWithError(err);
-        });
-    }
-
     complete(clientMessage: ClientMessage): void {
         try {
             const result = this.handler(clientMessage);
@@ -241,7 +233,13 @@ export class Invocation {
                 this.invocationService.logger.trace(
                     'SchemaService', `Could not find schema id ${e.schemaId} locally, will search on the cluster`
                 );
-                this.fetchSchema(e.schemaId, this, clientMessage);
+                this.invocationService.fetchSchema(e.schemaId).then(() => {
+                    // Reset nextFrame since we tried to parse the message once.
+                    clientMessage.resetNextFrame();
+                    this.complete(clientMessage);
+                }).catch(err => {
+                    this.completeWithError(err);
+                });
             } else {
                 this.completeWithError(e);
             }
@@ -295,7 +293,8 @@ export class InvocationService {
         private readonly errorFactory: ClientErrorFactory,
         private readonly lifecycleService: LifecycleService,
         private readonly connectionRegistry: ConnectionRegistry,
-        readonly schemaService: SchemaService
+        private readonly schemaService: SchemaService,
+        private readonly serializationService: SerializationService
     ) {
         if (clientConfig.network.smartRouting) {
             this.doInvoke = this.invokeSmart;
@@ -452,16 +451,18 @@ export class InvocationService {
         });
     }
 
-    fetchSchema(schemaId: Long, eventHandlerFn: (clientMessage: ClientMessage) => any, clientMessage: ClientMessage): void {
-        this.schemaService.fetchSchema(schemaId).then(() => {
-            // Reset nextFrame since we tried to parse the message once.
-            clientMessage.resetNextFrame();
-            eventHandlerFn(clientMessage);
-        }).catch(err => {
-            this.logger.error(
-                'InvocationService', `The schema needed for an event could not be fetched ${err}`
-            );
-        });
+    fetchSchema(schemaId: Long): Promise<void> {
+        return this.schemaService.fetchSchema(schemaId);
+    }
+
+    registerSchema(schema: Schema, clazz: (new (...args: any[]) => any) | undefined): Promise<void> {
+        if (clazz !== undefined) {
+            return this.schemaService.put(schema).then(() => {
+                this.serializationService.registerSchemaToClass(schema, clazz);
+            })
+        } else {
+            return this.schemaService.put(schema);
+        }
     }
 
     /**
@@ -482,7 +483,15 @@ export class InvocationService {
                             this.logger.trace(
                                 'SchemaService', `Could not find schema id ${e.schemaId} locally, will search on the cluster`
                             );
-                            this.fetchSchema(e.schemaId, invocation.eventHandler.bind(this), clientMessage);
+                            this.fetchSchema(e.schemaId).then(() => {
+                                // Reset nextFrame since we tried to parse the message once.
+                                clientMessage.resetNextFrame();
+                                invocation.eventHandler(clientMessage);
+                            }).catch((err: Error) => {
+                                this.logger.error(
+                                    'InvocationService', `The schema needed for an event could not be fetched ${err}`
+                                );
+                            });
                         } else {
                             throw e;
                         }
