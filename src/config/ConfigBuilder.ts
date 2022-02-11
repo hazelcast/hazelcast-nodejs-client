@@ -411,7 +411,7 @@ export class ConfigBuilder {
      * 3. When only metrics config is given metrics config will take effect.
      * 4. When both statistics props and metrics config are given statistics config will take effect.
      *
-     * The behaviour is inline with Java's behaviour.
+     * The behaviour is inline with Java Client's behaviour.
      */
     private static overrideMetricsViaStatistics(config: ClientConfig, metricsConfig: MetricsConfig): void {
         if (config.hasOwnProperty('properties') && config.properties.hasOwnProperty('hazelcast.client.statistics.enabled')) {
