@@ -147,7 +147,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     executeOnEntries(entryProcessor: IdentifiedDataSerializable | Portable, predicate: Predicate = null): Promise<Array<[K, V]>> {
         assertNotNull(entryProcessor);
-        const proData = this.toData(entryProcessor);
+        const proData = this.toData(entryProcessor, undefined, false);
         const toObject = this.toObject.bind(this);
         if (predicate == null) {
             return this.encodeInvokeOnRandomTarget(MapExecuteOnAllKeysCodec, (clientMessage) => {
@@ -382,8 +382,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         if (keys == null) {
             return this.encodeInvokeOnRandomTarget(MapLoadAllCodec, () => {}, replaceExistingValues);
         } else {
-            const toData = this.toData.bind(this);
-            const keysData: Data[] = keys.map<Data>(toData);
+            const keysData: Data[] = keys.map<Data>(v => this.toData(v));
             return this.encodeInvokeOnRandomTarget(MapLoadGivenKeysCodec, () => {}, keysData, replaceExistingValues);
         }
     }

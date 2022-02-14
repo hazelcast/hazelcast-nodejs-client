@@ -100,8 +100,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     containsAll(items: E[]): Promise<boolean> {
-        const toData = this.toData.bind(this);
-        const rawItems: Data[] = items.map<Data>(toData);
+        const rawItems: Data[] = items.map<Data>(v => this.toData(v));
         return this.encodeInvoke(QueueContainsAllCodec, QueueContainsAllCodec.decodeResponse, rawItems);
     }
 
@@ -159,8 +158,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     removeAll(items: E[]): Promise<boolean> {
-        const toData = this.toData.bind(this);
-        const rawItems = items.map<Data>(toData);
+        const rawItems = items.map<Data>(v => this.toData(v));
         return this.encodeInvoke(QueueCompareAndRemoveAllCodec, QueueCompareAndRemoveAllCodec.decodeResponse, rawItems);
     }
 
@@ -169,8 +167,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     retainAll(items: E[]): Promise<boolean> {
-        const toData = this.toData.bind(this);
-        const rawItems = items.map<Data>(toData);
+        const rawItems = items.map<Data>(v => this.toData(v));
         return this.encodeInvoke(QueueCompareAndRetainAllCodec, QueueCompareAndRetainAllCodec.decodeResponse, rawItems);
     }
 

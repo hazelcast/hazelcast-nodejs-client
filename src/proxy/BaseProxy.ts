@@ -158,8 +158,8 @@ export abstract class BaseProxy {
     /**
      * Serializes an object according to serialization settings of the client.
      */
-    protected toData(object: any): Data {
-        return this.serializationService.toData(object);
+    protected toData(object: any, partitioningStrategy?: any, throwIfSchemaNotReplicated = true): Data {
+        return this.serializationService.toData(object, partitioningStrategy, throwIfSchemaNotReplicated);
     }
 
     /**
