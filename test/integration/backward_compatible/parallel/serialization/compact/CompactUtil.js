@@ -32,6 +32,30 @@ const mimicSchemaReplication = (serializationService1, serializationService2) =>
         {...serializationService1.schemaService.schemas, ...serializationService2.schemaService.schemas};
 };
 
+class Nested {
+    constructor(name, employee) {
+        this.name = name;
+        this.employee = employee;
+    }
+}
+
+class NestedSerializer {
+    constructor() {
+        this.hzClass = Nested;
+    }
+
+    read(reader) {
+        const age = reader.readString('name');
+        const employee = reader.readCompact('employee');
+        return new Nested(age, employee);
+    }
+
+    write(writer, value) {
+        writer.writeString('age', value.age);
+        writer.writeCompact('employee', value.employee);
+    }
+}
+
 class Employee {
     constructor(age, id) {
         this.age = age;
@@ -1389,6 +1413,8 @@ module.exports = {
     NodeDTO,
     Bits,
     BitsSerializer,
+    Nested,
+    NestedSerializer,
     Employee,
     EmployeeSerializer,
     EmployeeDTO,

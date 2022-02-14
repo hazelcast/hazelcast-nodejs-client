@@ -24,6 +24,8 @@ const chai = require('chai');
 const long = require('long');
 const fs = require('fs');
 const path = require('path');
+const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
 
 chai.should();
 
@@ -110,6 +112,7 @@ describe('Data type test', function () {
         if (client) {
             await client.shutdown();
         }
+        sandbox.restore();
     });
 
     after(async function () {
@@ -820,9 +823,8 @@ describe('Data type test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
-    it('should be able to decode/serialize OBJECT(compact)', async function () {
+    it('should be able to serialize compact arguments', async function() {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        const SqlColumnType = TestUtil.getSqlColumnType();
         client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
@@ -835,28 +837,63 @@ describe('Data type test', function () {
 
         await TestUtil.createMappingForCompact(
             'double',
-            {this: 'object'},
+            {age: 'integer', id: 'bigint'},
             client,
             mapName,
             'Employee'
         );
 
-        const employee1 = new CompactUtil.Employee(19, long.fromNumber(1));
-        const employee2 = new CompactUtil.Employee(25, long.fromNumber(2));
-        const employee3 = new CompactUtil.Employee(32, long.fromNumber(3));
+        // Don't put to map not to replicate schema via map.put
+        const employee1 = new CompactUtil.Employee(12, long.fromNumber(1));
+        const registerSchemaSpy = sandbox.replace(
+            client.invocationService, 'registerSchema', sandbox.fake(client.invocationService.registerSchema)
+        );
+        // Compact parameter serialization test:
+        // we assert that it throws because sending compact arguments is not possible right now. todo: change this
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => await TestUtil.getSql(client).execute(
+            `SELECT * FROM ${mapName} WHERE age > CAST(? AS OBJECT)`,
+            [employee1]
+        ));
+        // If the message has this message the parameter is successfully sent to server.
+        error.message.includes('explicit CAST').should.be.true;
+        // Check if schema is registered to
+        registerSchemaSpy.called.should.be.true;
+    });
+    it('should be able to decode/serialize OBJECT(compact)', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        const SqlColumnType = TestUtil.getSqlColumnType();
+        client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            serialization: {
+                compactSerializers: [new CompactUtil.EmployeeSerializer()]
+            }
+        }, member);
+        TestUtil.markServerVersionAtLeast(this, client, '5.0');
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+        await someMap.addIndex({
+            type: 'SORTED',
+            attributes: ['age']
+        });
 
-        let counter = 1;
-        for (const employee of [employee1, employee2, employee3]) {
-            await TestUtil.getSql(client).execute(
-                `INSERT INTO ${mapName} (__key, this) VALUES  (?, ?)`,
-                [counter, employee]
-            );
-            counter++;
-        }
+        await TestUtil.createMappingForCompact(
+            'double',
+            {age: 'integer', id: 'bigint'},
+            client,
+            mapName,
+            'Employee'
+        );
+
+        const employee1 = new CompactUtil.Employee(12, long.fromNumber(1));
+        const employee2 = new CompactUtil.Employee(15, long.fromNumber(2));
+        const employee3 = new CompactUtil.Employee(17, long.fromNumber(3));
+        await someMap.put(0, employee1);
+        await someMap.put(1, employee2);
+        await someMap.put(2, employee3);
 
         const result = await TestUtil.getSql(client).execute(
-            `SELECT * FROM ${mapName} WHERE age > ?`,
-            [employee1.age]
+            `SELECT * FROM ${mapName} WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER) ORDER BY age DESC`,
+            [13, 18]
         );
 
         const rowMetadata = await TestUtil.getRowMetadata(result);
@@ -869,6 +906,17 @@ describe('Data type test', function () {
             rows.push(row);
         }
 
-        rows.length.should.be.eq(2);
+        const expectedKeys = [2, 1];
+        const expectedValues = [employee3, employee2];
+
+        rows.length.should.be.eq(expectedValues.length);
+
+        for (let i = 0; i < rows.length; i++) {
+            rows[i]['age'].should.be.eq(expectedValues[i].age);
+            (rows[i]['id'].eq(expectedValues[i].id)).should.be.true;
+            rows[i]['__key'].should.be.eq(expectedKeys[i]);
+        }
     });
+
+    // todo: add nested compact test when it is supported in the server side
 });
