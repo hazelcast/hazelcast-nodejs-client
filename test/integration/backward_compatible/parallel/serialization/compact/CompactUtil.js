@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const { SerializationConfigImpl } = require('../../../../../../src');
+const { SerializationConfigImpl } = require('../../../../../../lib');
 const { SerializationServiceV1 } = require('../../../../../../lib/serialization/SerializationService');
 const Long = require('long');
 const {

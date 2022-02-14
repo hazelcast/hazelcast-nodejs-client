@@ -22,7 +22,7 @@ const {
 } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const chai = require('chai');
 const Long = require('long');
-const { RabinFingerPrintLongString } = require('../../../../src/serialization/compact/RabinFingerprint');
+const { RabinFingerPrintLongString } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const { SchemaWriter } = require('../../../../lib/serialization/compact/SchemaWriter');
 chai.should();
 

@@ -78,7 +78,7 @@ import {Schema} from './compact';
  */
 export interface SerializationService {
 
-    toData(object: any, partitioningStrategy?: any): Data;
+    toData(object: any, partitioningStrategy?: any, throwIfSchemaNotReplicated?: boolean): Data;
 
     toObject(data: Data): any;
 
@@ -143,7 +143,9 @@ export class SerializationServiceV1 implements SerializationService {
      * @param partitioningStrategy
      * @throws RangeError if object is not serializable
      */
-    toData(object: any, partitioningStrategy: PartitionStrategy = defaultPartitionStrategy): Data {
+    toData(
+        object: any, partitioningStrategy: PartitionStrategy = defaultPartitionStrategy, throwIfSchemaNotReplicated = true
+    ): Data {
         if (this.isData(object)) {
             return object as Data;
         }
@@ -158,7 +160,11 @@ export class SerializationServiceV1 implements SerializationService {
             dataOutput.writeIntBE(SerializationServiceV1.calculatePartitionHash(object, partitioningStrategy));
         }
         dataOutput.writeIntBE(serializer.id);
-        (serializer as Serializer).write(dataOutput, object);
+        if (serializer instanceof CompactStreamSerializer) {
+            serializer.write(dataOutput, object, throwIfSchemaNotReplicated);
+        } else {
+            (serializer as Serializer).write(dataOutput, object);
+        }
         return new HeapData(dataOutput.toBuffer());
     }
 

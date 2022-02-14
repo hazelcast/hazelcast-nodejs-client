@@ -19,9 +19,10 @@
 const { Lang } = require('../../../remote_controller/remote_controller_types');
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
+const { InvocationService } = require('../../../../../lib/invocation/InvocationService');
 
 const chai = require('chai');
-const long = require('long');
+const Long = require('long');
 const fs = require('fs');
 const path = require('path');
 const sinon = require('sinon');
@@ -57,7 +58,7 @@ const portableFactory = (classId) => {
 
 const testFactory = new TestUtil.TestFactory();
 
-describe('Data type test', function () {
+describe('SQLDataTypeTest', function () {
     let client;
     let cluster;
     let someMap;
@@ -86,7 +87,7 @@ describe('Data type test', function () {
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
         member = await RC.startMember(cluster.id);
         try {
-            CompactUtil = require('../../parallel/serialization/compact/CompactUtil');
+            CompactUtil = require('../serialization/compact/CompactUtil');
         } catch (e) {
             // no-op
         }
@@ -281,7 +282,7 @@ describe('Data type test', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-            [long.fromNumber(10), long.fromNumber(18)]
+            [Long.fromNumber(10), Long.fromNumber(18)]
         );
         const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
@@ -292,7 +293,7 @@ describe('Data type test', function () {
             rows.push(row);
         }
 
-        const expectedValues = [long.fromNumber(12), long.fromNumber(14), long.fromNumber(16)];
+        const expectedValues = [Long.fromNumber(12), Long.fromNumber(14), Long.fromNumber(16)];
         const expectedKeys = [6, 7, 8];
 
         rows.length.should.be.eq(expectedValues.length);
@@ -790,16 +791,16 @@ describe('Data type test', function () {
             serverVersionNewerThanFive
         );
 
-        const student1 = new Student(long.fromNumber(12), 123.23);
-        const student2 = new Student(long.fromNumber(15), null);
-        const student3 = new Student(long.fromNumber(17), null);
+        const student1 = new Student(Long.fromNumber(12), 123.23);
+        const student2 = new Student(Long.fromNumber(15), null);
+        const student3 = new Student(Long.fromNumber(17), null);
         await someMap.put(0, student1);
         await someMap.put(1, student2);
         await someMap.put(2, student3);
 
         const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE age > ? AND age < ? ORDER BY age DESC`,
-            [long.fromNumber(13), long.fromNumber(18)]
+            [Long.fromNumber(13), Long.fromNumber(18)]
         );
 
         const rowMetadata = await TestUtil.getRowMetadata(result);
@@ -844,9 +845,9 @@ describe('Data type test', function () {
         );
 
         // Don't put to map not to replicate schema via map.put
-        const employee1 = new CompactUtil.Employee(12, long.fromNumber(1));
+        const employee1 = new CompactUtil.Employee(12, Long.fromNumber(1));
         const registerSchemaSpy = sandbox.replace(
-            client.invocationService, 'registerSchema', sandbox.fake(client.invocationService.registerSchema)
+            InvocationService.prototype, 'registerSchema', sandbox.fake(InvocationService.prototype.registerSchema)
         );
         // Compact parameter serialization test:
         // we assert that it throws because sending compact arguments is not possible right now. todo: change this
@@ -884,9 +885,9 @@ describe('Data type test', function () {
             'Employee'
         );
 
-        const employee1 = new CompactUtil.Employee(12, long.fromNumber(1));
-        const employee2 = new CompactUtil.Employee(15, long.fromNumber(2));
-        const employee3 = new CompactUtil.Employee(17, long.fromNumber(3));
+        const employee1 = new CompactUtil.Employee(12, Long.fromNumber(1));
+        const employee2 = new CompactUtil.Employee(15, Long.fromNumber(2));
+        const employee3 = new CompactUtil.Employee(17, Long.fromNumber(3));
         await someMap.put(0, employee1);
         await someMap.put(1, employee2);
         await someMap.put(2, employee3);

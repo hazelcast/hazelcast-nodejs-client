@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 import {ILogger} from './logging/ILogger';
 import {Connection} from './network/Connection';
@@ -47,6 +47,7 @@ export interface PartitionService {
      * @param key
      * @returns the partition id.
      * @throws {@link ClientOfflineError} if the partition table has not arrived yet.
+     * @throws {@link HazelcastSerializationError} if key cannot be serialized
      */
     getPartitionId(key: any): number;
 
@@ -106,7 +107,7 @@ export class PartitionServiceImpl implements PartitionService {
         if (typeof key === 'object' && 'getPartitionHash' in key) {
             partitionHash = key.getPartitionHash();
         } else {
-            partitionHash = this.serializationService.toData(key).getPartitionHash();
+            partitionHash = this.serializationService.toData(key, undefined, false).getPartitionHash();
         }
         return Math.abs(partitionHash) % this.partitionCount;
     }

@@ -84,14 +84,14 @@ export class CompactStreamSerializer {
         return serializer.read(genericRecord);
     }
 
-    write(output: ObjectDataOutput, object: any): void {
+    write(output: ObjectDataOutput, object: any, throwIfSchemaNotReplicated = true): void {
         if (!(output instanceof PositionalObjectDataOutput)) {
             throw new HazelcastSerializationError('Expected a positional object data output.')
         }
         if (object && object[IS_GENERIC_RECORD_SYMBOL] === true) {
-            this.writeGenericRecord(output, object);
+            this.writeGenericRecord(output, object, throwIfSchemaNotReplicated);
         } else {
-            this.writeObject(output, object);
+            this.writeObject(output, object, throwIfSchemaNotReplicated);
         }
     }
 
@@ -117,10 +117,12 @@ export class CompactStreamSerializer {
     }
 
     writeGenericRecord(
-        output: PositionalObjectDataOutput, record: CompactGenericRecord
+        output: PositionalObjectDataOutput, record: CompactGenericRecord, throwIfSchemaNotReplicated = true
     ) : void {
         const schema: Schema = record.getSchema();
-        this.throwIfSchemaNotReplicatedToCluster(schema, undefined);
+        if (throwIfSchemaNotReplicated) {
+            this.throwIfSchemaNotReplicatedToCluster(schema, undefined);
+        }
         this.writeSchema(output, schema);
         const writer = new DefaultCompactWriter(this, output, schema);
         const fields = [...schema.getFields()];
@@ -144,7 +146,7 @@ export class CompactStreamSerializer {
         writer.end();
     }
 
-    writeObject(output: PositionalObjectDataOutput, o: any) : void {
+    writeObject(output: PositionalObjectDataOutput, o: any, throwIfSchemaNotReplicated = true) : void {
         const compactSerializer = CompactStreamSerializer.getSerializerFromObject(o);
         const clazz = compactSerializer.hzClass;
         let schema = this.classToSchemaMap.get(clazz);
@@ -152,7 +154,9 @@ export class CompactStreamSerializer {
             const writer = new SchemaWriter(compactSerializer.hzTypeName || clazz.name);
             compactSerializer.write(writer, o);
             schema = writer.build();
-            this.throwIfSchemaNotReplicatedToCluster(schema, clazz);
+            if (throwIfSchemaNotReplicated) {
+                this.throwIfSchemaNotReplicatedToCluster(schema, clazz);
+            }
         }
         this.writeSchemaAndObject(compactSerializer, output, schema, o);
     }
