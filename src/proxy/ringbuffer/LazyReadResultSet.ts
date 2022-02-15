@@ -17,7 +17,6 @@
 
 import * as Long from 'long';
 import {Data} from '../../serialization/Data';
-import {SerializationService, SerializationServiceV1} from '../../serialization/SerializationService';
 import {ReadResultSet} from '../../core';
 
 /** @internal */
@@ -27,14 +26,13 @@ export class LazyReadResultSet<T> implements ReadResultSet<T> {
     private readonly items: any[];
     private readonly itemSeqs: Long[];
     private readonly nextSeq: Long;
-    private serializationService: SerializationService;
 
-    constructor(serializationService: SerializationService,
-                readCount: number,
-                items: Data[],
-                itemSeqs: Long[],
-                nextSeq: Long) {
-        this.serializationService = serializationService;
+    constructor(
+        readCount: number,
+        items: Data[],
+        itemSeqs: Long[],
+        nextSeq: Long
+    ) {
         this.readCount = readCount;
         this.items = items;
         this.itemSeqs = itemSeqs;
@@ -46,17 +44,11 @@ export class LazyReadResultSet<T> implements ReadResultSet<T> {
     }
 
     get(index: number): T {
-        const dataOrObject = this.items[index];
-        if (dataOrObject == null) {
+        const object = this.items[index];
+        if (object == null) {
             return undefined;
         }
-        if ((this.serializationService as SerializationServiceV1).isData(dataOrObject)) {
-            const obj = this.serializationService.toObject(dataOrObject);
-            this.items[index] = obj;
-            return obj;
-        } else {
-            return dataOrObject;
-        }
+        return object;
     }
 
     getSequence(index: number): Long {

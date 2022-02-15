@@ -114,8 +114,12 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
 
         return this.encodeInvoke(RingbufferReadManyCodec, (clientMessage) => {
             const response = RingbufferReadManyCodec.decodeResponse(clientMessage);
-            return new LazyReadResultSet(this.serializationService, response.readCount,
-                response.items, response.itemSeqs, response.nextSeq);
+            return new LazyReadResultSet(
+                response.readCount,
+                this.deserializeList(response.items),
+                response.itemSeqs,
+                response.nextSeq
+            );
         }, startSequence, minCount, maxCount, this.toData(filter));
     }
 }

@@ -15,7 +15,6 @@
  */
 import {SqlRowMetadata, SqlRowMetadataImpl} from './SqlRowMetadata';
 import {IllegalArgumentError} from '../core';
-import {Data} from '../serialization';
 
 /**
  * A row in an {@link SqlResult}.
@@ -57,8 +56,8 @@ export class SqlRowImpl implements SqlRow {
 
     constructor(
         private readonly values: any[],
-        private readonly rowMetadata: SqlRowMetadata,
-        private readonly deserializeFn: (data: Data, isRaw: boolean) => any) {
+        private readonly rowMetadata: SqlRowMetadata
+    ) {
     }
 
     getObject<T>(columnNameOrIndex: string | number): T {
@@ -74,7 +73,7 @@ export class SqlRowImpl implements SqlRow {
             throw new IllegalArgumentError('Expected string or number for column argument');
         }
 
-        return this.deserializeFn(this.values[columnIndex], true);
+        return this.values[columnIndex];
     }
 
     getMetadata(): SqlRowMetadata {

@@ -384,18 +384,12 @@ export class SqlServiceImpl implements SqlService {
     /**
      * Used for lazy deserialization of row values.
      * @param data The data to be deserialized.
-     * @param isRaw `true` if the row is raw, i.e an {@link SqlRowImpl}; `false` otherwise, i.e a regular JSON object. Used to log
-     * more information about lazy deserialization if row is a regular JSON object.
      */
-    private deserializeRowValue(data: Data, isRaw: boolean) : any {
+    private deserializeRowValue(data: Data) : any {
         try {
             return this.serializationService.toObject(data);
         } catch (e) {
             let message = 'Failed to deserialize query result value.';
-            if (!isRaw) {
-                message += ' In order to partially deserialize SQL rows you can set `returnRawResult` option to `true`. Check '
-                        + 'out the "Lazy SQL Row Deserialization" section in the client\'s reference manual.';
-            }
             message += ` Error: ${e.message}`;
             throw this.toHazelcastSqlException(e, message);
         }

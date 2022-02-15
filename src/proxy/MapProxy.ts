@@ -263,13 +263,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return this.encodeInvokeOnRandomTarget(MapValuesWithPagingPredicateCodec, (clientMessage) => {
                 const response = MapValuesWithPagingPredicateCodec.decodeResponse(clientMessage);
                 predicate.setAnchorList(response.anchorDataList.asAnchorList(serializationService));
-                return new ReadOnlyLazyList(response.response, serializationService);
+                return new ReadOnlyLazyList(this.deserializeList(response.response));
             }, pagingPredicateHolder);
         } else {
             const predicateData = this.toData(predicate);
             return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, (clientMessage) => {
                 const response = MapValuesWithPredicateCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList(response, this.serializationService);
+                return new ReadOnlyLazyList(this.deserializeList(response));
             }, predicateData);
         }
     }
@@ -592,7 +592,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     values(): Promise<ReadOnlyLazyList<V>> {
         return this.encodeInvokeOnRandomTarget(MapValuesCodec, (clientMessage) => {
             const response = MapValuesCodec.decodeResponse(clientMessage);
-            return new ReadOnlyLazyList(response, this.serializationService);
+            return new ReadOnlyLazyList(this.deserializeList(response));
         });
     }
 

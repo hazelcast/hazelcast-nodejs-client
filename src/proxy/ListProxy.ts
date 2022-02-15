@@ -221,7 +221,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
     subList(start: number, end: number): Promise<ReadOnlyLazyList<E>> {
         return this.encodeInvoke(ListSubCodec, (clientMessage) => {
             const response = ListSubCodec.decodeResponse(clientMessage);
-            return new ReadOnlyLazyList<E>(response, this.serializationService);
+            return new ReadOnlyLazyList<E>(this.deserializeList(response));
         }, start, end);
     }
 

@@ -91,10 +91,6 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         );
     }
 
-    private deserializeList = <X>(items: Data[]): X[] => {
-        return items.map<X>(this.toObject.bind(this));
-    };
-
     put(key: K, value: V): Promise<boolean> {
         try {
             const keyData = this.toData(key);
@@ -120,7 +116,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         }
         return this.encodeInvokeOnKey(MultiMapGetCodec, keyData, (clientMessage) => {
             const response = MultiMapGetCodec.decodeResponse(clientMessage);
-            return new ReadOnlyLazyList<V>(response, this.serializationService);
+            return new ReadOnlyLazyList<V>(this.deserializeList(response));
         }, keyData, 1);
     }
 
@@ -144,7 +140,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             const keyData = this.toData(key);
             return this.encodeInvokeOnKey(MultiMapRemoveCodec, keyData, (clientMessage) => {
                 const response = MultiMapRemoveCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response, this.serializationService);
+                return new ReadOnlyLazyList<V>(this.deserializeList(response));
             }, keyData, 1);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
@@ -164,7 +160,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     values(): Promise<ReadOnlyLazyList<V>> {
         return this.encodeInvokeOnRandomTarget(MultiMapValuesCodec, (clientMessage) => {
             const response = MultiMapValuesCodec.decodeResponse(clientMessage);
-            return new ReadOnlyLazyList<V>(response, this.serializationService);
+            return new ReadOnlyLazyList<V>(this.deserializeList(response));
         });
     }
 

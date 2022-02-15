@@ -19,7 +19,9 @@ import * as Long from 'long';
 export const SEQUENCE_UNAVAILABLE = -1;
 
 /**
- * Defines the result of a {@link Ringbuffer.readMany} operation.
+ * Defines the result of a {@link Ringbuffer.readMany} operation. This result set deserializes its value
+ * lazily before client version 5.1. In versions 5.1 and above deserialization is eager. This is due to a
+ * technical limitation of compact serialization.
  */
 export interface ReadResultSet<T> {
 

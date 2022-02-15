@@ -2829,6 +2829,9 @@ for await (const row of sqlResult) {
 
 ### 8.7.7. Lazy SQL Row Deserialization
 
+> **NOTE: SQL rows will be deserialized eagerly - i.e lazy deserialization won't work - after client version 5.1 and above.
+> This is due to a technical limitation of compact serialization.**
+
 Rows in an `SqlResult` are deserialized lazily to allow you to access part of it if there is a value that can't be deserialized.
 
 While executing a query, if you set `SqlStatementOptions.returnRawResult` to `true`, `SqlRow` objects will be returned while

@@ -84,6 +84,10 @@ export abstract class BaseProxy {
         });
     }
 
+    protected deserializeList(items: Data[]): any[] {
+        return items.map(this.toObject.bind(this));
+    }
+
     protected deserializeEntryList<K, V>(toObject: (data: Data) => any, entrySet: Array<[Data, Data]>): Array<[K, V]> {
         const deserializedSet: Array<[K, V]> = [];
         entrySet.forEach((entry) => {

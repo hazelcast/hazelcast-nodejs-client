@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {SerializationService, SerializationServiceV1} from '../serialization/SerializationService';
-
 class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 
     private index = 0;
@@ -36,17 +34,16 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 }
 
 /**
- * Represents a list of values with lazy deserialization.
+ * Represents a list of values with lazy deserialization. Lazy deserialization does not work after
+ * client version 5.1 due to a technical limitation.
  */
 export class ReadOnlyLazyList<T> {
 
     private readonly internalArray: any[];
-    private readonly serializationService: SerializationService;
 
     /** @internal */
-    constructor(array: any[], serializationService: SerializationService) {
+    constructor(array: any[]) {
         this.internalArray = array;
-        this.serializationService = serializationService;
     }
 
     /**
@@ -60,13 +57,8 @@ export class ReadOnlyLazyList<T> {
         if (dataOrObject == null) {
             return undefined;
         }
-        if ((this.serializationService as SerializationServiceV1).isData(dataOrObject)) {
-            const obj = this.serializationService.toObject(dataOrObject);
-            this.internalArray[index] = obj;
-            return obj;
-        } else {
-            return dataOrObject;
-        }
+
+        return dataOrObject;
     }
 
     /**
@@ -90,7 +82,7 @@ export class ReadOnlyLazyList<T> {
      * @param end The end of the specified portion of the list (exclusive).
      */
     slice(start: number, end?: number): ReadOnlyLazyList<T> {
-        return new ReadOnlyLazyList<T>(this.internalArray.slice(start, end), this.serializationService);
+        return new ReadOnlyLazyList<T>(this.internalArray.slice(start, end));
     }
 
     /**

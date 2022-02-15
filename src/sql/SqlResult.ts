@@ -166,7 +166,7 @@ export class SqlResultImpl implements SqlResult {
 
     constructor(
         private readonly sqlService: SqlServiceImpl,
-        private readonly deserializeFn: (data: Data, isRaw: boolean) => any,
+        private readonly deserializeFn: (data: Data) => any,
         private readonly connection: Connection,
         private readonly queryId: SqlQueryId,
         /** The page size used for pagination */
@@ -195,7 +195,7 @@ export class SqlResultImpl implements SqlResult {
      */
     static newResult(
         sqlService: SqlServiceImpl,
-        deserializeFn: (data: Data, isRaw: boolean) => any,
+        deserializeFn: (data: Data) => any,
         connection: Connection,
         queryId: SqlQueryId,
         cursorBufferSize: number,
@@ -273,15 +273,14 @@ export class SqlResultImpl implements SqlResult {
             const columnCount = this.currentPage.getColumnCount();
             const values = new Array(columnCount);
             for (let i = 0; i < columnCount; i++) {
-                values[i] = this.currentPage.getValue(this.currentPosition, i);
+                values[i] = this.deserializeFn(this.currentPage.getValue(this.currentPosition, i));
             }
-            // Deserialization happens lazily while getting the object.
-            return new SqlRowImpl(values, this.rowMetadata, this.deserializeFn);
+            return new SqlRowImpl(values, this.rowMetadata);
         } else { // Return objects
             const result: SqlRowAsObject = {};
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 const columnMetadata = this.rowMetadata.getColumn(i);
-                result[columnMetadata.name] = this.deserializeFn(this.currentPage.getValue(this.currentPosition, i), false);
+                result[columnMetadata.name] = this.deserializeFn(this.currentPage.getValue(this.currentPosition, i));
             }
             return result;
         }
