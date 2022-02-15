@@ -35,8 +35,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -49,8 +49,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -63,8 +63,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -77,8 +77,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -91,8 +91,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -105,8 +105,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -119,8 +119,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -133,8 +133,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -148,8 +148,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -163,8 +163,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -177,8 +177,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -191,8 +191,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -206,8 +206,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -221,8 +221,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -235,8 +235,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -249,8 +249,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -263,8 +263,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -277,8 +277,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -291,8 +291,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -305,8 +305,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -319,8 +319,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -333,8 +333,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -347,8 +347,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -362,8 +362,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -376,8 +376,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -390,8 +390,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -404,8 +404,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -418,8 +418,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -432,8 +432,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -446,8 +446,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -460,8 +460,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -474,8 +474,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -488,8 +488,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -502,8 +502,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -516,8 +516,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -530,8 +530,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -544,8 +544,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -558,8 +558,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -572,8 +572,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -586,8 +586,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -600,8 +600,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
@@ -614,8 +614,8 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided - or undefined - and
-     * if the field does not exist in the schema or the type of the field does not match
+     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
+     * the field does not exist in the schema, or the type of the field does not match
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
