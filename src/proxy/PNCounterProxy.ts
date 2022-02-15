@@ -26,7 +26,6 @@ import {randomInt} from '../util/Util';
 import {BaseProxy} from './BaseProxy';
 import {PNCounter} from './PNCounter';
 import {MemberImpl} from '../core/Member';
-import {ClientMessage} from '../protocol/ClientMessage';
 
 /** @internal */
 export class PNCounterProxy extends BaseProxy implements PNCounter {
@@ -92,10 +91,10 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
                         'because the cluster does not contain any data members');
                 }
             }
-            return this.encodeInvokeInternal<any>(target, codec, (result: any) => {
+            return this.encodeInvokeInternal<any>(target, codec, ...codecArgs).then((result: any) => {
                 this.updateObservedReplicaTimestamps(result.replicaTimestamps);
                 return result.value;
-            }, ...codecArgs).catch((err) => {
+            }).catch((err) => {
                 if (excludedAddresses === PNCounterProxy.EMPTY_ARRAY) {
                     excludedAddresses = [];
                 }
@@ -106,13 +105,11 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
     }
 
     private encodeInvokeInternal<V>(
-        target: MemberImpl, codec: any, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]
+        target: MemberImpl, codec: any, ...codecArguments: any[]
     ): Promise<V> {
-        return this.encodeInvokeOnTarget(codec, target.uuid, handler, ...codecArguments,
-            this.lastObservedVectorClock.entrySet(), target.uuid)
-            .then((clientMessage) => {
-                return codec.decodeResponse(clientMessage);
-            });
+        return this.encodeInvokeOnTarget(codec, target.uuid, (clientMessage) => {
+            return codec.decodeResponse(clientMessage);
+        }, ...codecArguments, this.lastObservedVectorClock.entrySet(), target.uuid)
     }
 
     private getCRDTOperationTarget(excludedAddresses: MemberImpl[]): Promise<MemberImpl> {
