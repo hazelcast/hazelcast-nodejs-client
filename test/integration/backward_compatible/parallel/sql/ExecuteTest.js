@@ -325,61 +325,6 @@ describe('SqlExecuteTest', function () {
                 __key: 1
             }]);
         });
-
-        it('should deserialize rows lazily when returnRawResults is true', async function () {
-            TestUtil.markClientVersionAtLeast(this, '5.0');
-
-            const mapName = TestUtil.randomString(10);
-
-            // Using a Portable that is not defined on the client-side.
-            await TestUtil.createMappingForPortable(
-                'integer',
-                666,
-                1,
-                {},
-                client,
-                mapName,
-                serverVersionNewerThanFive
-            );
-
-            const script = `
-                var m = instance_0.getMap("${mapName}");
-                m.put(1, new com.hazelcast.client.test.Employee(1, "Joe"));
-            `;
-
-            const rcResult = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-
-            rcResult.success.should.be.true;
-
-            const result = await client.getSql().executeStatement({
-                sql: `SELECT __key, this FROM "${mapName}"`,
-                options: {
-                    returnRawResult: true
-                }
-            });
-
-            const rows = [];
-
-            for await (const row of result) {
-                rows.push(row);
-            }
-
-            rows.length.should.be.eq(1);
-
-            const row = rows[0];
-            row.should.be.instanceof(getSqlRowImpl());
-
-            // We should be able to deserialize parts of the response
-
-            row.getObject('__key').should.be.eq(1);
-
-            // We should throw lazily when we try to access the columns
-            // that are not deserializable
-
-            (() => {
-                row.getObject('this');
-            }).should.throw(HazelcastSqlException);
-        });
     });
     describe('mixed cluster of lite and data members', function () {
         before(async function () {
