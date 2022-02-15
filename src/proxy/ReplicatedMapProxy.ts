@@ -20,7 +20,8 @@ import {
     Predicate,
     ReadOnlyLazyList,
     ListComparator,
-    UUID
+    UUID,
+    SchemaNotReplicatedError
 } from '../core';
 import {ReplicatedMapAddEntryListenerCodec} from '../codec/ReplicatedMapAddEntryListenerCodec';
 import {ReplicatedMapAddEntryListenerToKeyCodec} from '../codec/ReplicatedMapAddEntryListenerToKeyCodec';
@@ -60,12 +61,19 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         assertNotNull(key);
         assertNotNull(value);
 
-        const valueData: Data = this.toData(value);
-        const keyData: Data = this.toData(key);
-        return this.encodeInvokeOnKey(ReplicatedMapPutCodec, keyData, (clientMessage) => {
-            const response = ReplicatedMapPutCodec.decodeResponse(clientMessage);
-            return this.toObject(response);
-        }, keyData, valueData, ttl);
+        try {
+            const valueData: Data = this.toData(value);
+            const keyData: Data = this.toData(key);
+            return this.encodeInvokeOnKey(ReplicatedMapPutCodec, keyData, (clientMessage) => {
+                const response = ReplicatedMapPutCodec.decodeResponse(clientMessage);
+                return this.toObject(response);
+            }, keyData, valueData, ttl);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.put(key, value, ttl));
+            }
+            return Promise.reject(e);
+        }
     }
 
     clear(): Promise<void> {
@@ -74,8 +82,16 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
 
     get(key: K): Promise<V> {
         assertNotNull(key);
+        let keyData;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.get(key));
+            }
+            return Promise.reject(e);
+        }
 
-        const keyData = this.toData(key);
         return this.encodeInvokeOnKey(ReplicatedMapGetCodec, keyData, (clientMessage) => {
             const response = ReplicatedMapGetCodec.decodeResponse(clientMessage);
             return this.toObject(response);
@@ -85,7 +101,15 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     containsKey(key: K): Promise<boolean> {
         assertNotNull(key);
 
-        const keyData = this.toData(key);
+        let keyData;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.containsKey(key));
+            }
+            return Promise.reject(e);
+        }
         return this.encodeInvokeOnKey(
             ReplicatedMapContainsKeyCodec, keyData, ReplicatedMapContainsKeyCodec.decodeResponse, keyData
         );
@@ -94,7 +118,15 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     containsValue(value: V): Promise<boolean> {
         assertNotNull(value);
 
-        const valueData = this.toData(value);
+        let valueData;
+        try {
+            valueData = this.toData(value);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.containsValue(value));
+            }
+            return Promise.reject(e);
+        }
         return this.encodeInvoke(ReplicatedMapContainsValueCodec, ReplicatedMapContainsValueCodec.decodeResponse, valueData);
     }
 
@@ -109,7 +141,15 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     remove(key: K): Promise<V> {
         assertNotNull(key);
 
-        const keyData = this.toData(key);
+        let keyData;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.remove(key));
+            }
+            return Promise.reject(e);
+        }
         return this.encodeInvokeOnKey(ReplicatedMapRemoveCodec, keyData, (clientMessage) => {
             const response = ReplicatedMapRemoveCodec.decodeResponse(clientMessage);
             return this.toObject(response);
@@ -122,9 +162,16 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         const entries: Array<[Data, Data]> = [];
         for (pairId in pairs) {
             pair = pairs[pairId];
-            const keyData = this.toData(pair[0]);
-            const valueData = this.toData(pair[1]);
-            entries.push([keyData, valueData]);
+            try {
+                const keyData = this.toData(pair[0]);
+                const valueData = this.toData(pair[1]);
+                entries.push([keyData, valueData]);
+            } catch (e) {
+                if (e instanceof SchemaNotReplicatedError) {
+                    return this.registerSchema(e.schema, e.clazz).then(() => this.putAll(pairs));
+                }
+                return Promise.reject(e);
+            }
         }
 
         return this.encodeInvokeOnRandomTarget(ReplicatedMapPutAllCodec, () => {}, entries);
@@ -218,23 +265,32 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
                               handler: EntryEventHandler,
                               toObjectFn: (data: Data) => any) => void;
         let codec: ListenerMessageCodec;
-        if (key && predicate) {
-            const keyData = this.toData(key);
-            const predicateData = this.toData(predicate);
-            codec = this.createEntryListenerToKeyWithPredicate(this.name, keyData, predicateData);
-            listenerHandler = ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.handle;
-        } else if (key && !predicate) {
-            const keyData = this.toData(key);
-            codec = this.createEntryListenerToKey(this.name, keyData);
-            listenerHandler = ReplicatedMapAddEntryListenerToKeyCodec.handle;
-        } else if (!key && predicate) {
-            const predicateData = this.toData(predicate);
-            codec = this.createEntryListenerWithPredicate(this.name, predicateData);
-            listenerHandler = ReplicatedMapAddEntryListenerWithPredicateCodec.handle;
-        } else {
-            codec = this.createEntryListener(this.name);
-            listenerHandler = ReplicatedMapAddEntryListenerCodec.handle;
+
+        try {
+            if (key && predicate) {
+                const keyData = this.toData(key);
+                const predicateData = this.toData(predicate);
+                codec = this.createEntryListenerToKeyWithPredicate(this.name, keyData, predicateData);
+                listenerHandler = ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.handle;
+            } else if (key && !predicate) {
+                const keyData = this.toData(key);
+                codec = this.createEntryListenerToKey(this.name, keyData);
+                listenerHandler = ReplicatedMapAddEntryListenerToKeyCodec.handle;
+            } else if (!key && predicate) {
+                const predicateData = this.toData(predicate);
+                codec = this.createEntryListenerWithPredicate(this.name, predicateData);
+                listenerHandler = ReplicatedMapAddEntryListenerWithPredicateCodec.handle;
+            } else {
+                codec = this.createEntryListener(this.name);
+                listenerHandler = ReplicatedMapAddEntryListenerCodec.handle;
+            }
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.addEntryListenerInternal(listener, predicate, key));
+            }
+            return Promise.reject(e);
         }
+
         return this.listenerService.registerListener(codec,
             (m: ClientMessage) => {
                 listenerHandler(m, entryEventHandler, toObject);

@@ -96,18 +96,18 @@ describe('CompactAPISerializationTest', function () {
     let CompactUtil;
 
     const COMPACT_ENABLED_ZERO_CONFIG_XML = `
-            <hazelcast xmlns="http://www.hazelcast.com/schema/config"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
-                <network>
-                    <port>0</port>
-                </network>
-                <serialization>
-                    <compact-serialization enabled="true" />
-                </serialization>
-            </hazelcast>
-        `;
+        <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.hazelcast.com/schema/config
+            http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
+            <network>
+                <port>0</port>
+            </network>
+            <serialization>
+                <compact-serialization enabled="true" />
+            </serialization>
+        </hazelcast>
+    `;
 
     const car1 = new Car('ww', 123456);
     const car2 = new Car('porsche', 21231);
@@ -125,7 +125,7 @@ describe('CompactAPISerializationTest', function () {
     });
 
     beforeEach(async function () {
-        const name = 'mapstore-test';
+        const name = TestUtil.randomString(12);
         client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
@@ -547,10 +547,6 @@ describe('CompactAPISerializationTest', function () {
             await multimap.addEntryListener(() => { }, car1);
         });
 
-        it('lock', async function () {
-            await multimap.lock(car1);
-        });
-
         it('isLocked', async function () {
             await multimap.isLocked(car1);
         });
@@ -559,7 +555,8 @@ describe('CompactAPISerializationTest', function () {
             await multimap.tryLock(car1);
         });
 
-        it('unlock', async function () {
+        it('lock/unlock', async function () {
+            await multimap.lock(car1);
             await multimap.unlock(car1);
         });
 
@@ -598,11 +595,11 @@ describe('CompactAPISerializationTest', function () {
         });
 
         it('addEntryListenerToKeyWithPredicate', async function () {
-            await replicatedMap.addEntryListenerToKeyWithPredicate(() => { }, employee);
+            await replicatedMap.addEntryListenerToKeyWithPredicate(() => {}, car1, Predicates.alwaysTrue());
         });
 
         it('addEntryListenerToKey', async function () {
-            await replicatedMap.addEntryListenerToKey(() => { }, employee);
+            await replicatedMap.addEntryListenerToKey(() => {}, car1);
         });
     });
 
@@ -620,7 +617,7 @@ describe('CompactAPISerializationTest', function () {
         });
 
         it('addAllAt', async function () {
-            await list.addAllAt(1, [car1, employee]);
+            await list.addAllAt(0, [car1, employee]);
         });
 
         it('contains', async function () {
@@ -652,6 +649,7 @@ describe('CompactAPISerializationTest', function () {
         });
 
         it('set', async function () {
+            await list.add(car1);
             await list.set(0, car1);
         });
     });

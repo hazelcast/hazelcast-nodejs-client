@@ -36,7 +36,7 @@ import {QueueRemoveListenerCodec} from '../codec/QueueRemoveListenerCodec';
 import {QueueSizeCodec} from '../codec/QueueSizeCodec';
 import {QueueTakeCodec} from '../codec/QueueTakeCodec';
 import {ItemEvent, ItemEventType, ItemListener} from './ItemListener';
-import {IllegalStateError, UUID} from '../core';
+import {IllegalStateError, SchemaNotReplicatedError, UUID} from '../core';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {IQueue} from './IQueue';
@@ -47,7 +47,7 @@ import {ClientMessage} from '../protocol/ClientMessage';
 export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
     add(item: E): Promise<boolean> {
-        return this.offer(item).then(function (ret): boolean {
+        return this.offer(item).then((ret: boolean) => {
             if (ret) {
                 return true;
             } else {
@@ -57,11 +57,15 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     addAll(items: E[]): Promise<boolean> {
-        const rawList: Data[] = [];
-        const toData = this.toData.bind(this);
-        items.forEach(function (item): void {
-            rawList.push(toData(item));
-        });
+        let rawList;
+        try {
+            rawList = this.serializeList(items);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.addAll(items));
+            }
+            return Promise.reject(e);
+        }
         return this.encodeInvoke(QueueAddAllCodec, QueueAddAllCodec.decodeResponse, rawList);
     }
 
@@ -95,26 +99,43 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     contains(item: E): Promise<boolean> {
-        const itemData = this.toData(item);
+        let itemData;
+        try {
+            itemData = this.toData(item);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.contains(item));
+            }
+            return Promise.reject(e);
+        }
+
         return this.encodeInvoke(QueueContainsCodec, QueueContainsCodec.decodeResponse, itemData);
     }
 
     containsAll(items: E[]): Promise<boolean> {
-        const rawItems: Data[] = items.map<Data>(v => this.toData(v));
+        let rawItems;
+        try {
+            rawItems = this.serializeList(items);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.containsAll(items));
+            }
+            return Promise.reject(e);
+        }
+
         return this.encodeInvoke(QueueContainsAllCodec, QueueContainsAllCodec.decodeResponse, rawItems);
     }
 
     drainTo(arr: E[], maxElements: number = null): Promise<number> {
-        const toObject = this.toObject.bind(this);
         let promise: Promise<any>;
         if (maxElements === null) {
             promise = this.encodeInvoke(QueueDrainToCodec, QueueDrainToCodec.decodeResponse);
         } else {
             promise = this.encodeInvoke(QueueDrainToMaxSizeCodec, QueueDrainToMaxSizeCodec.decodeResponse, maxElements);
         }
-        return promise.then(function (rawArr: Data[]): number {
-            rawArr.forEach(function (rawItem): void {
-                arr.push(toObject(rawItem));
+        return promise.then((rawArr: Data[]) => {
+            rawArr.forEach((rawItem) => {
+                arr.push(this.toObject(rawItem));
             });
             return rawArr.length;
         });
@@ -125,7 +146,15 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     offer(item: E, time = 0): Promise<boolean> {
-        const itemData = this.toData(item);
+        let itemData;
+        try {
+            itemData = this.toData(item);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.offer(item, time));
+            }
+            return Promise.reject(e);
+        }
         return this.encodeInvoke(QueueOfferCodec, QueueOfferCodec.decodeResponse, itemData, time);
     }
 
@@ -144,7 +173,15 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     put(item: E): Promise<void> {
-        const itemData = this.toData(item);
+        let itemData;
+        try {
+            itemData = this.toData(item);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.put(item));
+            }
+            return Promise.reject(e);
+        }
         return this.encodeInvoke(QueuePutCodec, () => {}, itemData);
     }
 
@@ -153,12 +190,30 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     remove(item: E): Promise<boolean> {
-        const itemData = this.toData(item);
+        let itemData;
+        try {
+            itemData = this.toData(item);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.remove(item));
+            }
+            return Promise.reject(e);
+        }
+
         return this.encodeInvoke(QueueRemoveCodec, QueueRemoveCodec.decodeResponse, itemData);
     }
 
     removeAll(items: E[]): Promise<boolean> {
-        const rawItems = items.map<Data>(v => this.toData(v));
+        let rawItems;
+        try {
+            rawItems = this.serializeList(items);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.removeAll(items));
+            }
+            return Promise.reject(e);
+        }
+
         return this.encodeInvoke(QueueCompareAndRemoveAllCodec, QueueCompareAndRemoveAllCodec.decodeResponse, rawItems);
     }
 
@@ -167,7 +222,16 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     retainAll(items: E[]): Promise<boolean> {
-        const rawItems = items.map<Data>(v => this.toData(v));
+        let rawItems;
+        try {
+            rawItems = this.serializeList(items);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.retainAll(items));
+            }
+            return Promise.reject(e);
+        }
+
         return this.encodeInvoke(QueueCompareAndRetainAllCodec, QueueCompareAndRetainAllCodec.decodeResponse, rawItems);
     }
 

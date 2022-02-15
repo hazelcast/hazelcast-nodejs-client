@@ -729,7 +729,7 @@ describe('CompactTest', function () {
         });
     });
 
-    // All events are handled in the same place in listener service, so there is no need to test all event types.
+    // All events are handled in the same place in listener service, so there should not be need to test all event types.
     it('should received compact data with events', async function() {
         const client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,

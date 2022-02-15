@@ -25,6 +25,7 @@ import {AtomicRefSetCodec} from '../../codec/AtomicRefSetCodec';
 import {AtomicRefContainsCodec} from '../../codec/AtomicRefContainsCodec';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
+import {SchemaNotReplicatedError} from '../../core/HazelcastError';
 
 
 /** @internal */
@@ -48,16 +49,23 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
     }
 
     compareAndSet(expect: E, update: E): Promise<boolean> {
-        const expectedData = this.toData(expect);
-        const newData = this.toData(update);
-        return this.encodeInvokeOnRandomTarget(
-            AtomicRefCompareAndSetCodec,
-            AtomicRefCompareAndSetCodec.decodeResponse,
-            this.groupId,
-            this.objectName,
-            expectedData,
-            newData
-        );
+        try {
+            const expectedData = this.toData(expect);
+            const newData = this.toData(update);
+            return this.encodeInvokeOnRandomTarget(
+                AtomicRefCompareAndSetCodec,
+                AtomicRefCompareAndSetCodec.decodeResponse,
+                this.groupId,
+                this.objectName,
+                expectedData,
+                newData
+            );
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.compareAndSet(expect, update));
+            }
+            return Promise.reject(e);
+        }
     }
 
     get(): Promise<E> {
@@ -73,7 +81,16 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
     }
 
     set(newValue: E): Promise<void> {
-        const newData = this.toData(newValue);
+        let newData;
+        try {
+            newData = this.toData(newValue);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.set(newValue));
+            }
+            return Promise.reject(e);
+        }
+
         return this.encodeInvokeOnRandomTarget(
             AtomicRefSetCodec,
             () => {},
@@ -85,7 +102,16 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
     }
 
     getAndSet(newValue: E): Promise<E> {
-        const newData = this.toData(newValue);
+        let newData;
+        try {
+            newData = this.toData(newValue);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.getAndSet(newValue));
+            }
+            return Promise.reject(e);
+        }
+
         return this.encodeInvokeOnRandomTarget(
             AtomicRefSetCodec,
             (clientMessage) => {
@@ -108,7 +134,16 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
     }
 
     contains(value: E): Promise<boolean> {
-        const valueData = this.toData(value);
+        let valueData;
+        try {
+            valueData = this.toData(value);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.contains(value));
+            }
+            return Promise.reject(e);
+        }
+
         return this.encodeInvokeOnRandomTarget(
             AtomicRefContainsCodec,
             AtomicRefContainsCodec.decodeResponse,

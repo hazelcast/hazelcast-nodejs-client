@@ -767,8 +767,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return [toObject(entry[0]), toObject(entry[1])];
         };
         return Promise.all(partitionPromises)
-            .then(function (serializedEntryArrayArray: Array<Array<[Data, Data]>>): any[] {
-                const serializedEntryArray = Array.prototype.concat.apply([], serializedEntryArrayArray);
+            .then((serializedEntryArrayArray: Array<Array<[Data, Data]>>) => {
+                const serializedEntryArray: Array<[Data, Data]> = Array.prototype.concat.apply([], serializedEntryArrayArray);
                 result.push(...(serializedEntryArray.map(deserializeEntry)));
                 return serializedEntryArray;
             });

@@ -22,6 +22,7 @@ import {UnsupportedOperationError} from '../../core';
 import {Data} from '../../serialization/Data';
 import {SerializationService} from '../../serialization/SerializationService';
 import {InvocationService} from '../../invocation/InvocationService';
+import {Schema} from '../../serialization/compact/Schema';
 
 /**
  * Common super class for any CP Subsystem proxy.
@@ -66,6 +67,10 @@ export abstract class BaseCPProxy {
 
     protected toObject(data: Data): any {
         return this.serializationService.toObject(data);
+    }
+
+    protected registerSchema(schema: Schema, clazz: (new (...args: any[]) => any) | undefined): Promise<void> {
+        return this.invocationService.registerSchema(schema, clazz);
     }
 
     /**

@@ -17,7 +17,7 @@
 
 import * as Long from 'long';
 import {OverflowPolicy} from '../OverflowPolicy';
-import {AddressImpl, TopicOverloadError} from '../../core';
+import {AddressImpl, SchemaNotReplicatedError, TopicOverloadError} from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
 import {
@@ -123,7 +123,16 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     publish(message: E): Promise<void> {
         const reliableTopicMessage = new ReliableTopicMessage();
-        reliableTopicMessage.payload = this.serializationService.toData(message);
+
+        try {
+            reliableTopicMessage.payload = this.serializationService.toData(message);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.publish(message));
+            }
+            return Promise.reject(e);
+        }
+
         reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
         reliableTopicMessage.publisherAddress = this.localAddress;
 
