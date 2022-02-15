@@ -758,13 +758,22 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         for (const partition in partitionsToKeys) {
             partitionPromises.push(
                 this.encodeInvokeOnPartition(
-                    MapGetAllCodec, Number(partition), MapGetAllCodec.decodeResponse, partitionsToKeys[partition]
+                    MapGetAllCodec, Number(partition), (clientMessage: ClientMessage) : any => {
+                        const getAllResponse = MapGetAllCodec.decodeResponse(clientMessage);
+                        for (const [data1, data2] of getAllResponse) {
+                            // We need to make sure compact objects' schemas are fetched
+                            if (data1.isCompact() || data2.isCompact()) {
+                                this.toObject(data1);
+                                this.toObject(data2);
+                            }
+                        }
+                        return getAllResponse;
+                    }, partitionsToKeys[partition]
                 )
             );
         }
-        const toObject = this.toObject.bind(this);
-        const deserializeEntry = function (entry: [Data, Data]): [any, any] {
-            return [toObject(entry[0]), toObject(entry[1])];
+        const deserializeEntry = (entry: [Data, Data]) : [any, any] => {
+            return [this.toObject(entry[0]), this.toObject(entry[1])];
         };
         return Promise.all(partitionPromises)
             .then((serializedEntryArrayArray: Array<Array<[Data, Data]>>) => {
