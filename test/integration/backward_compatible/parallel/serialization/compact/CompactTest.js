@@ -300,7 +300,7 @@ describe('CompactTest', function () {
                 await map.get('key');
             });
             error.should.be.instanceOf(HazelcastSerializationError);
-            error.message.includes('No field with name').should.be.true;
+            error.message.includes('No field with the name').should.be.true;
         });
 
         it(`should read and write with one field. Field: ${FieldKind[fieldKind]}`, async function () {
