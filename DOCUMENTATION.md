@@ -3068,6 +3068,9 @@ The SQL service supports a set of SQL data types. The table below shows SQL data
 See [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client) for how you can use
 `BigDecimal`, `LocalDate`, `LocalTime`, `LocalDateTime` and `OffsetDateTime` classes.
 
+Also check out [SQL data types example](./code_samples/sql-data-types.js) to learn how to use some data types like
+OBJECT(Portable and Compact), VARCHAR and INTEGER.
+
 ### 8.7.9. Casting
 
 In general, you should try to send parameters having same data type with its related column. Otherwise, you need to cast
