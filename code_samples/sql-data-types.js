@@ -38,13 +38,38 @@ class Student {
     }
 }
 
+class Employee {
+    constructor(age, id) {
+        this.age = age;
+        this.id = id;
+    }
+}
+
+class EmployeeSerializer {
+    constructor() {
+        this.hzClass = Employee;
+        this.hzTypeName = 'Employee';
+    }
+
+    read(reader) {
+        const age = reader.readInt32('age');
+        const id = reader.readInt64('id');
+        return new Employee(age, id);
+    }
+
+    write(writer, value) {
+        writer.writeInt32('age', value.age);
+        writer.writeInt64('id', value.id);
+    }
+}
+
 const varcharExample = async (client) => {
     console.log('----------VARCHAR Example----------');
     const mapName = 'varcharMap';
     const someMap = await client.getMap(mapName);
     // To be able to use our map in SQL we need to create mapping for it.
     const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
+            CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
                 this VARCHAR
             )
@@ -91,7 +116,7 @@ const integersExample = async (client) => {
     const someMap = await client.getMap(mapName);
     // To be able to use our map in SQL we need to create mapping for it.
     const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
+            CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
                 this BIGINT
             )
@@ -133,12 +158,12 @@ const integersExample = async (client) => {
 
 // Portable example
 const objectExample = async (client, classId, factoryId) => {
-    console.log('----------OBJECT Example----------');
+    console.log('----------OBJECT Example(Portable)----------');
     const mapName = 'studentMap';
     const someMap = await client.getMap(mapName);
     // To be able to use our map in SQL we need to create mapping for it.
     const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
+            CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
                 age INT,
                 height DOUBLE
@@ -176,6 +201,50 @@ const objectExample = async (client, classId, factoryId) => {
     }
 };
 
+// Compact example
+const objectExample2 = async (client, typeName) => {
+    console.log('----------OBJECT Example(Compact)----------');
+    const mapName = 'employeeMap';
+    const someMap = await client.getMap(mapName);
+    // To be able to use our map in SQL we need to create mapping for it.
+    const createMappingQuery = `
+            CREATE OR REPLACE MAPPING ${mapName} (
+                __key DOUBLE,
+                age INTEGER,
+                id BIGINT
+            )
+            TYPE IMap
+            OPTIONS (
+                'keyFormat' = 'double',
+                'valueFormat' = 'compact',
+                'valueCompactTypeName' = '${typeName}'
+            )
+        `;
+    await client.getSql().execute(createMappingQuery);
+
+    for (let key = 0; key < 10; key++) {
+        await someMap.set(key, new Employee(key, long.fromNumber(key)));
+    }
+
+    const result = await client.getSql().execute(
+        'SELECT * FROM employeeMap WHERE id > ? AND id < ?',
+        [long.fromNumber(3), long.fromNumber(8)]
+    );
+
+    const rowMetadata = result.rowMetadata;
+    const columnIndex = rowMetadata.findColumn('age');
+    const columnMetadata = rowMetadata.getColumn(columnIndex);
+    console.log(SqlColumnType[columnMetadata.type]); // INTEGER
+
+    const columnIndex2 = rowMetadata.findColumn('id');
+    const columnMetadata2 = rowMetadata.getColumn(columnIndex2);
+    console.log(SqlColumnType[columnMetadata2.type]); // BIGINT
+
+    for await (const row of result) {
+        console.log(`Id: ${row['id']} Age: ${row['age']}`);
+    }
+};
+
 (async () => {
     try {
         // Since we will use a portable, we register it:
@@ -186,17 +255,21 @@ const objectExample = async (client, classId, factoryId) => {
             return null;
         };
 
+        const employeeSerializer = new EmployeeSerializer();
+
         const client = await Client.newHazelcastClient({
             serialization: {
                 portableFactories: {
                     23: portableFactory
-                }
+                },
+                compactSerializers: [employeeSerializer]
             }
         });
 
         await varcharExample(client);
         await integersExample(client);
         await objectExample(client, 1, 23);
+        await objectExample2(client, employeeSerializer.hzTypeName);
 
         await client.shutdown();
     } catch (err) {
