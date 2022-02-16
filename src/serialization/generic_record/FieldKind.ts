@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
+/**
+ * FieldKind for Compact.
+ * It is designed to be used with {@link GenericRecord.getFieldKind} API.
+ *
+ * Note that actual ids in {@link FieldType} and {@link FieldKind} are not matching.
+ * {@link FieldType} is the old API for Portable only and only meant to be used with
+ * {@link PortableReader.getFieldType} API.
+ */
 export enum FieldKind {
     BOOLEAN,
     ARRAY_OF_BOOLEAN,

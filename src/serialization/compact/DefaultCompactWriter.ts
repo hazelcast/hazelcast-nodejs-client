@@ -37,6 +37,10 @@ import {BYTE_OFFSET_READER_RANGE, NULL_OFFSET, SHORT_OFFSET_READER_RANGE} from '
 import {CompactGenericRecord} from '../generic_record/CompactGenericRecord';
 
 /**
+ *
+ * Default implementation of the {@link CompactWriter} that writes
+ * the serialized fields into a {@link PositionalObjectDataOutput}.
+ *
  * @internal
  */
 export class DefaultCompactWriter implements CompactWriter {

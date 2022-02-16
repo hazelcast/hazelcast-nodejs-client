@@ -70,7 +70,7 @@ import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
 import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
-import {Schema} from './compact';
+import {Schema} from './compact/Schema';
 
 /**
  * Serializes objects and deserializes data.

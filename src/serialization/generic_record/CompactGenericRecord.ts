@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {AbstractGenericRecord, GenericRecord} from './GenericRecord';
+import {GenericRecord} from './GenericRecord';
 import {
     BigDecimal,
     HazelcastSerializationError,
@@ -26,11 +26,11 @@ import {
     UnsupportedOperationError
 } from '../../core';
 import {FieldKind} from './FieldKind';
-import {Field} from './Field';
+import {Field} from './Fields';
 import {Schema} from '../compact/Schema';
 import {SchemaWriter} from '../compact/SchemaWriter';
 import {FieldDescriptor} from './FieldDescriptor';
-import {CompactUtil} from '../compact/CompactUtil';
+import {CompactExceptions} from '../compact/CompactUtil';
 import * as Util from '../../util/Util';
 import * as Long from 'long';
 import {SerializationServiceV1} from '../SerializationService';
@@ -45,7 +45,7 @@ export interface CompactGenericRecord extends GenericRecord {
 /**
  * @internal
  */
-export class CompactGenericRecordImpl extends AbstractGenericRecord implements CompactGenericRecord {
+export class CompactGenericRecordImpl implements CompactGenericRecord {
 
     private readonly schema: Schema;
 
@@ -54,7 +54,6 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
         private readonly fields: {[name: string]: Field<any>} = {},
         readonly values: {[name: string]: any} = {}
     ) {
-        super();
         const schemaWriter = new SchemaWriter(typeName);
         for (const [fieldName, field] of Object.entries(fields)) {
             this.validateField(fieldName, field.kind, this.values[fieldName]);
@@ -312,7 +311,7 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
         this.check(fieldName, primitiveFieldKind, nullableFieldKind);
         const value = this.values[fieldName];
         if (value === null) {
-            throw CompactUtil.toExceptionForUnexpectedNullValue(fieldName, methodSuffix);
+            throw CompactExceptions.toExceptionForUnexpectedNullValue(fieldName, methodSuffix);
         }
         return value;
     }
@@ -335,7 +334,7 @@ export class CompactGenericRecordImpl extends AbstractGenericRecord implements C
             const result = new Array(array.length);
             for (let i = 0; i < array.length; i++) {
                 if (array[i] === null) {
-                    throw CompactUtil.toExceptionForUnexpectedNullValueInArray(fieldName, methodSuffix);
+                    throw CompactExceptions.toExceptionForUnexpectedNullValueInArray(fieldName, methodSuffix);
                 }
                 result[i] = array[i];
             }

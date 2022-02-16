@@ -19,8 +19,15 @@ import {FieldKind} from './FieldKind';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 import {GenericRecord} from './GenericRecord';
 
+
+/**
+ * Represents a field that is used when building a {@link GenericRecord}. Every field is associated with a {@link FieldKind}.
+ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Field<T> {
+    /**
+     * The kind this field is associated with.
+     */
     kind: FieldKind
 }
 

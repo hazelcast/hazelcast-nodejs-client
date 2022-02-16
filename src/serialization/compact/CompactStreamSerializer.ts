@@ -23,11 +23,15 @@ import {DefaultCompactWriter} from './DefaultCompactWriter';
 import {FieldOperations} from '../generic_record/FieldOperations';
 import {HazelcastSerializationError, SchemaNotFoundError, SchemaNotReplicatedError} from '../../core';
 import {ObjectDataInput, ObjectDataOutput, PositionalObjectDataOutput} from '../ObjectData';
-import {IS_GENERIC_RECORD_SYMBOL} from '../generic_record/GenericRecord';
-import {CompactGenericRecord} from '../generic_record/CompactGenericRecord';
+import {CompactGenericRecord, CompactGenericRecordImpl} from '../generic_record/CompactGenericRecord';
 import {SchemaWriter} from './SchemaWriter';
 
 /**
+ * Serializer for compact serializable objects.
+ *
+ * This serializer is used for compact serializable objects that are registered using serialization config
+ * and Compact generic records ({@link CompactGenericRecordImpl}).
+ *
  * @internal
  */
 export class CompactStreamSerializer {
@@ -88,13 +92,17 @@ export class CompactStreamSerializer {
         if (!(output instanceof PositionalObjectDataOutput)) {
             throw new HazelcastSerializationError('Expected a positional object data output.')
         }
-        if (object && object[IS_GENERIC_RECORD_SYMBOL] === true) {
+        if (object instanceof CompactGenericRecordImpl) {
             this.writeGenericRecord(output, object, throwIfSchemaNotReplicated);
         } else {
             this.writeObject(output, object, throwIfSchemaNotReplicated);
         }
     }
 
+    /**
+     * Used by serialization service to check if an object is compact serializable
+     * @param clazz A class
+     */
     static isRegisteredAsCompact(clazz: new() => any) : boolean {
         return CompactStreamSerializer.classToSerializersMap.has(clazz);
     }

@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/** @ignore *//** */
+
 import * as Long from 'long';
 import {Schema} from './Schema';
 import {ILogger} from '../../logging';
@@ -7,17 +24,42 @@ import {ClientFetchSchemaCodec} from '../../codec/ClientFetchSchemaCodec';
 import {ClientSendSchemaCodec} from '../../codec/ClientSendSchemaCodec';
 
 
+/**
+ * Service to put and get metadata to cluster.
+ * @internal
+ */
 export interface ISchemaService {
+    /**
+     * Returns the schema with id {@link schemaId} in schema service's local registry,
+     * returning null if it is not found.
+     */
     get(schemaId: Long): Schema | null;
+
+
+    /**
+     * Fetches the schema with id {@link schemaId} from cluster to local registry of the schema service.
+     */
     fetchSchema(schemaId: Long): Promise<void>;
+
+    /**
+     * Puts the schema with the given id to the cluster.
+     */
+    put(schema: Schema): Promise<void>;
+
+    /**
+     * Puts the schema to only the local registry of the schema service.
+     */
     putLocal(schema: Schema): void;
 }
 
-
+/**
+ * @internal
+ */
 export class SchemaService implements ISchemaService {
     schemas: Map<string, Schema>;
 
     constructor(
+        // a getter is used because there is a cyclic dependency between InvocationService and SchemaService
         private readonly getInvocationService: () => InvocationService,
         private readonly logger: ILogger
     ) {
@@ -85,5 +127,4 @@ export class SchemaService implements ISchemaService {
         const invocation = new Invocation(this.getInvocationService(), message);
         return this.getInvocationService().invokeUrgent(invocation).then(() => {});
     }
-
 }

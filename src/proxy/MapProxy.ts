@@ -330,6 +330,14 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     get(key: K): Promise<V> {
         assertNotNull(key);
+        /**
+         * You will see a lot of try/catch blocks around {@link toData} in proxy methods. This is called controlled serialization
+         * and needed due to compact serialization. While serializing a compact object we need to be sure that its schema
+         * is replicated to cluster for data integrity. If not, we throw {@link SchemaNotReplicatedError}. Therefore, we
+         * check if toData calls throw this error and if so, we registerSchema to the cluster and then try the proxy call
+         * again. We need try/catch calls everywhere to avoid performance penalty of returning Promise.resolve(data) instead
+         * of data.
+         */
         try {
             const keyData = this.toData(key);
             return this.getInternal(keyData);

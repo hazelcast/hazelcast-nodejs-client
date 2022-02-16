@@ -16,7 +16,7 @@
 
 import {UUID} from './UUID';
 import * as Long from 'long';
-import {Schema} from '../serialization';
+import {Schema} from '../serialization/compact/Schema';
 
 /**
  * Represents a stack trace element of server-side exception.

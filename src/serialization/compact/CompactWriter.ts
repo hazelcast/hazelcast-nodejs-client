@@ -17,6 +17,9 @@
 import * as Long from 'long';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 
+/**
+ * Provides means of writing compact serialized fields to the binary data.
+ */
 export interface CompactWriter {
     /**
      * Writes a boolean.

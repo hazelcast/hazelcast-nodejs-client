@@ -16,67 +16,6 @@
 import {FieldKind} from './FieldKind';
 import * as Long from 'long';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
-import {Buffer} from 'buffer';
-
-export const IS_GENERIC_RECORD_SYMBOL = Symbol('IS_GENERIC_RECORD');
-
-
-/**
- * All generic records must extend this. This adds {@link IS_GENERIC_RECORD_SYMBOL} to all generic records.
- * @internal
- */
-export abstract class AbstractGenericRecord implements GenericRecord {
-    [IS_GENERIC_RECORD_SYMBOL] = true;
-
-    abstract clone(fieldsToUpdate?: { [fieldName: string]: any }): GenericRecord;
-    abstract getArrayOfBoolean(fieldName: string): boolean[];
-    abstract getArrayOfChar(fieldName: string): string[];
-    abstract getArrayOfDate(fieldName: string): LocalDate[];
-    abstract getArrayOfDecimal(fieldName: string): BigDecimal[];
-    abstract getArrayOfFloat32(fieldName: string): number[];
-    abstract getArrayOfFloat64(fieldName: string): number[];
-    abstract getArrayOfGenericRecord(fieldName: string): GenericRecord[];
-    abstract getArrayOfInt16(fieldName: string): number[];
-    abstract getArrayOfInt32(fieldName: string): number[];
-    abstract getArrayOfInt64(fieldName: string): Long[];
-    abstract getArrayOfInt8(fieldName: string): Buffer;
-    abstract getArrayOfNullableBoolean(fieldName: string): (boolean | null)[];
-    abstract getArrayOfNullableFloat32(fieldName: string): (number | null)[];
-    abstract getArrayOfNullableFloat64(fieldName: string): (number | null)[];
-    abstract getArrayOfNullableInt16(fieldName: string): (number | null)[];
-    abstract getArrayOfNullableInt32(fieldName: string): (number | null)[];
-    abstract getArrayOfNullableInt64(fieldName: string): (Long | null)[];
-    abstract getArrayOfNullableInt8(fieldName: string): (number | null)[];
-    abstract getArrayOfString(fieldName: string): string[];
-    abstract getArrayOfTime(fieldName: string): LocalTime[];
-    abstract getArrayOfTimestamp(fieldName: string): LocalDateTime[];
-    abstract getArrayOfTimestampWithTimezone(fieldName: string): OffsetDateTime[];
-    abstract getBoolean(fieldName: string): boolean;
-    abstract getChar(fieldName: string): string;
-    abstract getDate(fieldName: string): LocalDate;
-    abstract getDecimal(fieldName: string): BigDecimal;
-    abstract getFieldKind(fieldName: string): FieldKind;
-    abstract getFieldNames(): Set<string>;
-    abstract getFloat32(fieldName: string): number;
-    abstract getFloat64(fieldName: string): number;
-    abstract getGenericRecord(fieldName: string): GenericRecord;
-    abstract getInt16(fieldName: string): number;
-    abstract getInt32(fieldName: string): number;
-    abstract getInt64(fieldName: string): Long;
-    abstract getInt8(fieldName: string): number;
-    abstract getNullableBoolean(fieldName: string): boolean | null;
-    abstract getNullableFloat32(fieldName: string): number | null;
-    abstract getNullableFloat64(fieldName: string): number | null;
-    abstract getNullableInt16(fieldName: string): number | null;
-    abstract getNullableInt32(fieldName: string): number | null;
-    abstract getNullableInt64(fieldName: string): Long | null;
-    abstract getNullableInt8(fieldName: string): number | null;
-    abstract getString(fieldName: string): string;
-    abstract getTime(fieldName: string): LocalTime;
-    abstract getTimestamp(fieldName: string): LocalDateTime;
-    abstract getTimestampWithTimezone(fieldName: string): OffsetDateTime;
-    abstract hasField(fieldName: string): boolean;
-}
 
 export interface GenericRecord {
     /**

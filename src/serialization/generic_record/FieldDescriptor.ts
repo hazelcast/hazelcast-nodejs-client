@@ -18,6 +18,7 @@
 import {FieldKind} from './FieldKind';
 
 /**
+ * Describes a field.
  * @internal
  */
 export class FieldDescriptor {

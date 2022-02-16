@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 /** @ignore *//** */
 
 import {IdentifiedDataSerializable} from '../Serializable';
-import {COMPACT_FACTORY_ID, SCHEMA} from './CompactFactoryConstants';
 import {DataInput, DataOutput} from '../Data';
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
 import * as Long from 'long';
@@ -26,6 +24,9 @@ import {FieldOperations} from '../generic_record/FieldOperations';
 import {FieldKind} from '../generic_record/FieldKind';
 import {BitsUtil} from '../../util/BitsUtil';
 import {RabinFingerprint64} from './RabinFingerprint';
+
+const COMPACT_FACTORY_ID = -42;
+const SCHEMA = 1;
 
 /**
  * @internal

@@ -19,6 +19,8 @@ import {DefaultCompactWriter} from '../compact/DefaultCompactWriter';
 import {GenericRecord} from './GenericRecord';
 
 /**
+ * Every FieldKind should support these operations used across the code base. Used across compact
+ * and generic record code base.
  * @internal
  */
 export interface FieldKindBasedOperations {

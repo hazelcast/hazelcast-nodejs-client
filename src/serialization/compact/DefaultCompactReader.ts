@@ -31,7 +31,7 @@ import {Schema} from './Schema';
 import {ObjectDataInput} from '../ObjectData';
 import {FieldKind} from '../generic_record/FieldKind';
 import {CompactGenericRecord, CompactGenericRecordImpl, GenericRecord} from '../generic_record';
-import {Field} from '../generic_record/Field';
+import {Field} from '../generic_record/Fields';
 import {
     BYTE_OFFSET_READER,
     BYTE_OFFSET_READER_RANGE,
@@ -40,13 +40,15 @@ import {
     SHORT_OFFSET_READER_RANGE
 } from './OffsetConstants';
 import {BitsUtil} from '../../util/BitsUtil';
-import {OffsetReader} from './OffsetRead';
+import {OffsetReader} from './OffsetReader';
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
-import {CompactUtil} from './CompactUtil';
+import {CompactExceptions} from './CompactUtil';
 import {IOUtil} from '../../util/IOUtil';
 
 /**
- * Unserialized form of a compact object. Users do not receive this object. Instead, they receive {@link CompactGenericRecordImpl}
+ * Represents unserialized form of a compact object. Users do not receive this object.
+ * Instead, they receive {@link CompactGenericRecordImpl}
+ *
  * @internal
  */
 export class DefaultCompactReader implements CompactReader, CompactGenericRecord {
@@ -185,7 +187,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
             for (let i = 0; i < itemCount; i++) {
                 const offset = offsetReader(this.input, offsetsPosition, i);
                 if (offset === BitsUtil.NULL_ARRAY_LENGTH) {
-                    throw CompactUtil.toExceptionForUnexpectedNullValueInArray(fd.fieldName, methodSuffix);
+                    throw CompactExceptions.toExceptionForUnexpectedNullValueInArray(fd.fieldName, methodSuffix);
                 }
             }
             this.input.position(dataStartPosition - BitsUtil.INT_SIZE_IN_BYTES);
@@ -648,7 +650,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => T, methodSuffix: string): T {
         const value = this.getVariableSize(fieldDescriptor, readFn);
         if (value === null) {
-            throw CompactUtil.toExceptionForUnexpectedNullValue(fieldDescriptor.fieldName, methodSuffix);
+            throw CompactExceptions.toExceptionForUnexpectedNullValue(fieldDescriptor.fieldName, methodSuffix);
         }
         return value;
     }

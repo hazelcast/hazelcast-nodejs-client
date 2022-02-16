@@ -27,7 +27,7 @@ import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
 import {SchemaService} from '../serialization/compact/SchemaService';
-import {Schema} from '../serialization';
+import {Schema} from '../serialization/compact/Schema';
 
 /**
  * Common super class for any proxy.

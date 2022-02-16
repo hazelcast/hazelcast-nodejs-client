@@ -223,6 +223,14 @@ export class Invocation {
     }
 
     complete(clientMessage: ClientMessage): void {
+        /**
+         * The following is a part eager deserialization that is needed for compact serialization. In
+         * eager deserialization, invocations have handlers that are called in {@link complete}.
+         * This invocation handler usually includes toObject calls and as seen below it is put
+         * into a try/catch block. If it throws SchemaNotFoundError we fetch the required schema
+         * and try to call handler again. If the handler is successful, we complete the invocation.
+         * If another exception is thrown we complete the invocation with an error.
+         */
         try {
             const result = this.handler(clientMessage);
             this.deferred.resolve(result);

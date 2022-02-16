@@ -15,8 +15,9 @@
  */
 /** @ignore *//** */
 
-/** @internal */
-export const COMPACT_FACTORY_ID = -42;
+import {ObjectDataInput} from '../ObjectData';
 
-/** @internal */
-export const SCHEMA = 1;
+/**
+ * @internal
+ */
+export type OffsetReader = (input: ObjectDataInput, variableOffsetsPos: number, index: number) => number;

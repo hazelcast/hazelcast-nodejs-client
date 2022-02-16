@@ -23,6 +23,7 @@ import {UnsupportedOperationError} from '../../core';
 import {BitsUtil} from '../../util/BitsUtil';
 
 /**
+ * Implementation of {@link FieldKindBasedOperations} for each field
  * @internal
  */
 export class FieldOperations {
