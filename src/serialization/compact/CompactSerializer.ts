@@ -22,11 +22,13 @@ import {CompactWriter} from './CompactWriter';
  * serialization.
  *
  * After defining a serializer for the objects of the class `C`,
- * it can be registered using the {@link ClientConfig.serialization.compactSerializers}.
+ * it can be registered using the {@link compactSerializers}.
  *
  * {@link write} and {@link read} methods must be consistent with each other.
  *
  * For more information about usage serializers, please see Node.js client documentation and code samples.
+ *
+ * @param C The class's type
  */
 export interface CompactSerializer<C> {
     /**

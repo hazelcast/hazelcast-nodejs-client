@@ -22,6 +22,8 @@ import {GenericRecord} from './GenericRecord';
 
 /**
  * Represents a field that is used when building a {@link GenericRecord}. Every field is associated with a {@link FieldKind}.
+ *
+ * @param T The field's corresponding type in JavaScript.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Field<T> {

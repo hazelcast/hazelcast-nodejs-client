@@ -43,6 +43,7 @@ export interface CompactGenericRecord extends GenericRecord {
 }
 
 /**
+ * Represents a deserialized compact generic record. This class is what user gets.
  * @internal
  */
 export class CompactGenericRecordImpl implements CompactGenericRecord {

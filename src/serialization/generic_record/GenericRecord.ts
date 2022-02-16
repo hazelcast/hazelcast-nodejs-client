@@ -51,7 +51,7 @@ export interface GenericRecord {
     getFieldKind(fieldName: string): FieldKind;
 
     /**
-     * Returns true if field exists in the definition of the class. Note that returns true even if the field is null.
+     * Returns true if field exists in the definition of the class. Note that returns true even if the field is `null`.
      * @param fieldName the name of the field
      */
     hasField(fieldName: string): boolean;
