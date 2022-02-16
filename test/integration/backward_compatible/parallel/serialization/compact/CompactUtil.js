@@ -22,7 +22,7 @@ const {
     BigDecimal, LocalTime, LocalDate, LocalDateTime, OffsetDateTime, FieldKind, GenericRecords
 } = require('../../../../../../lib');
 const { FieldOperations } = require('../../../../../../lib/serialization/generic_record/FieldOperations');
-const Fields = require('../../../../../../lib/serialization/generic_record/Field');
+const Fields = require('../../../../../../lib/serialization/generic_record/Fields');
 const { SchemaNotReplicatedError } = require('../../../../../../lib/core/HazelcastError');
 
 const mimicSchemaReplication = (serializationService1, serializationService2) => {

@@ -282,6 +282,9 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         const clonedValues = Util.deepClone(this.values);
 
         for (const fieldName in fieldsToUpdate) {
+            if (!this.hasField(fieldName)) {
+                throw RangeError(`Generic to be cloned does not have a field with name ${fieldName}`);
+            }
             clonedValues[fieldName] = fieldsToUpdate[fieldName];
         }
 

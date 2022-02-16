@@ -55,7 +55,7 @@ const testIntRange = (invalidValueFn, validValueFn) => {
     }
 };
 
-describe('GenericRecordTest', function () {
+describe('CompactGenericRecordTest', function () {
     it('toString should produce valid JSON string', async function() {
         const serializationService = createSerializationService(
             [new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]
@@ -167,6 +167,12 @@ describe('GenericRecordTest', function () {
                 }, {foo: 12})).should.throw(TypeError, 'bar');
             });
 
+            it('should not throw error if values have extra fields', function () {
+                (() => GenericRecords.compact('foo', {
+                    foo: Fields.int32
+                }, {foo: 12, bar: 122})).should.not.throw();
+            });
+
             it('should throw RangeError if provided integer is out of range and should not otherwise', function () {
                 testIntRange((field, invalidValue) => {
                     (() => {
@@ -254,14 +260,50 @@ describe('GenericRecordTest', function () {
                 }, (field, validValue) => {
                     (() => {
                         GenericRecords.compact('typeName', {
-                                foo: field
+                                    foo: field
                         }, {foo: 0}).clone({foo: validValue});
                     }).should.not.throw();
                 }
                 );
             });
 
-            it('should throw error if wrong type of replacement value is given, should not otherwise', function () {
+            it('should throw RangeError if unexistent typename\'s replacement value is given', function() {
+                for (const value of Object.values(validationTestParams)) {
+                    const validValues = value.values[0];
+                    const field = value.field;
+                    const record = GenericRecords.compact('typeName', {
+                        foo: field
+                    }, {foo: validValues[0]});
+                    const fieldKindName = FieldKind[field.kind];
+
+                    validValues.forEach(validValue => {
+                        try {
+                            record.clone({ foobar: validValue });
+                        } catch (e) {
+                            // This is for excluding RangeErrors that happens
+                            // because of using a single number array for all integer types
+                            if (e instanceof RangeError &&
+                                 e.message.includes('Generic to be cloned does not have a field with name')) {
+                                return;
+                            }
+                        }
+
+                        const validValueStr = JSON.stringify(validValue, (key, value) =>
+                            typeof value === 'bigint'
+                                ? 'BigInt: ' + value.toString()
+                                : value // return everything else unchanged
+                        );
+
+                        (() => record.clone({
+                            foo: validValue
+                        })).should.not.throw(undefined, undefined,
+                            `Using valid value ${validValueStr} with ${fieldKindName}`+
+                            ' must have thrown, but it did not.');
+                    });
+                }
+            });
+
+            it('should throw TypeError if wrong type of replacement value is given, should not otherwise', function () {
                 for (const value of Object.values(validationTestParams)) {
                     const [validValues, invalidValues] = value.values;
                     const field = value.field;
@@ -274,6 +316,8 @@ describe('GenericRecordTest', function () {
                         try {
                             record.clone({ foo: invalidValue });
                         } catch (e) {
+                            // This is for excluding RangeErrors that happens
+                            // because of using a single number array for all integer types
                             if (e instanceof RangeError &&
                                  e.message.includes('Generic record field validation error: Expected a number in range')) {
                                 return;
@@ -297,6 +341,8 @@ describe('GenericRecordTest', function () {
                         try {
                             record.clone({ foo: validValue });
                         } catch (e) {
+                            // This is for excluding RangeErrors that happens
+                            // because of using a single number array for all integer types
                             if (e instanceof RangeError &&
                                  e.message.includes('Generic record field validation error: Expected a number in range')) {
                                 return;
@@ -313,7 +359,7 @@ describe('GenericRecordTest', function () {
                             foo: validValue
                         })).should.not.throw(undefined, undefined,
                             `Using valid value ${validValueStr} with ${fieldKindName}`+
-                            ' must have thrown, but it did not.');
+                            ' should not throw, but it did.');
                     });
 
                     (() => record.clone()).should.not.throw();
