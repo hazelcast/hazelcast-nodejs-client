@@ -1,4 +1,3 @@
-import { SerializationService } from './../serialization/SerializationService';
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -35,6 +34,7 @@ import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {ClientLocalBackupListenerCodec} from '../codec/ClientLocalBackupListenerCodec';
 import {EXCEPTION_MESSAGE_TYPE} from '../codec/builtin/ErrorsCodec';
 import {PartitionServiceImpl} from '../PartitionService';
+import {SerializationService} from './../serialization/SerializationService';
 import {
     scheduleWithRepetition,
     cancelRepetitionTask,
@@ -49,7 +49,7 @@ import {LifecycleService} from '../LifecycleService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import * as Long from 'long';
 import {SchemaService} from '../serialization/compact/SchemaService';
-import { Schema } from '../serialization/compact/Schema';
+import {Schema} from '../serialization/compact/Schema';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -130,7 +130,8 @@ export class Invocation {
     eventHandler: (clientMessage: ClientMessage) => any;
 
     /**
-     * Handler is responsible for handling the client message and return the object user expects.
+     * Handler is responsible for handling the client message and return the object user expects. The default value
+     * is the identity function which returns the clientMessage itself. If you need clientMessage you can use that.
      */
     handler: (clientMessage: ClientMessage) => any = x => x;
 
@@ -224,12 +225,12 @@ export class Invocation {
 
     complete(clientMessage: ClientMessage): void {
         /**
-         * The following is a part eager deserialization that is needed for compact serialization. In
-         * eager deserialization, invocations have handlers that are called in {@link complete}.
+         * The following is a part of eager deserialization that is needed for compact serialization. In
+         * eager deserialization invocations have handlers that are called in {@link complete}.
          * This invocation handler usually includes toObject calls and as seen below it is put
-         * into a try/catch block. If it throws SchemaNotFoundError we fetch the required schema
-         * and try to call handler again. If the handler is successful, we complete the invocation.
-         * If another exception is thrown we complete the invocation with an error.
+         * into a try/catch block because {@link CompactStreamSerializer} might throw {@link SchemaNotFoundError}.
+         * If it throws, we fetch the required schema and try to call handler again. If the handler is successful,
+         * we complete the invocation. If another exception is thrown we complete the invocation with an error.
          */
         try {
             const result = this.handler(clientMessage);
@@ -296,6 +297,7 @@ export class InvocationService {
 
     constructor(
         clientConfig: ClientConfig,
+        // not private since invocations needs access to this
         readonly logger: ILogger,
         private readonly partitionService: PartitionServiceImpl,
         private readonly errorFactory: ClientErrorFactory,
