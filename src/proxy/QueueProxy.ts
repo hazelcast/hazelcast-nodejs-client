@@ -57,7 +57,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     addAll(items: E[]): Promise<boolean> {
-        let rawList;
+        let rawList: Data[];
         try {
             rawList = this.serializeList(items);
         } catch (e) {
@@ -99,7 +99,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     contains(item: E): Promise<boolean> {
-        let itemData;
+        let itemData: Data;
         try {
             itemData = this.toData(item);
         } catch (e) {
@@ -113,7 +113,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     containsAll(items: E[]): Promise<boolean> {
-        let rawItems;
+        let rawItems: Data[];
         try {
             rawItems = this.serializeList(items);
         } catch (e) {
@@ -146,7 +146,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     offer(item: E, time = 0): Promise<boolean> {
-        let itemData;
+        let itemData: Data;
         try {
             itemData = this.toData(item);
         } catch (e) {
@@ -173,7 +173,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     put(item: E): Promise<void> {
-        let itemData;
+        let itemData: Data;
         try {
             itemData = this.toData(item);
         } catch (e) {
@@ -190,7 +190,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     remove(item: E): Promise<boolean> {
-        let itemData;
+        let itemData: Data;
         try {
             itemData = this.toData(item);
         } catch (e) {
@@ -204,7 +204,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     removeAll(items: E[]): Promise<boolean> {
-        let rawItems;
+        let rawItems: Data[];
         try {
             rawItems = this.serializeList(items);
         } catch (e) {
@@ -222,7 +222,7 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
     }
 
     retainAll(items: E[]): Promise<boolean> {
-        let rawItems;
+        let rawItems: Data[];
         try {
             rawItems = this.serializeList(items);
         } catch (e) {

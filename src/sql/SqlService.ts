@@ -16,7 +16,7 @@
 import {SqlResult, SqlResultImpl} from './SqlResult';
 import {ConnectionManager} from '../network/ConnectionManager';
 import {SqlExpectedResultType, SqlStatement, SqlStatementOptions} from './SqlStatement';
-import {HazelcastSqlException, IllegalArgumentError, SchemaNotReplicatedError} from '../core';
+import {HazelcastSqlException, IllegalArgumentError, SchemaNotReplicatedError, UUID} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
 import {SqlQueryId} from './SqlQueryId';
 import {SerializationService} from '../serialization/SerializationService';
@@ -224,7 +224,7 @@ export class SqlServiceImpl implements SqlService {
     }
 
     toHazelcastSqlException(err: Error, message: string = err.message): HazelcastSqlException {
-        let originatingMemberId;
+        let originatingMemberId: UUID;
         if (err instanceof SqlError) {
             originatingMemberId = err.originatingMemberId;
         } else {
@@ -272,7 +272,7 @@ export class SqlServiceImpl implements SqlService {
         }
 
         try {
-            let serializedParams;
+            let serializedParams: Data[];
             if (Array.isArray(sqlStatement.params)) { // params can be undefined
                 serializedParams = new Array(sqlStatement.params.length);
                 for (let i = 0; i < sqlStatement.params.length; i++) {

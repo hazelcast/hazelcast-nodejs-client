@@ -63,7 +63,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         private readonly typeName: string | null
     ) {
         const numberOfVariableLengthFields = schema.numberVarSizeFields;
-        let finalPosition;
+        let finalPosition: number;
         if (numberOfVariableLengthFields !== 0) {
             const dataLength = input.readInt();
             this.dataStartPosition = this.input.position();

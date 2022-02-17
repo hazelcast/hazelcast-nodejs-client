@@ -26,6 +26,7 @@ import {AtomicRefContainsCodec} from '../../codec/AtomicRefContainsCodec';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
 import {SchemaNotReplicatedError} from '../../core/HazelcastError';
+import {Data} from '../../serialization/Data';
 
 
 /** @internal */
@@ -49,23 +50,24 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
     }
 
     compareAndSet(expect: E, update: E): Promise<boolean> {
+        let expectedData: Data, newData: Data;
         try {
-            const expectedData = this.toData(expect);
-            const newData = this.toData(update);
-            return this.encodeInvokeOnRandomTarget(
-                AtomicRefCompareAndSetCodec,
-                AtomicRefCompareAndSetCodec.decodeResponse,
-                this.groupId,
-                this.objectName,
-                expectedData,
-                newData
-            );
+            expectedData = this.toData(expect);
+            newData = this.toData(update);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.compareAndSet(expect, update));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvokeOnRandomTarget(
+            AtomicRefCompareAndSetCodec,
+            AtomicRefCompareAndSetCodec.decodeResponse,
+            this.groupId,
+            this.objectName,
+            expectedData,
+            newData
+        );
     }
 
     get(): Promise<E> {
@@ -81,7 +83,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
     }
 
     set(newValue: E): Promise<void> {
-        let newData;
+        let newData: Data;
         try {
             newData = this.toData(newValue);
         } catch (e) {
@@ -102,7 +104,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
     }
 
     getAndSet(newValue: E): Promise<E> {
-        let newData;
+        let newData: Data;
         try {
             newData = this.toData(newValue);
         } catch (e) {
@@ -134,7 +136,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
     }
 
     contains(value: E): Promise<boolean> {
-        let valueData;
+        let valueData: Data;
         try {
             valueData = this.toData(value);
         } catch (e) {

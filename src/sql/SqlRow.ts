@@ -61,7 +61,7 @@ export class SqlRowImpl implements SqlRow {
     }
 
     getObject<T>(columnNameOrIndex: string | number): T {
-        let columnIndex;
+        let columnIndex: number;
         if (typeof columnNameOrIndex === 'number') {
             columnIndex = columnNameOrIndex;
         } else if (typeof columnNameOrIndex === 'string') {

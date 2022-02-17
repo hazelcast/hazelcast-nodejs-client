@@ -179,39 +179,45 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
     }
 
     set(index: number, element: E): Promise<E> {
+        let elementData: Data;
         try {
-            return this.encodeInvoke(ListSetCodec, (clientMessage) => {
-                const response = ListSetCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            }, index, this.toData(element));
+            elementData = this.toData(element)
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.set(index, element));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvoke(ListSetCodec, (clientMessage) => {
+            const response = ListSetCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, index, elementData);
     }
 
     indexOf(element: E): Promise<number> {
+        let elementData: Data;
         try {
-            return this.encodeInvoke(ListIndexOfCodec, ListIndexOfCodec.decodeResponse, this.toData(element));
+            elementData = this.toData(element)
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.indexOf(element));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvoke(ListIndexOfCodec, ListIndexOfCodec.decodeResponse, elementData);
     }
 
     lastIndexOf(element: E): Promise<number> {
+        let elementData: Data;
         try {
-            return this.encodeInvoke(ListLastIndexOfCodec, ListLastIndexOfCodec.decodeResponse, this.toData(element));
+            elementData = this.toData(element)
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
-                return this.registerSchema(e.schema, e.clazz).then(() => this.indexOf(element));
+                return this.registerSchema(e.schema, e.clazz).then(() => this.lastIndexOf(element));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvoke(ListLastIndexOfCodec, ListLastIndexOfCodec.decodeResponse, elementData);
     }
 
     size(): Promise<number> {

@@ -35,11 +35,11 @@ export function deepClone(obj: any) {
     if (obj instanceof Long) {
         return new Long(obj.low, obj.high, obj.unsigned);
     }
-    
+
     if (obj instanceof LocalDate) {
         return new LocalDate(obj.year, obj.month, obj.date);
     }
-    
+
     if (obj instanceof LocalTime) {
         return new LocalTime(obj.hour, obj.minute, obj.second, obj.nano);
     }
@@ -56,7 +56,7 @@ export function deepClone(obj: any) {
         return new BigDecimal(obj.unscaledValue, obj.scale);
     }
 
-    let v;
+    let v: any;
     const cloned: any = Array.isArray(obj) ? [] : {};
     for (const k in obj) {
 

@@ -674,7 +674,7 @@ describe('ConfigBuilderValidationTest', function () {
                 }).build()).to.throw(InvalidConfigurationError, /(not an array|Invalid custom serializer)/);
             }
 
-            const validCustomSerializers = [
+            const validCompactSerializers = [
                 {
                     id: 1,
                     read: () => {},
@@ -689,7 +689,63 @@ describe('ConfigBuilderValidationTest', function () {
 
             expect(() => new ConfigBuilder({
                 serialization: {
-                    customSerializers: validCustomSerializers
+                    customSerializers: validCompactSerializers
+                }
+            }).build()).not.to.throw();
+        });
+
+        it('should validate compact serializers', function () {
+            const invalidCompactSerializersArray = [
+                () => {}, 1, undefined, '1', { read: () => {}, write: () => {}, hzClass: class {}}, [{
+                    read: () => {},
+                    write: () => {}
+                }],
+                [{
+                    write: () => {}
+                }],
+                [{
+                    read: () => {}
+                }]
+            ];
+
+            for (const invalidCompactSerializers of invalidCompactSerializersArray) {
+                expect(() => new ConfigBuilder({
+                    serialization: {
+                        compactSerializers: invalidCompactSerializers
+                    }
+                }).build()).to.throw(InvalidConfigurationError, /(not an array|Invalid compact serializer)/);
+            }
+
+            const validCompactSerializers = [
+                {
+                    hzClass: class A {},
+                    read: () => {},
+                    write: () => {}
+                },
+                {
+                    hzTypeName: 's',
+                    hzClass: class A {},
+                    read: () => {},
+                    write: () => {}
+                },
+                {
+                    hzClass: class A {},
+                    prop: 1,
+                    read: () => {},
+                    write: () => {}
+                },
+                {
+                    prop: 1,
+                    hzTypeName: 's',
+                    hzClass: class A {},
+                    read: () => {},
+                    write: () => {}
+                }
+            ];
+
+            expect(() => new ConfigBuilder({
+                serialization: {
+                    compactSerializers: validCompactSerializers
                 }
             }).build()).not.to.throw();
         });

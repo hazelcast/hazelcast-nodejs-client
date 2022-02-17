@@ -40,25 +40,29 @@ import {SchemaNotReplicatedError, UUID} from '../core';
 export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
     add(entry: E): Promise<boolean> {
+        let entryData: Data;
         try {
-            return this.encodeInvoke(SetAddCodec, SetAddCodec.decodeResponse, this.toData(entry));
+            entryData = this.toData(entry);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.add(entry));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvoke(SetAddCodec, SetAddCodec.decodeResponse, entryData);
     }
 
     addAll(items: E[]): Promise<boolean> {
+        let itemsData: Data[];
         try {
-            return this.encodeInvoke(SetAddAllCodec, SetAddAllCodec.decodeResponse, this.serializeList(items));
+            itemsData = this.serializeList(items);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.addAll(items));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvoke(SetAddAllCodec, SetAddAllCodec.decodeResponse, itemsData);
     }
 
     toArray(): Promise<E[]> {
@@ -73,25 +77,29 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
     }
 
     contains(entry: E): Promise<boolean> {
+        let entryData: Data;
         try {
-            return this.encodeInvoke(SetContainsCodec, SetContainsCodec.decodeResponse, this.toData(entry));
+            entryData = this.toData(entry);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.contains(entry));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvoke(SetContainsCodec, SetContainsCodec.decodeResponse, entryData);
     }
 
     containsAll(items: E[]): Promise<boolean> {
+        let itemsData: Data[];
         try {
-            return this.encodeInvoke(SetContainsAllCodec, SetContainsAllCodec.decodeResponse, this.serializeList(items));
+            itemsData = this.serializeList(items);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.containsAll(items));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvoke(SetContainsAllCodec, SetContainsAllCodec.decodeResponse, itemsData);
     }
 
     isEmpty(): Promise<boolean> {
@@ -99,41 +107,46 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
     }
 
     remove(entry: E): Promise<boolean> {
+        let entryData: Data;
         try {
-            return this.encodeInvoke(SetRemoveCodec, SetRemoveCodec.decodeResponse, this.toData(entry));
+            entryData = this.toData(entry);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.remove(entry));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvoke(SetRemoveCodec, SetRemoveCodec.decodeResponse, entryData);
     }
 
     removeAll(items: E[]): Promise<boolean> {
+        let itemsData: Data[];
         try {
-            return this.encodeInvoke(
-                SetCompareAndRemoveAllCodec, SetCompareAndRemoveAllCodec.decodeResponse, this.serializeList(items)
-            );
+            itemsData = this.serializeList(items);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.removeAll(items));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvoke(
+            SetCompareAndRemoveAllCodec, SetCompareAndRemoveAllCodec.decodeResponse, itemsData
+        );
     }
 
     retainAll(items: E[]): Promise<boolean> {
+        let itemsData: Data[];
         try {
-            return this.encodeInvoke(
-                SetCompareAndRetainAllCodec, SetCompareAndRetainAllCodec.decodeResponse, this.serializeList(items)
-            );
+            itemsData = this.serializeList(items);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.retainAll(items));
             }
             return Promise.reject(e);
         }
-
+        return this.encodeInvoke(
+            SetCompareAndRetainAllCodec, SetCompareAndRetainAllCodec.decodeResponse, itemsData
+        );
     }
 
     size(): Promise<number> {

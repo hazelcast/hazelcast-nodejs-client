@@ -92,20 +92,21 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     put(key: K, value: V): Promise<boolean> {
+        let keyData: Data, valueData: Data;
         try {
-            const keyData = this.toData(key);
-            const valueData = this.toData(value);
-            return this.encodeInvokeOnKey(MultiMapPutCodec, keyData, MultiMapPutCodec.decodeResponse, keyData, valueData, 1);
+            keyData = this.toData(key);
+            valueData = this.toData(value);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.put(key, value));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvokeOnKey(MultiMapPutCodec, keyData, MultiMapPutCodec.decodeResponse, keyData, valueData, 1);
     }
 
     get(key: K): Promise<ReadOnlyLazyList<V>> {
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {
@@ -121,33 +122,35 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     remove(key: K, value: V): Promise<boolean> {
+        let keyData: Data, valueData: Data;
         try {
-            const keyData = this.toData(key);
-            const valueData = this.toData(value);
-            return this.encodeInvokeOnKey(
-                MultiMapRemoveEntryCodec, keyData, MultiMapRemoveEntryCodec.decodeResponse, keyData, valueData, 1
-            );
+            keyData = this.toData(key);
+            valueData = this.toData(value);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.remove(key, value));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvokeOnKey(
+            MultiMapRemoveEntryCodec, keyData, MultiMapRemoveEntryCodec.decodeResponse, keyData, valueData, 1
+        );
     }
 
     removeAll(key: K): Promise<ReadOnlyLazyList<V>> {
+        let keyData: Data;
         try {
-            const keyData = this.toData(key);
-            return this.encodeInvokeOnKey(MultiMapRemoveCodec, keyData, (clientMessage) => {
-                const response = MultiMapRemoveCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(this.deserializeList(response));
-            }, keyData, 1);
+            keyData = this.toData(key);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.removeAll(key));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvokeOnKey(MultiMapRemoveCodec, keyData, (clientMessage) => {
+            const response = MultiMapRemoveCodec.decodeResponse(clientMessage);
+            return new ReadOnlyLazyList<V>(this.deserializeList(response));
+        }, keyData, 1);
     }
 
     keySet(): Promise<K[]> {
@@ -172,7 +175,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     containsKey(key: K): Promise<boolean> {
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {
@@ -185,7 +188,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     containsValue(value: V): Promise<boolean> {
-        let valueData;
+        let valueData: Data;
         try {
             valueData = this.toData(value);
         } catch (e) {
@@ -198,18 +201,19 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     containsEntry(key: K, value: V): Promise<boolean> {
+        let keyData: Data, valueData: Data;
         try {
-            const keyData = this.toData(key);
-            const valueData = this.toData(value);
-            return this.encodeInvokeOnKey(
-                MultiMapContainsEntryCodec, keyData, MultiMapContainsEntryCodec.decodeResponse, keyData, valueData, 1
-            );
+            keyData = this.toData(key);
+            valueData = this.toData(value);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.containsEntry(key, value));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvokeOnKey(
+            MultiMapContainsEntryCodec, keyData, MultiMapContainsEntryCodec.decodeResponse, keyData, valueData, 1
+        );
     }
 
     size(): Promise<number> {
@@ -221,7 +225,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     valueCount(key: K): Promise<number> {
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {
@@ -274,7 +278,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         };
 
         if (key) {
-            let keyData;
+            let keyData: Data;
             try {
                 keyData = this.toData(key);
             } catch (e) {
@@ -304,7 +308,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     lock(key: K, leaseMillis = -1): Promise<void> {
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {
@@ -319,7 +323,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     isLocked(key: K): Promise<boolean> {
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {
@@ -332,7 +336,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     tryLock(key: K, timeoutMillis = 0, leaseMillis = -1): Promise<boolean> {
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {
@@ -353,7 +357,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     unlock(key: K): Promise<void> {
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {
@@ -366,7 +370,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     forceUnlock(key: K): Promise<void> {
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {

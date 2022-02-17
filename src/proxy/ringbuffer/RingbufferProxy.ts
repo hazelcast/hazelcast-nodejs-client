@@ -1,18 +1,18 @@
 /*
-* Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
+ * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 /** @ignore *//** */
 
 import * as Long from 'long';
@@ -31,6 +31,7 @@ import {PartitionSpecificProxy} from '../PartitionSpecificProxy';
 import {LazyReadResultSet} from './LazyReadResultSet';
 import {ReadResultSet} from '../../core';
 import {SchemaNotReplicatedError} from './../../core/HazelcastError';
+import {Data} from '../../serialization/Data';
 
 /** @internal */
 export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbuffer<E> {
@@ -58,20 +59,22 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
     }
 
     add(item: E, overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
+        let itemData: Data;
         try {
-            const policyId = overflowPolicyToId(overflowPolicy);
-            return this.encodeInvoke(RingbufferAddCodec, RingbufferAddCodec.decodeResponse, policyId, this.toData(item));
+            itemData = this.toData(item);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.add(item, overflowPolicy));
             }
             return Promise.reject(e);
         }
+        const policyId = overflowPolicyToId(overflowPolicy);
+        return this.encodeInvoke(RingbufferAddCodec, RingbufferAddCodec.decodeResponse, policyId, itemData);
     }
 
     addAll(items: E[], overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
         const policyId = overflowPolicyToId(overflowPolicy);
-        let dataList;
+        let dataList: Data[];
         try {
             dataList = this.serializeList(items);
         } catch (e) {

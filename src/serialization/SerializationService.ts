@@ -25,7 +25,7 @@ import {
 } from '../proxy/topic/ReliableTopicMessage';
 import * as Util from '../util/Util';
 import {Data, DataInput, DataOutput} from './Data';
-import {Serializer, IdentifiedDataSerializableFactory, AsyncSerializer} from './Serializable';
+import {Serializer, IdentifiedDataSerializableFactory} from './Serializable';
 import {
     ArrayListSerializer,
     BigDecimalSerializer,
@@ -98,19 +98,6 @@ const defaultPartitionStrategy = (obj: any): number => {
         return obj.getPartitionHash();
     }
 }
-
-/**
- * Always returns itself on property access and function calls.
- * @internal
- */
-const magicObject: any = new Proxy(() => {}, {
-    get() {
-        return magicObject;
-    },
-    apply() {
-        return magicObject;
-    }
-});
 
 /** @internal */
 export class SerializationServiceV1 implements SerializationService {
@@ -222,7 +209,7 @@ export class SerializationServiceV1 implements SerializationService {
      * @param obj
      * @returns
      */
-    findSerializerFor(obj: any): Serializer | AsyncSerializer {
+    findSerializerFor(obj: any): Serializer {
         if (obj === undefined) {
             throw new RangeError('undefined cannot be serialized.');
         }

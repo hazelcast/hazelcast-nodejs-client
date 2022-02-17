@@ -504,6 +504,11 @@ export class ConfigBuilder {
                     `Invalid compact serializer given: ${serializer}. Expected a 'hzClass' property that is a function.`
                 );
             }
+            if (serializer.hasOwnProperty('hzTypeName') && typeof serializer.hzTypeName !== 'string') {
+                throw new RangeError(
+                    `Invalid compact serializer given: ${serializer}. Expected a 'hzTypeName' property that is a string.`
+                );
+            }
             if (typeof serializer.read !== 'function') {
                 throw new RangeError(
                     `Invalid compact serializer given: ${serializer}. Expected a 'read' property that is function.`

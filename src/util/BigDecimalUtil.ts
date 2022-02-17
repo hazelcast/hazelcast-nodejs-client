@@ -52,7 +52,7 @@ export function bigIntToBuffer(big: BigInt): Buffer {
     // Using toString(16) is problematic since it does not return two's complement
 
     const isNegative = big < BigInt(0);
-    let hex;
+    let hex: string;
 
     // for getting two's complement of it
     if (isNegative) {

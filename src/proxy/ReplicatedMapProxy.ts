@@ -61,19 +61,20 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         assertNotNull(key);
         assertNotNull(value);
 
+        let valueData: Data, keyData: Data;
         try {
-            const valueData: Data = this.toData(value);
-            const keyData: Data = this.toData(key);
-            return this.encodeInvokeOnKey(ReplicatedMapPutCodec, keyData, (clientMessage) => {
-                const response = ReplicatedMapPutCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            }, keyData, valueData, ttl);
+            valueData = this.toData(value);
+            keyData = this.toData(key);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.put(key, value, ttl));
             }
             return Promise.reject(e);
         }
+        return this.encodeInvokeOnKey(ReplicatedMapPutCodec, keyData, (clientMessage) => {
+            const response = ReplicatedMapPutCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, keyData, valueData, ttl);
     }
 
     clear(): Promise<void> {
@@ -82,7 +83,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
 
     get(key: K): Promise<V> {
         assertNotNull(key);
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {
@@ -101,7 +102,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     containsKey(key: K): Promise<boolean> {
         assertNotNull(key);
 
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {
@@ -118,7 +119,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     containsValue(value: V): Promise<boolean> {
         assertNotNull(value);
 
-        let valueData;
+        let valueData: Data;
         try {
             valueData = this.toData(value);
         } catch (e) {
@@ -141,7 +142,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     remove(key: K): Promise<V> {
         assertNotNull(key);
 
-        let keyData;
+        let keyData: Data;
         try {
             keyData = this.toData(key);
         } catch (e) {
@@ -162,16 +163,17 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         const entries: Array<[Data, Data]> = [];
         for (pairId in pairs) {
             pair = pairs[pairId];
+            let keyData: Data, valueData: Data;
             try {
-                const keyData = this.toData(pair[0]);
-                const valueData = this.toData(pair[1]);
-                entries.push([keyData, valueData]);
+                keyData = this.toData(pair[0]);
+                valueData = this.toData(pair[1]);
             } catch (e) {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.putAll(pairs));
                 }
                 return Promise.reject(e);
             }
+            entries.push([keyData, valueData]);
         }
 
         return this.encodeInvokeOnRandomTarget(ReplicatedMapPutAllCodec, () => {}, entries);
