@@ -45,11 +45,6 @@ export interface ISchemaService {
      * Puts the schema with the given id to the cluster.
      */
     put(schema: Schema): Promise<void>;
-
-    /**
-     * Puts the schema to only the local registry of the schema service.
-     */
-    putLocal(schema: Schema): void;
 }
 
 /**
@@ -111,10 +106,6 @@ export class SchemaService implements ISchemaService {
             this.schemas.set(schemaId.toString(), schema);
             return;
         }
-    }
-
-    putLocal(schema: Schema): void {
-        this.putIfAbsent(schema);
     }
 
     sendAllSchemas() : Promise<void> {
