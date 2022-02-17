@@ -351,6 +351,8 @@ describe('CompactAPISerializationTest', function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 compactSerializerUsed = false;
                 await obj.lock(car1);
+                // Clear schema retrieved via lock()
+                client.schemaService.schemas.clear();
                 await obj.unlock(car1);
                 compactSerializerUsed.should.be.true;
             }
@@ -465,6 +467,8 @@ describe('CompactAPISerializationTest', function () {
                     new CompactUtil.EmployeeDTO(2, Long.fromNumber(2)));
                 await obj.set(new CompactUtil.EmployeeDTO(3, Long.fromNumber(3)),
                     new CompactUtil.EmployeeDTO(3, Long.fromNumber(3)));
+                // Clear schema retrieved via set()
+                client.schemaService.schemas.clear();
                 await obj.entrySetWithPredicate(pagingPredicate);
                 pagingPredicate.nextPage();
                 await obj.entrySetWithPredicate(pagingPredicate);
@@ -484,6 +488,8 @@ describe('CompactAPISerializationTest', function () {
                 await obj.set(1, new Car('1', 1));
                 await obj.set(2, new Car('2', 2));
                 await obj.set(3, new Car('3', 3));
+                // Clear schema retrieved via set()
+                client.schemaService.schemas.clear();
                 await obj.keySetWithPredicate(pagingPredicate);
                 pagingPredicate.nextPage();
                 await obj.keySetWithPredicate(pagingPredicate);
@@ -500,6 +506,8 @@ describe('CompactAPISerializationTest', function () {
                 await obj.set(new Car('1', 1), 1);
                 await obj.set(new Car('2', 2), 2);
                 await obj.set(new Car('3', 3), 3);
+                // Clear schema retrieved via set()
+                client.schemaService.schemas.clear();
                 await obj.valuesWithPredicate(pagingPredicate);
                 pagingPredicate.nextPage();
                 await obj.valuesWithPredicate(pagingPredicate);
@@ -557,6 +565,8 @@ describe('CompactAPISerializationTest', function () {
 
         it('lock/unlock', async function () {
             await multimap.lock(car1);
+            // Clear schema retrieved via lock()
+            client.schemaService.schemas.clear();
             await multimap.unlock(car1);
         });
 
@@ -650,6 +660,8 @@ describe('CompactAPISerializationTest', function () {
 
         it('set', async function () {
             await list.add(car1);
+            // Clear schema retrieved via add()
+            client.schemaService.schemas.clear();
             await list.set(0, car1);
         });
     });

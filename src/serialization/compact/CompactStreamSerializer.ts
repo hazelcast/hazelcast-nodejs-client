@@ -89,13 +89,10 @@ export class CompactStreamSerializer {
     }
 
     write(output: ObjectDataOutput, object: any, throwIfSchemaNotReplicated = true): void {
-        if (!(output instanceof PositionalObjectDataOutput)) {
-            throw new HazelcastSerializationError('Expected a positional object data output.')
-        }
         if (object instanceof CompactGenericRecordImpl) {
-            this.writeGenericRecord(output, object, throwIfSchemaNotReplicated);
+            this.writeGenericRecord(output as PositionalObjectDataOutput, object, throwIfSchemaNotReplicated);
         } else {
-            this.writeObject(output, object, throwIfSchemaNotReplicated);
+            this.writeObject(output as PositionalObjectDataOutput, object, throwIfSchemaNotReplicated);
         }
     }
 
@@ -114,10 +111,6 @@ export class CompactStreamSerializer {
         } else {
             this.typeNameToSerializersMap.set(serializer.hzClass.name, serializer);
         }
-    }
-
-    putToSchemaService(schema: Schema): void {
-        this.schemaService.putLocal(schema);
     }
 
     writeSchema(output: PositionalObjectDataOutput, schema: Schema) {

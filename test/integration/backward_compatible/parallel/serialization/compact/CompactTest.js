@@ -186,7 +186,7 @@ describe('CompactTest', function () {
         );
     });
 
-    [['small', 1], ['medium', 20], ['large', 42]].forEach(([size, elementCount]) => {
+    [['small', 1], ['medium', 20], ['large', 650]].forEach(([size, elementCount]) => {
         it(`should read and write ${size} object`, async function () {
             const referenceObjects = {
                 [FieldKind[FieldKind.ARRAY_OF_STRING]]: {value: new Array(elementCount).fill(0)

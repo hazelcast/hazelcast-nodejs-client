@@ -196,15 +196,15 @@ export class SerializationServiceV1 implements SerializationService {
     /**
      * Serialization precedence
      *  1. NULL
-     *  2. DataSerializable
-     *  3. Portable
-     *  4. Default Types
+     *  2. Compact
+     *  3. DataSerializable
+     *  4. Portable
+     *  5. Default Types
      *      * Byte, Boolean, Character, Short, Integer, Long, Float, Double, String
      *      * Array of [Byte, Boolean, Character, Short, Integer, Long, Float, Double, String]
      *      * Java types [Date, BigInteger, BigDecimal, Class, Enum]
-     *  5. Custom serializers
-     *  6. Global Serializer
-     *  7. Compact Serializer
+     *  6. Custom serializers
+     *  7. Global Serializer
      *  8. Fallback (JSON)
      * @param obj
      * @returns
@@ -225,9 +225,6 @@ export class SerializationServiceV1 implements SerializationService {
         }
         if (serializer === null) {
             serializer = this.lookupGlobalSerializer();
-        }
-        if (serializer === null && SerializationServiceV1.isCompactSerializable(obj)) {
-            serializer = this.findSerializerByName('!compact', false);
         }
         if (serializer === null) {
             serializer = this.findSerializerByName('!json', false);
@@ -389,7 +386,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
         const typeId = candidate[idProp];
         if (!Number.isInteger(typeId) || typeId < 1) {
-            throw new TypeError('Custom serializer should have its typeId greater than or equal to 1.');
+            throw new TypeError('Custom serializer should have its "id" greater than or equal to 1.');
         }
     }
 

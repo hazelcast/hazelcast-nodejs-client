@@ -390,21 +390,16 @@ export class InvocationService {
      * @param connection
      * @param request
      * @param handler Handler is responsible for handling the client message and return the object user expects.
-     * @param eventHandler called with values returned from server for this invocation.
      * @returns a promise that resolves to {@link ClientMessage}
      */
     invokeOnConnection<V>(
         connection: Connection,
         request: ClientMessage,
-        handler: (clientMessage: ClientMessage) => V,
-        eventHandler?: (clientMessage: ClientMessage) => any
+        handler: (clientMessage: ClientMessage) => V
     ): Promise<V> {
         const invocation = new Invocation(this, request);
         invocation.connection = connection;
         invocation.handler = handler;
-        if (eventHandler) {
-            invocation.eventHandler = eventHandler;
-        }
         return this.invoke(invocation);
     }
 
@@ -466,13 +461,9 @@ export class InvocationService {
     }
 
     registerSchema(schema: Schema, clazz: (new (...args: any[]) => any) | undefined): Promise<void> {
-        if (clazz !== undefined) {
-            return this.schemaService.put(schema).then(() => {
-                this.serializationService.registerSchemaToClass(schema, clazz);
-            })
-        } else {
-            return this.schemaService.put(schema);
-        }
+        return this.schemaService.put(schema).then(() => {
+            this.serializationService.registerSchemaToClass(schema, clazz);
+        })
     }
 
     /**

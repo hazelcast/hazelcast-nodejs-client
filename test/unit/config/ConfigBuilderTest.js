@@ -662,7 +662,18 @@ describe('ConfigBuilderValidationTest', function () {
                 }],
                 [{
                     id: 1,
-                    write: () => {}
+                    write: () => {},
+                    read: null
+                }],
+                [{
+                    id: null,
+                    write: () => {},
+                    read: () => {}
+                },
+                {
+                    id: 1,
+                    read: () => {},
+                    write: null
                 }]
             ];
 
