@@ -19,16 +19,12 @@
 * [3. Configuration](#3-configuration)
   * [3.1 Client Properties](#31-client-properties)
 * [4. Serialization](#4-serialization)
-  * [4.1. Compact Serialization](#41-compact-serialization)
-    * [4.1.1. Schema Evolution](#411-schema-evolution)
-    * [4.1.2. Generic Record Representation](#412-generic-record-representation)
-    * [4.1.3. Compact Configuration and Usage](#413-compact-configuration-and-usage)
-  * [4.2. IdentifiedDataSerializable Serialization](#42-identifieddataserializable-serialization)
-  * [4.3. Portable Serialization](#43-portable-serialization)
-    * [4.3.1. Versioning for Portable Serialization](#431-versioning-for-portable-serialization)
-  * [4.4. Custom Serialization](#44-custom-serialization)
-  * [4.5. Global Serialization](#45-global-serialization)
-  * [4.6. JSON Serialization](#46-json-serialization)
+  * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
+  * [4.2. Portable Serialization](#42-portable-serialization)
+    * [4.2.1. Versioning for Portable Serialization](#421-versioning-for-portable-serialization)
+  * [4.3. Custom Serialization](#43-custom-serialization)
+  * [4.4. Global Serialization](#44-global-serialization)
+  * [4.5. JSON Serialization](#45-json-serialization)
 * [5. Setting Up Client Network](#5-setting-up-client-network)
   * [5.1. Providing Member Addresses](#51-providing-member-addresses)
   * [5.2. Setting Smart Routing](#52-setting-smart-routing)
@@ -657,8 +653,7 @@ The following is the list of all client properties in alphabetical order.
 Serialization is the process of converting an object into a stream of bytes to store the object in the memory, a file or
 database, or transmit it through the network. Its main purpose is to save the state of an object in order to be able to
 recreate it when needed. The reverse process is called deserialization. Hazelcast offers you its own native serialization
-methods. You will see these methods throughout this chapter. All serialization methods are listed and compared in
-[this page](https://docs.hazelcast.com/hazelcast/latest/serialization/comparing-interfaces).
+methods. You will see these methods throughout this chapter.
 
 Hazelcast serializes all your objects before sending them to the server. Certain types, like `boolean`, `number`, `string`,
 and `Long`, are serialized natively and you cannot override this behavior. The following table is the conversion of types
@@ -716,201 +711,7 @@ Or, if you want to use your own serialization method, you can use [Custom Serial
 > [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client) or GitHub repository for a required
 > interface.**
 
-## 4.1. Compact Serialization
-
-> **WARNING: Supported in client version 5.1+ and server version 5.0+.**
-
-> **WARNING: This serialization method is in Beta, API can be changed in a breaking way.**
-
-As an enhancement to existing serialization methods, Hazelcast offers a beta version of the compact serialization, with the
-following main features.
-
-* Separates the schema from the data and stores it per type, not per object which results in less memory and bandwidth usage
-compared to other formats
-* Does not require a class to implement an interface or change the source code of the class in any way
-* Supports schema evolution which permits adding or removing fields, or changing the types of fields
-* Platform and language independent
-* Supports partial deserialization of fields, without deserializing the whole objects during queries or indexing
-
-
-Hazelcast achieves these features by having a well-known schema of objects and replicating them across the cluster which enables
-members and clients to fetch schemas they don’t have in their local registries. Each serialized object carries just a schema
-identifier and relies on the schema distribution service or configuration to match identifiers with the actual schema. Once the
-schemas are fetched, they are cached locally on the members and clients so that the next operations that use the schema do not
-incur extra costs.
-
-Schemas help Hazelcast to identify the locations of the fields on the serialized binary data. With this information, Hazelcast
-can deserialize individual fields of the data, without reading the whole binary. This results in a better query and indexing
-performance.
-
-Schemas can evolve freely by adding or removing fields. Even, the types of the fields can be changed. Multiple versions of the
-schema may live in the same cluster and both the old and new readers may read the compatible parts of the data. This feature
-is especially useful in rolling upgrade scenarios.
-
-The Compact serialization does not require any changes in the user classes as it doesn’t need a class to implement a particular
-interface. Serializers might be implemented and registered separately from the classes.
-
-Zero config option is not supported in Node.js client due to technical limitations. You need to register serializers in
-serialization config.
-
-The underlying format of the compact serialized objects is platform and language independent. All clients will have this feature
-in the future.
-
-### 4.1.1 Schema Evolution
-
-Compact serialization permits schemas and classes to evolve by adding or removing fields, or by changing the types of fields.
-More than one version of a class may live in the same cluster and different clients or members might use different versions
-of the class.
-
-Hazelcast handles the versioning internally. So, you don’t have to change anything in the classes or serializers apart from
-the added, removed, or changed fields.
-
-Hazelcast achieves this by identifying each version of the class by a unique fingerprint. Any change in a class results in
-a different fingerprint. Hazelcast uses a 64-bit [Rabin Fingerprint](https://en.wikipedia.org/wiki/Rabin_fingerprint) to
-assign identifiers to schemas, which has an extremely low collision rate.
-
-Different versions of the schema with different identifiers are replicated in the cluster and can be fetched by clients or
-members internally. That allows old readers to read fields of the classes they know when they try to read data serialized
-by a new writer. Similarly, new readers might read fields of the classes available in the data, when they try to read data
-serialized by an old writer.
-
-Assume that the two versions of the following Employee class lives in the cluster.
-
-```js
-class Employee {
-    constructor(id, name) {
-        this.id = id; // int32
-        this.name = name; // string
-    }
-}
-```
-
-```js
-class Employee {
-    constructor(id, name, age) {
-        this.id = id; // int32
-        this.name = name; // string
-        this.age = age; // int64
-    }
-}
-```
-
-When faced with binary data serialized by the new writer, old readers will be able to read the following fields.
-
-```js
-// CompactSerializer's read method
-read(reader) {
-    const id = reader.readInt64("id");
-    const name = reader.readString("name");
-    // The new "age" field is there, but the old reader does not
-    // know anything about it. Hence, it will simply ignore that field.
-    return new Employee(id, name);
-}
-```
-
-When faced with binary data serialized by the old writer, new readers will be able to read the following fields.
-Also, reader methods can take an optional default value to read when there is no such field in the data.
-
-```js
-// CompactSerializer's read method
-read(reader) {
-    const id = reader.readInt64("id");
-    const name = reader.readString("name");
-    // Read the "age" if it exists, or the default value 0.
-    // reader.readInt32("age") would throw if the "age" field
-    // does not exist in data.
-    int age = reader.readInt32("age", 0);
-    return new Employee(id, name, age);
-}
-```
-
-Note that, when an old reader reads data written by an old writer, or a new reader reads a data written by a new writer,
-they will be able to read all fields.
-
-### 4.1.2 Generic Record Representation
-
-Compact serialized objects can also be represented by a GenericRecord. GenericRecord is the representation of some object
-when the client does not have the serializer/configuration to construct it. For example, if you read a compact object and
-there is no CompactSerializer registered for that class, you will receive a GenericRecord. CompactSerializers are responsible
-for both serializing and deserializing class instances.
-
-To create a GenericRecord object in compact serialization format, use the `GenericRecords.compact()` method:
-
-```js
-const fields = {
-    name: Fields.string,
-    age: Fields.int32,
-    id: Fields.int64
-};
-
-const record = GenericRecords.compact('employee', fields, {
-    age: 21,
-    name: "John",
-    id: Long.fromNumber(11)
-});
-
-const anotherRecord = GenericRecords.compact('employee', fields, {
-    age: 19,
-    name: "Jane",
-    id: Long.fromNumber(10)
-});
-```
-
-Fields is the schema for the generic record and can be reused across multiple calls to `GenericRecords.compact()`.
-Values object is the corresponding values for each field.
-
-### 4.1.3 Compact Configuration and Usage
-
-The only configuration you need to make is to register compact serializers. You can do that via
-`serialization.compactSerializers` configuration option. The following is an example of compact configuration:
-
-```js
-'use strict';
-const {Client} = require('hazelcast-client');
-const Long = require('long');
-
-class Employee {
-    constructor(age, id) {
-        this.age = age;
-        this.id = id;
-    }
-}
-
-class EmployeeSerializer {
-    constructor() {
-        this.hzClass = Employee;
-    }
-
-    read(reader) {
-        const age = reader.readInt32('age');
-        const id = reader.readInt64('id');
-        return new Employee(age, id);
-    }
-
-    write(writer, value) {
-        writer.writeInt32('age', value.age);
-        writer.writeInt64('id', value.id);
-    }
-}
-
-async function main() {
-    const client = await Client.newHazelcastClient({
-        serialization: {
-            compactSerializers: [new EmployeeSerializer()]
-        }
-    });
-    const map = await client.getMap('mapName');
-    await map.put(20, new Employee(1, Long.fromNumber(1)));
-
-    const employee = await map.get(20);
-    console.log(employee);
-}
-```
-
-Here, `employee` is an instance of Employee class.
-
-
-## 4.2. IdentifiedDataSerializable Serialization
+## 4.1. IdentifiedDataSerializable Serialization
 
 For a faster serialization of objects, Hazelcast recommends to implement the `IdentifiedDataSerializable` interface. The
 following is an example of an object implementing this interface:
@@ -972,7 +773,7 @@ const cfg = {
 Note that the key used in the `serialization.dataSerializableFactories` option is the same as the `factoryId` that the `Employee`
 object returns.
 
-## 4.3. Portable Serialization
+## 4.2. Portable Serialization
 
 As an alternative to the existing serialization methods, Hazelcast offers portable serialization. To use it, you need to
 implement the `Portable` interface. Portable serialization has the following advantages:
@@ -1052,7 +853,7 @@ const cfg = {
 Note that the ID that the key used in the `serialization.portableFactories` option is the same as the `factoryId` that the
 `Customer` object returns.
 
-### 4.3.1. Versioning for Portable Serialization
+### 4.2.1. Versioning for Portable Serialization
 
 More than one version of the same class may need to be serialized and deserialized. For example, a client may have an older
 version of a class and the member to which it is connected may have a newer version of the same class.
@@ -1131,7 +932,7 @@ old version tries to access a new version object.
 
 If you did not modify a class at all, it works as usual.
 
-## 4.4. Custom Serialization
+## 4.3. Custom Serialization
 
 Hazelcast lets you plug a custom serializer to be used for serialization of objects.
 
@@ -1190,7 +991,7 @@ const cfg ={
 
 From now on, Hazelcast will use `CustomSerializer` to serialize `CustomSerializable` objects.
 
-## 4.5. Global Serialization
+## 4.4. Global Serialization
 
 The global serializer is identical to custom serializers from the implementation perspective. The global serializer is registered
 as a fallback serializer to handle all other objects if a serializer cannot be located for them.
@@ -1234,7 +1035,7 @@ const cfg = {
 };
 ```
 
-## 4.6. JSON Serialization
+## 4.5. JSON Serialization
 
 If the Hazelcast Node.js client cannot find a suitable serializer for an object, it uses `JSON Serialization` by default. With
 `JSON Serialization`, objects are converted to JSON strings and transmitted to the Hazelcast members as such.
@@ -3028,9 +2829,6 @@ for await (const row of sqlResult) {
 
 ### 8.7.7. Lazy SQL Row Deserialization
 
-> **NOTE: SQL rows will be deserialized eagerly - i.e lazy deserialization won't work - after client version 5.1 and above.
-> This is due to a technical limitation of compact serialization.**
-
 Rows in an `SqlResult` are deserialized lazily to allow you to access part of it if there is a value that can't be deserialized.
 
 While executing a query, if you set `SqlStatementOptions.returnRawResult` to `true`, `SqlRow` objects will be returned while
@@ -3067,9 +2865,6 @@ The SQL service supports a set of SQL data types. The table below shows SQL data
 
 See [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client) for how you can use
 `BigDecimal`, `LocalDate`, `LocalTime`, `LocalDateTime` and `OffsetDateTime` classes.
-
-Also check out [SQL data types example](./code_samples/sql-data-types.js) to learn how to use some data types like
-OBJECT(Portable and Compact), VARCHAR and INTEGER.
 
 ### 8.7.9. Casting
 
