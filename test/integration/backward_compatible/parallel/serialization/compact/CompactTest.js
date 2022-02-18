@@ -277,7 +277,7 @@ describe('CompactTest', function () {
                 const map = await putEntry(mapName, +fieldKind, value);
                 const obj = await map.get('key');
                 obj[fieldName].should.be.deep.eq(value);
-            });
+        });
     });
 
     supportedFields.forEach(fieldKind => {
@@ -507,6 +507,31 @@ describe('CompactTest', function () {
             });
             error.should.be.instanceOf(HazelcastSerializationError);
             error.message.includes('null value can not be read').should.be.true;
+        });
+
+        it(`should be able write null to an array of fixed sized nullables and read it. Field: ${FieldKind[fieldKind]}`,
+            async function () {
+                const fieldName = FieldKind[fieldKind];
+                const arrayOfFixedSizeField = CompactUtil.nullableFixedSizeArrayToFixedSizeArray[fieldKind];
+                const arrayOfFixedSizeFieldName = FieldKind[arrayOfFixedSizeField];
+                const value = null;
+
+                await putEntry(mapName, +fieldKind, value, undefined, {
+                    [fieldName]: 'someField'
+                });
+
+                const client2 = await testFactory.newHazelcastClientForParallelTests({
+                    clusterName: cluster.id,
+                    serialization: {
+                        compactSerializers: [new CompactUtil.FlexibleSerializer([arrayOfFixedSizeField], {
+                            [arrayOfFixedSizeFieldName]: 'someField'
+                        }), new CompactUtil.EmployeeSerializer()]
+                    }
+                }, member);
+
+                const map = await client2.getMap(mapName);
+                const obj = await map.get('key');
+                should.equal(obj.someField, null);
         });
     });
 

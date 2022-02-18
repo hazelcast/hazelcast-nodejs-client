@@ -152,6 +152,19 @@ describe('CompactGenericRecordTest', function () {
         .should.throw(UnsupportedOperationError, /char/);
     });
 
+    it('should be able to read array of generic records', async function() {
+        const genericRecord = GenericRecords.compact('a', {foo: Fields.int32}, {foo: 1});
+        const values = {
+            bar: [genericRecord]
+        };
+
+        const record = GenericRecords.compact('b', {
+            bar: Fields.arrayOfGenericRecord
+        }, values);
+
+        record.getArrayOfGenericRecord('bar').should.be.deep.equal([genericRecord]);
+    });
+
     describe('validation', function () {
         describe('construction', function () {
             it('should throw error if type name is not a string', function () {

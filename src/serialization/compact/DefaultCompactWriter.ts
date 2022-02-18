@@ -164,7 +164,7 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     private static writeBooleanBits(out: PositionalObjectDataOutput, booleans: boolean[] | null) : void {
-        const length = booleans !== null ? booleans.length : BitsUtil.NULL_ARRAY_LENGTH;
+        const length = booleans.length;
         out.writeInt(length);
         let position = out.position();
         if (length > 0) {

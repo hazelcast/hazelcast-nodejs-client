@@ -175,6 +175,7 @@ export class CompactStreamSerializer {
         if (serializer !== undefined) {
             return serializer;
         }
+        // This is an unreachable line. It is ok for this line to be not covered in tests.
         throw new HazelcastSerializationError(`Explicit compact serializer is needed for obj: ${obj}`);
     }
 }

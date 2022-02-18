@@ -42,7 +42,7 @@ const { CompactGenericRecordImpl } = require('../../../../lib/serialization/gene
 const { GenericRecords } = require('../../../../lib');
 const { Fields } = require('../../../../lib/serialization/generic_record');
 
-describe('CompactStreamSerializerTest', function () {
+describe('CompactTest', function () {
     it('should work with all fields', async function () {
         const serializationService = createSerializationService(
             [new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]

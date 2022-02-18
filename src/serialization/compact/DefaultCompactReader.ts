@@ -339,6 +339,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         );
     }
 
+    // It is normal not to cover this line. It is impossible to reach.
     getArrayOfChar(fieldName: string): string[] {
         throw new UnsupportedOperationError('Compact format does not support reading an array of chars field');
     }
@@ -678,6 +679,7 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
         }
     }
 
+    // It is normal not to cover this line. It is impossible to reach.
     getChar(fieldName: string): string {
         throw new UnsupportedOperationError('Compact format does not support reading a char field.');
     }
