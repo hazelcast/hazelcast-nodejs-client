@@ -822,8 +822,8 @@ describe('Data type test', function () {
             const SqlColumnType = TestUtil.getSqlColumnType();
 
             // JSON support is added in 5.1.
-            TestUtil.markClientVersionAtLeast(this, '5.1');
             TestUtil.markServerVersionAtLeast(this, client, '5.1');
+            TestUtil.markClientVersionAtLeast(this, '5.1');
 
             const createMappingQuery = `
                 CREATE MAPPING ${mapName} (
