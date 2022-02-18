@@ -58,6 +58,157 @@ const testIntRange = (invalidValueFn, validValueFn) => {
     }
 };
 
+const sampleGenericRecord = GenericRecords.compact('aa', {nested: Fields.genericRecord},
+    {nested: GenericRecords.compact('bb', {}, {})});
+
+const sampleArrayOfGenericRecords = [GenericRecords.compact('cc', {foo: Fields.int16}, {foo: 3}),
+GenericRecords.compact('dd', {bar: Fields.arrayOfInt8}, {bar: Buffer.from([])})];
+
+const getGiganticRecord = () => {
+    const values = {};
+    const fields = {};
+
+    for (const key in referenceObjects) {
+        if (FieldKind[key] === FieldKind.COMPACT) {
+            values[key] = sampleGenericRecord;
+        } else if (FieldKind[key] === FieldKind.ARRAY_OF_COMPACT) {
+            values[key] = sampleArrayOfGenericRecords;
+        } else {
+            values[key] = referenceObjects[key].value;
+        }
+        switch (FieldKind[key]) {
+            case FieldKind.BOOLEAN:
+                fields[key] = Fields.boolean;
+                break;
+            case FieldKind.ARRAY_OF_BOOLEAN:
+                fields[key] = Fields.arrayOfBoolean;
+                break;
+            case FieldKind.INT8:
+                fields[key] = Fields.int8;
+                break;
+            case FieldKind.ARRAY_OF_INT8:
+                fields[key] = Fields.arrayOfInt8;
+                break;
+            case FieldKind.INT16:
+                fields[key] = Fields.int16;
+                break;
+            case FieldKind.ARRAY_OF_INT16:
+                fields[key] = Fields.arrayOfInt16;
+                break;
+            case FieldKind.INT32:
+                fields[key] = Fields.int32;
+                break;
+            case FieldKind.ARRAY_OF_INT32:
+                fields[key] = Fields.arrayOfInt32;
+                break;
+            case FieldKind.INT64:
+                fields[key] = Fields.int64;
+                break;
+            case FieldKind.ARRAY_OF_INT64:
+                fields[key] = Fields.arrayOfInt64;
+                break;
+            case FieldKind.FLOAT32:
+                fields[key] = Fields.float32;
+                break;
+            case FieldKind.ARRAY_OF_FLOAT32:
+                fields[key] = Fields.arrayOfFloat32;
+                break;
+            case FieldKind.FLOAT64:
+                fields[key] = Fields.float64;
+                break;
+            case FieldKind.ARRAY_OF_FLOAT64:
+                fields[key] = Fields.arrayOfFloat64;
+                break;
+            case FieldKind.STRING:
+                fields[key] = Fields.string;
+                break;
+            case FieldKind.ARRAY_OF_STRING:
+                fields[key] = Fields.arrayOfString;
+                break;
+            case FieldKind.DECIMAL:
+                fields[key] = Fields.decimal;
+                break;
+            case FieldKind.ARRAY_OF_DECIMAL:
+                fields[key] = Fields.arrayOfDecimal;
+                break;
+            case FieldKind.TIME:
+                fields[key] = Fields.time;
+                break;
+            case FieldKind.ARRAY_OF_TIME:
+                fields[key] = Fields.arrayOfTime;
+                break;
+            case FieldKind.DATE:
+                fields[key] = Fields.date;
+                break;
+            case FieldKind.ARRAY_OF_DATE:
+                fields[key] = Fields.arrayOfDate;
+                break;
+            case FieldKind.TIMESTAMP:
+                fields[key] = Fields.timestamp;
+                break;
+            case FieldKind.ARRAY_OF_TIMESTAMP:
+                fields[key] = Fields.arrayOfTimestamp;
+                break;
+            case FieldKind.TIMESTAMP_WITH_TIMEZONE:
+                fields[key] = Fields.timestampWithTimezone;
+                break;
+            case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
+                fields[key] = Fields.arrayOfTimestampWithTimezone;
+                break;
+            case FieldKind.COMPACT:
+                fields[key] = Fields.genericRecord;
+                break;
+            case FieldKind.ARRAY_OF_COMPACT:
+                fields[key] = Fields.arrayOfGenericRecord;
+                break;
+            case FieldKind.NULLABLE_BOOLEAN:
+                fields[key] = Fields.nullableBoolean;
+                break;
+            case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
+                fields[key] = Fields.arrayOfNullableBoolean;
+                break;
+            case FieldKind.NULLABLE_INT8:
+                fields[key] = Fields.nullableInt8;
+                break;
+            case FieldKind.ARRAY_OF_NULLABLE_INT8:
+                fields[key] = Fields.arrayOfNullableInt8;
+                break;
+            case FieldKind.NULLABLE_INT16:
+                fields[key] = Fields.nullableInt16;
+                break;
+            case FieldKind.ARRAY_OF_NULLABLE_INT16:
+                fields[key] = Fields.arrayOfNullableInt16;
+                break;
+            case FieldKind.NULLABLE_INT32:
+                fields[key] = Fields.nullableInt32;
+                break;
+            case FieldKind.ARRAY_OF_NULLABLE_INT32:
+                fields[key] = Fields.arrayOfNullableInt32;
+                break;
+            case FieldKind.NULLABLE_INT64:
+                fields[key] = Fields.nullableInt64;
+                break;
+            case FieldKind.ARRAY_OF_NULLABLE_INT64:
+                fields[key] = Fields.arrayOfNullableInt64;
+                break;
+            case FieldKind.NULLABLE_FLOAT32:
+                fields[key] = Fields.float32;
+                break;
+            case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
+                fields[key] = Fields.arrayOfNullableFloat32;
+                break;
+            case FieldKind.NULLABLE_FLOAT64:
+                fields[key] = Fields.nullableFloat64;
+                break;
+            case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
+                fields[key] = Fields.arrayOfNullableFloat64;
+                break;
+        }
+    }
+
+    return GenericRecords.compact('a', fields, values);
+};
+
 describe('CompactGenericRecordTest', function () {
     it('toString should produce valid JSON string', async function() {
         const serializationService = createSerializationService(
@@ -192,142 +343,7 @@ describe('CompactGenericRecordTest', function () {
 
     it('should have working getters', async function() {
         CompactStreamSerializer.classToSerializersMap.set(Employee, {});
-        const values = {};
-        const fields = {};
-
-        for (const key in referenceObjects) {
-            values[key] = referenceObjects[key].value;
-            switch (FieldKind[key]) {
-                case FieldKind.BOOLEAN:
-                    fields[key] = Fields.boolean;
-                    break;
-                case FieldKind.ARRAY_OF_BOOLEAN:
-                    fields[key] = Fields.arrayOfBoolean;
-                    break;
-                case FieldKind.INT8:
-                    fields[key] = Fields.int8;
-                    break;
-                case FieldKind.ARRAY_OF_INT8:
-                    fields[key] = Fields.arrayOfInt8;
-                    break;
-                case FieldKind.INT16:
-                    fields[key] = Fields.int16;
-                    break;
-                case FieldKind.ARRAY_OF_INT16:
-                    fields[key] = Fields.arrayOfInt16;
-                    break;
-                case FieldKind.INT32:
-                    fields[key] = Fields.int32;
-                    break;
-                case FieldKind.ARRAY_OF_INT32:
-                    fields[key] = Fields.arrayOfInt32;
-                    break;
-                case FieldKind.INT64:
-                    fields[key] = Fields.int64;
-                    break;
-                case FieldKind.ARRAY_OF_INT64:
-                    fields[key] = Fields.arrayOfInt64;
-                    break;
-                case FieldKind.FLOAT32:
-                    fields[key] = Fields.float32;
-                    break;
-                case FieldKind.ARRAY_OF_FLOAT32:
-                    fields[key] = Fields.arrayOfFloat32;
-                    break;
-                case FieldKind.FLOAT64:
-                    fields[key] = Fields.float64;
-                    break;
-                case FieldKind.ARRAY_OF_FLOAT64:
-                    fields[key] = Fields.arrayOfFloat64;
-                    break;
-                case FieldKind.STRING:
-                    fields[key] = Fields.string;
-                    break;
-                case FieldKind.ARRAY_OF_STRING:
-                    fields[key] = Fields.arrayOfString;
-                    break;
-                case FieldKind.DECIMAL:
-                    fields[key] = Fields.decimal;
-                    break;
-                case FieldKind.ARRAY_OF_DECIMAL:
-                    fields[key] = Fields.arrayOfDecimal;
-                    break;
-                case FieldKind.TIME:
-                    fields[key] = Fields.time;
-                    break;
-                case FieldKind.ARRAY_OF_TIME:
-                    fields[key] = Fields.arrayOfTime;
-                    break;
-                case FieldKind.DATE:
-                    fields[key] = Fields.date;
-                    break;
-                case FieldKind.ARRAY_OF_DATE:
-                    fields[key] = Fields.arrayOfDate;
-                    break;
-                case FieldKind.TIMESTAMP:
-                    fields[key] = Fields.timestamp;
-                    break;
-                case FieldKind.ARRAY_OF_TIMESTAMP:
-                    fields[key] = Fields.arrayOfTimestamp;
-                    break;
-                case FieldKind.TIMESTAMP_WITH_TIMEZONE:
-                    fields[key] = Fields.timestampWithTimezone;
-                    break;
-                case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
-                    fields[key] = Fields.arrayOfTimestampWithTimezone;
-                    break;
-                case FieldKind.COMPACT:
-                    fields[key] = Fields.genericRecord;
-                    break;
-                case FieldKind.ARRAY_OF_COMPACT:
-                    fields[key] = Fields.arrayOfGenericRecord;
-                    break;
-                case FieldKind.NULLABLE_BOOLEAN:
-                    fields[key] = Fields.nullableBoolean;
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
-                    fields[key] = Fields.arrayOfNullableBoolean;
-                    break;
-                case FieldKind.NULLABLE_INT8:
-                    fields[key] = Fields.nullableInt8;
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_INT8:
-                    fields[key] = Fields.arrayOfNullableInt8;
-                    break;
-                case FieldKind.NULLABLE_INT16:
-                    fields[key] = Fields.nullableInt16;
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_INT16:
-                    fields[key] = Fields.arrayOfNullableInt16;
-                    break;
-                case FieldKind.NULLABLE_INT32:
-                    fields[key] = Fields.nullableInt32;
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_INT32:
-                    fields[key] = Fields.arrayOfNullableInt32;
-                    break;
-                case FieldKind.NULLABLE_INT64:
-                    fields[key] = Fields.nullableInt64;
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_INT64:
-                    fields[key] = Fields.arrayOfNullableInt64;
-                    break;
-                case FieldKind.NULLABLE_FLOAT32:
-                    fields[key] = Fields.float32;
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
-                    fields[key] = Fields.arrayOfNullableFloat32;
-                    break;
-                case FieldKind.NULLABLE_FLOAT64:
-                    fields[key] = Fields.nullableFloat64;
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
-                    fields[key] = Fields.arrayOfNullableFloat64;
-                    break;
-            }
-        }
-
-        const record = GenericRecords.compact('a', fields, values);
+        const record = getGiganticRecord();
 
         for (const key in referenceObjects) {
             const value = referenceObjects[key].value;
@@ -411,10 +427,10 @@ describe('CompactGenericRecordTest', function () {
                     record.getArrayOfTimestampWithTimezone(key).should.be.deep.equal(value);
                     break;
                 case FieldKind.COMPACT:
-                    record.getGenericRecord(key).should.be.equal(value);
+                    record.getGenericRecord(key).should.be.equal(sampleGenericRecord);
                     break;
                 case FieldKind.ARRAY_OF_COMPACT:
-                    record.getArrayOfGenericRecord(key).should.be.deep.equal(value);
+                    record.getArrayOfGenericRecord(key).should.be.deep.equal(sampleArrayOfGenericRecords);
                     break;
                 case FieldKind.NULLABLE_BOOLEAN:
                     record.getNullableBoolean(key).should.be.equal(value);
@@ -570,6 +586,13 @@ describe('CompactGenericRecordTest', function () {
         });
 
         describe('cloning', function () {
+            it('should be able to clone every field', function() {
+                // Needed for compact validation
+                CompactStreamSerializer.classToSerializersMap.set(Employee, {});
+                const record = getGiganticRecord();
+                record.clone();
+            });
+
             it('should throw RangeError if provided integer is out of range and should not otherwise', function () {
                 testIntRange((field, invalidValue) => {
                     (() => {

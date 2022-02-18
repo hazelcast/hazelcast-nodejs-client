@@ -31,9 +31,7 @@ import {Schema} from '../compact/Schema';
 import {SchemaWriter} from '../compact/SchemaWriter';
 import {FieldDescriptor} from './FieldDescriptor';
 import {CompactExceptions} from '../compact/CompactUtil';
-import * as Util from '../../util/Util';
 import * as Long from 'long';
-import {SerializationServiceV1} from '../SerializationService';
 
 /**
  * @internal
@@ -217,7 +215,7 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
                 validateArray(FieldKind.TIMESTAMP_WITH_TIMEZONE);
                 break;
             case FieldKind.COMPACT:
-                if (value !== null && !SerializationServiceV1.isCompactSerializable(value)) {
+                if (value !== null && !(value instanceof CompactGenericRecordImpl)) {
                     throwTypeErrorWithMessage('Compact');
                 }
                 break;
@@ -279,8 +277,68 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         }
     }
 
+    /**
+     * Deep clones an object. Based on: https://stackoverflow.com/a/34624648/9483495
+     * @param obj
+     */
+    private static deepCloneCompactGenericRecordValues(obj: any) {
+        // Prevent undefined objects
+        if (!obj) {
+            return obj;
+        }
+
+        if (obj instanceof CompactGenericRecordImpl) {
+            return obj.clone();
+        }
+
+        if (obj instanceof Long) {
+            return new Long(obj.low, obj.high, obj.unsigned);
+        }
+
+        if (Buffer.isBuffer(obj)) {
+            return Buffer.from(obj);
+        }
+
+        if (obj instanceof LocalDate) {
+            return new LocalDate(obj.year, obj.month, obj.date);
+        }
+
+        if (obj instanceof LocalTime) {
+            return new LocalTime(obj.hour, obj.minute, obj.second, obj.nano);
+        }
+
+        if (obj instanceof LocalDateTime) {
+            return new LocalDateTime(obj.localDate, obj.localTime);
+        }
+
+        if (obj instanceof OffsetDateTime) {
+            return new OffsetDateTime(obj.localDateTime, obj.offsetSeconds);
+        }
+
+        if (obj instanceof BigDecimal) {
+            return new BigDecimal(obj.unscaledValue, obj.scale);
+        }
+
+        if (obj instanceof BigDecimal) {
+            return new BigDecimal(obj.unscaledValue, obj.scale);
+        }
+
+        let v: any;
+        const cloned: any = Array.isArray(obj) ? [] : {};
+        for (const k in obj) {
+
+            // Prevent self-references to parent object
+            // if (Object.is(obj[k], obj)) continue;
+
+            v = obj[k];
+            cloned[k] = (typeof v === 'object') ? CompactGenericRecordImpl.deepCloneCompactGenericRecordValues(v) : v;
+        }
+
+        return cloned;
+    }
+
     clone(fieldsToUpdate?: { [fieldName: string]: any }): GenericRecord {
-        const clonedValues = Util.deepClone(this.values);
+        const clonedValues = CompactGenericRecordImpl.deepCloneCompactGenericRecordValues(this.values);
 
         for (const fieldName in fieldsToUpdate) {
             if (!this.hasField(fieldName)) {

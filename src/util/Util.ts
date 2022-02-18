@@ -22,54 +22,6 @@ import {BigDecimal, IllegalStateError, LocalDate, LocalDateTime, LocalTime, Memb
 import {MemberVersion} from '../core/MemberVersion';
 import {BuildInfo} from '../BuildInfo';
 
-/**
- * Deep clones an object. Source: https://stackoverflow.com/a/34624648/9483495
- * @param obj
- */
-export function deepClone(obj: any) {
-    // Prevent undefined objects
-    if (!obj) {
-        return obj;
-    }
-
-    if (obj instanceof Long) {
-        return new Long(obj.low, obj.high, obj.unsigned);
-    }
-
-    if (obj instanceof LocalDate) {
-        return new LocalDate(obj.year, obj.month, obj.date);
-    }
-
-    if (obj instanceof LocalTime) {
-        return new LocalTime(obj.hour, obj.minute, obj.second, obj.nano);
-    }
-
-    if (obj instanceof LocalDateTime) {
-        return new LocalDateTime(obj.localDate, obj.localTime);
-    }
-
-    if (obj instanceof OffsetDateTime) {
-        return new OffsetDateTime(obj.localDateTime, obj.offsetSeconds);
-    }
-
-    if (obj instanceof BigDecimal) {
-        return new BigDecimal(obj.unscaledValue, obj.scale);
-    }
-
-    let v: any;
-    const cloned: any = Array.isArray(obj) ? [] : {};
-    for (const k in obj) {
-
-        // Prevent self-references to parent object
-        // if (Object.is(obj[k], obj)) continue;
-
-        v = obj[k];
-        cloned[k] = (typeof v === 'object') ? deepClone(v) : v;
-    }
-
-    return cloned;
-}
-
 /** @internal */
 export function assertNotNull(v: any): void {
     assert.notStrictEqual(v, null, 'Non null value expected.');
