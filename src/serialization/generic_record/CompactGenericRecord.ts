@@ -117,19 +117,19 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
         switch (fieldKind) {
             case FieldKind.BOOLEAN:
                 validateType('boolean');
-                break
+                break;
             case FieldKind.ARRAY_OF_BOOLEAN:
                 validateArray(FieldKind.BOOLEAN);
-                break
+                break;
             case FieldKind.INT8:
                 validateType('number');
                 validateInt8Range();
-                break
+                break;
             case FieldKind.ARRAY_OF_INT8:
                 if (!Buffer.isBuffer(value) && value !== null) {
                     throw new TypeError(getErrorStringForField('Buffer or null'));
                 }
-                break
+                break;
             case FieldKind.CHAR:
                 throw new UnsupportedOperationError('Compact format does not support writing a char field');
             case FieldKind.ARRAY_OF_CHAR:
@@ -137,145 +137,145 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
             case FieldKind.INT16:
                 validateType('number');
                 validateInt16Range();
-                break
+                break;
             case FieldKind.ARRAY_OF_INT16:
                 validateArray(FieldKind.INT16);
-                break
+                break;
             case FieldKind.INT32:
                 validateType('number');
                 validateInt32Range();
-                break
+                break;
             case FieldKind.ARRAY_OF_INT32:
                 validateArray(FieldKind.INT32);
-                break
+                break;
             case FieldKind.INT64:
                 if (!Long.isLong(value)) {
                     throwTypeErrorWithMessage('Long');
                 }
-                break
+                break;
             case FieldKind.ARRAY_OF_INT64:
                 validateArray(FieldKind.INT64);
-                break
+                break;
             case FieldKind.FLOAT32:
                 validateType('number');
-                break
+                break;
             case FieldKind.ARRAY_OF_FLOAT32:
                 validateArray(FieldKind.FLOAT32);
-                break
+                break;
             case FieldKind.FLOAT64:
                 validateType('number');
-                break
+                break;
             case FieldKind.ARRAY_OF_FLOAT64:
                 validateArray(FieldKind.FLOAT64);
-                break
+                break;
             case FieldKind.STRING:
                 if (typeof value !== 'string' && value !== null) {
                     throwTypeErrorWithMessage('String or null');
                 }
-                break
+                break;
             case FieldKind.ARRAY_OF_STRING:
                 validateArray(FieldKind.STRING);
-                break
+                break;
             case FieldKind.DECIMAL:
                 if (!(value instanceof BigDecimal) && value !== null) {
                     throwTypeErrorWithMessage('BigDecimal or null');
                 }
-                break
+                break;
             case FieldKind.ARRAY_OF_DECIMAL:
                 validateArray(FieldKind.DECIMAL);
-                break
+                break;
             case FieldKind.TIME:
                 if (!(value instanceof LocalTime) && value !== null) {
                     throwTypeErrorWithMessage('LocalTime or null');
                 }
-                break
+                break;
             case FieldKind.ARRAY_OF_TIME:
                 validateArray(FieldKind.TIME);
-                break
+                break;
             case FieldKind.DATE:
                 if (!(value instanceof LocalDate) && value !== null) {
                     throwTypeErrorWithMessage('LocalDate or null');
                 }
-                break
+                break;
             case FieldKind.ARRAY_OF_DATE:
                 validateArray(FieldKind.DATE);
-                break
+                break;
             case FieldKind.TIMESTAMP:
                 if (!(value instanceof LocalDateTime) && value !== null) {
                     throwTypeErrorWithMessage('LocalDateTime or null');
                 }
-                break
+                break;
             case FieldKind.ARRAY_OF_TIMESTAMP:
                 validateArray(FieldKind.TIMESTAMP);
-                break
+                break;
             case FieldKind.TIMESTAMP_WITH_TIMEZONE:
                 if (!(value instanceof OffsetDateTime) && value !== null) {
                     throwTypeErrorWithMessage('OffsetDateTime or null');
                 }
-                break
+                break;
             case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
                 validateArray(FieldKind.TIMESTAMP_WITH_TIMEZONE);
-                break
+                break;
             case FieldKind.COMPACT:
                 if (value !== null && !SerializationServiceV1.isCompactSerializable(value)) {
                     throwTypeErrorWithMessage('Compact');
                 }
-                break
+                break;
             case FieldKind.ARRAY_OF_COMPACT:
                 validateArray(FieldKind.COMPACT);
-                break
+                break;
             case FieldKind.PORTABLE:
                 throw new TypeError('Compact format does not support writing a portable field');
             case FieldKind.ARRAY_OF_PORTABLE:
                 validateArray(FieldKind.PORTABLE);
-                break
+                break;
             case FieldKind.NULLABLE_BOOLEAN:
                 validateNullableType('boolean');
-                break
+                break;
             case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
                 validateArray(FieldKind.NULLABLE_BOOLEAN);
-                break
+                break;
             case FieldKind.NULLABLE_INT8:
                 validateNullableType('number');
                 validateInt8Range();
-                break
+                break;
             case FieldKind.ARRAY_OF_NULLABLE_INT8:
                 validateArray(FieldKind.NULLABLE_INT8);
-                break
+                break;
             case FieldKind.NULLABLE_INT16:
                 validateNullableType('number');
                 validateInt16Range();
-                break
+                break;
             case FieldKind.ARRAY_OF_NULLABLE_INT16:
                 validateArray(FieldKind.NULLABLE_INT16);
-                break
+                break;
             case FieldKind.NULLABLE_INT32:
                 validateNullableType('number');
                 validateInt32Range();
-                break
+                break;
             case FieldKind.ARRAY_OF_NULLABLE_INT32:
                 validateArray(FieldKind.NULLABLE_INT32);
-                break
+                break;
             case FieldKind.NULLABLE_INT64:
                 if (!Long.isLong(value) && value !== null) {
                     throwTypeErrorWithMessage('Long or null');
                 }
-                break
+                break;
             case FieldKind.ARRAY_OF_NULLABLE_INT64:
                 validateArray(FieldKind.NULLABLE_INT64);
-                break
+                break;
             case FieldKind.NULLABLE_FLOAT32:
                 validateNullableType('number');
-                break
+                break;
             case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
                 validateArray(FieldKind.NULLABLE_FLOAT32);
-                break
+                break;
             case FieldKind.NULLABLE_FLOAT64:
                 validateNullableType('number');
-                break
+                break;
             case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
                 validateArray(FieldKind.NULLABLE_FLOAT64);
-                break
+                break;
         }
     }
 
@@ -482,7 +482,7 @@ export class CompactGenericRecordImpl implements CompactGenericRecord {
 
     getFieldKind(fieldName: string): FieldKind {
         if (!this.schema.fieldDefinitionMap.has(fieldName)) {
-            throw TypeError('There is no field named as '+ fieldName);
+            throw RangeError('There is no field named as '+ fieldName);
         }
         return this.schema.fieldDefinitionMap.get(fieldName).kind;
     }

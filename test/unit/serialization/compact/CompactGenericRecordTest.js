@@ -27,9 +27,12 @@ const {
     createCompactGenericRecord,
     serialize,
     mimicSchemaReplication,
-    validationTestParams
+    validationTestParams,
+    referenceObjects,
+    Employee
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { Fields, FieldKind } = require('../../../../lib/serialization/generic_record');
+const { CompactStreamSerializer } = require('../../../../lib/serialization/compact/CompactStreamSerializer');
 const Long = require('long');
 
 const testIntRange = (invalidValueFn, validValueFn) => {
@@ -163,6 +166,288 @@ describe('CompactGenericRecordTest', function () {
         }, values);
 
         record.getArrayOfGenericRecord('bar').should.be.deep.equal([genericRecord]);
+    });
+
+    it('should have working getters', async function() {
+        CompactStreamSerializer.classToSerializersMap.set(Employee, {});
+        const values = {};
+        const fields = {};
+
+        for (const key in referenceObjects) {
+            values[key] = referenceObjects[key].value;
+            switch (FieldKind[key]) {
+                case FieldKind.BOOLEAN:
+                    fields[key] = Fields.boolean;
+                    break;
+                case FieldKind.ARRAY_OF_BOOLEAN:
+                    fields[key] = Fields.arrayOfBoolean;
+                    break;
+                case FieldKind.INT8:
+                    fields[key] = Fields.int8;
+                    break;
+                case FieldKind.ARRAY_OF_INT8:
+                    fields[key] = Fields.arrayOfInt8;
+                    break;
+                case FieldKind.INT16:
+                    fields[key] = Fields.int16;
+                    break;
+                case FieldKind.ARRAY_OF_INT16:
+                    fields[key] = Fields.arrayOfInt16;
+                    break;
+                case FieldKind.INT32:
+                    fields[key] = Fields.int32;
+                    break;
+                case FieldKind.ARRAY_OF_INT32:
+                    fields[key] = Fields.arrayOfInt32;
+                    break;
+                case FieldKind.INT64:
+                    fields[key] = Fields.int64;
+                    break;
+                case FieldKind.ARRAY_OF_INT64:
+                    fields[key] = Fields.arrayOfInt64;
+                    break;
+                case FieldKind.FLOAT32:
+                    fields[key] = Fields.float32;
+                    break;
+                case FieldKind.ARRAY_OF_FLOAT32:
+                    fields[key] = Fields.arrayOfFloat32;
+                    break;
+                case FieldKind.FLOAT64:
+                    fields[key] = Fields.float64;
+                    break;
+                case FieldKind.ARRAY_OF_FLOAT64:
+                    fields[key] = Fields.arrayOfFloat64;
+                    break;
+                case FieldKind.STRING:
+                    fields[key] = Fields.string;
+                    break;
+                case FieldKind.ARRAY_OF_STRING:
+                    fields[key] = Fields.arrayOfString;
+                    break;
+                case FieldKind.DECIMAL:
+                    fields[key] = Fields.decimal;
+                    break;
+                case FieldKind.ARRAY_OF_DECIMAL:
+                    fields[key] = Fields.arrayOfDecimal;
+                    break;
+                case FieldKind.TIME:
+                    fields[key] = Fields.time;
+                    break;
+                case FieldKind.ARRAY_OF_TIME:
+                    fields[key] = Fields.arrayOfTime;
+                    break;
+                case FieldKind.DATE:
+                    fields[key] = Fields.date;
+                    break;
+                case FieldKind.ARRAY_OF_DATE:
+                    fields[key] = Fields.arrayOfDate;
+                    break;
+                case FieldKind.TIMESTAMP:
+                    fields[key] = Fields.timestamp;
+                    break;
+                case FieldKind.ARRAY_OF_TIMESTAMP:
+                    fields[key] = Fields.arrayOfTimestamp;
+                    break;
+                case FieldKind.TIMESTAMP_WITH_TIMEZONE:
+                    fields[key] = Fields.timestampWithTimezone;
+                    break;
+                case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
+                    fields[key] = Fields.arrayOfTimestampWithTimezone;
+                    break;
+                case FieldKind.COMPACT:
+                    fields[key] = Fields.genericRecord;
+                    break;
+                case FieldKind.ARRAY_OF_COMPACT:
+                    fields[key] = Fields.arrayOfGenericRecord;
+                    break;
+                case FieldKind.NULLABLE_BOOLEAN:
+                    fields[key] = Fields.nullableBoolean;
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
+                    fields[key] = Fields.arrayOfNullableBoolean;
+                    break;
+                case FieldKind.NULLABLE_INT8:
+                    fields[key] = Fields.nullableInt8;
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_INT8:
+                    fields[key] = Fields.arrayOfNullableInt8;
+                    break;
+                case FieldKind.NULLABLE_INT16:
+                    fields[key] = Fields.nullableInt16;
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_INT16:
+                    fields[key] = Fields.arrayOfNullableInt16;
+                    break;
+                case FieldKind.NULLABLE_INT32:
+                    fields[key] = Fields.nullableInt32;
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_INT32:
+                    fields[key] = Fields.arrayOfNullableInt32;
+                    break;
+                case FieldKind.NULLABLE_INT64:
+                    fields[key] = Fields.nullableInt64;
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_INT64:
+                    fields[key] = Fields.arrayOfNullableInt64;
+                    break;
+                case FieldKind.NULLABLE_FLOAT32:
+                    fields[key] = Fields.float32;
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
+                    fields[key] = Fields.arrayOfNullableFloat32;
+                    break;
+                case FieldKind.NULLABLE_FLOAT64:
+                    fields[key] = Fields.nullableFloat64;
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
+                    fields[key] = Fields.arrayOfNullableFloat64;
+                    break;
+            }
+        }
+
+        const record = GenericRecords.compact('a', fields, values);
+
+        for (const key in referenceObjects) {
+            const value = referenceObjects[key].value;
+            switch (FieldKind[key]) {
+                case FieldKind.BOOLEAN:
+                    record.getBoolean(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_BOOLEAN:
+                    record.getArrayOfBoolean(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.INT8:
+                    record.getInt8(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_INT8:
+                    record.getArrayOfInt8(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.INT16:
+                    record.getInt16(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_INT16:
+                    record.getArrayOfInt16(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.INT32:
+                    record.getInt32(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_INT32:
+                    record.getArrayOfInt32(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.INT64:
+                    record.getInt64(key).eq(value).should.be.true;
+                    break;
+                case FieldKind.ARRAY_OF_INT64:
+                    record.getArrayOfInt64(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.FLOAT32:
+                    record.getFloat32(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_FLOAT32:
+                    record.getArrayOfFloat32(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.FLOAT64:
+                    record.getFloat64(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_FLOAT64:
+                    record.getArrayOfFloat64(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.STRING:
+                    record.getString(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_STRING:
+                    record.getArrayOfString(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.DECIMAL:
+                    record.getDecimal(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_DECIMAL:
+                    record.getArrayOfDecimal(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.TIME:
+                    record.getTime(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_TIME:
+                    record.getArrayOfTime(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.DATE:
+                    record.getDate(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_DATE:
+                    record.getArrayOfDate(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.TIMESTAMP:
+                    record.getTimestamp(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_TIMESTAMP:
+                    record.getArrayOfTimestamp(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.TIMESTAMP_WITH_TIMEZONE:
+                    record.getTimestampWithTimezone(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
+                    record.getArrayOfTimestampWithTimezone(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.COMPACT:
+                    record.getGenericRecord(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_COMPACT:
+                    record.getArrayOfGenericRecord(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.NULLABLE_BOOLEAN:
+                    record.getNullableBoolean(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
+                    record.getArrayOfNullableBoolean(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.NULLABLE_INT8:
+                    record.getNullableInt8(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_INT8:
+                    record.getArrayOfNullableInt8(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.NULLABLE_INT16:
+                    record.getNullableInt16(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_INT16:
+                    record.getArrayOfNullableInt16(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.NULLABLE_INT32:
+                    record.getNullableInt32(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_INT32:
+                    record.getArrayOfNullableInt32(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.NULLABLE_INT64:
+                    record.getNullableInt64(key).eq(value).should.be.true;
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_INT64:
+                    record.getArrayOfNullableInt64(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.NULLABLE_FLOAT32:
+                    record.getNullableFloat32(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
+                    record.getArrayOfNullableFloat32(key).should.be.deep.equal(value);
+                    break;
+                case FieldKind.NULLABLE_FLOAT64:
+                    record.getNullableFloat64(key).should.be.equal(value);
+                    break;
+                case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
+                    record.getArrayOfNullableFloat64(key).should.be.deep.equal(value);
+                    break;
+            }
+        }
+    });
+
+    it('should be able to get kind of a field', async function() {
+        const genericRecord = GenericRecords.compact('a', {foo: Fields.int32}, {foo: 1});
+        genericRecord.getFieldKind('foo').should.be.equal(FieldKind.INT32);
+    });
+
+    it('should throw RangeError in getFieldKind if field with that name does not exist', async function() {
+        const genericRecord = GenericRecords.compact('a', {foo: Fields.int32}, {foo: 1});
+        (() => genericRecord.getFieldKind('nonexistant')).should.throw(RangeError);
     });
 
     describe('validation', function () {
