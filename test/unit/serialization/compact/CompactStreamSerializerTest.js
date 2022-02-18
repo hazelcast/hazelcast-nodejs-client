@@ -37,6 +37,7 @@ const {
     NodeDTO,
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const Long = require('long');
+const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 const { CompactGenericRecordImpl } = require('../../../../lib/serialization/generic_record/CompactGenericRecord');
 const { GenericRecords } = require('../../../../lib');
 const { Fields } = require('../../../../lib/serialization/generic_record');
@@ -52,6 +53,10 @@ describe('CompactStreamSerializerTest', function () {
         const object = serializationService.toObject(data);
 
         object.should.deep.equal(mainDTO);
+    });
+
+    it('should behave null object as not compact serializable', async function () {
+        SerializationServiceV1.isCompactSerializable(Object.create(null)).should.be.false;
     });
 
     it('should work with all fields and defaults enabled serializer', async function () {
