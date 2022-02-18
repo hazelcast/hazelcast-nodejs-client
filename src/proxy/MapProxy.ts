@@ -357,15 +357,19 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     remove(key: K, value: V = null): Promise<V | boolean> {
         assertNotNull(key);
         let keyData: Data;
+        let valueData: Data | undefined = undefined;
         try {
             keyData = this.toData(key);
+            if (value !== null) {
+                valueData = this.toData(key);
+            }
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.remove(key, value));
             }
             return Promise.reject(e);
         }
-        return this.removeInternal(keyData, value);
+        return this.removeInternal(keyData, valueData);
     }
 
     size(): Promise<number> {
@@ -765,14 +769,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }, keyData, 0);
     }
 
-    protected removeInternal(keyData: Data, value: V = null): Promise<V | boolean> {
-        if (value == null) {
+    protected removeInternal(keyData: Data, valueData: Data | undefined): Promise<V | boolean> {
+        if (valueData === undefined) {
             return this.encodeInvokeOnKey(MapRemoveCodec, keyData, (clientMessage) => {
                 const response = MapRemoveCodec.decodeResponse(clientMessage);
                 return this.toObject(response);
             }, keyData, 0)
         } else {
-            const valueData = this.toData(value);
             return this.encodeInvokeOnKey(
                 MapRemoveIfSameCodec, keyData, MapRemoveIfSameCodec.decodeResponse, keyData, valueData, 0
             );

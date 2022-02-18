@@ -186,8 +186,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             .then<boolean>(removed => this.invalidateCacheEntryAndReturn(keyData, removed));
     }
 
-    protected removeInternal(keyData: Data, value: V): Promise<V | boolean> {
-        return super.removeInternal(keyData, value)
+    protected removeInternal(keyData: Data, valueData: Data | undefined): Promise<V | boolean> {
+        return super.removeInternal(keyData, valueData)
             .then<V | boolean>(oldValue => this.invalidateCacheEntryAndReturn(keyData, oldValue));
     }
 
