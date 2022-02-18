@@ -819,11 +819,11 @@ describe('Data type test', function () {
         const inputs = [new HazelcastJsonValue(JSON.stringify({age: 3})), {age: 3}];
         for (const input of inputs) {
             await basicSetup(this);
-            TestUtil.markServerVersionAtLeast(this, client, '5.1');
-            const SqlColumnType = TestUtil.getSqlColumnType();
-
             // JSON support is added in 5.1.
             TestUtil.markClientVersionAtLeast(this, '5.1');
+            TestUtil.markServerVersionAtLeast(this, client, '5.1');
+            
+            const SqlColumnType = TestUtil.getSqlColumnType();
 
             const createMappingQuery = `
                 CREATE MAPPING ${mapName} (
