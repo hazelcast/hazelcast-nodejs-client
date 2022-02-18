@@ -361,7 +361,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         try {
             keyData = this.toData(key);
             if (value !== null) {
-                valueData = this.toData(key);
+                valueData = this.toData(value);
             }
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
