@@ -125,7 +125,10 @@ export interface CPSubsystem {
 
 }
 
-/** @internal */
+/**
+ * Creates CP proxies.
+ * @internal
+ */
 export class CPSubsystemImpl implements CPSubsystem {
 
     private readonly cpProxyManager: CPProxyManager;

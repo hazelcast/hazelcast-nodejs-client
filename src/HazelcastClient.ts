@@ -195,8 +195,7 @@ export class HazelcastClient {
             this.loggingService.getLogger(),
             this.config.network.smartRouting,
             this.connectionManager,
-            this.invocationService,
-            this.connectionRegistry
+            this.invocationService
         );
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
         this.proxyManager = new ProxyManager(
@@ -214,11 +213,10 @@ export class HazelcastClient {
         );
         this.statistics = new Statistics(
             this.loggingService.getLogger(),
-            this.config.properties,
+            this.config.metrics,
             this.instanceName,
             this.invocationService,
             this.nearCacheManager,
-            this.connectionRegistry,
             this.connectionManager
         );
         this.clusterViewListenerService = new ClusterViewListenerService(
@@ -226,8 +224,7 @@ export class HazelcastClient {
             this.connectionManager,
             this.partitionService as PartitionServiceImpl,
             this.clusterService,
-            this.invocationService,
-            this.connectionRegistry
+            this.invocationService
         );
         this.cpSubsystem = new CPSubsystemImpl(
             this.loggingService.getLogger(),
@@ -236,7 +233,6 @@ export class HazelcastClient {
             this.serializationService
         );
         this.sqlService = new SqlServiceImpl(
-            this.connectionRegistry,
             this.serializationService,
             this.invocationService,
             this.connectionManager
@@ -511,7 +507,7 @@ export class HazelcastClient {
      * @returns registration id of the listener.
      */
     addDistributedObjectListener(listener: DistributedObjectListener): Promise<string> {
-        return this.proxyManager.addDistributedObjectListener(listener);
+        return this.listenerService.addDistributedObjectListener(listener);
     }
 
     /**
@@ -520,7 +516,7 @@ export class HazelcastClient {
      * @returns `true` if registration was removed, `false` otherwise.
      */
     removeDistributedObjectListener(listenerId: string): Promise<boolean> {
-        return this.proxyManager.removeDistributedObjectListener(listenerId);
+        return this.listenerService.deregisterListener(listenerId);
     }
 
     /** @internal */

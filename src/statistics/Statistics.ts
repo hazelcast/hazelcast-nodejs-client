@@ -17,8 +17,6 @@
 
 import {Connection} from '../network/Connection';
 import {CLIENT_TYPE, ConnectionManager} from '../network/ConnectionManager';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
-import {Properties} from '../config/Properties';
 import {ClientStatisticsCodec} from '../codec/ClientStatisticsCodec';
 import {MetricDescriptor, MetricsCompressor, ProbeUnit, ValueType} from './MetricsCompressor';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
@@ -28,6 +26,7 @@ import {ILogger} from '../logging/ILogger';
 import * as Long from 'long';
 import {InvocationService} from '../invocation/InvocationService';
 import {NearCacheManager} from '../nearcache/NearCacheManager';
+import {MetricsConfig} from '../config/MetricsConfig';
 
 type GaugeDescription = {
     gaugeFn: () => number;
@@ -39,12 +38,15 @@ type GaugeDescription = {
  * This class is the main entry point for collecting and sending the client
  * statistics to the cluster. If the client statistics feature is enabled,
  * it will be scheduled for periodic statistics collection and sent.
+ *
+ * Uses metricsConfig as configuration. The config from statistics properties
+ * will be used if the metrics counterpart and statistics property is set. This logic
+ * is in ConfigBuilder.
  * @internal
  */
 export class Statistics {
 
     public static readonly PERIOD_SECONDS_DEFAULT_VALUE = 3;
-    private static readonly ENABLED = 'hazelcast.client.statistics.enabled';
     private static readonly PERIOD_SECONDS = 'hazelcast.client.statistics.period.seconds';
 
     private static readonly NEAR_CACHE_CATEGORY_PREFIX: string = 'nc.';
@@ -54,25 +56,22 @@ export class Statistics {
     private static readonly EMPTY_STAT_VALUE: string = '';
     private readonly allGauges: { [name: string]: GaugeDescription } = {};
     private readonly enabled: boolean;
-    private task: Task;
+    private statisticsSendTask: Task;
     private compressorErrorLogged = false;
 
     constructor(
         private readonly logger: ILogger,
-        private readonly properties: Properties,
+        private readonly metricsConfig: MetricsConfig,
         private readonly clientName: string,
         private readonly invocationService: InvocationService,
         private readonly nearCacheManager: NearCacheManager,
-        private readonly connectionRegistry: ConnectionRegistry,
         private readonly connectionManager: ConnectionManager
     ) {
-        this.properties = properties;
-        this.enabled = this.properties[Statistics.ENABLED] as boolean;
+        this.enabled = this.metricsConfig.enabled;
         this.logger = logger;
         this.invocationService = invocationService;
         this.clientName = clientName;
         this.nearCacheManager = nearCacheManager;
-        this.connectionRegistry = connectionRegistry;
     }
 
     /**
@@ -85,7 +84,7 @@ export class Statistics {
 
         this.registerMetrics();
 
-        let periodSeconds = this.properties[Statistics.PERIOD_SECONDS] as number;
+        let periodSeconds = this.metricsConfig.collectionFrequencySeconds;
         if (periodSeconds <= 0) {
             const defaultValue = Statistics.PERIOD_SECONDS_DEFAULT_VALUE;
             this.logger.warn('Statistics', 'Provided client statistics ' + Statistics.PERIOD_SECONDS
@@ -94,14 +93,14 @@ export class Statistics {
             periodSeconds = defaultValue;
         }
 
-        this.task = this.schedulePeriodicStatisticsSendTask(periodSeconds);
+        this.statisticsSendTask = this.schedulePeriodicStatisticsSendTask(periodSeconds);
 
         this.logger.info('Statistics', 'Client statistics is enabled with period ' + periodSeconds + ' seconds.');
     }
 
     stop(): void {
-        if (this.task != null) {
-            cancelRepetitionTask(this.task);
+        if (this.statisticsSendTask != null) {
+            cancelRepetitionTask(this.statisticsSendTask);
         }
     }
 
@@ -113,7 +112,7 @@ export class Statistics {
             this.compressorErrorLogged = false;
             const collectionTimestamp = Long.fromNumber(Date.now());
 
-            const connection = this.connectionRegistry.getRandomConnection();
+            const connection = this.connectionManager.getConnectionRegistry().getRandomConnection();
             if (connection == null) {
                 this.logger.trace('Statistics', 'Can not send client statistics to the server. No connection found.');
                 return;
