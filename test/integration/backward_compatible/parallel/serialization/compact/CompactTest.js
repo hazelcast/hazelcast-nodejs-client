@@ -509,6 +509,35 @@ describe('CompactTest', function () {
             error.message.includes('null value can not be read').should.be.true;
         });
 
+        it(`should be able to read a nullable fix sized array as a fix sized array field. Field: ${FieldKind[fieldKind]}`,
+            async function () {
+            const fieldName = FieldKind[fieldKind];
+            const arrayOfFixedSizeField = CompactUtil.nullableFixedSizeArrayToFixedSizeArray[fieldKind];
+            const arrayOfFixedSizeFieldName = FieldKind[arrayOfFixedSizeField];
+            const value = CompactUtil.referenceObjects[fieldName].value;
+
+            await putEntry(mapName, +fieldKind, value, undefined, {
+                [fieldName]: 'someField'
+            });
+
+            const client2 = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [new CompactUtil.FlexibleSerializer([arrayOfFixedSizeField], {
+                        [arrayOfFixedSizeFieldName]: 'someField'
+                    }), new CompactUtil.EmployeeSerializer()]
+                }
+            }, member);
+
+            const map = await client2.getMap(mapName);
+            const obj = await map.get('key');
+            if (fieldKind === FieldKind.ARRAY_OF_NULLABLE_INT8) {
+                obj.someField.should.be.deep.eq(Buffer.from(value));
+            } else {
+                obj.someField.should.be.deep.eq(value);
+            }
+        });
+
         it(`should be able write null to an array of fixed sized nullables and read it. Field: ${FieldKind[fieldKind]}`,
             async function () {
                 const fieldName = FieldKind[fieldKind];

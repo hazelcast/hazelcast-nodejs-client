@@ -168,6 +168,28 @@ describe('CompactGenericRecordTest', function () {
         record.getArrayOfGenericRecord('bar').should.be.deep.equal([genericRecord]);
     });
 
+    it('should be able to read generic record', async function() {
+        const genericRecord = GenericRecords.compact('a', {foo: Fields.int32}, {foo: 1});
+        const values = {
+            bar: genericRecord
+        };
+
+        const record = GenericRecords.compact('b', {
+            bar: Fields.genericRecord
+        }, values);
+
+        record.getGenericRecord('bar').should.be.deep.equal(genericRecord);
+    });
+
+    it('should be able to get field names', async function() {
+        const record = GenericRecords.compact('b', {
+            foo: Fields.int16,
+            bar: Fields.string
+        }, {foo: 1, bar: 's'});
+
+        record.getFieldNames().should.be.deep.equal(new Set(['foo', 'bar']));
+    });
+
     it('should have working getters', async function() {
         CompactStreamSerializer.classToSerializersMap.set(Employee, {});
         const values = {};
