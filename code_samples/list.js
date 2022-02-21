@@ -18,24 +18,22 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
+    const client = await Client.newHazelcastClient();
 
-        const list = await client.getList('people');
-        await list.add('John');
-        console.log('Added John');
-        await list.add('Jane', 1);
-        console.log('Added Jane to index 1');
-        await list.add('Thomas');
-        console.log('Added Thomas');
-        await list.remove('Jane');
-        console.log('Removed Jane');
-        const removedItem = await list.removeAt(1);
-        console.log('Removed', removedItem);
+    const list = await client.getList('people');
+    await list.add('John');
+    console.log('Added John');
+    await list.add('Jane', 1);
+    console.log('Added Jane to index 1');
+    await list.add('Thomas');
+    console.log('Added Thomas');
+    await list.remove('Jane');
+    console.log('Removed Jane');
+    const removedItem = await list.removeAt(1);
+    console.log('Removed', removedItem);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

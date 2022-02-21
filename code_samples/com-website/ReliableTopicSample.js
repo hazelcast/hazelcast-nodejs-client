@@ -18,24 +18,22 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        // Start the Hazelcast Client and connect to an already running
-        // Hazelcast Cluster on 127.0.0.1
-        const hz = await Client.newHazelcastClient();
-        // Get a Topic called 'my-distributed-topic'
-        const topic = await hz.getReliableTopic('my-distributed-topic');
-        // Add a Listener to the Topic
-        topic.addMessageListener((message) => {
-            console.log(message);
-            // Shut down this Hazelcast Client once the message is received
-            hz.shutdown().catch((err) => {
-                console.error('Failed to shut down the client:', err);
-            });
+    // Start the Hazelcast Client and connect to an already running
+    // Hazelcast Cluster on 127.0.0.1
+    const hz = await Client.newHazelcastClient();
+    // Get a Topic called 'my-distributed-topic'
+    const topic = await hz.getReliableTopic('my-distributed-topic');
+    // Add a Listener to the Topic
+    topic.addMessageListener((message) => {
+        console.log(message);
+        // Shut down this Hazelcast Client once the message is received
+        hz.shutdown().catch((err) => {
+            console.error('Failed to shut down the client:', err);
         });
-        // Publish a message to the Topic
-        await topic.publish('Hello to distributed world');
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    });
+    // Publish a message to the Topic
+    await topic.publish('Hello to distributed world');
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

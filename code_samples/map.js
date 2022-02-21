@@ -18,26 +18,24 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
-        const map = await client.getMap('my-distributed-map');
+    const client = await Client.newHazelcastClient();
+    const map = await client.getMap('my-distributed-map');
 
-        await map.put('key', 'value');
-        const value = await map.get('key');
-        console.log('Plain value:', value);
-        await map.remove('key');
+    await map.put('key', 'value');
+    const value = await map.get('key');
+    console.log('Plain value:', value);
+    await map.remove('key');
 
-        await map.put('disappearing-key', 'this string will disappear after TTL', 1000);
-        let disappearingValue = await map.get('disappearing-key');
-        console.log('Disappearing value:', disappearingValue);
+    await map.put('disappearing-key', 'this string will disappear after TTL', 1000);
+    let disappearingValue = await map.get('disappearing-key');
+    console.log('Disappearing value:', disappearingValue);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        disappearingValue = await map.get('disappearing-key');
-        console.log('Disappeared value:', disappearingValue);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    disappearingValue = await map.get('disappearing-key');
+    console.log('Disappeared value:', disappearingValue);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});
