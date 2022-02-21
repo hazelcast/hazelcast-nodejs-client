@@ -24,6 +24,7 @@ const chai = require('chai');
 const long = require('long');
 const fs = require('fs');
 const path = require('path');
+const { HazelcastJsonValue } = require('../../../../../lib');
 
 chai.should();
 
@@ -812,6 +813,64 @@ describe('Data type test', function () {
             (rows[i]['age'].eq(expectedValues[i].age)).should.be.true;
             (rows[i]['height'] - expectedValues[i].height).should.be.lessThan(1e-5);
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
+        }
+    });
+    it('should be able to decode/serialize JSON', async function () {
+        const inputs = [new HazelcastJsonValue(JSON.stringify({age: 3})), {age: 3}];
+        for (const input of inputs) {
+            await basicSetup(this);
+            // JSON support is added in 5.1.
+            TestUtil.markClientVersionAtLeast(this, '5.1');
+            TestUtil.markServerVersionAtLeast(this, client, '5.1');
+            
+            const SqlColumnType = TestUtil.getSqlColumnType();
+
+            const createMappingQuery = `
+                CREATE MAPPING ${mapName} (
+                    __key INT,
+                    this JSON
+                )
+                TYPE IMAP
+                OPTIONS (
+                    'keyFormat' = 'int',
+                    'valueFormat' = 'json'
+                )
+            `;
+
+            await client.getSql().execute(createMappingQuery);
+
+            await client.getSql().execute(`INSERT INTO ${mapName} VALUES (2, CAST('{"age": 2}' AS JSON)),` +
+                '(3, ?)',
+            [input]);
+
+            const result = await TestUtil.getSql(client).execute(
+                `SELECT * FROM ${mapName} WHERE CAST(JSON_VALUE(this, '$.age') AS DOUBLE) > ?
+                 AND CAST(JSON_VALUE(this, '$.age') AS DOUBLE) < ? ORDER BY __key ASC`,
+                [1, 4]
+            );
+
+            const rowMetadata = await TestUtil.getRowMetadata(result);
+            rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.JSON);
+
+            const rows = [];
+
+            for await (const row of result) {
+                rows.push(row);
+            }
+
+            const expectedKeys = [2, 3];
+            const expectedBaseValues = {
+                age: 2
+            };
+            rows.length.should.be.eq(expectedKeys.length);
+
+            for (let i = 0; i < rows.length; i++) {
+                const jsonValue = rows[i]['this'];
+                jsonValue.should.be.instanceof(HazelcastJsonValue);
+                const obj = JSON.parse(jsonValue.toString());
+                obj.age.should.be.eq(expectedBaseValues.age + i);
+                rows[i]['__key'].should.be.eq(expectedKeys[i]);
+            }
         }
     });
 });

@@ -2827,6 +2827,44 @@ for await (const row of sqlResult) {
 }
 ```
 
+The "json-flat" value format means that top level fields of the JSON object is treated as separate columns. There is also "json"
+value format which we cover in the next section.
+
+### 8.7.7. JSON Data Type
+
+JSON is a first-class SQL type with IMap and Kafka Connector support, usable in most contexts, similarly to any other type.
+
+In order to send a JSON parameter, you can use a regular JavaScript object or a `HazelcastJsonValue`. (You need to
+use a `HazelcastJsonValue` object if you configured a global serializer):
+
+```javascript
+await client.getSql().execute('INSERT INTO test VALUES (2, ?)', [{age: 3}]);
+```
+
+The corresponding result type for JSON type is `HazelcastJsonValue`:
+
+```javascript
+const result = await client.getSql().execute('SELECT * FROM test');
+
+const rowMetadata = result.rowMetadata;
+console.log(rowMetadata.getColumn(rowMetadata.findColumn('this')).type === SqlColumnType.JSON) // true
+
+for await (const row of result) {
+    console.log(row);
+}
+```
+
+Supported operations:
+
+1. `JSON_QUERY(jsonArg VARCHAR|JSON, jsonPath VARCHAR ... <extended syntax> ): returns JSON`: returns a JSON-object/array by
+the given JSON path.
+2. `JSON_VALUE(jsonArg VARCHAR|JSON, jsonPath VARCHAR ... ): returns VARCHAR`: returns a primitive value as varchar by the
+given JSON path.
+3. `CAST(x AS JSON)` support for VARCHAR, columns/literals and dynamic params are supported.
+
+For more information about working with JSON using SQL see
+[Working with JSON](https://docs.hazelcast.com/hazelcast/5.1-beta-1/sql/working-with-json) in Hazelcast reference manual.
+
 ### 8.7.7. Lazy SQL Row Deserialization
 
 Rows in an `SqlResult` are deserialized lazily to allow you to access part of it if there is a value that can't be deserialized.

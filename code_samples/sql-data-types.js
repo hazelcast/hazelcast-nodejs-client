@@ -67,7 +67,7 @@ const varcharExample = async (client) => {
     console.log('----------VARCHAR Example----------');
     const mapName = 'varcharMap';
     const someMap = await client.getMap(mapName);
-    // To be able to use our map in SQL we need to create mapping for it.
+    // In order to use the map in SQL a mapping should be created.
     const createMappingQuery = `
             CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
@@ -86,7 +86,7 @@ const varcharExample = async (client) => {
     }
 
     try {
-        const result = await client.getSql().execute('SELECT * FROM varcharMap WHERE this = ? OR this = ?', ['7', '2']);
+        const result = await client.getSql().execute(`SELECT * FROM ${mapName} WHERE this = ? OR this = ?`, ['7', '2']);
         const rowMetadata = result.rowMetadata;
         const columnIndex = rowMetadata.findColumn('this');
         const columnMetadata = rowMetadata.getColumn(columnIndex);
@@ -110,11 +110,11 @@ const varcharExample = async (client) => {
     will not work for `BIGINT` type. Instead, you can use `long` objects or you can use explicit
     casting which can convert doubles to other integer types.
 */
-const integersExample = async (client) => {
-    console.log('---------- BIGINT Example----------');
+const bigintExample = async (client) => {
+    console.log('\n---------- BIGINT Example----------');
     const mapName = 'bigintMap';
     const someMap = await client.getMap(mapName);
-    // To be able to use our map in SQL we need to create mapping for it.
+    // In order to use the map in SQL a mapping should be created.
     const createMappingQuery = `
             CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
@@ -133,7 +133,7 @@ const integersExample = async (client) => {
     }
 
     const result = await client.getSql().execute(
-        'SELECT * FROM bigintMap WHERE this > ? AND this < ?',
+        `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
         [long.fromNumber(10), long.fromNumber(18)]
     );
     const rowMetadata = result.rowMetadata;
@@ -147,7 +147,7 @@ const integersExample = async (client) => {
 
     // Casting example. Casting to other integer types is also possible.
     const result2 = await client.getSql().execute(
-        'SELECT * FROM bigintMap WHERE this > CAST(? AS BIGINT) AND this < CAST(? AS BIGINT)',
+        `SELECT * FROM ${mapName} WHERE this > CAST(? AS BIGINT) AND this < CAST(? AS BIGINT)`,
         [10, 18]
     );
 
@@ -161,7 +161,7 @@ const objectExample = async (client, classId, factoryId) => {
     console.log('----------OBJECT Example(Portable)----------');
     const mapName = 'studentMap';
     const someMap = await client.getMap(mapName);
-    // To be able to use our map in SQL we need to create mapping for it.
+    // In order to use the map in SQL a mapping should be created.
     const createMappingQuery = `
             CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
@@ -186,7 +186,7 @@ const objectExample = async (client, classId, factoryId) => {
     // instead of `this`.
     // This is true only for complex custom objects like portable and identified serializable.
     const result = await client.getSql().execute(
-        'SELECT __key, this FROM studentMap WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)',
+        `SELECT __key, this FROM ${mapName} WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER)`,
         [3, 8]
     );
 
@@ -246,34 +246,32 @@ const objectExample2 = async (client, typeName) => {
 };
 
 (async () => {
-    try {
-        // Since we will use a portable, we register it:
-        const portableFactory = (classId) => {
-            if (classId === 1) {
-                return new Student();
-            }
-            return null;
-        };
+    // Since we will use a portable, we register it:
+    const portableFactory = (classId) => {
+        if (classId === 1) {
+            return new Student();
+        }
+        return null;
+    };
 
-        const employeeSerializer = new EmployeeSerializer();
+    const employeeSerializer = new EmployeeSerializer();
 
-        const client = await Client.newHazelcastClient({
-            serialization: {
-                portableFactories: {
-                    23: portableFactory
-                },
+    const client = await Client.newHazelcastClient({
+        serialization: {
+            portableFactories: {
+                23: portableFactory
+            },
                 compactSerializers: [employeeSerializer]
-            }
-        });
+        }
+    });
 
-        await varcharExample(client);
-        await integersExample(client);
-        await objectExample(client, 1, 23);
-        await objectExample2(client, employeeSerializer.hzTypeName);
+    await varcharExample(client);
+    await bigintExample(client);
+    await objectExample(client, 1, 23);
+    await objectExample2(client, employeeSerializer.hzTypeName);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

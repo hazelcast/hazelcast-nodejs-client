@@ -18,25 +18,23 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        // Start the Hazelcast Client and connect to an already running
-        // Hazelcast Cluster on 127.0.0.1
-        const hz = await Client.newHazelcastClient();
-        // Get a Ringbuffer called 'rb'
-        const rb = await hz.getRingbuffer('rb');
-        await rb.add(100);
-        let value = await rb.add(200);
-        // We start from the oldest item. If you want to start from
-        // the next item, call rb.tailSequence()+1
-        const sequence = await rb.headSequence();
-        value = await rb.readOne(sequence);
-        console.log('Head value:', value);
-        value = await rb.readOne(sequence.add(1));
-        console.log('Next value:', value);
-        // Shutdown this Hazelcast client
-        await hz.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    // Start the Hazelcast Client and connect to an already running
+    // Hazelcast Cluster on 127.0.0.1
+    const hz = await Client.newHazelcastClient();
+    // Get a Ringbuffer called 'rb'
+    const rb = await hz.getRingbuffer('rb');
+    await rb.add(100);
+    let value = await rb.add(200);
+    // We start from the oldest item. If you want to start from
+    // the next item, call rb.tailSequence()+1
+    const sequence = await rb.headSequence();
+    value = await rb.readOne(sequence);
+    console.log('Head value:', value);
+    value = await rb.readOne(sequence.add(1));
+    console.log('Next value:', value);
+    // Shutdown this Hazelcast client
+    await hz.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

@@ -22,27 +22,25 @@ const {
 } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
-        const map = await client.getMap('person-age-map');
+    const client = await Client.newHazelcastClient();
+    const map = await client.getMap('person-age-map');
 
-        await map.putAll([
+    await map.putAll([
             ['Philip', 46],
             ['Elizabeth', 44],
             ['Henry', 13],
             ['Paige', 15]
-        ]);
+    ]);
 
-        let count = await map.aggregate(Aggregators.count());
-        console.log(`There are ${count} people.`);
-        count = await map.aggregateWithPredicate(Aggregators.count(), Predicates.lessEqual('this', 18));
-        console.log(`There are ${count} children.`);
-        const avgAge = await map.aggregate(Aggregators.numberAvg());
-        console.log(`Average age is ${avgAge}`);
+    let count = await map.aggregate(Aggregators.count());
+    console.log(`There are ${count} people.`);
+    count = await map.aggregateWithPredicate(Aggregators.count(), Predicates.lessEqual('this', 18));
+    console.log(`There are ${count} children.`);
+    const avgAge = await map.aggregate(Aggregators.numberAvg());
+    console.log(`Average age is ${avgAge}`);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

@@ -130,93 +130,91 @@ function portableFactory3(classId) {
 }
 
 (async () => {
-    try {
-        // Let's now configure 3 clients with 3 different versions of Employee.
-        const cfg = {
+    // Let's now configure 3 clients with 3 different versions of Employee.
+    const cfg = {
             serialization: {
                 portableFactories: {
                     1: portableFactory
                 }
             }
-        };
-        const cfg2 = {
+    };
+    const cfg2 = {
             serialization: {
                 portableFactories: {
                     1: portableFactory2
                 }
             }
-        };
-        const cfg3 = {
+    };
+    const cfg3 = {
             serialization: {
                 portableFactories: {
                     1: portableFactory3
                 }
             }
-        };
+    };
 
-        const client = await Client.newHazelcastClient(cfg);
-        const client2 = await Client.newHazelcastClient(cfg2);
-        const client3 = await Client.newHazelcastClient(cfg3);
+    const client = await Client.newHazelcastClient(cfg);
+    const client2 = await Client.newHazelcastClient(cfg2);
+    const client3 = await Client.newHazelcastClient(cfg3);
 
-        /*
+    /*
          * Assume that a client joins a cluster with a newer version of a class.
          * If you modified the class by adding a new field, the new client's put
          * operations include that new field.
          */
-        const map = await client.getMap('employee-map');
-        const map2 = await client2.getMap('employee-map');
-        const map3 = await client3.getMap('employee-map');
+    const map = await client.getMap('employee-map');
+    const map2 = await client2.getMap('employee-map');
+    const map3 = await client3.getMap('employee-map');
 
-        await map.put(0, new Employee('Jack', 28));
-        await map2.put(1, new Employee2('Jane', 29, 'Josh'));
+    await map.put(0, new Employee('Jack', 28));
+    await map2.put(1, new Employee2('Jane', 29, 'Josh'));
 
-        let size = await map.size();
-        console.log('Map size:', size);
-        let values = await map.values();
-        /*
+    let size = await map.size();
+    console.log('Map size:', size);
+    let values = await map.values();
+    /*
          * If this new client tries to get an object that was put from the older
          * clients, it gets `null` for the newly added field.
          */
-        for (const value of values) {
-            console.log(value);
-        }
-        values = await map2.values();
-        for (const value of values) {
-            console.log(value);
-        }
+    for (const value of values) {
+        console.log(value);
+    }
+    values = await map2.values();
+    for (const value of values) {
+        console.log(value);
+    }
 
-        /*
+    /*
          * Let's try now to put a version 3 Employee object to the map and see
          * what happens.
          */
-        await map3.put(2, new Employee3('Joe', '30', 'Mary'));
-        size = await map.size();
-        console.log('Map size:', size);
+    await map3.put(2, new Employee3('Joe', '30', 'Mary'));
+    size = await map.size();
+    console.log('Map size:', size);
 
-        /*
+    /*
          * As clients with incompatible versions of the class try to access each
          * other, a HazelcastSerializationError is raised (caused by a TypeError).
          */
-        try {
-            await map.get(2);
-        } catch (err) {
-            // Client that has class with int type age field tries to read Employee3
-            // object with string `age` field.
-            console.log('Failed due to:', err.message);
-        }
-        try {
-            await map3.get(0);
-        } catch (err) {
-            // Client that has class with String type age field tries to read
-            // Employee object with int `age` field.
-            console.log('Failed due to:', err.message);
-        }
-
-        await client.shutdown();
-        await client2.shutdown();
-        await client3.shutdown();
+    try {
+        await map.get(2);
     } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
+        // Client that has class with int type age field tries to read Employee3
+        // object with string `age` field.
+        console.log('Failed due to:', err.message);
     }
-})();
+    try {
+        await map3.get(0);
+    } catch (err) {
+        // Client that has class with String type age field tries to read
+        // Employee object with int `age` field.
+        console.log('Failed due to:', err.message);
+    }
+
+    await client.shutdown();
+    await client2.shutdown();
+    await client3.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

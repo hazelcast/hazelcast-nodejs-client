@@ -18,21 +18,19 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient({
+    const client = await Client.newHazelcastClient({
             security: {
                 usernamePassword: {
                     username: 'admin',
                     password: 'some-strong-password',
                 }
             }
-        });
-        console.log('The client is authenticated using username password credentials');
+    });
+    console.log('The client is authenticated using username password credentials');
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});
 

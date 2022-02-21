@@ -22,37 +22,35 @@ const {
 } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient({
+    const client = await Client.newHazelcastClient({
             serialization: {
                 jsonStringDeserializationPolicy: 'NO_DESERIALIZATION'
             }
-        });
+    });
 
-        const map = await client.getMap('employees');
-        const employeesData = [
+    const map = await client.getMap('employees');
+    const employeesData = [
             { name: 'Alice', age: 35 },
             { name: 'Andy', age: 22},
             { name: 'Bob', age: 37 }
-        ];
-        await map.putAll(employeesData.map((employee, index) => {
-            return [index, new HazelcastJsonValue(JSON.stringify(employee))];
-        }));
+    ];
+    await map.putAll(employeesData.map((employee, index) => {
+        return [index, new HazelcastJsonValue(JSON.stringify(employee))];
+    }));
 
-        const employees = await map.valuesWithPredicate(
-            Predicates.and(
-                Predicates.sql('name like A%'),
-                Predicates.greaterThan('age', 30)
-            )
-        );
+    const employees = await map.valuesWithPredicate(
+        Predicates.and(
+            Predicates.sql('name like A%'),
+            Predicates.greaterThan('age', 30)
+        )
+    );
         // Prints all the employees whose name starts with 'A' and age is greater than 30
-        for (const employee of employees) {
-            console.log(employee.toString());
-        }
-
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
+    for (const employee of employees) {
+        console.log(employee.toString());
     }
-})();
+
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});
