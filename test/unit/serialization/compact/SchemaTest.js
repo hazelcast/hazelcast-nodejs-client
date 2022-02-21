@@ -23,24 +23,22 @@ const {
     createSerializationService
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { Schema } = require('../../../../lib/serialization/compact/Schema');
-const { RabinFingerprint64 } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const { BitsUtil } = require('../../../../lib/util/BitsUtil');
 chai.should();
 
-const verifySchema = (typeName, schema, fields, rabinFingerPrint, fieldDefinitionMap) => {
+const verifySchema = (typeName, schema, fields, fieldDefinitionMap) => {
     schema.typeName.should.be.eq(typeName);
-    schema.fields.should.be.deep.eq(fields);
     schema.fieldDefinitionMap.size.should.be.eq(fields.length);
     schema.fieldDefinitionMap.should.be.deep.eq(fieldDefinitionMap);
-    RabinFingerprint64(schema).eq(rabinFingerPrint).should.be.true;
 };
 
 describe('SchemaTest', function () {
     it('should construct from readData and serialize via writeData', function () {
         const fields = [];
-        for (const fieldKind in FieldKind) {
+        for (const f in FieldKind) {
+            const fieldKind = +f;
             // enums are reverse mapped.
-            if (typeof fieldKind === 'number') {
+            if (!isNaN(+fieldKind) && fieldKind !== FieldKind.PORTABLE && fieldKind !== FieldKind.ARRAY_OF_PORTABLE) {
                 fields.push(new FieldDescriptor(FieldKind[fieldKind], fieldKind));
             }
         }
@@ -53,7 +51,7 @@ describe('SchemaTest', function () {
         const schema2 = new Schema();
         schema2.readData(input);
 
-        verifySchema('something', schema2, fields, RabinFingerprint64(schema), schema.fieldDefinitionMap);
+        verifySchema('something', schema2, fields, schema.fieldDefinitionMap);
     });
 
     it('construct correctly when no arguments given', function () {

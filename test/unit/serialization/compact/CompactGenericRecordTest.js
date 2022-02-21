@@ -478,6 +478,12 @@ describe('CompactGenericRecordTest', function () {
         }
     });
 
+    it('should be able to write every field', async function() {
+        const record = getGiganticRecord();
+        const serializationService = createSerializationService();
+        serializationService.toData(record, undefined, false);
+    });
+
     it('should be able to get kind of a field', async function() {
         const genericRecord = GenericRecords.compact('a', {foo: Fields.int32}, {foo: 1});
         genericRecord.getFieldKind('foo').should.be.equal(FieldKind.INT32);

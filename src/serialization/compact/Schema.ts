@@ -19,7 +19,6 @@ import {IdentifiedDataSerializable} from '../Serializable';
 import {DataInput, DataOutput} from '../Data';
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
 import * as Long from 'long';
-import assert = require('assert');
 import {FieldOperations} from '../generic_record/FieldOperations';
 import {FieldKind} from '../generic_record/FieldKind';
 import {BitsUtil} from '../../util/BitsUtil';
@@ -113,6 +112,7 @@ export class Schema implements IdentifiedDataSerializable {
         return this.fieldDefinitionMap.values();
     }
 
+    // Not used but may be needed in the future
     readData(input: DataInput): void {
         this.typeName = input.readString();
         const fieldDefinitionsSize = input.readInt();
@@ -126,6 +126,7 @@ export class Schema implements IdentifiedDataSerializable {
         this.init();
     }
 
+    // Not used but may be needed in the future
     writeData(output: DataOutput): void {
         output.writeString(this.typeName);
         output.writeInt(this.fieldDefinitionMap.size);
@@ -135,24 +136,4 @@ export class Schema implements IdentifiedDataSerializable {
             output.writeInt(field.kind);
         }
     }
-
-    equals(other: Schema) {
-        if (!(other instanceof Schema
-            && this.typeName === other.typeName
-            && this.numberVarSizeFields === other.numberVarSizeFields
-            && this.schemaId === other.schemaId
-            && this.fixedSizeFieldsLength === other.fixedSizeFieldsLength
-            && this.fields.length === other.fields.length)) {
-            return false;
-        }
-
-        try {
-            assert.deepStrictEqual([...this.fieldDefinitionMap.entries()], [...other.fieldDefinitionMap.entries()]);
-        } catch (e) {
-            return false;
-        }
-
-        return true;
-    }
-
 }

@@ -130,7 +130,9 @@ export class CompactStreamSerializer {
         for (let i = 0; i < fields.length; i++) {
             const fieldName = fields[i].fieldName;
             const fieldKind = fields[i].kind;
-            FieldOperations.fieldOperations(fieldKind).writeFieldFromRecordToWriter(writer, record, fieldName);
+            FieldOperations.fieldOperations(fieldKind).writeFieldFromRecordToWriter(
+                writer, record, fieldName, throwIfSchemaNotReplicated
+            );
         }
         writer.end();
     }

@@ -47,7 +47,6 @@ describe('CompactTest', function () {
 
     let supportedFields;
     let varSizeFields;
-    let arrayOfNullableFields;
     let nullableFixedSizeFields;
     let fixedSizeFields;
     let arrayOfNullableFixedSizeFields;
@@ -66,7 +65,6 @@ describe('CompactTest', function () {
 
         varSizeFields = CompactUtil.varSizeFields;
         supportedFields = CompactUtil.supportedFields;
-        arrayOfNullableFields = CompactUtil.arrayOfNullableFields;
         nullableFixedSizeFields = CompactUtil.nullableFixedSizeFields;
         fixedSizeFields = CompactUtil.fixedSizeFields;
         arrayOfNullableFixedSizeFields = Object.values(CompactUtil.fixedSizedArrayToNullableFixedSizeArray);
@@ -75,7 +73,6 @@ describe('CompactTest', function () {
         supportedFields = [];
         nullableFixedSizeFields = [];
         fixedSizeFields = [];
-        arrayOfNullableFields = [];
         arrayOfNullableFixedSizeFields = [];
     }
 
@@ -264,19 +261,6 @@ describe('CompactTest', function () {
             const map = await putEntry(mapName, +fieldKind, null);
             const obj = await map.get('key');
             should.equal(obj[fieldName], null);
-        });
-    });
-
-    arrayOfNullableFields.forEach(fieldKind => {
-        it(`should be able read and write a field that is an array of nullables. Field: ${FieldKind[fieldKind]}`,
-            async function () {
-                const fieldName = FieldKind[fieldKind];
-                const value = [null, ...CompactUtil.referenceObjects[fieldName].value, null];
-                value.splice(2, 0, null);
-
-                const map = await putEntry(mapName, +fieldKind, value);
-                const obj = await map.get('key');
-                obj[fieldName].should.be.deep.eq(value);
         });
     });
 
@@ -538,6 +522,35 @@ describe('CompactTest', function () {
             }
         });
 
+        it(`should be able to read a fix sized array as a nullable fix sized array field. Field: ${FieldKind[fieldKind]}`,
+            async function () {
+            const fieldName = FieldKind[fieldKind];
+            const arrayOfFixedSizeField = CompactUtil.nullableFixedSizeArrayToFixedSizeArray[fieldKind];
+            const arrayOfFixedSizeFieldName = FieldKind[arrayOfFixedSizeField];
+            const value = CompactUtil.referenceObjects[arrayOfFixedSizeFieldName].value;
+
+            await putEntry(mapName, +arrayOfFixedSizeField, value, undefined, {
+                [arrayOfFixedSizeFieldName]: 'someField'
+            });
+
+            const client2 = await testFactory.newHazelcastClientForParallelTests({
+                clusterName: cluster.id,
+                serialization: {
+                    compactSerializers: [new CompactUtil.FlexibleSerializer([fieldKind], {
+                        [fieldName]: 'someField'
+                    }), new CompactUtil.EmployeeSerializer()]
+                }
+            }, member);
+
+            const map = await client2.getMap(mapName);
+            const obj = await map.get('key');
+            if (fieldKind === FieldKind.ARRAY_OF_NULLABLE_INT8) {
+                Buffer.from(obj.someField).should.be.deep.eq(value);
+            } else {
+                obj.someField.should.be.deep.eq(value);
+            }
+        });
+
         it(`should be able write null to an array of fixed sized nullables and read it. Field: ${FieldKind[fieldKind]}`,
             async function () {
                 const fieldName = FieldKind[fieldKind];
@@ -561,6 +574,17 @@ describe('CompactTest', function () {
                 const map = await client2.getMap(mapName);
                 const obj = await map.get('key');
                 should.equal(obj.someField, null);
+        });
+
+        it(`should be able read and write a field that is an array of nullables. Field: ${FieldKind[fieldKind]}`,
+            async function () {
+                const fieldName = FieldKind[fieldKind];
+                const value = [null, ...CompactUtil.referenceObjects[fieldName].value, null];
+                value.splice(2, 0, null);
+
+                const map = await putEntry(mapName, +fieldKind, value);
+                const obj = await map.get('key');
+                obj[fieldName].should.be.deep.eq(value);
         });
     });
 

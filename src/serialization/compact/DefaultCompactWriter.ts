@@ -413,15 +413,15 @@ export class DefaultCompactWriter implements CompactWriter {
         this.writeVariableSizeField(fieldName, FieldKind.TIMESTAMP_WITH_TIMEZONE, value, IOUtil.writeOffsetDateTime);
     }
 
-    writeGenericRecord(fieldName: string, value: GenericRecord): void {
+    writeGenericRecord(fieldName: string, value: GenericRecord, throwIfSchemaNotReplicated = true): void {
         return this.writeVariableSizeField(fieldName, FieldKind.COMPACT, value, (out, value) => {
-            return this.serializer.writeGenericRecord(out, value as CompactGenericRecord);
+            return this.serializer.writeGenericRecord(out, value as CompactGenericRecord, throwIfSchemaNotReplicated);
         });
 
     }
-    writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[]) : void {
+    writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[], throwIfSchemaNotReplicated = true) : void {
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
-            return this.serializer.writeGenericRecord(out, value as CompactGenericRecord);
+            return this.serializer.writeGenericRecord(out, value as CompactGenericRecord, throwIfSchemaNotReplicated);
         });
     }
 }

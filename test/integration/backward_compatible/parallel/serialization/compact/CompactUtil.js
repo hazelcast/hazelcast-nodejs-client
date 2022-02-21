@@ -616,7 +616,6 @@ const nullableFixedSizeArrayToFixedSizeArray = {
 const nullableFixedSizeFields = [];
 const fixedSizeFields = [];
 const varSizeFields = [];
-const arrayOfNullableFields = [];
 
 for (const fieldKind of supportedFields) {
     if (FieldOperations.ALL[fieldKind].kindSizeInBytes() === FieldOperations.VARIABLE_SIZE) {
@@ -624,10 +623,6 @@ for (const fieldKind of supportedFields) {
     } else {
         nullableFixedSizeFields.push(fixedFieldToNullableFixedField[fieldKind]);
         fixedSizeFields.push(fieldKind);
-    }
-
-    if (FieldKind[fieldKind].startsWith('ARRAY_OF_NULLABLE')) {
-        arrayOfNullableFields.push(fieldKind);
     }
 }
 
@@ -1397,7 +1392,6 @@ module.exports = {
     varSizeFields,
     nullableFixedSizeFields,
     fixedSizeFields,
-    arrayOfNullableFields,
     nullableFixedSizeArrayToFixedSizeArray,
     fixedNullableFieldToFixedField,
     fixedFieldToNullableFixedField,
