@@ -1,0 +1,48 @@
+name: Run tests
+on:
+    push:
+        branches-ignore:
+            - 'gh-pages'
+        tags-ignore:
+            - '*'
+    pull_request:
+
+jobs:
+    run-tests:
+        name: Run Tests on (${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            matrix:
+                os: [ ubuntu-latest, windows-latest ]
+
+        steps:
+            - name: Setup Java
+              uses: actions/setup-java@v1
+              with:
+                  java-version: 8
+            - name: Setup Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 10
+            - name: Checkout code
+              uses: actions/checkout@v2
+            - name: Install dependencies and compile client
+              run: |
+                  npm install
+                  npm run compile
+            - name: Run OS tests
+              if: ${{ github.event_name == 'pull_request' }}
+              run: |
+                  npm run coverage
+            - name: Run Enterprise tests
+              if: ${{ github.event_name == 'push' }}
+              env:
+                  HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+              run: |
+                  npm run coverage
+            - name: Publish to Codecov
+              if: ${{ matrix.os == 'ubuntu-latest' }}
+              uses: codecov/codecov-action@v2
+              with:
+                  files: coverage/lcov.info
