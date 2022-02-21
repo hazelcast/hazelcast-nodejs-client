@@ -37,25 +37,23 @@ async function do50000Gets(client, mapName) {
 }
 
 (async () => {
-    try {
-        const nearCachedMapName = 'nearCachedMap';
-        const regularMapName = 'reqularMap';
+    const nearCachedMapName = 'nearCachedMap';
+    const regularMapName = 'reqularMap';
 
-        const client = await Client.newHazelcastClient({
+    const client = await Client.newHazelcastClient({
             nearCaches: {
                 [nearCachedMapName]: {
                     evictionPolicy: 'LFU',
                     invalidateOnChange: true
                 }
             }
-        });
+    });
 
-        await do50000Gets(client, nearCachedMapName);
-        await do50000Gets(client, regularMapName);
+    await do50000Gets(client, nearCachedMapName);
+    await do50000Gets(client, regularMapName);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

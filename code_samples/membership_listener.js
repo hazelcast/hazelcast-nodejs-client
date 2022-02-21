@@ -18,23 +18,21 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
+    const client = await Client.newHazelcastClient();
 
-        const membershipListener = {
+    const membershipListener = {
             memberAdded: (event) => {
                 console.log('Member Added:', event.member.address);
             },
             memberRemoved: (event) => {
                 console.log('Member Removed:', event.member.address);
             }
-        };
+    };
         // When a member is added and removed, the listener will be triggered
-        client.getClusterService().addMembershipListener(membershipListener);
+    client.getClusterService().addMembershipListener(membershipListener);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

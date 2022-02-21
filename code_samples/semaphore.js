@@ -18,26 +18,24 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
+    const client = await Client.newHazelcastClient();
 
-        const semaphore = await client.getCPSubsystem().getSemaphore('my-semaphore');
-        const initialized = await semaphore.init(3);
-        console.log('Initialized:', initialized);
-        let available = await semaphore.availablePermits();
-        console.log('Available:', available);
+    const semaphore = await client.getCPSubsystem().getSemaphore('my-semaphore');
+    const initialized = await semaphore.init(3);
+    console.log('Initialized:', initialized);
+    let available = await semaphore.availablePermits();
+    console.log('Available:', available);
 
-        await semaphore.acquire(3);
-        available = await semaphore.availablePermits();
-        console.log('Available after acquire:', available);
+    await semaphore.acquire(3);
+    available = await semaphore.availablePermits();
+    console.log('Available after acquire:', available);
 
-        await semaphore.release(2);
-        available = await semaphore.availablePermits();
-        console.log('Available after release:', available);
+    await semaphore.release(2);
+    available = await semaphore.availablePermits();
+    console.log('Available after release:', available);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

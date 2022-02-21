@@ -18,30 +18,28 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
+    const client = await Client.newHazelcastClient();
 
-        const latch = await client.getCPSubsystem().getCountDownLatch('my-latch');
-        const initialized = await latch.trySetCount(3);
-        console.log('Initialized:', initialized);
-        let count = await latch.getCount();
-        console.log('Count:', count);
+    const latch = await client.getCPSubsystem().getCountDownLatch('my-latch');
+    const initialized = await latch.trySetCount(3);
+    console.log('Initialized:', initialized);
+    let count = await latch.getCount();
+    console.log('Count:', count);
 
-        latch.await(5000)
+    latch.await(5000)
             .then(() => {
                 console.log('Returned from await()');
             })
             .catch(console.error);
 
-        for (let i = 0; i < 3; i++) {
-            await latch.countDown();
-            count = await latch.getCount();
-            console.log('Current count:', count);
-        }
-
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
+    for (let i = 0; i < 3; i++) {
+        await latch.countDown();
+        count = await latch.getCount();
+        console.log('Current count:', count);
     }
-})();
+
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

@@ -18,11 +18,10 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
-        const map = await client.getMap('notifications');
+    const client = await Client.newHazelcastClient();
+    const map = await client.getMap('notifications');
 
-        const listener = {
+    const listener = {
             added: (entryEvent) => {
                 console.log('Added key: ' + entryEvent.key
                     + ', new value: ' + entryEvent.value
@@ -33,15 +32,14 @@ const { Client } = require('hazelcast-client');
                     + ', new value: ' + entryEvent.value
                     + ', old value: ' + entryEvent.oldValue);
             }
-        };
-        await map.addEntryListener(listener, undefined, true);
+    };
+    await map.addEntryListener(listener, undefined, true);
 
-        await map.put(1, 'new-value');
-        await map.remove(1);
+    await map.put(1, 'new-value');
+    await map.remove(1);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});
