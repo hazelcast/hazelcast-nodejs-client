@@ -50,8 +50,8 @@ export const RabinFingerprintBytes = (buffer: Buffer): Long => {
  */
 export const RabinFingerprint64 = (schema: Schema): Long => {
     let fp: Long = RabinFingerPrintLongString(INIT, schema.typeName);
-    fp = RabinFingerPrintLongInt(fp, schema.fields.length);
-    for (const descriptor of schema.fields) {
+    fp = RabinFingerPrintLongInt(fp, schema.fieldDefinitionMap.size);
+    for (const descriptor of schema.fieldDefinitionMap.values()) {
         fp = RabinFingerPrintLongString(fp, descriptor.fieldName);
         fp = RabinFingerPrintLongInt(fp, descriptor.kind);
     }
