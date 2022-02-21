@@ -23,6 +23,7 @@ const {
     LocalDateTime,
     OffsetDateTime,
 } = require('../../../lib/core/DateTimeClasses');
+const { leftZeroPadInteger } = require('../../../lib/util/DateTimeUtil');
 
 describe('DateTimeClassesTest', function () {
     describe('LocalTimeTest', function () {
@@ -110,21 +111,43 @@ describe('DateTimeClassesTest', function () {
             (() => LocalTime.fromString(null)).should.throw(TypeError, 'String expected');
             (() => LocalTime.fromString()).should.throw(TypeError, 'String expected');
         });
+
+        it('should construct from fromDate correctly', function () {
+            const localTime1 = LocalTime.fromDate(new Date(2000, 2, 29, 0, 0, 0, 0));
+            localTime1.toString().should.be.eq('00:00:00');
+            const localTime2 = LocalTime.fromDate(new Date(2000, 0, 29, 2, 3, 4, 6));
+            localTime2.toString().should.be.eq('02:03:04.006000000');
+        });
+
+        it('should throw when constructed from fromDate with a non-date thing', function () {
+            const nonDateThings = [1, null, '', {}, [], function() {}, class A {}, LocalDateTime.fromDate(new Date())];
+            nonDateThings.forEach(nonDateThing => {
+                (() => LocalTime.fromDate(nonDateThing)).should.throw(TypeError, 'A Date is not passed');
+            });
+        });
+
+        it('should throw when constructed from fromDate with an invalid date', function () {
+            const invalidDates = [new Date('aa'), new Date({}), new Date(undefined)];
+            invalidDates.forEach(invalidDate => {
+                isNaN(invalidDate.getTime).should.be.true;
+                (() => LocalTime.fromDate(invalidDate)).should.throw(RangeError, 'Invalid Date is passed');
+            });
+        });
     });
     describe('LocalDateTest', function () {
-        it('should throw RangeError if year is not an integer between -999_999_999-999_999_999(inclusive)',
-            function () {
-                (() => new LocalDate(1e9, 1, 1)).should.throw(RangeError, 'Year');
-                (() => new LocalDate(-1e9, 1, 1)).should.throw(RangeError, 'Year');
-                (() => new LocalDate(1.1, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
-                (() => new LocalDate('1', 1, 1)).should.throw(TypeError, 'All arguments must be numbers');
-                (() => new LocalDate({ 1: 1 }, 1, 1)).should.throw(TypeError, 'All arguments must be numbers');
-                (() => new LocalDate([], 1, 1)).should.throw(TypeError, 'All arguments must be numbers');
-                (() => new LocalDate(1e12, 1, 1)).should.throw(RangeError, 'Year');
-            });
+        it('should throw RangeError if year is not an integer between -999_999_999-999_999_999(inclusive)', function () {
+            (() => new LocalDate(1e9, 1, 1)).should.throw(RangeError, 'Year');
+            (() => new LocalDate(-1e9, 1, 1)).should.throw(RangeError, 'Year');
+            (() => new LocalDate(1.1, 1, 1)).should.throw(RangeError, 'All arguments must be integers');
+            (() => new LocalDate('1', 1, 1)).should.throw(TypeError, 'All arguments must be numbers');
+            (() => new LocalDate({ 1: 1 }, 1, 1)).should.throw(TypeError, 'All arguments must be numbers');
+            (() => new LocalDate([], 1, 1)).should.throw(TypeError, 'All arguments must be numbers');
+            (() => new LocalDate(1e12, 1, 1)).should.throw(RangeError, 'Year');
+        });
 
-        it('should throw RangeError if month is not an integer between 0-59(inclusive)', function () {
+        it('should throw RangeError if month is not an integer between 1-12(inclusive)', function () {
             (() => new LocalDate(1, -1, 1)).should.throw(RangeError, 'Month');
+            (() => new LocalDate(1, 0, 1)).should.throw(RangeError, 'Month');
             (() => new LocalDate(1, 1.1, 1)).should.throw(RangeError, 'All arguments must be integers');
             (() => new LocalDate(1, 233, 1)).should.throw(RangeError, 'Month');
             (() => new LocalDate(1, '1', 1)).should.throw(TypeError, 'All arguments must be numbers');
@@ -147,6 +170,8 @@ describe('DateTimeClassesTest', function () {
         });
 
         it('should convert to string correctly', function () {
+            new LocalDate(999999999, 12, 31).toString().should.be.eq('999999999-12-31');
+            new LocalDate(0, 1, 1).toString().should.be.eq('0000-01-01');
             new LocalDate(2000, 2, 29).toString().should.be.eq('2000-02-29');
             new LocalDate(2001, 2, 1).toString().should.be.eq('2001-02-01');
             new LocalDate(35, 2, 28).toString().should.be.eq('0035-02-28');
@@ -181,6 +206,16 @@ describe('DateTimeClassesTest', function () {
             localtime5.year.should.be.eq(29999);
             localtime5.month.should.be.eq(3);
             localtime5.date.should.be.eq(29);
+
+            const localtime6 = LocalDate.fromString('999999999-12-31');
+            localtime6.year.should.be.eq(999999999);
+            localtime6.month.should.be.eq(12);
+            localtime6.date.should.be.eq(31);
+
+            const localtime7 = LocalDate.fromString('0000-01-01');
+            localtime7.year.should.be.eq(0);
+            localtime7.month.should.be.eq(1);
+            localtime7.date.should.be.eq(1);
         });
 
         it('should throw RangeError on invalid string', function () {
@@ -204,6 +239,32 @@ describe('DateTimeClassesTest', function () {
             (() => LocalDate.fromString([])).should.throw(TypeError, 'String expected');
             (() => LocalDate.fromString(null)).should.throw(TypeError, 'String expected');
             (() => LocalDate.fromString()).should.throw(TypeError, 'String expected');
+        });
+
+        it('should construct from fromDate correctly', function () {
+            const date1 = LocalDate.fromDate(new Date(2000, 2, 29, 2, 3, 4, 6));
+            date1.toString().should.be.eq('2000-03-29');
+            const date2 = LocalDate.fromDate(new Date(2000, 0, 29, 2, 3, 4, 6));
+            date2.toString().should.be.eq('2000-01-29');
+            const date3 = LocalDate.fromDate(new Date(-2000, 2, 29, 2, 3, 4, 6));
+            date3.toString().should.be.eq('-2000-03-29');
+            const date4 = LocalDate.fromDate(new Date(-2000, 0, 29, 2, 3, 4, 6));
+            date4.toString().should.be.eq('-2000-01-29');
+        });
+
+        it('should throw when constructed from fromDate with a non-date thing', function () {
+            const nonDateThings = [1, null, '', {}, [], function() {}, class A {}, LocalDateTime.fromDate(new Date())];
+            nonDateThings.forEach(nonDateThing => {
+                (() => LocalDate.fromDate(nonDateThing)).should.throw(TypeError, 'A Date is not passed');
+            });
+        });
+
+        it('should throw when constructed from fromDate with an invalid date', function () {
+            const invalidDates = [new Date('aa'), new Date({}), new Date(undefined)];
+            invalidDates.forEach(invalidDate => {
+                isNaN(invalidDate.getTime).should.be.true;
+                (() => LocalDate.fromDate(invalidDate)).should.throw(RangeError, 'Invalid Date is passed');
+            });
         });
     });
     describe('LocalDateTimeTest', function () {
@@ -272,7 +333,6 @@ describe('DateTimeClassesTest', function () {
         });
 
         it('fromDate should throw RangeError if date is invalid', function () {
-            (() => LocalDateTime.fromDate(new Date(-1))).should.throw(RangeError, 'Invalid Date');
             (() => LocalDateTime.fromDate(new Date('s'))).should.throw(RangeError, 'Invalid Date');
             (() => LocalDateTime.fromDate(1, 1)).should.throw(TypeError, 'A Date is not passed');
             (() => LocalDateTime.fromDate('s', 1)).should.throw(TypeError, 'A Date is not passed');
@@ -280,13 +340,23 @@ describe('DateTimeClassesTest', function () {
         });
 
         it('should construct from fromDate correctly', function () {
-            const dateTime = LocalDateTime.fromDate(new Date(Date.UTC(2000, 2, 29, 2, 3, 4, 6)));
-            dateTime.toString().should.be.eq('2000-02-29T02:03:04.006000000');
+            const dateTime1 = LocalDateTime.fromDate(new Date(2000, 2, 29, 2, 3, 4, 6));
+            dateTime1.toString().should.be.eq('2000-03-29T02:03:04.006000000');
+            const dateTime2 = LocalDateTime.fromDate(new Date(2000, 0, 29, 2, 3, 4, 6));
+            dateTime2.toString().should.be.eq('2000-01-29T02:03:04.006000000');
         });
 
         it('should convert to date correctly', function () {
             const dateTime = new LocalDateTime(new LocalDate(2000, 2, 29), new LocalTime(2, 19, 4, 6000000));
-            dateTime.asDate().toISOString().should.be.eq('2000-02-29T02:19:04.006Z');
+            const asDate = dateTime.asDate();
+            const date = leftZeroPadInteger(asDate.getDate(), 2);
+            const month = leftZeroPadInteger(asDate.getMonth() + 1, 2); // Date's month is 0-based
+            const year = leftZeroPadInteger(asDate.getFullYear(), 4);
+            const hours = leftZeroPadInteger(asDate.getHours(), 2);
+            const minutes = leftZeroPadInteger(asDate.getMinutes(), 2);
+            const seconds = leftZeroPadInteger(asDate.getSeconds(), 2);
+
+            `${date}.${month}.${year} ${hours}:${minutes}:${seconds}`.should.be.eq('29.02.2000 02:19:04');
         });
     });
     describe('OffsetDateTimeTest', function () {
@@ -304,7 +374,6 @@ describe('DateTimeClassesTest', function () {
         });
 
         it('fromDate should throw RangeError if date is invalid', function () {
-            (() => OffsetDateTime.fromDate(new Date(-1), 1)).should.throw(RangeError, 'Invalid Date');
             (() => OffsetDateTime.fromDate(new Date('s'), 1)).should.throw(RangeError, 'Invalid Date');
             (() => OffsetDateTime.fromDate(1, 1)).should.throw(TypeError, 'A Date is not passed');
             (() => OffsetDateTime.fromDate('s', 1)).should.throw(TypeError, 'A Date is not passed');
@@ -320,8 +389,10 @@ describe('DateTimeClassesTest', function () {
         });
 
         it('should construct from fromDate correctly', function () {
-            const dateTime3 = OffsetDateTime.fromDate(new Date(Date.UTC(2000, 2, 29, 2, 3, 4, 6)), 1800);
-            dateTime3.toString().should.be.eq('2000-02-29T02:03:04.006000000+00:30');
+            const offsetDateTime1 = OffsetDateTime.fromDate(new Date(2000, 2, 29, 2, 3, 4, 6), 1800);
+            offsetDateTime1.toString().should.be.eq('2000-03-29T02:03:04.006000000+00:30');
+            const offsetDateTime2 = OffsetDateTime.fromDate(new Date(2000, 0, 29, 2, 3, 4, 6), 1800);
+            offsetDateTime2.toString().should.be.eq('2000-01-29T02:03:04.006000000+00:30');
         });
 
         const dateTime1 = new OffsetDateTime(
@@ -329,7 +400,18 @@ describe('DateTimeClassesTest', function () {
         );
 
         it('should convert to date correctly', function () {
-            dateTime1.asDate().toISOString().should.be.eq('2000-02-29T02:02:24.006Z');
+            const asDate = dateTime1.asDate();
+
+            const date = leftZeroPadInteger(asDate.getDate(), 2);
+            const month = leftZeroPadInteger(asDate.getMonth() + 1, 2); // Date's month is 0-based
+            const year = leftZeroPadInteger(asDate.getFullYear(), 4);
+            const hours = leftZeroPadInteger(asDate.getHours(), 2);
+            const minutes = leftZeroPadInteger(asDate.getMinutes(), 2);
+            const seconds = leftZeroPadInteger(asDate.getSeconds(), 2);
+
+            `${date}.${month}.${year} ${hours}:${minutes}:${seconds}`.should.be.eq('29.02.2000 02:02:24');
+
+            asDate.getMilliseconds().should.be.equal(6);
         });
 
         it('should convert to string correctly', function () {
@@ -390,7 +472,6 @@ describe('DateTimeClassesTest', function () {
 
             offsetSeconds3.should.be.eq(0);
 
-            // Timezone info omitted, UTC should be assumed
             const offsetDateTime4 = OffsetDateTime.fromString('2021-04-15T07:33:04.914Z');
             const offsetSeconds4 = offsetDateTime4.offsetSeconds;
             const localDateTime4 = offsetDateTime4.localDateTime;

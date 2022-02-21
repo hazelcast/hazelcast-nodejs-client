@@ -264,12 +264,18 @@ export class SqlServiceImpl implements SqlService {
         const expectedResultType: SqlExpectedResultType = sqlStatement.options?.hasOwnProperty('expectedResultType') ?
             SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
-        let timeoutMillis: Long;
-        if (sqlStatement.options?.hasOwnProperty('timeoutMillis')) {
-            timeoutMillis = Long.fromNumber(sqlStatement.options.timeoutMillis);
-        } else {
-            timeoutMillis = SqlServiceImpl.DEFAULT_TIMEOUT;
-        }
+        const timeoutMillis = sqlStatement.options?.hasOwnProperty('timeoutMillis') ?
+            Long.fromNumber(sqlStatement.options.timeoutMillis) : SqlServiceImpl.DEFAULT_TIMEOUT;
+
+        const cursorBufferSize = sqlStatement.options?.hasOwnProperty('cursorBufferSize') ?
+            sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE;
+
+        const returnRawResult = sqlStatement.options?.hasOwnProperty('returnRawResult') ?
+            sqlStatement.options.returnRawResult : SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT;
+
+        const schema = sqlStatement.options?.hasOwnProperty('schema') ?
+            sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA;
+
 
         try {
             let serializedParams: Data[];
@@ -290,14 +296,6 @@ export class SqlServiceImpl implements SqlService {
             } else {
                 serializedParams = [];
             }
-            const cursorBufferSize = sqlStatement.options?.hasOwnProperty('cursorBufferSize') ?
-                sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE;
-
-            const returnRawResult = sqlStatement.options?.hasOwnProperty('returnRawResult') ?
-                sqlStatement.options.returnRawResult : SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT;
-
-            const schema = sqlStatement.options?.hasOwnProperty('schema') ?
-                sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA;
 
             const requestMessage = SqlExecuteCodec.encodeRequest(
                 sqlStatement.sql,

@@ -29,11 +29,10 @@ class Customer {
 }
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
-        const personMap = await client.getMap('personMap');
+    const client = await Client.newHazelcastClient();
+    const personMap = await client.getMap('personMap');
 
-        await personMap.putAll([
+    await personMap.putAll([
             ['1', new Customer('Peter', true, 36)],
             ['2', new Customer('John', false, 40)],
             ['3', new Customer('Roger', true, 20)],
@@ -41,17 +40,16 @@ class Customer {
             ['5', new Customer('Mary', false, 22)],
             ['6', new Customer('Ragnar', true, 30)],
             ['7', new Customer('Hilary', true, 19)],
-        ]);
+    ]);
 
-        const predicate = Predicates.sql('active AND age < 30');
-        const persons = await personMap.valuesWithPredicate(predicate);
-        for (const person of persons) {
-            console.log(person);
-        }
-
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
+    const predicate = Predicates.sql('active AND age < 30');
+    const persons = await personMap.valuesWithPredicate(predicate);
+    for (const person of persons) {
+        console.log(person);
     }
-})();
+
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

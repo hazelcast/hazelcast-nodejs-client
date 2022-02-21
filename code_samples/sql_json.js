@@ -19,52 +19,40 @@ const { Client, SqlColumnType } = require('hazelcast-client');
 
 (async () => {
     const client = await Client.newHazelcastClient();
-    const mapName = 'myMap';
-    const map = await client.getMap(mapName);
+    const mapName = 'jsonMap';
 
     // In order to use the map in SQL a mapping should be created.
     const createMappingQuery = `
-        CREATE OR REPLACE MAPPING ${mapName} (
-            __key VARCHAR,
-            this DOUBLE
-        )
-        TYPE IMAP
-        OPTIONS (
-            'keyFormat' = 'varchar',
-            'valueFormat' = 'double'
-        )
-    `;
+            CREATE OR REPLACE MAPPING ${mapName}  (
+                __key BIGINT,
+                this JSON
+            )
+            TYPE IMAP
+            OPTIONS (
+                'keyFormat' = 'bigint',
+                'valueFormat' = 'json'
+            )
+        `;
     await client.getSql().execute(createMappingQuery);
 
-    await map.put('key1', 1);
-    await map.put('key2', 2);
-    await map.put('key3', 3);
+    // You need to use HazelcastJsonValue as parameter if you configured a global serializer
+    await client.getSql().execute(`INSERT INTO ${mapName} VALUES (1, ?)`,
+        [{age: 1}]
+    );
 
-    let result;
-
-    result = await client.getSql().execute(`SELECT __key, this FROM ${mapName} WHERE this > ?`, [1]);
+    const result = await client.getSql().execute(`SELECT * FROM ${mapName}`);
     const rowMetadata = result.rowMetadata;
     const columns = rowMetadata.getColumns();
 
-    console.log('SQL Columns:');
+    console.log('Columns:');
     for (const column of columns) {
         console.log(`${column.name}: ${SqlColumnType[column.type]}`);
     }
 
-    console.log('\nRows from query 1:');
+    console.log('\nRows from query:');
     for await (const row of result) {
-        // By default a row is a plain javascript object. Keys are column names and values are column values
         console.log(`${row['__key']}: ${row['this']}`);
-    }
-
-    // You can set returnRawResult to true to get rows as `SqlRow` objects
-    result = await client.getSql().execute(`SELECT __key, this FROM ${mapName} WHERE this > ?`, [1], {
-        returnRawResult: true
-    });
-
-    console.log('\nRows from query 2:');
-    for await (const row of result) {
-        console.log(`${row.getObject('__key')}: ${row.getObject('this')}`);
+        console.log(`Value is of type ${row['this'].constructor.name}`);
     }
 
     await client.shutdown();

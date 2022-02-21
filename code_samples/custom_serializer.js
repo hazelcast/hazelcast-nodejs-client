@@ -59,24 +59,22 @@ const giveInformation = (timeofday) => {
 };
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient({
+    const client = await Client.newHazelcastClient({
             serialization: {
                 customSerializers: [new CustomSerializer()]
             }
-        });
+    });
 
-        const t = new TimeOfDay(5, 32, 59);
-        giveInformation(t);
+    const t = new TimeOfDay(5, 32, 59);
+    giveInformation(t);
 
-        const map = await client.getMap('time');
-        await map.put(1, t);
-        const deserialized = await map.get(1);
-        giveInformation(deserialized);
+    const map = await client.getMap('time');
+    await map.put(1, t);
+    const deserialized = await map.get(1);
+    giveInformation(deserialized);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

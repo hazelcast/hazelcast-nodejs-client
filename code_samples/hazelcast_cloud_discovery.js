@@ -19,8 +19,7 @@ const { Client } = require('hazelcast-client');
 const path = require('path');
 
 (async () => {
-    try {
-        const cfg = {
+    const cfg = {
             clusterName: 'hazelcast',
             network: {
                 hazelcastCloud: {
@@ -37,17 +36,16 @@ const path = require('path');
                     }
                 }
             }
-        };
-        const client = await Client.newHazelcastClient(cfg);
+    };
+    const client = await Client.newHazelcastClient(cfg);
 
-        const map = await client.getMap('testMap');
-        await map.put('key', 'value');
-        const value = await map.get('key');
-        console.log(value);
+    const map = await client.getMap('testMap');
+    await map.put('key', 'value');
+    const value = await map.get('key');
+    console.log(value);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});
