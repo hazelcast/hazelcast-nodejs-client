@@ -337,7 +337,7 @@ export interface CompactReader {
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
-    readArrayOfString(fieldName: string, defaultValue?: string[] | null): string[] | null;
+    readArrayOfString(fieldName: string, defaultValue?: (string | null)[] | null): (string | null)[] | null;
 
     /**
      * Reads an array of {@link BigDecimal} objects or returns the default value.
@@ -351,7 +351,7 @@ export interface CompactReader {
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
-    readArrayOfDecimal(fieldName: string, defaultValue?: BigDecimal[] | null): BigDecimal[] | null;
+    readArrayOfDecimal(fieldName: string, defaultValue?: (BigDecimal | null)[] | null): (BigDecimal | null)[] | null;
 
     /**
      * Reads an array of {@link LocalTime} objects consisting of hour, minute, second,
@@ -366,7 +366,7 @@ export interface CompactReader {
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
-    readArrayOfTime(fieldName: string, defaultValue?: LocalTime[] | null): LocalTime[] | null;
+    readArrayOfTime(fieldName: string, defaultValue?: (LocalTime | null)[] | null): (LocalTime | null)[] | null;
 
     /**
      * Reads an array of {@link LocalDate} objects consisting of year, month, and day or returns the default value.
@@ -380,7 +380,7 @@ export interface CompactReader {
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
-    readArrayOfDate(fieldName: string, defaultValue?: LocalDate[] | null): LocalDate[] | null;
+    readArrayOfDate(fieldName: string, defaultValue?: (LocalDate | null)[] | null): (LocalDate | null)[] | null;
 
     /**
      * Reads an array of {@link LocalDateTime} objects consisting of date and time or returns the default value.
@@ -394,7 +394,7 @@ export interface CompactReader {
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
-    readArrayOfTimestamp(fieldName: string, defaultValue?: LocalDateTime[] | null): LocalDateTime[] | null;
+    readArrayOfTimestamp(fieldName: string, defaultValue?: (LocalDateTime | null)[] | null): (LocalDateTime | null)[] | null;
 
     /**
      * Reads an array of {@link OffsetDateTime} objects consisting of date, time and timezone offset or returns the default value.
@@ -408,7 +408,9 @@ export interface CompactReader {
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
-    readArrayOfTimestampWithTimezone(fieldName: string, defaultValue?: OffsetDateTime[] | null): OffsetDateTime[] | null;
+    readArrayOfTimestampWithTimezone(
+        fieldName: string, defaultValue?: (OffsetDateTime | null)[] | null
+    ): (OffsetDateTime | null)[] | null;
 
     /**
      * Reads an array of compact objects or returns the default value.
@@ -422,7 +424,7 @@ export interface CompactReader {
      * with the one defined in the schema.
      * @return the value or the default value of the field.
      */
-    readArrayOfCompact<T>(fieldName: string, defaultValue?: T[] | null): T[] | null;
+    readArrayOfCompact<T>(fieldName: string, defaultValue?: (T | null)[] | null): (T | null)[] | null;
 
     /**
      * Reads a nullable boolean or returns the default value.

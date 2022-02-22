@@ -195,7 +195,7 @@ export interface CompactWriter {
      * @param fieldName name of the field.
      * @param value     to be written.
      */
-    writeArrayOfString(fieldName: string, value: string[] | null): void;
+    writeArrayOfString(fieldName: string, value: (string | null)[] | null): void;
 
     /**
      * Writes an array of {@link BigDecimal}.
@@ -203,7 +203,7 @@ export interface CompactWriter {
      * @param fieldName name of the field.
      * @param value     to be written.
      */
-    writeArrayOfDecimal(fieldName: string, value: BigDecimal[] | null): void;
+    writeArrayOfDecimal(fieldName: string, value: (BigDecimal | null)[] | null): void;
 
     /**
      * Writes an array of {@link LocalTime}.
@@ -211,7 +211,7 @@ export interface CompactWriter {
      * @param fieldName name of the field.
      * @param value     to be written.
      */
-    writeArrayOfTime(fieldName: string, value: LocalTime[] | null): void;
+    writeArrayOfTime(fieldName: string, value: (LocalTime | null)[] | null): void;
 
     /**
      * Writes an array of {@link LocalDate}.
@@ -219,7 +219,7 @@ export interface CompactWriter {
      * @param fieldName name of the field.
      * @param value     to be written.
      */
-    writeArrayOfDate(fieldName: string, value: LocalDate[] | null): void;
+    writeArrayOfDate(fieldName: string, value: (LocalDate | null)[] | null): void;
 
     /**
      * Writes an array of {@link LocalDateTime}.
@@ -227,7 +227,7 @@ export interface CompactWriter {
      * @param fieldName name of the field.
      * @param value     to be written.
      */
-    writeArrayOfTimestamp(fieldName: string, value: LocalDateTime[] | null): void;
+    writeArrayOfTimestamp(fieldName: string, value: (LocalDateTime | null)[] | null): void;
 
     /**
      * Writes an array of {@link OffsetDateTime}.
@@ -235,7 +235,7 @@ export interface CompactWriter {
      * @param fieldName name of the field.
      * @param value     to be written.
      */
-    writeArrayOfTimestampWithTimezone(fieldName: string, value: OffsetDateTime[] | null): void;
+    writeArrayOfTimestampWithTimezone(fieldName: string, value: (OffsetDateTime | null)[] | null): void;
 
     /**
      * Writes an array of nested compact objects.
@@ -243,7 +243,7 @@ export interface CompactWriter {
      * @param fieldName name of the field.
      * @param value     to be written.
      */
-    writeArrayOfCompact<T>(fieldName: string, value: T[] | null): void;
+    writeArrayOfCompact<T>(fieldName: string, value: (T | null)[] | null): void;
 
     /**
      * Writes a nullable boolean.
