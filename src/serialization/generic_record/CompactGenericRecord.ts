@@ -34,17 +34,10 @@ import {CompactExceptions} from '../compact/CompactUtil';
 import * as Long from 'long';
 
 /**
- * @internal
- */
-export interface CompactGenericRecord extends GenericRecord {
-    getSchema(): Schema;
-}
-
-/**
  * Represents a deserialized compact generic record. This class is what user gets.
  * @internal
  */
-export class CompactGenericRecordImpl implements CompactGenericRecord {
+export class CompactGenericRecordImpl {
 
     private readonly schema: Schema;
 

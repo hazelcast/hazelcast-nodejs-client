@@ -23,7 +23,7 @@ import {DefaultCompactWriter} from './DefaultCompactWriter';
 import {FieldOperations} from '../generic_record/FieldOperations';
 import {HazelcastSerializationError, SchemaNotFoundError, SchemaNotReplicatedError} from '../../core';
 import {ObjectDataInput, ObjectDataOutput, PositionalObjectDataOutput} from '../ObjectData';
-import {CompactGenericRecord, CompactGenericRecordImpl} from '../generic_record/CompactGenericRecord';
+import {CompactGenericRecordImpl} from '../generic_record/CompactGenericRecord';
 import {SchemaWriter} from './SchemaWriter';
 
 /**
@@ -118,7 +118,7 @@ export class CompactStreamSerializer {
     }
 
     writeGenericRecord(
-        output: PositionalObjectDataOutput, record: CompactGenericRecord, throwIfSchemaNotReplicated = true
+        output: PositionalObjectDataOutput, record: CompactGenericRecordImpl, throwIfSchemaNotReplicated = true
     ) : void {
         const schema: Schema = record.getSchema();
         if (throwIfSchemaNotReplicated) {

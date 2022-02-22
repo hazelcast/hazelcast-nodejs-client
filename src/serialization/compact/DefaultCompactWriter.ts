@@ -34,7 +34,7 @@ import {FieldKind} from '../generic_record/FieldKind';
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
 import {IOUtil} from '../../util/IOUtil';
 import {BYTE_OFFSET_READER_RANGE, NULL_OFFSET, SHORT_OFFSET_READER_RANGE} from './OffsetConstants';
-import {CompactGenericRecord} from '../generic_record/CompactGenericRecord';
+import {CompactGenericRecordImpl} from '../generic_record/CompactGenericRecord';
 
 /**
  *
@@ -415,13 +415,13 @@ export class DefaultCompactWriter implements CompactWriter {
 
     writeGenericRecord(fieldName: string, value: GenericRecord, throwIfSchemaNotReplicated = true): void {
         return this.writeVariableSizeField(fieldName, FieldKind.COMPACT, value, (out, value) => {
-            return this.serializer.writeGenericRecord(out, value as CompactGenericRecord, throwIfSchemaNotReplicated);
+            return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl, throwIfSchemaNotReplicated);
         });
 
     }
     writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[], throwIfSchemaNotReplicated = true) : void {
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
-            return this.serializer.writeGenericRecord(out, value as CompactGenericRecord, throwIfSchemaNotReplicated);
+            return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl, throwIfSchemaNotReplicated);
         });
     }
 }

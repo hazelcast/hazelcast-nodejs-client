@@ -30,7 +30,7 @@ import {CompactStreamSerializer} from './CompactStreamSerializer';
 import {Schema} from './Schema';
 import {ObjectDataInput} from '../ObjectData';
 import {FieldKind} from '../generic_record/FieldKind';
-import {CompactGenericRecord, CompactGenericRecordImpl, GenericRecord} from '../generic_record';
+import {CompactGenericRecordImpl, GenericRecord} from '../generic_record';
 import {Field} from '../generic_record/Fields';
 import {
     BYTE_OFFSET_READER,
@@ -51,7 +51,7 @@ import {IOUtil} from '../../util/IOUtil';
  *
  * @internal
  */
-export class DefaultCompactReader implements CompactReader, CompactGenericRecord {
+export class DefaultCompactReader implements CompactReader {
     private readonly offsetReader: OffsetReader;
     private readonly variableOffsetsPosition: number;
     private readonly dataStartPosition: number;
@@ -767,10 +767,6 @@ export class DefaultCompactReader implements CompactReader, CompactGenericRecord
                     fieldKind, fieldName, [FieldKind.INT64, FieldKind.NULLABLE_INT64]
                 );
         }
-    }
-
-    getSchema(): Schema {
-        return this.schema;
     }
 
     getInt16(fieldName: string): number {
