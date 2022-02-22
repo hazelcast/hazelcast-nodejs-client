@@ -126,7 +126,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getString(fieldName: string): string;
+    getString(fieldName: string): string | null;
 
     /**
      * Returns value of the field.
@@ -134,7 +134,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getDecimal(fieldName: string): BigDecimal;
+    getDecimal(fieldName: string): BigDecimal | null;
 
     /**
      * Returns value of the field.
@@ -142,7 +142,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getTime(fieldName: string): LocalTime;
+    getTime(fieldName: string): LocalTime | null;
 
     /**
      * Returns value of the field.
@@ -150,7 +150,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getDate(fieldName: string): LocalDate;
+    getDate(fieldName: string): LocalDate | null;
 
     /**
      * Returns value of the field.
@@ -158,7 +158,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getTimestamp(fieldName: string): LocalDateTime;
+    getTimestamp(fieldName: string): LocalDateTime | null;
 
     /**
      * Returns value of the field.
@@ -166,7 +166,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getTimestampWithTimezone(fieldName: string): OffsetDateTime;
+    getTimestampWithTimezone(fieldName: string): OffsetDateTime | null;
 
     /**
      * Returns value of the field.
@@ -174,7 +174,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getGenericRecord(fieldName: string): GenericRecord;
+    getGenericRecord(fieldName: string): GenericRecord | null;
 
     /**
      * Returns value of the field.
@@ -182,7 +182,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfBoolean(fieldName: string): boolean[];
+    getArrayOfBoolean(fieldName: string): boolean[] | null;
 
     /**
      * Returns value of the field.
@@ -190,7 +190,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfInt8(fieldName: string): Buffer;
+    getArrayOfInt8(fieldName: string): Buffer | null;
 
     /**
      * Returns value of the field.
@@ -198,7 +198,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfChar(fieldName: string): string[];
+    getArrayOfChar(fieldName: string): string[] | null;
 
     /**
      * Returns value of the field.
@@ -206,7 +206,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfFloat64(fieldName: string): number[];
+    getArrayOfFloat64(fieldName: string): number[] | null;
 
     /**
      * Returns value of the field.
@@ -214,7 +214,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfFloat32(fieldName: string): number[];
+    getArrayOfFloat32(fieldName: string): number[] | null;
 
     /**
      * Returns value of the field.
@@ -222,7 +222,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfInt32(fieldName: string): number[];
+    getArrayOfInt32(fieldName: string): number[] | null;
 
     /**
      * Returns value of the field.
@@ -230,7 +230,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfInt64(fieldName: string): Long[];
+    getArrayOfInt64(fieldName: string): Long[] | null;
 
     /**
      * Returns value of the field.
@@ -238,7 +238,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfInt16(fieldName: string): number[];
+    getArrayOfInt16(fieldName: string): number[] | null;
 
     /**
      * Returns value of the field.
@@ -246,7 +246,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfString(fieldName: string): string[];
+    getArrayOfString(fieldName: string): (string | null)[] | null;
 
     /**
      * Returns value of the field.
@@ -254,7 +254,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfDecimal(fieldName: string): BigDecimal[];
+    getArrayOfDecimal(fieldName: string): (BigDecimal | null)[] | null;
 
     /**
      * Returns value of the field.
@@ -262,7 +262,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfTime(fieldName: string): LocalTime[];
+    getArrayOfTime(fieldName: string): (LocalTime | null)[] | null;
 
     /**
      * Returns value of the field.
@@ -270,7 +270,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfDate(fieldName: string): LocalDate[];
+    getArrayOfDate(fieldName: string): (LocalDate | null)[] | null;
 
     /**
      * Returns value of the field.
@@ -278,7 +278,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfTimestamp(fieldName: string): LocalDateTime[];
+    getArrayOfTimestamp(fieldName: string): (LocalDateTime | null)[] | null;
 
     /**
      * Returns value of the field.
@@ -286,7 +286,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfTimestampWithTimezone(fieldName: string): OffsetDateTime[];
+    getArrayOfTimestampWithTimezone(fieldName: string): (OffsetDateTime | null)[] | null;
 
     /**
      * Returns value of the field.
@@ -294,7 +294,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfGenericRecord(fieldName: string): GenericRecord[];
+    getArrayOfGenericRecord(fieldName: string): (GenericRecord | null)[] | null;
 
     /**
      * Returns value of the field.
