@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import {BitsUtil} from '../util/BitsUtil';
 import {DataInput, DataOutput} from './Data';
 import {
     Serializer,
@@ -33,7 +32,6 @@ import {
     UUID
 } from '../core';
 import * as BigDecimalUtil from '../util/BigDecimalUtil';
-import {Buffer} from 'buffer';
 
 /** @internal */
 export class StringSerializer implements Serializer<string> {
@@ -286,7 +284,7 @@ export class CharSerializer implements Serializer<string> {
     }
 
     write(output: DataOutput, object: string): void {
-        output.writeChar(object);
+        // no-op
     }
 }
 
@@ -300,7 +298,7 @@ export class CharArraySerializer implements Serializer<string[]> {
     }
 
     write(output: DataOutput, object: string[]): void {
-        output.writeCharArray(object);
+        // no-op
     }
 }
 
@@ -328,7 +326,7 @@ export class JavaClassSerializer implements Serializer {
     }
 
     write(output: DataOutput, object: any): void {
-        output.writeString(object);
+        // no-op
     }
 }
 
@@ -339,12 +337,9 @@ export class LinkedListSerializer implements Serializer<any[]> {
 
     read(input: DataInput): any[] {
         const size = input.readInt();
-        let result: any = null;
-        if (size > BitsUtil.NULL_ARRAY_LENGTH) {
-            result = [];
-            for (let i = 0; i < size; i++) {
-                result.push(input.readObject());
-            }
+        const result = new Array<any>(size);
+        for (let i = 0; i < size; i++) {
+            result[i] = input.readObject();
         }
         return result;
     }
