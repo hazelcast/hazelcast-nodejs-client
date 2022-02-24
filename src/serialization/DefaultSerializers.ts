@@ -331,9 +331,9 @@ export class JavaClassSerializer implements Serializer {
 }
 
 /** @internal */
-export class LinkedListSerializer implements Serializer<any[]> {
+export class JavaArraySerializer implements Serializer<any[]> {
 
-    id = -30;
+    id = -28;
 
     read(input: DataInput): any[] {
         const size = input.readInt();
@@ -349,10 +349,17 @@ export class LinkedListSerializer implements Serializer<any[]> {
     }
 }
 
+
 /** @internal */
-export class ArrayListSerializer extends LinkedListSerializer {
+export class ArrayListSerializer extends JavaArraySerializer {
 
     id = -29;
+}
+
+/** @internal */
+export class LinkedListSerializer extends JavaArraySerializer {
+
+    id = -30;
 }
 
 /** @internal */
@@ -569,4 +576,3 @@ export class BigIntSerializer implements Serializer<BigInt> {
         output.writeByteArray(BigDecimalUtil.bigIntToBuffer(bigint));
     }
 }
-

@@ -167,6 +167,28 @@ describe('DefaultSerializersLiveTest', function () {
         expect(result).to.equal(uuid.toString());
     });
 
+    it('should deserialize Java Array', async function () {
+        TestUtil.markClientVersionAtLeast(this, '4.2');
+        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+            'map.set("key", Java.to([1, 2, 3], "java.lang.Object[]"));\n';
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        const actualValue = await map.get('key');
+        expect(actualValue).to.deep.equal([1, 2, 3]);
+    });
+
+    it('should deserialize empty Java Array', async function () {
+        TestUtil.markClientVersionAtLeast(this, '4.2');
+        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+            'map.set("key", Java.to([], "java.lang.Object[]"));\n';
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        const actualValue = await map.get('key');
+        expect(actualValue).to.deep.equal([]);
+    });
+
     it('should deserialize ArrayList', async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
         const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
