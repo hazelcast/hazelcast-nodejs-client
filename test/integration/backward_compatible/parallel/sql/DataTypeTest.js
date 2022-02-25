@@ -822,7 +822,7 @@ describe('Data type test', function () {
             // JSON support is added in 5.1.
             TestUtil.markClientVersionAtLeast(this, '5.1');
             TestUtil.markServerVersionAtLeast(this, client, '5.1');
-            
+
             const SqlColumnType = TestUtil.getSqlColumnType();
 
             const createMappingQuery = `
