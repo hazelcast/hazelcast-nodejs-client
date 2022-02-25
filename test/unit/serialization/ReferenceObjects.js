@@ -88,12 +88,28 @@ to.aLocalTime = new LocalTime(11, 22, 41, 123456789);
 to.aLocalDateTime = new LocalDateTime(to.aLocalDate, to.aLocalTime);
 to.aOffsetDateTime = new OffsetDateTime(to.aLocalDateTime, 64800);
 
+to.Objects = [to.AnInnerPortable, to.aNULL, to.aBigDecimal, to.aShort];
+const nonNullList = [
+    to.aBoolean, to.aByte, to.aChar, to.aDouble, to.aShort, to.aFloat, to.anInt,
+    to.aLong, to.aSmallString, to.anInnerPortable, to.booleans, to.bytes, to.chars, to.doubles,
+    to.shorts, to.floats, to.ints, to.longs, to.strings, to.aCustomStreamSerializable,
+    to.aCustomByteArraySerializable, to.anIdentifiedDataSerializable, to.aPortable, to.aDate,
+    to.aLocalDate, to.aLocalTime, to.aLocalDateTime, to.aOffsetDateTime, to.aBigInteger, to.aBigDecimal,
+    to.aClass
+];
+
+to.anArrayList = [to.aNULL, nonNullList];
+to.aLinkedList = [to.aNULL, nonNullList];
+
 exports.portables = [to.AnInnerPortable, to.AnInnerPortable, to.AnInnerPortable];
 exports.testObjects = to;
 exports.skipOnSerialize = {
     'AnIdentifiedDataSerializable': true,
     'APortable': true,
-    'aClass': true
+    'aClass': true,
+    'Objects': true,
+    'anArrayList': true,
+    'aLinkedList': true
 };
 exports.PORTABLE_FACTORY_ID = 1;
 exports.PORTABLE_CLASS_ID = 1;
