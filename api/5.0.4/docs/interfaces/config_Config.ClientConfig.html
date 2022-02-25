@@ -1,0 +1,545 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>ClientConfig | hazelcast-client</title>
+	<meta name="description" content="Documentation for hazelcast-client">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">hazelcast-client</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">hazelcast-client</a>
+				</li>
+				<li>
+					<a href="../modules/config_Config.html">config/Config</a>
+				</li>
+				<li>
+					<a href="config_Config.ClientConfig.html">ClientConfig</a>
+				</li>
+			</ul>
+			<h1>Interface ClientConfig</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Top level configuration object of Hazelcast client.
+						Other configurations items are properties of this object.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">ClientConfig</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#backupAckToClientEnabled" class="tsd-kind-icon">backup<wbr>Ack<wbr>ToClient<wbr>Enabled</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#clientLabels" class="tsd-kind-icon">client<wbr>Labels</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#clusterName" class="tsd-kind-icon">cluster<wbr>Name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#connectionStrategy" class="tsd-kind-icon">connection<wbr>Strategy</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#customCredentials" class="tsd-kind-icon">custom<wbr>Credentials</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#customLogger" class="tsd-kind-icon">custom<wbr>Logger</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#flakeIdGenerators" class="tsd-kind-icon">flake<wbr>IdGenerators</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#instanceName" class="tsd-kind-icon">instance<wbr>Name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#lifecycleListeners" class="tsd-kind-icon">lifecycle<wbr>Listeners</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#loadBalancer" class="tsd-kind-icon">load<wbr>Balancer</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#membershipListeners" class="tsd-kind-icon">membership<wbr>Listeners</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#nearCaches" class="tsd-kind-icon">near<wbr>Caches</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#network" class="tsd-kind-icon">network</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#properties" class="tsd-kind-icon">properties</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#reliableTopics" class="tsd-kind-icon">reliable<wbr>Topics</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#security" class="tsd-kind-icon">security</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="config_Config.ClientConfig.html#serialization" class="tsd-kind-icon">serialization</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="backupAckToClientEnabled" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> backup<wbr>Ack<wbr>ToClient<wbr>Enabled</h3>
+					<div class="tsd-signature tsd-kind-icon">backup<wbr>Ack<wbr>ToClient<wbr>Enabled<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:151</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Enables the client to get backup acknowledgements directly from
+								the member that backups are applied, which reduces number of hops
+							and increases performance for smart clients.</p>
+						</div>
+						<p>Enabled by default for smart clients. This option has no effect
+						for unisocket clients.</p>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="clientLabels" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> client<wbr>Labels</h3>
+					<div class="tsd-signature tsd-kind-icon">client<wbr>Labels<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:53</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Labels for the client to be sent to the cluster.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="clusterName" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> cluster<wbr>Name</h3>
+					<div class="tsd-signature tsd-kind-icon">cluster<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:41</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Name of the cluster to connect to. By default, set to <code>dev</code>.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="connectionStrategy" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> connection<wbr>Strategy</h3>
+					<div class="tsd-signature tsd-kind-icon">connection<wbr>Strategy<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ConnectionStrategyConfig</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:63</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Connection strategy config of the client.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="customCredentials" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> custom<wbr>Credentials</h3>
+					<div class="tsd-signature tsd-kind-icon">custom<wbr>Credentials<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:141</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Custom credentials to be used as a part of authentication on
+							the cluster.</p>
+						</div>
+						<dl class="tsd-comment-tags">
+							<dt>deprecated</dt>
+							<dd><p>Since version 5.1. Use <a href="config_Config.ClientConfig.html#security">security</a> element instead.</p>
+							</dd>
+						</dl>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="customLogger" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> custom<wbr>Logger</h3>
+					<div class="tsd-signature tsd-kind-icon">custom<wbr>Logger<span class="tsd-signature-symbol">:</span> <a href="logging_ILogger.ILogger.html" class="tsd-signature-type" data-tsd-kind="Interface">ILogger</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:133</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Custom logger implementation for the client.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="flakeIdGenerators" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> flake<wbr>IdGenerators</h3>
+					<div class="tsd-signature tsd-kind-icon">flake<wbr>IdGenerators<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:128</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Configs for Flake ID Generators.</p>
+						</div>
+						<p>Hazelcast client supports wildcard configuration for Flake
+							ID Generators. Using an asterisk (<code>*</code>) character in the name,
+							different instances of generators can be configured by a single
+						configuration.</p>
+						<p>When you use <code>default</code> as the config key, it has a special
+							meaning. Hazelcast client will use that configuration as the
+							default one for all Flake ID Generators, unless there is
+						a specific configuration for the generator.</p>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">FlakeIdGeneratorConfig</span></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="instanceName" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> instance<wbr>Name</h3>
+					<div class="tsd-signature tsd-kind-icon">instance<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:48</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Name of the client instance. By default, set to <code>hz.client_${CLIENT_ID}</code>,
+								where <code>CLIENT_ID</code> starts from <code>0</code>, and it is incremented by <code>1</code>
+							for each new client.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="lifecycleListeners" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> lifecycle<wbr>Listeners</h3>
+					<div class="tsd-signature tsd-kind-icon">lifecycle<wbr>Listeners<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>state<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">LifecycleState</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:73</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Lifecycle listeners to be attached to the client.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="loadBalancer" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> load<wbr>Balancer</h3>
+					<div class="tsd-signature tsd-kind-icon">load<wbr>Balancer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">LoadBalancerConfig</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:68</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Load balancer config for the client.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="membershipListeners" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> membership<wbr>Listeners</h3>
+					<div class="tsd-signature tsd-kind-icon">membership<wbr>Listeners<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">MembershipListener</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:78</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Membership listeners to be attached to the client.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="nearCaches" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> near<wbr>Caches</h3>
+					<div class="tsd-signature tsd-kind-icon">near<wbr>Caches<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:98</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Near Cache config for the client.</p>
+						</div>
+						<p>Hazelcast client supports wildcard configuration for Near
+							Caches. Using an asterisk (<code>*</code>) character in the name,
+							different instances of Maps can be configured by a single
+						configuration.</p>
+						<p>When you use <code>default</code> as the config key, it has a special
+							meaning. Hazelcast client will use that configuration as the
+							default one for all Maps, unless there is a specific
+						configuration for the Map.</p>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">NearCacheConfig</span></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="network" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> network</h3>
+					<div class="tsd-signature tsd-kind-icon">network<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ClientNetworkConfig</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:58</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Network config of the client.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="properties" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> properties</h3>
+					<div class="tsd-signature tsd-kind-icon">properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Properties</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:156</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>User-defined properties.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="reliableTopics" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> reliable<wbr>Topics</h3>
+					<div class="tsd-signature tsd-kind-icon">reliable<wbr>Topics<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:113</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Configs for Reliable Topics.</p>
+						</div>
+						<p>Hazelcast client supports wildcard configuration for Reliable
+							Topics. Using an asterisk (<code>*</code>) character in the name,
+							different instances of topics can be configured by a single
+						configuration.</p>
+						<p>When you use <code>default</code> as the config key, it has a special
+							meaning. Hazelcast client will use that configuration as the
+							default one for all Reliable Topics, unless there is
+						a specific configuration for the topic.</p>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">ReliableTopicConfig</span></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="security" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> security</h3>
+					<div class="tsd-signature tsd-kind-icon">security<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">SecurityConfig</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:163</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Contains configuration for the client to use different kinds
+								of credential types during authentication, such as username/password,
+							token, or custom credentials.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="serialization" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> serialization</h3>
+					<div class="tsd-signature tsd-kind-icon">serialization<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">SerializationConfig</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in src/config/Config.ts:83</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>User-defined serialization config for the client.</p>
+						</div>
+					</div>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Modules</a>
+					</li>
+					<li class="current tsd-kind-module">
+						<a href="../modules/config_Config.html">config/<wbr>Config</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface tsd-parent-kind-module">
+						<a href="config_Config.ClientConfig.html" class="tsd-kind-icon">Client<wbr>Config</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#backupAckToClientEnabled" class="tsd-kind-icon">backup<wbr>Ack<wbr>ToClient<wbr>Enabled</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#clientLabels" class="tsd-kind-icon">client<wbr>Labels</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#clusterName" class="tsd-kind-icon">cluster<wbr>Name</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#connectionStrategy" class="tsd-kind-icon">connection<wbr>Strategy</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#customCredentials" class="tsd-kind-icon">custom<wbr>Credentials</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#customLogger" class="tsd-kind-icon">custom<wbr>Logger</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#flakeIdGenerators" class="tsd-kind-icon">flake<wbr>IdGenerators</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#instanceName" class="tsd-kind-icon">instance<wbr>Name</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#lifecycleListeners" class="tsd-kind-icon">lifecycle<wbr>Listeners</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#loadBalancer" class="tsd-kind-icon">load<wbr>Balancer</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#membershipListeners" class="tsd-kind-icon">membership<wbr>Listeners</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#nearCaches" class="tsd-kind-icon">near<wbr>Caches</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#network" class="tsd-kind-icon">network</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#properties" class="tsd-kind-icon">properties</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#reliableTopics" class="tsd-kind-icon">reliable<wbr>Topics</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#security" class="tsd-kind-icon">security</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="config_Config.ClientConfig.html#serialization" class="tsd-kind-icon">serialization</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
