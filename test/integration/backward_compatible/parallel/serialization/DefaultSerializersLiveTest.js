@@ -45,7 +45,7 @@ describe('DefaultSerializersLiveTest', function () {
     });
 
     const getMapValueAsString = async (index) => {
-        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+        const script = `var map = instance_0.getMap("${map.getName()}");\n` +
             `result = map.get("${index}").toString();\n`;
         const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         return response.result.toString();
@@ -54,7 +54,7 @@ describe('DefaultSerializersLiveTest', function () {
     const generateGet = (key) => {
         return 'var StringArray = Java.type("java.lang.String[]");' +
             'function foo() {' +
-            '   var map = instance_0.getMap("' + map.getName() + '");' +
+            `   var map = instance_0.getMap("${map.getName()}");` +
             '   var res = map.get("' + key + '");' +
             '   if (res.getClass().isArray()) {' +
             '       return Java.from(res);' +
@@ -138,7 +138,7 @@ describe('DefaultSerializersLiveTest', function () {
         restValue.value = '{\'test\':\'data\'}';
         restValue.contentType = 'text/plain';
 
-        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+        const script = `var map = instance_0.getMap("${map.getName()}");\n` +
             'var restValue = map.get("key");\n' +
             'var contentType = restValue.getContentType();\n' +
             'var value = restValue.getValue();\n' +
@@ -157,7 +157,7 @@ describe('DefaultSerializersLiveTest', function () {
         // Make sure that the object is properly de-serialized at the server
         const uuid = new UUID(Long.fromNumber(24), Long.fromNumber(42));
 
-        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+        const script = `var map = instance_0.getMap("${map.getName()}");\n` +
             'var uuid = map.get("key");\n' +
             'result = "\\"" + uuid.toString() + "\\"";\n';
 
@@ -169,7 +169,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should deserialize Java Array', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1');
-        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+        const script = `var map = instance_0.getMap("${map.getName()}");\n` +
             'map.set("key", Java.to([1, 2, 3], "java.lang.Object[]"));\n';
 
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
@@ -180,7 +180,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should deserialize empty Java Array', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1');
-        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+        const script = `var map = instance_0.getMap("${map.getName()}");\n` +
             'map.set("key", Java.to([], "java.lang.Object[]"));\n';
 
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
@@ -191,7 +191,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should deserialize ArrayList', async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+        const script = `var map = instance_0.getMap("${map.getName()}");\n` +
             'var list = new java.util.ArrayList();\n' +
             'list.add(1);\n' +
             'list.add(2);\n' +
@@ -206,7 +206,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should deserialize empty ArrayList', async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+        const script = `var map = instance_0.getMap("${map.getName()}");\n` +
             'var list = new java.util.ArrayList();\n' +
             'map.set("key", list);\n';
 
@@ -218,7 +218,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should deserialize LinkedList', async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+        const script = `var map = instance_0.getMap("${map.getName()}");\n` +
             'var list = new java.util.LinkedList();\n' +
             'list.add(1);\n' +
             'list.add(2);\n' +
@@ -233,7 +233,7 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('should deserialize empty LinkedList', async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+        const script = `var map = instance_0.getMap("${map.getName()}");\n` +
             'var list = new java.util.LinkedList();\n' +
             'map.set("key", list);\n';
 
@@ -266,7 +266,7 @@ describe('DefaultSerializersLiveTest', function () {
     it('should deserialize BigDecimal', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
 
-        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+        let script = `var map = instance_0.getMap("${map.getName()}");\n`;
 
         bigDecimalTestParams.forEach((value, index) => {
             script += `map.set("${index}", new java.math.BigDecimal("${value[0]}"));\n`;
@@ -291,7 +291,7 @@ describe('DefaultSerializersLiveTest', function () {
         }
 
         for (let i = 0; i < bigDecimalTestParams.length; i++) {
-            const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
+            const script = `var map = instance_0.getMap("${map.getName()}");\n` +
                 `result = map.get("${i}").toPlainString();\n`;
             const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
             const responseString = response.result.toString();
@@ -323,7 +323,7 @@ describe('DefaultSerializersLiveTest', function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
         TestUtil.markServerVersionAtLeast(this, client, '5.0');
 
-        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+        let script = `var map = instance_0.getMap("${map.getName()}");\n`;
 
         dtParams.forEach((values, index) => {
             const v = values[0];
@@ -373,7 +373,7 @@ describe('DefaultSerializersLiveTest', function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
         TestUtil.markServerVersionAtLeast(this, client, '5.0');
 
-        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+        let script = `var map = instance_0.getMap("${map.getName()}");\n`;
 
         dtParams.forEach((values, index) => {
             const v = values[0];
@@ -442,7 +442,7 @@ describe('DefaultSerializersLiveTest', function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
         TestUtil.markServerVersionAtLeast(this, client, '5.0');
 
-        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+        let script = `var map = instance_0.getMap("${map.getName()}");\n`;
 
         dtParams.forEach((values, index) => {
             const v = values[0];
@@ -525,7 +525,7 @@ describe('DefaultSerializersLiveTest', function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
         TestUtil.markServerVersionAtLeast(this, client, '5.0');
 
-        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+        let script = `var map = instance_0.getMap("${map.getName()}");\n`;
 
         dtParams.forEach((values, index) => {
             const v = values[0];
@@ -629,7 +629,7 @@ describe('DefaultSerializersLiveTest', function () {
     it('should deserialize BigInt', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
 
-        let script = 'var map = instance_0.getMap("' + map.getName() + '");\n';
+        let script = `var map = instance_0.getMap("${map.getName()}");\n`;
 
         bigIntParams.forEach((values, index) => {
             const bigIntString = values[0];
