@@ -168,7 +168,7 @@ describe('DefaultSerializersLiveTest', function () {
     });
 
     it('should deserialize Java Array', async function () {
-        TestUtil.markClientVersionAtLeast(this, '4.2');
+        TestUtil.markClientVersionAtLeast(this, '5.1');
         const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
             'map.set("key", Java.to([1, 2, 3], "java.lang.Object[]"));\n';
 
@@ -179,7 +179,7 @@ describe('DefaultSerializersLiveTest', function () {
     });
 
     it('should deserialize empty Java Array', async function () {
-        TestUtil.markClientVersionAtLeast(this, '4.2');
+        TestUtil.markClientVersionAtLeast(this, '5.1');
         const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
             'map.set("key", Java.to([], "java.lang.Object[]"));\n';
 
