@@ -18,6 +18,7 @@
 const { expect } = require('chai');
 const RC = require('../RC');
 const { Client } = require('../../../');
+const Util = require('../../../lib/util/Util');
 const TestUtil = require('../../TestUtil');
 
 describe('ListenersOnReconnectTest', function () {
@@ -35,7 +36,8 @@ describe('ListenersOnReconnectTest', function () {
         return RC.terminateCluster(cluster.id);
     });
 
-    async function closeTwoMembersOutOfThreeAndTestListener(done, isSmart, membersToClose, turnoffMember) {
+    async function closeTwoMembersOutOfThreeAndTestListener(isSmart, membersToClose, turnoffMember) {
+        const deferred = Util.deferredPromise();
         const members = await Promise.all([
             RC.startMember(cluster.id),
             RC.startMember(cluster.id),
@@ -62,9 +64,9 @@ describe('ListenersOnReconnectTest', function () {
                     expect(entryEvent.oldValue).to.be.equal(null);
                     expect(entryEvent.mergingValue).to.be.equal(null);
                     expect(entryEvent.member).to.not.be.equal(null);
-                    done();
+                    deferred.resolve();
                 } catch (err) {
-                    done(err);
+                    deferred.reject(err);
                 }
             }
         };
@@ -75,7 +77,8 @@ describe('ListenersOnReconnectTest', function () {
         ]);
 
         await TestUtil.promiseWaitMilliseconds(8000);
-        return map.put('keyx', 'valx');
+        await map.put('keyx', 'valx');
+        await deferred.promise;
     }
 
     [true, false].forEach((isSmart) => {
@@ -86,69 +89,67 @@ describe('ListenersOnReconnectTest', function () {
          *  - the other unrelated connection
          */
 
-        it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], RC.terminateMember).catch(done);
+        it('kill two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', async function () {
+            await closeTwoMembersOutOfThreeAndTestListener(isSmart, [1, 2], RC.terminateMember);
         });
 
-        it('kill two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], RC.terminateMember).catch(done);
+        it('kill two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', async function () {
+            await closeTwoMembersOutOfThreeAndTestListener(isSmart, [0, 1], RC.terminateMember);
         });
 
-        it('kill two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], RC.terminateMember).catch(done);
+        it('kill two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', async function () {
+            await closeTwoMembersOutOfThreeAndTestListener(isSmart, [0, 2], RC.terminateMember);
         });
 
-        it('shutdown two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [1, 2], RC.shutdownMember).catch(done);
+        it('shutdown two members [1,2], listener still receives map.put event [smart=' + isSmart + ']', async function () {
+            await closeTwoMembersOutOfThreeAndTestListener(isSmart, [1, 2], RC.shutdownMember);
         });
 
-        it('shutdown two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 1], RC.shutdownMember).catch(done);
+        it('shutdown two members [0,1], listener still receives map.put event [smart=' + isSmart + ']', async function () {
+            await closeTwoMembersOutOfThreeAndTestListener(isSmart, [0, 1], RC.shutdownMember);
         });
 
-        it('shutdown two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            closeTwoMembersOutOfThreeAndTestListener(done, isSmart, [0, 2], RC.shutdownMember).catch(done);
+        it('shutdown two members [0,2], listener still receives map.put event [smart=' + isSmart + ']', async function () {
+            await closeTwoMembersOutOfThreeAndTestListener(isSmart, [0, 2], RC.shutdownMember);
         });
 
-        it('restart member, listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            async function testListener(done) {
-                const member = await RC.startMember(cluster.id);
-                client = await Client.newHazelcastClient({
-                    clusterName: cluster.id,
-                    network: {
-                        smartRouting: isSmart
-                    },
-                    properties: {
-                        'hazelcast.client.heartbeat.interval': 1000
+        it('restart member, listener still receives map.put event [smart=' + isSmart + ']', async function () {
+            const deferred = Util.deferredPromise();
+            const member = await RC.startMember(cluster.id);
+            client = await Client.newHazelcastClient({
+                clusterName: cluster.id,
+                network: {
+                    smartRouting: isSmart
+                },
+                properties: {
+                    'hazelcast.client.heartbeat.interval': 1000
+                }
+            });
+            map = await client.getMap('testmap');
+
+            const listener = {
+                added: (entryEvent) => {
+                    try {
+                        expect(entryEvent.name).to.equal('testmap');
+                        expect(entryEvent.key).to.equal('keyx');
+                        expect(entryEvent.value).to.equal('valx');
+                        expect(entryEvent.oldValue).to.be.equal(null);
+                        expect(entryEvent.mergingValue).to.be.equal(null);
+                        expect(entryEvent.member).to.not.be.equal(null);
+                        deferred.resolve();
+                    } catch (err) {
+                        deferred.reject(err);
                     }
-                });
-                map = await client.getMap('testmap');
+                }
+            };
+            await map.addEntryListener(listener, 'keyx', true);
 
-                const listener = {
-                    added: (entryEvent) => {
-                        try {
-                            expect(entryEvent.name).to.equal('testmap');
-                            expect(entryEvent.key).to.equal('keyx');
-                            expect(entryEvent.value).to.equal('valx');
-                            expect(entryEvent.oldValue).to.be.equal(null);
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
-                            done();
-                        } catch (err) {
-                            done(err);
-                        }
-                    }
-                };
-                await map.addEntryListener(listener, 'keyx', true);
+            await RC.terminateMember(cluster.id, member.uuid);
+            await RC.startMember(cluster.id);
 
-                await RC.terminateMember(cluster.id, member.uuid);
-                await RC.startMember(cluster.id);
-
-                await TestUtil.promiseWaitMilliseconds(8000);
-                return map.put('keyx', 'valx');
-            }
-
-            testListener(done).catch(done);
+            await TestUtil.promiseWaitMilliseconds(8000);
+            await map.put('keyx', 'valx');
+            await deferred.promise;
         });
     });
 });
