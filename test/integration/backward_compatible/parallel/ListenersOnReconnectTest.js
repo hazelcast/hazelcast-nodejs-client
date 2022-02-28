@@ -49,8 +49,7 @@ describe('ListenersOnReconnectTest', function () {
                 smartRouting: isSmart
             },
             properties: {
-                'hazelcast.client.heartbeat.interval': 1000,
-                'hazelcast.client.heartbeat.timeout': 3000
+                'hazelcast.client.heartbeat.interval': 1000
             }
         }, members);
         map = await client.getMap('testmap');
