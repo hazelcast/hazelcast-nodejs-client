@@ -78,14 +78,6 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getChar(fieldName: string): string;
-
-    /**
-     * Returns value of the field.
-     * @param fieldName the name of the field
-     * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
-     * the type of the field does not match the one in the generic record.
-     */
     getFloat64(fieldName: string): number;
 
     /**
@@ -191,14 +183,6 @@ export interface GenericRecord {
      * the type of the field does not match the one in the generic record.
      */
     getArrayOfInt8(fieldName: string): Buffer | null;
-
-    /**
-     * Returns value of the field.
-     * @param fieldName the name of the field
-     * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
-     * the type of the field does not match the one in the generic record.
-     */
-    getArrayOfChar(fieldName: string): string[] | null;
 
     /**
      * Returns value of the field.

@@ -45,12 +45,6 @@ export const int8: Field<number> = {
 export const arrayOfInt8: Field<Buffer> = {
     kind: FieldKind.ARRAY_OF_INT8
 }
-export const char: Field<string> = {
-    kind: FieldKind.CHAR
-}
-export const arrayOfChar: Field<string[]> = {
-    kind: FieldKind.ARRAY_OF_CHAR
-}
 export const int16: Field<number> = {
     kind: FieldKind.INT16
 }

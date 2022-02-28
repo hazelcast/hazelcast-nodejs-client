@@ -562,14 +562,7 @@ const supportedFields = [];
 for (const fieldKindStr in FieldKind) {
     const fieldKind = +fieldKindStr;
     if (!isNaN(fieldKind)) {
-        if (
-            fieldKind !== FieldKind.CHAR &&
-            fieldKind !== FieldKind.ARRAY_OF_CHAR &&
-            fieldKind !== FieldKind.ARRAY_OF_PORTABLE &&
-            fieldKind !== FieldKind.PORTABLE
-        ) {
-            supportedFields.push(fieldKind);
-        }
+        supportedFields.push(fieldKind);
     }
 }
 
@@ -664,10 +657,6 @@ class FlexibleSerializer {
             case FieldKind.ARRAY_OF_INT8:
                 fields[fieldName] = {value: reader.readArrayOfInt8(fieldName, defaultValue)};
                 break;
-            case FieldKind.CHAR:
-                throw new Error('Char field is not supported in compact');
-            case FieldKind.ARRAY_OF_CHAR:
-                throw new Error('Char field is not supported in compact');
             case FieldKind.INT16:
                 fields[fieldName] = {value: reader.readInt16(fieldName, defaultValue)};
                 break;
@@ -740,10 +729,6 @@ class FlexibleSerializer {
             case FieldKind.ARRAY_OF_COMPACT:
                 fields[fieldName] = {value: reader.readArrayOfCompact(fieldName, defaultValue)};
                 break;
-            case FieldKind.PORTABLE:
-                throw new Error('Portable field is not supported in compact');
-            case FieldKind.ARRAY_OF_PORTABLE:
-                throw new Error('Portable field is not supported in compact');
             case FieldKind.NULLABLE_BOOLEAN:
                 fields[fieldName] = {value: reader.readNullableBoolean(fieldName, defaultValue)};
                 break;
@@ -809,10 +794,6 @@ class FlexibleSerializer {
             case FieldKind.ARRAY_OF_INT8:
                 writer.writeArrayOfInt8(fieldName, instance[fieldName]);
                 break;
-            case FieldKind.CHAR:
-                throw new Error('Char field is not supported in compact');
-            case FieldKind.ARRAY_OF_CHAR:
-                throw new Error('Char field is not supported in compact');
             case FieldKind.INT16:
                 writer.writeInt16(fieldName, instance[fieldName]);
                 break;
@@ -885,10 +866,6 @@ class FlexibleSerializer {
             case FieldKind.ARRAY_OF_COMPACT:
                 writer.writeArrayOfCompact(fieldName, instance[fieldName]);
                 break;
-            case FieldKind.PORTABLE:
-                throw new Error('Portable field is not supported in compact');
-            case FieldKind.ARRAY_OF_PORTABLE:
-                throw new Error('Portable field is not supported in compact');
             case FieldKind.NULLABLE_BOOLEAN:
                 writer.writeNullableBoolean(fieldName, instance[fieldName]);
                 break;

@@ -66,10 +66,6 @@ describe('SchemaWriterTest', function () {
                 case FieldKind.ARRAY_OF_INT8:
                     writer.writeArrayOfInt8(name, null);
                     break;
-                case FieldKind.CHAR:
-                    continue;
-                case FieldKind.ARRAY_OF_CHAR:
-                    continue;
                 case FieldKind.INT16:
                     writer.writeInt16(name, null);
                     break;
@@ -142,10 +138,6 @@ describe('SchemaWriterTest', function () {
                 case FieldKind.ARRAY_OF_COMPACT:
                     writer.writeArrayOfCompact(name, null);
                     break;
-                case FieldKind.PORTABLE:
-                    continue;
-                case FieldKind.ARRAY_OF_PORTABLE:
-                    continue;
                 case FieldKind.NULLABLE_BOOLEAN:
                     writer.writeNullableBoolean(name, null);
                     break;

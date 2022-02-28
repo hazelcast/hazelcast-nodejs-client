@@ -51,7 +51,7 @@ describe('SchemaServiceTest', function () {
         for (const f in FieldKind) {
             const fieldKind = +f;
             // enums are reverse mapped.
-            if (!isNaN(+fieldKind) && fieldKind !== FieldKind.PORTABLE && fieldKind !== FieldKind.ARRAY_OF_PORTABLE) {
+            if (!isNaN(+fieldKind)) {
                 fields.push(new FieldDescriptor(FieldKind[fieldKind], fieldKind));
             }
         }

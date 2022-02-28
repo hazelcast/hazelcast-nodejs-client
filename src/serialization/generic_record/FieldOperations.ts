@@ -19,7 +19,6 @@ import {FieldKind} from './FieldKind';
 import {FieldKindBasedOperations} from './FieldKindBasedOperations';
 import {DefaultCompactWriter} from '../compact/DefaultCompactWriter';
 import {GenericRecord} from './GenericRecord';
-import {UnsupportedOperationError} from '../../core';
 import {BitsUtil} from '../../util/BitsUtil';
 
 /**
@@ -58,22 +57,6 @@ export class FieldOperations {
         [FieldKind.ARRAY_OF_INT8]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
                 writer.writeArrayOfInt8(fieldName, record.getArrayOfInt8(fieldName));
-            },
-            kindSizeInBytes(): number {
-                return FieldOperations.VARIABLE_SIZE;
-            },
-        },
-        [FieldKind.CHAR]: {
-            writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                throw new UnsupportedOperationError('Compact format does not support writing a char field');
-            },
-            kindSizeInBytes(): number {
-                return BitsUtil.CHAR_SIZE_IN_BYTES;
-            },
-        },
-        [FieldKind.ARRAY_OF_CHAR]: {
-            writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
-                throw new UnsupportedOperationError('Compact format does not support writing an array of chars field')
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;

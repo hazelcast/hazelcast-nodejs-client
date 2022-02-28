@@ -23,7 +23,6 @@ import {
     LocalDateTime,
     LocalTime,
     OffsetDateTime,
-    UnsupportedOperationError
 } from '../../core';
 import * as Long from 'long';
 import {CompactStreamSerializer} from './CompactStreamSerializer';
@@ -337,11 +336,6 @@ export class DefaultCompactReader implements CompactReader {
             FieldKind.ARRAY_OF_NULLABLE_INT8,
             'Bytes'
         );
-    }
-
-    // It is normal not to cover this line. It is impossible to reach.
-    getArrayOfChar(fieldName: string): string[] {
-        throw new UnsupportedOperationError('Compact format does not support reading an array of chars field');
     }
 
     getArrayOfString(fieldName: string): string[] {
@@ -679,11 +673,6 @@ export class DefaultCompactReader implements CompactReader {
         }
     }
 
-    // It is normal not to cover this line. It is impossible to reach.
-    getChar(fieldName: string): string {
-        throw new UnsupportedOperationError('Compact format does not support reading a char field.');
-    }
-
     getDate(fieldName: string): LocalDate {
         return this.getVariableSizeByNameAndKind(fieldName, FieldKind.DATE, IOUtil.readLocalDate);
     }
@@ -827,10 +816,6 @@ export class DefaultCompactReader implements CompactReader {
                 case FieldKind.ARRAY_OF_INT8:
                     values[field.fieldName] = this.readArrayOfInt8(field.fieldName);
                     break;
-                case FieldKind.CHAR:
-                    throw new UnsupportedOperationError('Char field is not supported in compact');
-                case FieldKind.ARRAY_OF_CHAR:
-                    throw new UnsupportedOperationError('Char field is not supported in compact');
                 case FieldKind.INT16:
                     values[field.fieldName] = this.readInt16(field.fieldName);
                     break;
@@ -903,10 +888,6 @@ export class DefaultCompactReader implements CompactReader {
                 case FieldKind.ARRAY_OF_COMPACT:
                     values[field.fieldName] = this.readArrayOfCompact(field.fieldName);
                     break;
-                case FieldKind.PORTABLE:
-                    throw new UnsupportedOperationError('Portable field is not supported in compact');
-                case FieldKind.ARRAY_OF_PORTABLE:
-                    throw new UnsupportedOperationError('Portable field is not supported in compact');
                 case FieldKind.NULLABLE_BOOLEAN:
                     values[field.fieldName] = this.readNullableBoolean(field.fieldName);
                     break;

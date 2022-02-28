@@ -17,7 +17,7 @@
 
 const chai = require('chai');
 chai.should();
-const { CompactGenericRecordImpl, GenericRecords, UnsupportedOperationError } = require('../../../../lib');
+const { CompactGenericRecordImpl, GenericRecords } = require('../../../../lib');
 const {
     createSerializationService,
     createMainDTO,
@@ -283,27 +283,6 @@ describe('CompactGenericRecordTest', function () {
         // record stays unchanged
         record.getInt32('foo').should.be.eq(1);
         (record.getInt64('bar').eq(Long.fromNumber(1231))).should.be.true;
-    });
-
-    it('should not support reading and writing char field', async function() {
-        (() => GenericRecords.compact('writeChar', {
-            foo: Fields.char
-        }, {
-            foo: 'a'
-        })).should.throw(UnsupportedOperationError, /char/);
-
-        (() => GenericRecords.compact('readChar', {}, {}).getChar('foo')).should.throw(UnsupportedOperationError, /char/);
-    });
-
-    it('should not support reading and writing charArray field', async function() {
-        (() => GenericRecords.compact('writeCharArray', {
-            foo: Fields.arrayOfChar
-        }, {
-            foo: ['a', 'b']
-        })).should.throw(UnsupportedOperationError, /char/);
-
-        (() => GenericRecords.compact('readCharArray', {}, {}).getArrayOfChar('foo'))
-        .should.throw(UnsupportedOperationError, /char/);
     });
 
     it('should be able to read array of generic records', async function() {

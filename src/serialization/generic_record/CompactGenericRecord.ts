@@ -121,10 +121,6 @@ export class CompactGenericRecordImpl {
                     throw new TypeError(getErrorStringForField('Buffer or null'));
                 }
                 break;
-            case FieldKind.CHAR:
-                throw new UnsupportedOperationError('Compact format does not support writing a char field');
-            case FieldKind.ARRAY_OF_CHAR:
-                throw new UnsupportedOperationError('Compact format does not support writing an array of chars field');
             case FieldKind.INT16:
                 validateType('number');
                 validateInt16Range();
@@ -214,11 +210,6 @@ export class CompactGenericRecordImpl {
                 break;
             case FieldKind.ARRAY_OF_COMPACT:
                 validateArray(FieldKind.COMPACT);
-                break;
-            case FieldKind.PORTABLE:
-                throw new TypeError('Compact format does not support writing a portable field');
-            case FieldKind.ARRAY_OF_PORTABLE:
-                validateArray(FieldKind.PORTABLE);
                 break;
             case FieldKind.NULLABLE_BOOLEAN:
                 validateNullableType('boolean');
@@ -513,10 +504,6 @@ export class CompactGenericRecordImpl {
 
     getInt8(fieldName: string): number {
         return this.getNonNull(fieldName, FieldKind.INT8, FieldKind.NULLABLE_INT8, 'Byte');
-    }
-
-    getChar(fieldName: string): string {
-        throw new UnsupportedOperationError('Compact format does not support reading a char field.');
     }
 
     getDate(fieldName: string): LocalDate {
