@@ -166,7 +166,7 @@ export class SqlResultImpl implements SqlResult {
 
     constructor(
         private readonly sqlService: SqlServiceImpl,
-        private readonly deserializeFn: (data: Data) => any,
+        private readonly deserializeFn: (data: Data, isRaw: boolean) => any,
         private readonly connection: Connection,
         private readonly queryId: SqlQueryId,
         /** The page size used for pagination */
@@ -195,7 +195,7 @@ export class SqlResultImpl implements SqlResult {
      */
     static newResult(
         sqlService: SqlServiceImpl,
-        deserializeFn: (data: Data) => any,
+        deserializeFn: (data: Data, isRaw: boolean) => any,
         connection: Connection,
         queryId: SqlQueryId,
         cursorBufferSize: number,
@@ -207,6 +207,10 @@ export class SqlResultImpl implements SqlResult {
 
     isRowSet(): boolean {
         return this.rowMetadata !== null;
+    }
+
+    isRawResult(): boolean {
+        return this.returnRawResult;
     }
 
     close(): Promise<void> {
@@ -268,19 +272,20 @@ export class SqlResultImpl implements SqlResult {
      * Used by {@link next}.
      * @returns the current row.
      */
-    private getCurrentRow(): SqlRowType {
+    getCurrentRow(): SqlRowType {
         if (this.returnRawResult) { // Return SqlRow
             const columnCount = this.currentPage.getColumnCount();
             const values = new Array(columnCount);
             for (let i = 0; i < columnCount; i++) {
-                values[i] = this.deserializeFn(this.currentPage.getValue(this.currentPosition, i));
+                values[i] = this.currentPage.getValue(this.currentPosition, i);
             }
-            return new SqlRowImpl(values, this.rowMetadata);
+            // Deserialization happens lazily while getting the object.
+            return new SqlRowImpl(values, this.rowMetadata, this.deserializeFn);
         } else { // Return objects
             const result: SqlRowAsObject = {};
             for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
                 const columnMetadata = this.rowMetadata.getColumn(i);
-                result[columnMetadata.name] = this.deserializeFn(this.currentPage.getValue(this.currentPosition, i));
+                result[columnMetadata.name] = this.deserializeFn(this.currentPage.getValue(this.currentPosition, i), false);
             }
             return result;
         }

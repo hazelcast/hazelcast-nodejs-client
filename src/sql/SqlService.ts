@@ -16,7 +16,7 @@
 import {SqlResult, SqlResultImpl} from './SqlResult';
 import {ConnectionManager} from '../network/ConnectionManager';
 import {SqlExpectedResultType, SqlStatement, SqlStatementOptions} from './SqlStatement';
-import {HazelcastSqlException, IllegalArgumentError, SchemaNotReplicatedError, UUID} from '../core';
+import {HazelcastSqlException, IllegalArgumentError, SchemaNotFoundError, SchemaNotReplicatedError, UUID} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
 import {SqlQueryId} from './SqlQueryId';
 import {SerializationService} from '../serialization/SerializationService';
@@ -322,6 +322,24 @@ export class SqlServiceImpl implements SqlService {
                 connection, requestMessage, SqlExecuteCodec.decodeResponse
             ).then(response => {
                 SqlServiceImpl.handleExecuteResponse(response, result);
+                // Try to deserialize the first row for compact schema fetching if lazy deserialization won't be used.
+                if (!result.isRawResult() && result.isRowSet()) {
+                    try {
+                        result.getCurrentRow();
+                    } catch (e) {
+                        if (e instanceof HazelcastSqlException && e.cause instanceof SchemaNotFoundError) {
+                            // We need to fetch the schema to deserialize compact.
+                            this.invocationService.logger.trace(
+                                'SqlService', `Could not find schema id ${e.cause.schemaId} locally, will search on the cluster`
+                            );
+                            return this.invocationService.fetchSchema(e.cause.schemaId).then(() => {
+                                return result;
+                            })
+                        } else {
+                            throw e;
+                        }
+                    }
+                }
                 return result;
             }).catch(err => {
                 const error = this.rethrow(err, connection);
@@ -382,13 +400,28 @@ export class SqlServiceImpl implements SqlService {
     /**
      * Used for lazy deserialization of row values.
      * @param data The data to be deserialized.
+     * @param isRaw `true` if the row is raw, i.e an {@link SqlRowImpl}; `false` otherwise, i.e a regular JSON object. Used to log
+     * more information about lazy deserialization if row is a regular JSON object.
      */
-    private deserializeRowValue(data: Data) : any {
+     private deserializeRowValue(data: Data, isRaw: boolean) : any {
         try {
             return this.serializationService.toObject(data);
         } catch (e) {
-            let message = 'Failed to deserialize query result value.';
-            message += ` Error: ${e.message}`;
+            let message;
+            if (e instanceof SchemaNotFoundError) {
+                message = 'You tried to deserialize an SQL row which includes a compact serializable object, however '
+                        + 'the schema for that object is not known by the client. You can try registering a compact '
+                        + 'serializer for that object, or setting `returnRawResult` to `false` in the SQL statement '
+                        + 'options. This will disable lazy deserialization for this SQL result and enable automatic '
+                        + 'schema fetching which will solve this error.'
+            } else {
+                message = 'Failed to deserialize query result value.';
+                if (!isRaw) {
+                    message += 'In order to partially deserialize SQL rows you can set `returnRawResult` option to `true`. Check '
+                            + 'out the "Lazy SQL Row Deserialization" section in the client\'s reference manual.';
+                }
+                message += ` Error: ${e.message}`;
+            }
             throw this.toHazelcastSqlException(e, message);
         }
     }
