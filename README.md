@@ -44,7 +44,7 @@ The quickest way to start a single member cluster for development purposes is to
 [Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
 
 ```bash
-docker run -p 5701:5701 hazelcast/hazelcast:latest
+docker run -p 5701:5701 hazelcast/hazelcast
 ```
 
 This command uses the `latest` tag in order to fetch the latest hazelcast version. You can find all available tags
