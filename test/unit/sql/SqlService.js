@@ -220,7 +220,7 @@ describe('SqlServiceTest', function () {
         });
 
         it('should call handleExecuteResponse if invoke is successful', async function () {
-            const fakeResult = {};
+            const fakeResult = {isRawResult: sandbox.fake.returns(false), isRowSet: sandbox.fake.returns(false)};
             sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake.returns(fakeResult));
             await sqlService.execute('s', [], {});
             return assertTrueEventually(async () => {
