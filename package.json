@@ -24,7 +24,7 @@
         "husky": "~6.0.0",
         "jsonschema": "~1.4.0",
         "markdown-link-check": "~3.9.3",
-        "markdownlint-cli": "~0.30.0",
+        "markdownlint-cli": "~0.31.1",
         "mocha": "~8.4.0",
         "mocha-jenkins-reporter": "~0.4.7",
         "mousse": "~0.3.1",
