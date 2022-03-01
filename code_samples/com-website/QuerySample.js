@@ -56,36 +56,34 @@ async function generateUsers(usersMap) {
 }
 
 (async () => {
-    try {
-        // Start the Hazelcast Client and connect to an already running
-        // Hazelcast Cluster on 127.0.0.1
-        const hz = await Client.newHazelcastClient({
+    // Start the Hazelcast Client and connect to an already running
+    // Hazelcast Cluster on 127.0.0.1
+    const hz = await Client.newHazelcastClient({
             serialization: {
                 portableFactories: {
                     1: portableFactory
                 }
             }
-        });
-        const usersMap = await hz.getMap('users');
-        // Add some users to the Distributed Map
-        await generateUsers(usersMap);
-        // Create a Predicate from a String (a SQL like Where clause)
-        const sqlQuery = Predicates.sql('active AND age BETWEEN 18 AND 21');
-        // Creating the same Predicate as above but with a builder
-        const criteriaQuery = Predicates.and(
-            Predicates.equal('active', true),
-            Predicates.between('age', 18, 21)
-        );
+    });
+    const usersMap = await hz.getMap('users');
+    // Add some users to the Distributed Map
+    await generateUsers(usersMap);
+    // Create a Predicate from a String (a SQL like Where clause)
+    const sqlQuery = Predicates.sql('active AND age BETWEEN 18 AND 21');
+    // Creating the same Predicate as above but with a builder
+    const criteriaQuery = Predicates.and(
+        Predicates.equal('active', true),
+        Predicates.between('age', 18, 21)
+    );
         // Get result collections using the two different Predicates
-        const result1 = await usersMap.valuesWithPredicate(sqlQuery);
-        const result2 = await usersMap.valuesWithPredicate(criteriaQuery);
-        // Print out the results
-        console.log(result1.toArray());
-        console.log(result2.toArray());
-        // Shutdown this Hazelcast client
-        await hz.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    const result1 = await usersMap.valuesWithPredicate(sqlQuery);
+    const result2 = await usersMap.valuesWithPredicate(criteriaQuery);
+    // Print out the results
+    console.log(result1.toArray());
+    console.log(result2.toArray());
+    // Shutdown this Hazelcast client
+    await hz.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

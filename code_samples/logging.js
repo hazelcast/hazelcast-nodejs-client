@@ -58,14 +58,12 @@ const winstonAdapter = {
 };
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient({
+    const client = await Client.newHazelcastClient({
             customLogger: winstonAdapter
-        });
+    });
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

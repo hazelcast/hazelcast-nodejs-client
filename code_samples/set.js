@@ -18,24 +18,22 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
-        const set = await client.getSet('my-distributed-set');
+    const client = await Client.newHazelcastClient();
+    const set = await client.getSet('my-distributed-set');
 
-        // Add the same item multiple times
-        await set.add('key');
-        await set.add('key');
-        await set.add('key');
+    // Add the same item multiple times
+    await set.add('key');
+    await set.add('key');
+    await set.add('key');
 
-        console.log('Item \'key\' is added to the set.');
-        const contains = await set.contains('key');
-        console.log('Set contains item \'key\':', contains);
-        const size = await set.size();
-        console.log('Set size:', size);
+    console.log('Item \'key\' is added to the set.');
+    const contains = await set.contains('key');
+    console.log('Set contains item \'key\':', contains);
+    const size = await set.size();
+    console.log('Set size:', size);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

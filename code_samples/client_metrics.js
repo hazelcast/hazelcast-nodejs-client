@@ -18,19 +18,29 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    const client = await Client.newHazelcastClient();
-
-    const membershipListener = {
-            memberAdded: (event) => {
-                console.log('Member Added:', event.member.address);
+    const client = await Client.newHazelcastClient({
+            nearCaches: {
+                // Enable near cache with all defaults
+                'nearCachedMap': {}
             },
-            memberRemoved: (event) => {
-                console.log('Member Removed:', event.member.address);
+            metrics: {
+                enabled: true,
+                collectionFrequencySeconds: 2
             }
-    };
-        // When a member is added and removed, the listener will be triggered
-    client.getClusterService().addMembershipListener(membershipListener);
+    });
+    const ncMap = await client.getMap('nearCachedMap');
 
+    // Warm up the near cache
+    await ncMap.put('key1', 'value1');
+    await ncMap.get('key1');
+    await ncMap.get('key1');
+    await ncMap.get('key1');
+
+    // At this point, we have 1 near cache miss, 2 near cache hits
+    // in client's near cache statistics. Sleep more than statistics
+    // collection time and keep client running. Then, you should see
+    // the statistics in Hazelcast Management Center 4.0
+    await new Promise((resolve) => setTimeout(resolve, 60000));
     await client.shutdown();
 })().catch(err => {
     console.error('Error occurred:', err);

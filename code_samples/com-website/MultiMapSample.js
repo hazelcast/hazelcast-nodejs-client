@@ -18,27 +18,25 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        // Start the Hazelcast Client and connect to an already running
-        // Hazelcast Cluster on 127.0.0.1
-        const hz = await Client.newHazelcastClient();
-        // Get the Distributed MultiMap from Cluster
-        const multiMap = await hz.getMap('my-distributed-multimap');
-        // Put values in the map against the same key
-        await multiMap.put('my-key', 'value1');
-        await multiMap.put('my-key', 'value2');
-        await multiMap.put('my-key', 'value3');
-        // Print out all the values for associated with key called 'my-key'
-        const values = await multiMap.get('my-key');
-        for (const value of values) {
-            console.log(value);
-        }
-        // remove specific key/value pair
-        await multiMap.remove('my-key', 'value2');
-        // Shutdown this Hazelcast client
-        await hz.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
+    // Start the Hazelcast Client and connect to an already running
+    // Hazelcast Cluster on 127.0.0.1
+    const hz = await Client.newHazelcastClient();
+    // Get the Distributed MultiMap from Cluster
+    const multiMap = await hz.getMap('my-distributed-multimap');
+    // Put values in the map against the same key
+    await multiMap.put('my-key', 'value1');
+    await multiMap.put('my-key', 'value2');
+    await multiMap.put('my-key', 'value3');
+    // Print out all the values for associated with key called 'my-key'
+    const values = await multiMap.get('my-key');
+    for (const value of values) {
+        console.log(value);
     }
-})();
+    // remove specific key/value pair
+    await multiMap.remove('my-key', 'value2');
+    // Shutdown this Hazelcast client
+    await hz.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

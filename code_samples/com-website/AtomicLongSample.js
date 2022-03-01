@@ -18,20 +18,18 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        // Start the Hazelcast Client and connect to an already running
-        // Hazelcast Cluster on 127.0.0.1
-        // Note: CP Subsystem has to be enabled on the cluster
-        const hz = await Client.newHazelcastClient();
-        // Get the AtomicLong counter from Cluster
-        const counter = await hz.getCPSubsystem().getAtomicLong('counter');
-        // Add and get the counter
-        const value = await counter.addAndGet(3);
-        console.log('Counter value is', value);
-        // Shutdown this Hazelcast client
-        await hz.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    // Start the Hazelcast Client and connect to an already running
+    // Hazelcast Cluster on 127.0.0.1
+    // Note: CP Subsystem has to be enabled on the cluster
+    const hz = await Client.newHazelcastClient();
+    // Get the AtomicLong counter from Cluster
+    const counter = await hz.getCPSubsystem().getAtomicLong('counter');
+    // Add and get the counter
+    const value = await counter.addAndGet(3);
+    console.log('Counter value is', value);
+    // Shutdown this Hazelcast client
+    await hz.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

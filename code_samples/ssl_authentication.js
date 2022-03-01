@@ -18,19 +18,17 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient({
-            network: {
-                ssl: {
-                    enabled: true
-                }
+    const client = await Client.newHazelcastClient({
+        network: {
+            ssl: {
+                enabled: true
             }
-        });
-        console.log('The client is authenticated using SSL');
+        }
+    });
+    console.log('The client is authenticated using SSL');
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

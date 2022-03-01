@@ -18,16 +18,14 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
+    const client = await Client.newHazelcastClient();
 
-        const flakeIdGenerator = await client.getFlakeIdGenerator('generator');
-        const id = await flakeIdGenerator.newId();
-        console.log('Generated id:', id.toString());
+    const flakeIdGenerator = await client.getFlakeIdGenerator('generator');
+    const id = await flakeIdGenerator.newId();
+    console.log('Generated id:', id.toString());
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});
