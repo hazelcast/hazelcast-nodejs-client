@@ -19,9 +19,9 @@ import * as Long from 'long';
 export const SEQUENCE_UNAVAILABLE = -1;
 
 /**
- * Defines the result of a {@link Ringbuffer.readMany} operation. This result set deserializes its value
- * lazily before client version 5.1. In versions 5.1 and above deserialization is eager. This is due to a
- * technical limitation of compact serialization.
+ * Defines the result of a {@link Ringbuffer.readMany} operation. This result set will throw {@link SchemaNotFoundError} when
+ * used with compact objects. This is due to an technical limitation that happens when compact and lazy deserialization
+ * are used together.
  */
 export interface ReadResultSet<T> {
 
@@ -39,9 +39,13 @@ export interface ReadResultSet<T> {
     getReadCount(): number;
 
     /**
-     * Gets the item at the given index.
+     * Gets the item at the given index. This method will throw {@link SchemaNotFoundError} when
+     * there is compact objects whose schemas are not known in this result set.
+     * This is due to an technical limitation that happens when compact and lazy
+     * deserialization are used together.
      *
      * @param index
+     * @throws {@link SchemaNotFoundError}
      * @returns the found item or `undefined` if the index is out of bounds
      */
     get(index: number): T;

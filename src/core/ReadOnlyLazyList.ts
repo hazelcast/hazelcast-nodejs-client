@@ -34,8 +34,9 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 }
 
 /**
- * Represents a list of values with lazy deserialization. Lazy deserialization does not work after
- * client version 5.1 due to a technical limitation.
+ * Represents a list of values with lazy deserialization. This lazy list will throw an error when
+ * used with compact objects. This is due to an technical limitation that happens when compact and lazy deserialization
+ * are used together.
  */
 export class ReadOnlyLazyList<T> {
 
@@ -47,9 +48,13 @@ export class ReadOnlyLazyList<T> {
     }
 
     /**
-     * Returns list's element at the specified index.
+     * Returns list's element at the specified index. This method will throw {@link SchemaNotFoundError} when
+     * used with compact objects. This is due to an technical limitation that happens when compact and lazy deserialization
+     * are used together.
+     *
      *
      * @param index element's index
+     * @throws {@link SchemaNotFoundError}
      * @returns element
      */
     get(index: number): T {
