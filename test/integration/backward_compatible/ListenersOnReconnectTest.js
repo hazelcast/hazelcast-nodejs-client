@@ -50,6 +50,7 @@ describe('ListenersOnReconnectTest', function () {
             },
             properties: {
                 'hazelcast.client.heartbeat.interval': 1000,
+                'hazelcast.client.heartbeat.timeout': 3000,
                 'hazelcast.logging.level': 'TRACE'
             }
         });
