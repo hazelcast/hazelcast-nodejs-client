@@ -74,7 +74,7 @@ export function getOffsetSecondsFromTimezoneString(timezoneString: string): numb
     if (typeof timezoneString !== 'string') {
         throw new TypeError('Expected timezoneString to be a string');
     }
-    let positive: boolean;
+    let positive;
     if (timezoneString.toUpperCase() === 'Z') {
         return 0;
     } else if (timezoneString[0] === '-') {

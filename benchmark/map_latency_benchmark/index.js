@@ -59,12 +59,12 @@ async function runBenchMark(timeArray, client, runBenchmarkFn) {
     const map = await client.getMap(MAP_NAME);
 
     console.log('Warmup started for ', runBenchmarkFn.name);
-    while(!warmupEnded) {
+    while (!warmupEnded) {
         await runBenchmarkFn(map);
     }
 
     console.log('Benchmark started for ', runBenchmarkFn.name);
-    while(!benchmarkEnded) {
+    while (!benchmarkEnded) {
         const timeElapsed = await runBenchmarkFn(map);
         timeArray.push(timeElapsed);
     }
@@ -90,7 +90,6 @@ function convertToNumbersAndCalculateAverage(timeArray) {
     }, 0);
     const average = Math.trunc(total / timeArray.length);
     return average;
-     
 }
 
 function writeToFile(filename, average, timeArray) {
@@ -104,12 +103,12 @@ async function runBenchMarkAndLogToFile(client, runFn, runBenchmarkFn, filename)
     const timeArray = [];
 
     setBenchmarkAsStartedAndSetTimer();
-    
+
     await runFn(timeArray, client, runBenchmarkFn);
 
     const timeArrayNumbers = timeArray.map(x => Number(x));
     const average = convertToNumbersAndCalculateAverage(timeArrayNumbers);
-    
+
     writeToFile(filename, average, timeArrayNumbers);
 }
 
@@ -118,7 +117,7 @@ async function main() {
 
     await runBenchMarkAndLogToFile(client, runBenchMark, runPut, 'put.json');
     await runBenchMarkAndLogToFile(client, runBenchMark, runGet, 'get.json');
-    
+
     await client.shutdown();
 }
 

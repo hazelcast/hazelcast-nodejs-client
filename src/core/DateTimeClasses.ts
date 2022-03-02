@@ -439,7 +439,7 @@ export class OffsetDateTime {
         }
         const indexOfFirstMatch = isoString.search(OffsetDateTime.timezoneRegex);
         const split = isoString.split(isoString[indexOfFirstMatch]);
-        let offsetSeconds: number;
+        let offsetSeconds;
         if (split.length !== 2) {
             throw new RangeError('Invalid format');
         }

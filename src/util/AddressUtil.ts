@@ -39,7 +39,7 @@ export function getSocketAddresses(address: string): Addresses {
         addressList.push(new AddressImpl(addressHolder.host, possiblePort + i));
     }
 
-    let addresses: Addresses;
+    let addresses;
     if (addressList.length > 0) {
         const primary = [ addressList[0] ];
         const secondary = addressList.slice(1);
