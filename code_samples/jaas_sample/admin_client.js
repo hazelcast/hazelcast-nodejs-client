@@ -20,29 +20,27 @@ const { UsernamePasswordCredentials } = require('./user_pass_cred');
 const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory');
 
 (async () => {
-    try {
-        const adminClient = await Client.newHazelcastClient({
+    const adminClient = await Client.newHazelcastClient({
             serialization: {
                 portableFactories: {
                     1: usernamePasswordCredentialsFactory
                 }
             },
             customCredentials: new UsernamePasswordCredentials('admin', 'password1', '127.0.0.1')
-        });
-        console.log('Admin client connected');
+    });
+    console.log('Admin client connected');
 
-        const adminMap = await adminClient.getMap('importantAdminMap');
-        console.log('Admin can create a map');
-        let value = await adminMap.get('someKey');
-        console.log('Admin can read from map:', value);
-        await adminMap.put('anotherKey', 'anotherValue'); // Should resolve
-        console.log('Admin can put to map');
-        value = await adminMap.get('anotherKey');
-        console.log('Value for the "anotherKey" is', value);
+    const adminMap = await adminClient.getMap('importantAdminMap');
+    console.log('Admin can create a map');
+    let value = await adminMap.get('someKey');
+    console.log('Admin can read from map:', value);
+    await adminMap.put('anotherKey', 'anotherValue'); // Should resolve
+    console.log('Admin can put to map');
+    value = await adminMap.get('anotherKey');
+    console.log('Value for the "anotherKey" is', value);
 
-        await adminClient.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await adminClient.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

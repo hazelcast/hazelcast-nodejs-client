@@ -18,18 +18,16 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
+    const client = await Client.newHazelcastClient();
 
-        const viewCounter = await client.getCPSubsystem().getAtomicLong('views');
-        const value = await viewCounter.get();
-        console.log('Value:', value);
-        const newValue = await viewCounter.addAndGet(42);
-        console.log('New value:', newValue);
+    const viewCounter = await client.getCPSubsystem().getAtomicLong('views');
+    const value = await viewCounter.get();
+    console.log('Value:', value);
+    const newValue = await viewCounter.addAndGet(42);
+    console.log('New value:', newValue);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

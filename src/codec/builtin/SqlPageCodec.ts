@@ -36,6 +36,7 @@ import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 import {DataCodec} from './DataCodec';
 import {IllegalStateError} from '../../core';
 import {CodecUtil} from './CodecUtil';
+import {HazelcastJsonValueCodec} from '../custom/HazelcastJsonValueCodec';
 
 /** @internal */
 export class SqlPageCodec {
@@ -111,6 +112,9 @@ export class SqlPageCodec {
                 }
                 case SqlColumnType.OBJECT:
                     columns[i] = ListMultiFrameCodec.decode(clientMessage, DataCodec.decodeNullable);
+                    break;
+                case SqlColumnType.JSON:
+                    columns[i] = ListMultiFrameCodec.decodeContainsNullable(clientMessage, HazelcastJsonValueCodec.decode);
                     break;
                 default:
                     throw new IllegalStateError('Unknown type ' + columnType);

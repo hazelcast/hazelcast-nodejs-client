@@ -38,20 +38,18 @@ class GlobalSerializer {
 }
 
 (async () => {
-    try {
-        // Start the Hazelcast Client and connect to an already running
-        // Hazelcast Cluster on 127.0.0.1
-        const hz = await Client.newHazelcastClient({
+    // Start the Hazelcast Client and connect to an already running
+    // Hazelcast Cluster on 127.0.0.1
+    const hz = await Client.newHazelcastClient({
             serialization: {
                 globalSerializer: new GlobalSerializer()
             }
-        });
+    });
         // GlobalSerializer will serialize/deserialize all non-builtin types
 
-        // Shutdown this Hazelcast client
-        await hz.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    // Shutdown this Hazelcast client
+    await hz.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

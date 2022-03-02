@@ -44,8 +44,11 @@ The quickest way to start a single member cluster for development purposes is to
 [Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
 
 ```bash
-docker run -p 5701:5701 hazelcast/hazelcast:4.1.1
+docker run -p 5701:5701 hazelcast/hazelcast
 ```
+
+This command fetches the latest Hazelcast version. You can find all available tags
+[here](https://hub.docker.com/r/hazelcast/hazelcast/tags).
 
 You can also use our ZIP or TAR [distributions](https://hazelcast.com/open-source-projects/downloads/)
 as described [here](DOCUMENTATION.md#121-setting-up-a-hazelcast-cluster).

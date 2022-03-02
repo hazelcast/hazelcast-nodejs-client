@@ -18,26 +18,24 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        // Start the Hazelcast Client and connect to an already running
-        // Hazelcast Cluster on 127.0.0.1
-        const hz = await Client.newHazelcastClient();
-        // Get the Distributed Set from Cluster
-        const set = await hz.getSet('my-distributed-set');
-        // Add items to the set with duplicates
-        await set.add('item1');
-        await set.add('item1');
-        await set.add('item2');
-        await set.add('item2');
-        await set.add('item2');
-        await set.add('item3');
-        // Get the items. Note that there are no duplicates
-        const items = await set.toArray();
-        console.log(items);
-        // Shutdown this Hazelcast client
-        await hz.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    // Start the Hazelcast Client and connect to an already running
+    // Hazelcast Cluster on 127.0.0.1
+    const hz = await Client.newHazelcastClient();
+    // Get the Distributed Set from Cluster
+    const set = await hz.getSet('my-distributed-set');
+    // Add items to the set with duplicates
+    await set.add('item1');
+    await set.add('item1');
+    await set.add('item2');
+    await set.add('item2');
+    await set.add('item2');
+    await set.add('item3');
+    // Get the items. Note that there are no duplicates
+    const items = await set.toArray();
+    console.log(items);
+    // Shutdown this Hazelcast client
+    await hz.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

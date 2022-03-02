@@ -44,22 +44,20 @@ function sampleDataSerializableFactory(classId) {
 }
 
 (async () => {
-    try {
-        // Start the Hazelcast Client and connect to an already running
-        // Hazelcast Cluster on 127.0.0.1
-        const hz = await Client.newHazelcastClient({
+    // Start the Hazelcast Client and connect to an already running
+    // Hazelcast Cluster on 127.0.0.1
+    const hz = await Client.newHazelcastClient({
             serialization: {
                 dataSerializableFactories: {
                     1000: sampleDataSerializableFactory
                 }
             }
-        });
+    });
         // Employee can be used here
 
-        // Shutdown this Hazelcast client
-        await hz.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    // Shutdown this Hazelcast client
+    await hz.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

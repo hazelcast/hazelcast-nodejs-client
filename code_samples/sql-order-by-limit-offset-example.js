@@ -18,13 +18,12 @@
 const { Client } = require('hazelcast-client');
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient();
-        const mapName = 'myMap';
-        const map = await client.getMap(mapName);
-        // To be able to use our map in SQL we need to create mapping for it.
-        const createMappingQuery = `
-            CREATE MAPPING ${mapName} (
+    const client = await Client.newHazelcastClient();
+    const mapName = 'myMap';
+    const map = await client.getMap(mapName);
+    // In order to use the map in SQL a mapping should be created.
+    const createMappingQuery = `
+            CREATE OR REPLACE MAPPING ${mapName} (
                 __key VARCHAR,
                 this DOUBLE
             )
@@ -34,49 +33,48 @@ const { Client } = require('hazelcast-client');
                 'valueFormat' = 'double'
             )
         `;
-        await client.getSql().execute(createMappingQuery);
+    await client.getSql().execute(createMappingQuery);
 
-        // populate map
-        await map.put('key1', 1);
-        await map.put('key2', 2);
-        await map.put('key3', 3);
-        await map.put('key4', 4);
-        await map.put('key5', 5);
+    // populate map
+    await map.put('key1', 1);
+    await map.put('key2', 2);
+    await map.put('key3', 3);
+    await map.put('key4', 4);
+    await map.put('key5', 5);
 
-        const result = await client.getSql().execute('SELECT * FROM myMap');
+    const result = await client.getSql().execute(`SELECT * FROM ${mapName}`);
 
-        console.log('Rows from unsorted query:');
-        for await (const row of result) {
-            console.log(`${row['__key']}: ${row['this']}`);
-        }
-
-        // In order to add an index clear the map.
-        await map.clear();
-
-        // Add an SORTED index to value field.
-        await map.addIndex({
-            type: 'SORTED',
-            attributes: ['this']
-        });
-
-        // populate map
-        await map.put('key1', 1);
-        await map.put('key2', 2);
-        await map.put('key3', 3);
-        await map.put('key4', 4);
-        await map.put('key5', 5);
-
-        // Expected to see 2 3 4
-        const result2 = await client.getSql().execute('SELECT * FROM myMap ORDER BY this ASC LIMIT 3 OFFSET 1');
-
-        console.log('Rows from sorted query with limit 3 and offset 1:');
-        for await (const row of result2) {
-            console.log(`${row['__key']}: ${row['this']}`);
-        }
-
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
+    console.log('Rows from unsorted query:');
+    for await (const row of result) {
+        console.log(`${row['__key']}: ${row['this']}`);
     }
-})();
+
+    // In order to add an index clear the map.
+    await map.clear();
+
+    // Add an SORTED index to value field.
+    await map.addIndex({
+        type: 'SORTED',
+        attributes: ['this']
+    });
+
+    // populate map
+    await map.put('key1', 1);
+    await map.put('key2', 2);
+    await map.put('key3', 3);
+    await map.put('key4', 4);
+    await map.put('key5', 5);
+
+    // Expected to see 2 3 4
+    const result2 = await client.getSql().execute(`SELECT * FROM ${mapName} ORDER BY this ASC LIMIT 3 OFFSET 1`);
+
+    console.log('\nRows from sorted query with limit 3 and offset 1:');
+    for await (const row of result2) {
+        console.log(`${row['__key']}: ${row['this']}`);
+    }
+
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

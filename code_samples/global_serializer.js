@@ -28,8 +28,7 @@ const selfReferringObject = {
 selfReferringObject.self = selfReferringObject;
 
 (async () => {
-    try {
-        const client = await Client.newHazelcastClient({
+    const client = await Client.newHazelcastClient({
             serialization: {
                 globalSerializer: {
                     mousseSerialize: mousse.serialize,
@@ -46,19 +45,18 @@ selfReferringObject.self = selfReferringObject;
                     }
                 }
             }
-        });
+    });
 
-        const map = await client.getMap('objects');
-        await map.put(1, selfReferringObject);
+    const map = await client.getMap('objects');
+    await map.put(1, selfReferringObject);
 
-        const obj = await map.get(1);
-        console.log(obj);
-        console.log(obj.self);
-        console.log(obj.self.self);
+    const obj = await map.get(1);
+    console.log(obj);
+    console.log(obj.self);
+    console.log(obj.self.self);
 
-        await client.shutdown();
-    } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
-    }
-})();
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});

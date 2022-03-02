@@ -20,30 +20,28 @@ const { UsernamePasswordCredentials } = require('./user_pass_cred');
 const { usernamePasswordCredentialsFactory } = require('./user_pass_cred_factory');
 
 (async () => {
-    try {
-        const readerClient = await Client.newHazelcastClient({
+    const readerClient = await Client.newHazelcastClient({
             serialization: {
                 portableFactories: {
                     1: usernamePasswordCredentialsFactory
                 }
             },
             customCredentials: new UsernamePasswordCredentials('reader', 'password2', '127.0.0.1')
-        });
-        console.log('Admin client connected');
+    });
+    console.log('Admin client connected');
 
-        const readerMap = await readerClient.getMap('importantReaderMap');
-        console.log('Reader can create a map');
-        const value = await readerMap.get('someKey');
-        console.log('Reader can read from map:', value);
-        try {
-            await readerMap.put('anotherKey', 'anotherValue'); // Should reject
-        } catch (err) {
-            console.log('Reader cannot put to map. Reason:', err);
-        }
-
-        await readerClient.shutdown();
+    const readerMap = await readerClient.getMap('importantReaderMap');
+    console.log('Reader can create a map');
+    const value = await readerMap.get('someKey');
+    console.log('Reader can read from map:', value);
+    try {
+        await readerMap.put('anotherKey', 'anotherValue'); // Should reject
     } catch (err) {
-        console.error('Error occurred:', err);
-        process.exit(1);
+        console.log('Reader cannot put to map. Reason:', err);
     }
-})();
+
+    await readerClient.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});
