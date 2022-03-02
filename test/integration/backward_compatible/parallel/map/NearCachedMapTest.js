@@ -93,12 +93,15 @@ describe('NearCachedMapTest', function () {
             let client2;
             let map1;
             let map2;
+            let member;
 
             before(async function () {
                 cluster = await testFactory.createClusterForParallelTests(null,
                     fs.readFileSync(__dirname + '/hazelcast_nearcache_batchinvalidation_false.xml', 'utf8'));
-                const member = await RC.startMember(cluster.id);
+                member = await RC.startMember(cluster.id);
+            });
 
+            beforeEach(async function () {
                 const cfg = {
                     clusterName: cluster.id,
                     nearCaches: {
@@ -112,16 +115,13 @@ describe('NearCachedMapTest', function () {
                 };
                 client1 = await testFactory.newHazelcastClientForParallelTests(cfg, member);
                 client2 = await testFactory.newHazelcastClientForParallelTests(cfg, member);
-            });
-
-            beforeEach(async function () {
                 map1 = await client1.getMap('ncc-map');
                 map2 = await client2.getMap('ncc-map');
-                return TestUtil.fillMap(map1);
+                await TestUtil.fillMap(map1);
             });
 
             afterEach(async function () {
-                await map1.destroy();
+                await testFactory.shutdownAllClients();
             });
 
             after(async function () {
@@ -168,6 +168,7 @@ describe('NearCachedMapTest', function () {
                 }
 
                 await map1.get('key1');
+                expect(getNearCacheStats(map1).missCount).to.be.eq(1);
                 await map2.remove('key1');
 
                 await assertTrueEventually(async () => {
