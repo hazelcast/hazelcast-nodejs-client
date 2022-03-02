@@ -80,8 +80,8 @@ describe('ListenersOnReconnectTest', function () {
         await TestUtil.assertTrueEventually(async () => {
             const activeConnections = TestUtil.getConnections(client);
             expect(activeConnections.length).to.be.equal(1);
-            const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
 
+            const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
             const connectionsThatHasListener = [...activeRegistrations.keys()];
             expect(connectionsThatHasListener.length).to.be.equal(1);
             expect(connectionsThatHasListener[0]).to.be.equal(activeConnections[0]);
