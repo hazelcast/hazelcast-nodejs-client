@@ -120,7 +120,7 @@ describe('ListenersOnReconnectTest', function () {
             await closeTwoMembersOutOfThreeAndTestListener(isSmart, [0, 2], RC.shutdownMember);
         });
 
-        it('restart member, listener still receives map.put event [smart=' + isSmart + ']',async function () {
+        it('restart member, listener still receives map.put event [smart=' + isSmart + ']', async function () {
             const deferred = Util.deferredPromise();
             const member = await RC.startMember(cluster.id);
             client = await Client.newHazelcastClient({
