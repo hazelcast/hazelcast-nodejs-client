@@ -156,6 +156,11 @@ exports.getActiveRegistrations = function(client, registrationId) {
     }
 };
 
+exports.isClientVersionAtLeast = function(version) {
+    const actual = exports.calculateServerVersionFromString(BuildInfo.getClientVersion());
+    const expected = exports.calculateServerVersionFromString(version);
+    return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
+};
 
 exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     let actNumber;
