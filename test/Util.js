@@ -114,6 +114,31 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
     }));
 };
 
+/**
+ * Duplicated this from BuildInfo because the logic of it is changed in 5.1, and in backward compatibility tests older
+ * versions won't be able to access the new logic if we keep the new logic only in src/.
+ */
+ exports.calculateServerVersionFromString = (versionString) => {
+    if (versionString == null) {
+        return BuildInfo.UNKNOWN_VERSION_ID;
+    }
+    const mainParts = versionString.split('-');
+    const tokens = mainParts[0].split('.');
+
+    if (tokens.length < 2) {
+        return BuildInfo.UNKNOWN_VERSION_ID;
+    }
+
+    const major = +tokens[0];
+    const minor = +tokens[1];
+    const patch = (tokens.length === 2) ? 0 : +tokens[2];
+
+    const version = BuildInfo.MAJOR_VERSION_MULTIPLIER * major + BuildInfo.MINOR_VERSION_MULTIPLIER * minor + patch;
+
+    // version is NaN when one of major, minor and patch is not a number.
+    return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
+};
+
 exports.getConnections = function(client) {
     if (Object.prototype.hasOwnProperty.call(client, 'connectionRegistry')) {
         return client.connectionRegistry.getConnections();
