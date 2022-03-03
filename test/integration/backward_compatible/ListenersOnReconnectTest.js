@@ -120,45 +120,60 @@ describe('ListenersOnReconnectTest', function () {
             await closeTwoMembersOutOfThreeAndTestListener(isSmart, [0, 2], RC.shutdownMember);
         });
 
-        it('restart member, listener still receives map.put event [smart=' + isSmart + ']', function (done) {
-            async function testListener(done) {
-                const member = await RC.startMember(cluster.id);
-                client = await Client.newHazelcastClient({
-                    clusterName: cluster.id,
-                    network: {
-                        smartRouting: isSmart
-                    },
-                    properties: {
-                        'hazelcast.client.heartbeat.interval': 1000
+        it('restart member, listener still receives map.put event [smart=' + isSmart + ']',async function () {
+            const deferred = Util.deferredPromise();
+            const member = await RC.startMember(cluster.id);
+            client = await Client.newHazelcastClient({
+                clusterName: cluster.id,
+                network: {
+                    smartRouting: isSmart
+                }
+            });
+            map = await client.getMap('testmap');
+
+            const listener = {
+                added: (entryEvent) => {
+                    try {
+                        expect(entryEvent.name).to.equal('testmap');
+                        expect(entryEvent.key).to.equal('keyx');
+                        expect(entryEvent.value).to.equal('valx');
+                        expect(entryEvent.oldValue).to.be.equal(null);
+                        expect(entryEvent.mergingValue).to.be.equal(null);
+                        expect(entryEvent.member).to.not.be.equal(null);
+                        deferred.resolve();
+                    } catch (err) {
+                        deferred.reject(err);
                     }
-                });
-                map = await client.getMap('testmap');
+                }
+            };
+            const registrationId = await map.addEntryListener(listener, 'keyx', true);
 
-                const listener = {
-                    added: (entryEvent) => {
-                        try {
-                            expect(entryEvent.name).to.equal('testmap');
-                            expect(entryEvent.key).to.equal('keyx');
-                            expect(entryEvent.value).to.equal('valx');
-                            expect(entryEvent.oldValue).to.be.equal(null);
-                            expect(entryEvent.mergingValue).to.be.equal(null);
-                            expect(entryEvent.member).to.not.be.equal(null);
-                            done();
-                        } catch (err) {
-                            done(err);
-                        }
-                    }
-                };
-                await map.addEntryListener(listener, 'keyx', true);
+            await RC.terminateMember(cluster.id, member.uuid);
+            // Assert that the connection is closed and the listener is removed.
+            await TestUtil.assertTrueEventually(async () => {
+                const activeConnections = TestUtil.getConnections(client);
+                expect(activeConnections.length).to.be.equal(0);
 
-                await RC.terminateMember(cluster.id, member.uuid);
-                await RC.startMember(cluster.id);
+                const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+                const connectionsThatHasListener = [...activeRegistrations.keys()];
+                expect(connectionsThatHasListener.length).to.be.equal(0);
+            });
 
-                await TestUtil.promiseWaitMilliseconds(8000);
-                return map.put('keyx', 'valx');
-            }
+            await RC.startMember(cluster.id);
 
-            testListener(done).catch(done);
+            // Assert that the connection reestablished and the listener is reregistered.
+            await TestUtil.assertTrueEventually(async () => {
+                const activeConnections = TestUtil.getConnections(client);
+                expect(activeConnections.length).to.be.equal(1);
+
+                const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+                const connectionsThatHasListener = [...activeRegistrations.keys()];
+                expect(connectionsThatHasListener.length).to.be.equal(1);
+                expect(connectionsThatHasListener[0]).to.be.equal(activeConnections[0]);
+            });
+
+            await map.put('keyx', 'valx');
+            await deferred;
         });
     });
 });
