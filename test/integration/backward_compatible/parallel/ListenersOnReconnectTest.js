@@ -84,7 +84,7 @@ describe('ListenersOnReconnectTest', function () {
         });
 
         await map.put('keyx', 'valx');
-        await deferred;
+        await deferred.promise;
     }
 
     [true, false].forEach((isSmart) => {
