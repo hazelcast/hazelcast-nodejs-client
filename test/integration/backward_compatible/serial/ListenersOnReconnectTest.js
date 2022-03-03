@@ -73,8 +73,7 @@ describe('ListenersOnReconnectTest', function () {
                 expect(activeConnections.length).to.be.equal(0);
 
                 const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
-                const connectionsThatHasListener = [...activeRegistrations.keys()];
-                expect(connectionsThatHasListener.length).to.be.equal(0);
+                expect(activeRegistrations.size).to.be.equal(0);
             });
             await RC.startMember(cluster.id);
 
