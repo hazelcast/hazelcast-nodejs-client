@@ -89,7 +89,7 @@ describe('ListenersOnReconnectTest', function () {
                 expect(connectionsThatHasListener[0]).to.be.equal(activeConnections[0]);
             });
             await map.put('keyx', 'valx');
-            await deferred;
+            await deferred.promise;
         });
     });
 });
