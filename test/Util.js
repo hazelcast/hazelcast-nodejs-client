@@ -88,6 +88,32 @@ exports.markEnterprise = function (_this) {
     }
 };
 
+exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
+    let errorString = '';
+    return new Promise(((resolve, reject) => {
+        let intervalTimer;
+        function scheduleNext() {
+            intervalTimer = setTimeout(() => {
+                taskAsyncFn()
+                    .then(() => {
+                        clearInterval(timeoutTimer);
+                        resolve();
+                    })
+                    .catch(e => {
+                        errorString += e.stack + '\n';
+                        scheduleNext();
+                    });
+            }, intervalMs);
+        }
+        scheduleNext();
+
+        const timeoutTimer = setTimeout(() => {
+            clearInterval(intervalTimer);
+            reject(new Error('Rejected due to timeout of ' + timeoutMs + 'ms. Errors occurred in order: \n\n' + errorString));
+        }, timeoutMs);
+    }));
+};
+
 exports.getConnections = function(client) {
     if (Object.prototype.hasOwnProperty.call(client, 'connectionRegistry')) {
         return client.connectionRegistry.getConnections();
@@ -119,6 +145,11 @@ exports.getActiveRegistrations = function(client, registrationId) {
     }
 };
 
+exports.isClientVersionAtLeast = function(version) {
+    const actual = exports.calculateServerVersionFromString(BuildInfo.getClientVersion());
+    const expected = exports.calculateServerVersionFromString(version);
+    return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
+};
 
 exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     let actNumber;
