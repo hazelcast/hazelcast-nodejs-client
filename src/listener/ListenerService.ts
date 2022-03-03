@@ -89,6 +89,7 @@ export class ListenerService {
         this.activeRegistrations.forEach((registrationsOnUserKey) => {
             const eventRegistration = registrationsOnUserKey.get(connection);
             if (eventRegistration !== undefined) {
+                registrationsOnUserKey.delete(connection);
                 this.invocationService.removeEventHandler(eventRegistration.correlationId);
             }
         });
