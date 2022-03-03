@@ -307,7 +307,6 @@ export class InvocationService {
                 }
                 if (!connection.isAlive()) {
                     this.notifyError(invocation, new TargetDisconnectedError(connection.getClosedReason()));
-                    console.log(invocation.request.getMessageType());
                     continue;
                 }
                 if (this.backupAckToClientEnabled) {
