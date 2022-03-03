@@ -86,7 +86,7 @@ describe('ListenersOnReconnectTest', function () {
         });
 
         await map.put('keyx', 'valx');
-        await deferred;
+        await deferred.promise;
     }
 
     [true, false].forEach((isSmart) => {
@@ -151,12 +151,31 @@ describe('ListenersOnReconnectTest', function () {
                     }
                 }
             };
-            await map.addEntryListener(listener, 'keyx', true);
+            const registrationId = await map.addEntryListener(listener, 'keyx', true);
 
             await RC.terminateMember(cluster.id, member.uuid);
+            // Assert that the connection is closed and the listener is removed.
+            await TestUtil.assertTrueEventually(async () => {
+                const activeConnections = TestUtil.getConnections(client);
+                expect(activeConnections.length).to.be.equal(0);
+
+                const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+                const connectionsThatHasListener = [...activeRegistrations.keys()];
+                expect(connectionsThatHasListener.length).to.be.equal(0);
+            });
             await RC.startMember(cluster.id);
 
-            await TestUtil.promiseWaitMilliseconds(8000);
+            // Assert that the connection reestablished and the listener is reregistered.
+            await TestUtil.assertTrueEventually(async () => {
+                const activeConnections = TestUtil.getConnections(client);
+                expect(activeConnections.length).to.be.equal(1);
+
+                const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+                const connectionsThatHasListener = [...activeRegistrations.keys()];
+                expect(connectionsThatHasListener.length).to.be.equal(1);
+                expect(connectionsThatHasListener[0]).to.be.equal(activeConnections[0]);
+            });
+
             await map.put('keyx', 'valx');
             await deferred.promise;
         });
