@@ -47,10 +47,6 @@ describe('ListenersOnReconnectTest', function () {
             clusterName: cluster.id,
             network: {
                 smartRouting: isSmart
-            },
-            properties: {
-                'hazelcast.client.heartbeat.interval': 1000,
-                'hazelcast.client.heartbeat.timeout': 3000
             }
         });
         map = await client.getMap('testmap');
@@ -70,13 +66,23 @@ describe('ListenersOnReconnectTest', function () {
                 }
             }
         };
-        await map.addEntryListener(listener, 'keyx', true);
+        const registrationId = await map.addEntryListener(listener, 'keyx', true);
         await Promise.all([
             turnoffMember(cluster.id, members[membersToClose[0]].uuid),
             turnoffMember(cluster.id, members[membersToClose[1]].uuid)
         ]);
 
-        await TestUtil.promiseWaitMilliseconds(8000);
+        // Assert that connections are closed and the listener is reregistered.
+        await TestUtil.assertTrueEventually(async () => {
+            const activeConnections = TestUtil.getConnections(client);
+            expect(activeConnections.length).to.be.equal(1);
+
+            const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+            const connectionsThatHasListener = [...activeRegistrations.keys()];
+            expect(connectionsThatHasListener.length).to.be.equal(1);
+            expect(connectionsThatHasListener[0]).to.be.equal(activeConnections[0]);
+        });
+
         await map.put('keyx', 'valx');
         await deferred.promise;
     }
