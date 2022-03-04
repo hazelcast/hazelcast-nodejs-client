@@ -161,10 +161,18 @@ describe('ListenersOnReconnectTest', function () {
 
             // Assert that the connection reestablished and the listener is reregistered.
             await TestUtil.assertTrueEventually(async () => {
-                const activeConnections = TestUtil.getConnections(client);
+                const activeConnections = client.getConnectionManager().getActiveConnections();
                 expect(activeConnections.length).to.be.equal(1);
 
-                const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+                const listenerService = client.getListenerService();
+                let activeRegistrations;
+                const registrationMap = listenerService.activeRegistrations.get(registrationId);
+                if (registrationMap === undefined) {
+                    activeRegistrations = new Map();
+                } else {
+                    activeRegistrations = registrationMap;
+                }
+
                 const connectionsThatHasListener = [...activeRegistrations.keys()];
                 expect(connectionsThatHasListener.length).to.be.equal(1);
                 expect(connectionsThatHasListener[0]).to.be.equal(activeConnections[0]);
