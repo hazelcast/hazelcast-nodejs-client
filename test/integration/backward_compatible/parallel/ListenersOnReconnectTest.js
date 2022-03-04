@@ -81,7 +81,7 @@ describe('ListenersOnReconnectTest', function () {
             const connectionsThatHasListener = [...activeRegistrations.keys()];
             expect(connectionsThatHasListener.length).to.be.equal(1);
             expect(connectionsThatHasListener[0]).to.be.equal(activeConnections[0]);
-        });
+        }, undefined, 600 * 1000);
 
         await map.put('keyx', 'valx');
         await deferred.promise;
