@@ -156,7 +156,7 @@ exports.getConnections = function(client) {
     if (Object.prototype.hasOwnProperty.call(client, 'connectionRegistry')) {
         return client.connectionRegistry.getConnections();
     } else {
-        return client.getConnectionManager().getConnections();
+        return client.getConnectionManager().getActiveConnections();
     }
 };
 
