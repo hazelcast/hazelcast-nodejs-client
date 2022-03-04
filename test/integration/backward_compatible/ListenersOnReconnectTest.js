@@ -26,6 +26,15 @@ describe('ListenersOnReconnectTest', function () {
     let cluster;
     let map;
 
+    const getActiveRegistrations = (client, registrationId) => {
+        const listenerService = client.getListenerService();
+        const registrationMap = listenerService.activeRegistrations.get(registrationId);
+        if (registrationMap === undefined) {
+            return new Map();
+        }
+        return registrationMap;
+    };
+
     beforeEach(async function () {
         cluster = await RC.createCluster(null, null);
     });
@@ -74,10 +83,10 @@ describe('ListenersOnReconnectTest', function () {
 
         // Assert that connections are closed and the listener is reregistered.
         await TestUtil.assertTrueEventually(async () => {
-            const activeConnections = TestUtil.getConnections(client);
+            const activeConnections = client.getConnectionManager().getActiveConnections();
             expect(activeConnections.length).to.be.equal(1);
 
-            const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+            const activeRegistrations = getActiveRegistrations(client, registrationId);
             const connectionsThatHasListener = [...activeRegistrations.keys()];
             expect(connectionsThatHasListener.length).to.be.equal(1);
             expect(connectionsThatHasListener[0]).to.be.equal(activeConnections[0]);
@@ -150,10 +159,10 @@ describe('ListenersOnReconnectTest', function () {
             await RC.terminateMember(cluster.id, member.uuid);
             // Assert that the connection is closed and the listener is removed.
             await TestUtil.assertTrueEventually(async () => {
-                const activeConnections = TestUtil.getConnections(client);
+                const activeConnections = client.getConnectionManager().getActiveConnections();
                 expect(activeConnections.length).to.be.equal(0);
 
-                const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+                const activeRegistrations = getActiveRegistrations(client, registrationId);
                 expect(activeRegistrations.size).to.be.equal(0);
             });
 
@@ -164,14 +173,7 @@ describe('ListenersOnReconnectTest', function () {
                 const activeConnections = client.getConnectionManager().getActiveConnections();
                 expect(activeConnections.length).to.be.equal(1);
 
-                const listenerService = client.getListenerService();
-                let activeRegistrations;
-                const registrationMap = listenerService.activeRegistrations.get(registrationId);
-                if (registrationMap === undefined) {
-                    activeRegistrations = new Map();
-                } else {
-                    activeRegistrations = registrationMap;
-                }
+                const activeRegistrations = getActiveRegistrations(client, registrationId);
 
                 const connectionsThatHasListener = [...activeRegistrations.keys()];
                 expect(connectionsThatHasListener.length).to.be.equal(1);
