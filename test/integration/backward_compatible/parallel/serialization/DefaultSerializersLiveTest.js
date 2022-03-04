@@ -34,7 +34,10 @@ describe('DefaultSerializersLiveTest', function () {
         client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id
         }, member);
-        map = await client.getMap('test');
+    });
+
+    beforeEach(async function() {
+        map = await client.getMap(TestUtil.randomString(10));
     });
 
     after(async function () {
@@ -164,6 +167,30 @@ describe('DefaultSerializersLiveTest', function () {
         expect(result).to.equal(uuid.toString());
     });
 
+    it('should deserialize Java Array', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.1');
+        const script = `
+            var map = instance_0.getMap("${map.getName()}");
+            map.set("key", Java.to([1, 2, 3], "java.lang.Object[]"));
+        `;
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        const actualValue = await map.get('key');
+        expect(actualValue).to.deep.equal([1, 2, 3]);
+    });
+
+    it('should deserialize empty Java Array', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.1');
+        const script = `
+            var map = instance_0.getMap("${map.getName()}");
+            map.set("key", Java.to([], "java.lang.Object[]"));
+        `;
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        const actualValue = await map.get('key');
+        expect(actualValue).to.deep.equal([]);
+    });
+
     it('should deserialize ArrayList', async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
         const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
@@ -179,6 +206,19 @@ describe('DefaultSerializersLiveTest', function () {
         expect(actualValue).to.deep.equal([1, 2, 3]);
     });
 
+    it('should deserialize empty ArrayList', async function () {
+        TestUtil.markClientVersionAtLeast(this, '4.2');
+        const script = `
+            var map = instance_0.getMap("${map.getName()}");
+            var list = new java.util.ArrayList();
+            map.set("key", list);
+        `;
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        const actualValue = await map.get('key');
+        expect(actualValue).to.deep.equal([]);
+    });
+
     it('should deserialize LinkedList', async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
         const script = 'var map = instance_0.getMap("' + map.getName() + '");\n' +
@@ -192,6 +232,20 @@ describe('DefaultSerializersLiveTest', function () {
 
         const actualValue = await map.get('key');
         expect(actualValue).to.deep.equal([1, 2, 3]);
+    });
+
+    it('should deserialize empty LinkedList', async function () {
+        TestUtil.markClientVersionAtLeast(this, '4.2');
+        const script = `
+            var map = instance_0.getMap("${map.getName()}");
+            var list = new java.util.LinkedList();
+            map.set("key", list)
+        `;
+
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        const actualValue = await map.get('key');
+        expect(actualValue).to.deep.equal([]);
     });
 
     const bigDecimalTestParams = [
