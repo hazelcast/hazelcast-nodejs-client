@@ -66,6 +66,14 @@ describe('ListenersOnReconnectTest', function () {
             };
             const registrationId = await map.addEntryListener(listener, 'keyx', true);
 
+            // Retrieve correlationId we need it in the upcoming assertTrueEventually.
+            const activeConnections = TestUtil.getConnections(client);
+            expect(activeConnections.length).to.be.equal(1);
+            const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+            expect(activeRegistrations.has(activeConnections[0])).to.be.true;
+            const connectionRegistration = activeRegistrations.get(activeConnections[0]);
+            const correlationId = connectionRegistration.correlationId;
+
             await RC.terminateMember(cluster.id, member.uuid);
             // Assert that the connection is closed and the listener is removed.
             await TestUtil.assertTrueEventually(async () => {
@@ -73,7 +81,7 @@ describe('ListenersOnReconnectTest', function () {
                 expect(activeConnections.length).to.be.equal(0);
 
                 const eventHandlers = client.getInvocationService().eventHandlers;
-                expect(eventHandlers.size).should.be.equal(0);
+                expect(eventHandlers.has(correlationId)).to.be.false;
             });
             await RC.startMember(cluster.id);
 
