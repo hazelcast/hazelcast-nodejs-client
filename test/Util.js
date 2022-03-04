@@ -114,68 +114,6 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
     }));
 };
 
-/**
- * Duplicated this from BuildInfo because the logic of it is changed in 5.1, and in backward compatibility tests older
- * versions won't be able to access the new logic if we keep the new logic only in src/.
- */
- exports.calculateServerVersionFromString = (versionString) => {
-    if (versionString == null) {
-        return BuildInfo.UNKNOWN_VERSION_ID;
-    }
-    const mainParts = versionString.split('-');
-    const tokens = mainParts[0].split('.');
-
-    if (tokens.length < 2) {
-        return BuildInfo.UNKNOWN_VERSION_ID;
-    }
-
-    const major = +tokens[0];
-    const minor = +tokens[1];
-    const patch = (tokens.length === 2) ? 0 : +tokens[2];
-
-    const version = BuildInfo.MAJOR_VERSION_MULTIPLIER * major + BuildInfo.MINOR_VERSION_MULTIPLIER * minor + patch;
-
-    // version is NaN when one of major, minor and patch is not a number.
-    return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
-};
-
-exports.getConnections = function(client) {
-    if (Object.prototype.hasOwnProperty.call(client, 'connectionRegistry')) {
-        return client.connectionRegistry.getConnections();
-    } else {
-        return client.getConnectionManager().getActiveConnections();
-    }
-};
-
-/**
- * @param client Client instance
- * @param registrationId Registration id of the listener as a string
- * @returns a Map<Connection, ConnectionRegistration> in 5.1 and above,
- * a Map<ClientConnection, ClientEventRegistration> before 5.1
- */
-exports.getActiveRegistrations = function(client, registrationId) {
-    const listenerService = client.getListenerService();
-    if (exports.isClientVersionAtLeast('5.1')) {
-        const registration = listenerService.registrations.get(registrationId);
-        if (registration === undefined) {
-            return new Map();
-        }
-        return registration.connectionRegistrations;
-    } else {
-        const registrationMap = listenerService.activeRegistrations.get(registrationId);
-        if (registrationMap === undefined) {
-            return new Map();
-        }
-        return registrationMap;
-    }
-};
-
-exports.isClientVersionAtLeast = function(version) {
-    const actual = exports.calculateServerVersionFromString(BuildInfo.getClientVersion());
-    const expected = exports.calculateServerVersionFromString(version);
-    return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
-};
-
 exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     let actNumber;
     if (process.env['SERVER_VERSION']) {
