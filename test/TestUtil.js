@@ -125,29 +125,19 @@ exports.markEnterprise = function (_this) {
     }
 };
 
-/**
- * Duplicated this from BuildInfo because the logic of it is changed in 5.1, and in backward compatibility tests older
- * versions won't be able to access the new logic if we keep the new logic only in src/.
- */
- exports.calculateServerVersionFromString = (versionString) => {
-    if (versionString == null) {
-        return BuildInfo.UNKNOWN_VERSION_ID;
+exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
+    let actNumber;
+    if (process.env['SERVER_VERSION']) {
+        actNumber = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
+    } else if (client != null) {
+        actNumber = client.getConnectionManager().getRandomConnection().getConnectedServerVersion();
+    } else {
+        return;
     }
-    const mainParts = versionString.split('-');
-    const tokens = mainParts[0].split('.');
-
-    if (tokens.length < 2) {
-        return BuildInfo.UNKNOWN_VERSION_ID;
+    const expNumber = BuildInfo.calculateServerVersionFromString(expectedVersion);
+    if (actNumber === BuildInfo.UNKNOWN_VERSION_ID || actNumber < expNumber) {
+        _this.skip();
     }
-
-    const major = +tokens[0];
-    const minor = +tokens[1];
-    const patch = (tokens.length === 2) ? 0 : +tokens[2];
-
-    const version = BuildInfo.MAJOR_VERSION_MULTIPLIER * major + BuildInfo.MINOR_VERSION_MULTIPLIER * minor + patch;
-
-    // version is NaN when one of major, minor and patch is not a number.
-    return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
 };
 
 exports.getRandomInt = function (lowerLim, upperLim) {
