@@ -83,7 +83,7 @@ describe('ListenersOnReconnectTest', function () {
 
         // Assert that connections are closed and the listener is reregistered.
         await TestUtil.assertTrueEventually(async () => {
-            const activeConnections = client.getConnectionManager().getActiveConnections();
+            const activeConnections = client.connectionRegistry.getConnections();
             expect(activeConnections.length).to.be.equal(1);
 
             const activeRegistrations = getActiveRegistrations(client, registrationId);
@@ -159,7 +159,7 @@ describe('ListenersOnReconnectTest', function () {
             await RC.terminateMember(cluster.id, member.uuid);
             // Assert that the connection is closed and the listener is removed.
             await TestUtil.assertTrueEventually(async () => {
-                const activeConnections = client.getConnectionManager().getActiveConnections();
+                const activeConnections = client.connectionRegistry.getConnections();
                 expect(activeConnections.length).to.be.equal(0);
 
                 const activeRegistrations = getActiveRegistrations(client, registrationId);
@@ -170,7 +170,7 @@ describe('ListenersOnReconnectTest', function () {
 
             // Assert that the connection reestablished and the listener is reregistered.
             await TestUtil.assertTrueEventually(async () => {
-                const activeConnections = client.getConnectionManager().getActiveConnections();
+                const activeConnections = client.connectionRegistry.getConnections();
                 expect(activeConnections.length).to.be.equal(1);
 
                 const activeRegistrations = getActiveRegistrations(client, registrationId);
