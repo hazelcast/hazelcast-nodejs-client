@@ -150,27 +150,6 @@ exports.markEnterprise = function (_this) {
     return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
 };
 
-exports.isClientVersionAtLeast = function(version) {
-    const actual = exports.calculateServerVersionFromString(BuildInfo.getClientVersion());
-    const expected = exports.calculateServerVersionFromString(version);
-    return actual === BuildInfo.UNKNOWN_VERSION_ID || expected <= actual;
-};
-
-exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
-    let actNumber;
-    if (process.env['SERVER_VERSION']) {
-        actNumber = BuildInfo.calculateServerVersionFromString(process.env['SERVER_VERSION']);
-    } else if (client != null) {
-        actNumber = client.getConnectionManager().getRandomConnection().getConnectedServerVersion();
-    } else {
-        return;
-    }
-    const expNumber = BuildInfo.calculateServerVersionFromString(expectedVersion);
-    if (actNumber === BuildInfo.UNKNOWN_VERSION_ID || actNumber < expNumber) {
-        _this.skip();
-    }
-};
-
 exports.getRandomInt = function (lowerLim, upperLim) {
     return Math.floor(Math.random() * (upperLim - lowerLim)) + lowerLim;
 };
