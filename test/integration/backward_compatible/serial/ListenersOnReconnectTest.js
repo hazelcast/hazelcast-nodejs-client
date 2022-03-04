@@ -72,8 +72,8 @@ describe('ListenersOnReconnectTest', function () {
                 const activeConnections = TestUtil.getConnections(client);
                 expect(activeConnections.length).to.be.equal(0);
 
-                const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
-                expect(activeRegistrations.size).to.be.equal(0);
+                const eventHandlers = client.getInvocationService().eventHandlers;
+                expect(eventHandlers.size).should.be.equal(0);
             });
             await RC.startMember(cluster.id);
 
@@ -83,9 +83,12 @@ describe('ListenersOnReconnectTest', function () {
                 expect(activeConnections.length).to.be.equal(1);
 
                 const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
-                const connectionsThatHasListener = [...activeRegistrations.keys()];
-                expect(connectionsThatHasListener.length).to.be.equal(1);
-                expect(connectionsThatHasListener[0]).to.be.equal(activeConnections[0]);
+                expect(activeRegistrations.has(activeConnections[0])).to.be.true;
+
+                const connectionRegistration = activeRegistrations.get(activeConnections[0]);
+                const correlationId = connectionRegistration.correlationId;
+                const eventHandlers = client.getInvocationService().eventHandlers;
+                expect(eventHandlers.has(correlationId)).to.be.true;
             });
             await map.put('keyx', 'valx');
             await deferred.promise;
