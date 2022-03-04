@@ -138,9 +138,6 @@ describe('ListenersOnReconnectTest', function () {
                 clusterName: cluster.id,
                 network: {
                     smartRouting: isSmart
-                },
-                properties: {
-                    'hazelcast.client.heartbeat.interval': 1000
                 }
             });
             map = await client.getMap('testmap');
