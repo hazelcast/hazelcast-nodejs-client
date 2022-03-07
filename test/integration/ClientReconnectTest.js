@@ -35,9 +35,8 @@ describe('ClientReconnectTest', function () {
      * to flaky tests. To avoid that, this function will wait for the connections count to be zero.
      */
     const waitForDisconnection = async (client) => {
-        let getConnectionsFn;
         const connManager = client.getConnectionManager();
-        getConnectionsFn = connManager.getActiveConnections.bind(connManager);
+        const getConnectionsFn = connManager.getActiveConnections.bind(connManager);
 
         await TestUtil.assertTrueEventually(async () => {
             expect(getConnectionsFn()).to.be.empty;
