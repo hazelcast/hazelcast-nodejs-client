@@ -30,75 +30,60 @@ describe('RestValueTest', function () {
     let client;
     let member;
 
-    before(function () {
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_rest.xml', 'utf8'))
-            .then(c => {
-                cluster = c;
-                return RC.startMember(cluster.id);
-            }).then(m => {
-                member = m;
-                return Client.newHazelcastClient({ clusterName: cluster.id });
-            }).then(c => {
-                client = c;
-            });
+    before(async function () {
+        cluster = await RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_rest.xml', 'utf8'));
+        member = await RC.startMember(cluster.id);
+        client = await Client.newHazelcastClient({
+            clusterName: cluster.id
+        });
     });
 
-    after(function () {
-        return client.shutdown()
-            .then(() => RC.terminateCluster(cluster.id));
+    after(async function () {
+        await client.shutdown();
+        await RC.terminateCluster(cluster.id);
     });
 
-    it('client should receive REST events from server as RestValue', function (done) {
+    it('client should receive REST events from server as RestValue', async function () {
         const contentType = 'text/plain';
         const value = {
             'key': 'value'
         };
         const postData = querystring.stringify(value);
+        const deferred = deferredPromise();
 
-        client.getQueue('test')
-            .then((queue) => {
-                const itemListener = {
-                    itemAdded: (event) => {
-                        const item = event.item;
-                        expect(item.contentType).to.equal(contentType);
-                        expect(item.value).to.equal(postData);
-                        done();
-                    }
-                };
-                return queue.addItemListener(itemListener, true);
-            })
-            .then(() => {
-                const deferred = deferredPromise();
+        const queue = await client.getQueue('test');
+        await queue.addItemListener({
+            itemAdded: (event) => {
+                const item = event.item;
+                expect(item.contentType).to.equal(contentType);
+                expect(item.value).to.equal(postData);
+                deferred.resolve();
+            }
+        }, true);
 
-                const options = {
-                    hostname: member.host,
-                    port: member.port,
-                    path: '/hazelcast/rest/queues/test',
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': contentType,
-                        'Content-Length': Buffer.byteLength(postData)
-                    }
-                };
+        const options = {
+            hostname: member.host,
+            port: member.port,
+            path: '/hazelcast/rest/queues/test',
+            method: 'POST',
+            headers: {
+                'Content-Type': contentType,
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
 
-                const request = http.request(options, res => {
-                    if (res.statusCode === 200) {
-                        deferred.resolve();
-                    } else {
-                        deferred.reject(res.statusCode);
-                    }
-                });
+        const request = http.request(options, res => {
+            if (res.statusCode !== 200) {
+                deferred.reject(res.statusCode);
+            }
+        });
 
-                request.on('error', e => {
-                    deferred.reject(e);
-                });
+        request.on('error', e => {
+            deferred.reject(e);
+        });
 
-                request.write(postData);
-                request.end();
-                return deferred.promise;
-            })
-            .catch(e => {
-                done(e);
-            })
+        request.write(postData);
+        request.end();
+        await deferred.promise;
     });
 });
