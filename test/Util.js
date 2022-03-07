@@ -88,6 +88,32 @@ exports.markEnterprise = function (_this) {
     }
 };
 
+exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
+    let errorString = '';
+    return new Promise(((resolve, reject) => {
+        let intervalTimer;
+        function scheduleNext() {
+            intervalTimer = setTimeout(() => {
+                taskAsyncFn()
+                    .then(() => {
+                        clearInterval(timeoutTimer);
+                        resolve();
+                    })
+                    .catch(e => {
+                        errorString += e.stack + '\n';
+                        scheduleNext();
+                    });
+            }, intervalMs);
+        }
+        scheduleNext();
+
+        const timeoutTimer = setTimeout(() => {
+            clearInterval(intervalTimer);
+            reject(new Error('Rejected due to timeout of ' + timeoutMs + 'ms. Errors occurred in order: \n\n' + errorString));
+        }, timeoutMs);
+    }));
+};
+
 exports.markServerVersionAtLeast = function (_this, client, expectedVersion) {
     let actNumber;
     if (process.env['SERVER_VERSION']) {
