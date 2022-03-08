@@ -27,11 +27,8 @@ class ManagedObjects {
         this.managedObjects = [];
     }
 
-    getObject(func, name) {
-        return func(name).then((obj) => {
-            this.managedObjects.push(obj);
-            return obj;
-        });
+    addObject(obj) {
+        this.managedObjects.push(obj);
     }
 
     async destroyAll() {
@@ -56,25 +53,8 @@ class ManagedObjects {
 
 }
 
-const dummyConfig = {
-    network: {
-        smartRouting: false
-    }
-};
-
-const smartConfig = {
-    network: {
-        smartRouting: true
-    }
-};
-
-const configParams = [
-    dummyConfig,
-    smartConfig
-];
-
-configParams.forEach((cfg) => {
-    describe('HazelcastClientTest[smart=' + cfg.network.smartRouting + ']', function () {
+[true, false].forEach((isSmart) => {
+    describe('HazelcastClientTest[smart=' + isSmart + ']', function () {
 
         let cluster;
         let client;
@@ -83,8 +63,12 @@ configParams.forEach((cfg) => {
         before(async function () {
             cluster = await RC.createCluster(null, null);
             await RC.startMember(cluster.id);
-            cfg.clusterName = cluster.id;
-            client = await Client.newHazelcastClient(cfg);
+            client = await Client.newHazelcastClient({
+                network: {
+                    smartRouting: isSmart
+                },
+                clusterName: cluster.id
+            });
         });
 
         beforeEach(function () {
@@ -116,31 +100,32 @@ configParams.forEach((cfg) => {
             expect(info.labels).to.deep.equal(new Set());
         });
 
-        it('getDistributedObjects returns all dist objects', function () {
-            managed.getObject(client.getMap.bind(client, 'map'));
-            managed.getObject(client.getSet.bind(client, 'set'));
-            return TestUtil.assertTrueEventually(async () => {
+        it('getDistributedObjects returns all dist objects', async function () {
+            managed.addObject(await client.getMap('map'));
+            managed.addObject(await client.getSet('set'));
+
+            await TestUtil.assertTrueEventually(async () => {
                 const distObjects = await client.getDistributedObjects();
                 const names = distObjects.map((o) => {
                     return o.getName();
                 });
                 expect(names).to.have.members(['map', 'set']);
-            }, 100, 5000);
+            });
         });
 
-        it('getDistributedObjects does not return removed object', function () {
-            managed.getObject(client.getMap.bind(client, 'map1'));
-            managed.getObject(client.getMap.bind(client, 'map2'));
-            managed.getObject(client.getMap.bind(client, 'map3'));
+        it('getDistributedObjects does not return removed object', async function () {
+            managed.addObject(await client.getMap('map1'));
+            managed.addObject(await client.getMap('map2'));
+            managed.addObject(await client.getMap('map3'));
 
-            return TestUtil.assertTrueEventually(async () => {
+            await TestUtil.assertTrueEventually(async () => {
                 await managed.destroy('map1');
                 const distObjects = await client.getDistributedObjects();
                 const names = distObjects.map(o => {
                     return o.getName();
                 });
                 expect(names).to.have.members(['map2', 'map3']);
-            }, 100, 5000);
+            });
         });
     });
 });
