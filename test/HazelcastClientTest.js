@@ -19,6 +19,7 @@ const expect = require('chai').expect;
 const RC = require('./RC');
 const { Client } = require('../.');
 const { deferredPromise } = require('../lib/util/Util');
+const TestUtil = require('./Util');
 
 class ManagedObjects {
 
@@ -26,12 +27,9 @@ class ManagedObjects {
         this.managedObjects = [];
     }
 
-    getObject(func, name) {
-        return func(name).then((obj) => {
-            this.managedObjects.push(obj);
-            return obj;
-        });
-    };
+    addObject(obj) {
+        this.managedObjects.push(obj);
+    }
 
     async destroyAll() {
         const promises = [];
@@ -39,7 +37,7 @@ class ManagedObjects {
             promises.push(obj.destroy());
         });
         return Promise.all(promises);
-    };
+    }
 
     destroy(name) {
         const deferred = deferredPromise();
@@ -51,29 +49,11 @@ class ManagedObjects {
             }
         });
         return deferred.promise;
-    };
-
+    }
 }
 
-const dummyConfig = {
-    network: {
-        smartRouting: false
-    }
-};
-
-const smartConfig = {
-    network: {
-        smartRouting: true
-    }
-};
-
-const configParams = [
-    dummyConfig,
-    smartConfig
-];
-
-configParams.forEach(function (cfg) {
-    describe('HazelcastClientTest[smart=' + cfg.network.smartRouting + ']', function () {
+[true, false].forEach(function (isSmart) {
+    describe('HazelcastClientTest[smart=' + isSmart + ']', function () {
 
         let cluster;
         let client;
@@ -82,30 +62,31 @@ configParams.forEach(function (cfg) {
         before(async function () {
             cluster = await RC.createCluster(null, null);
             await RC.startMember(cluster.id);
-            cfg.clusterName = cluster.id;
-            client = await Client.newHazelcastClient(cfg);
+            client = await Client.newHazelcastClient({
+                network: {
+                    smartRouting: isSmart
+                },
+                clusterName: cluster.id
+            });
         });
 
         beforeEach(function () {
             managed = new ManagedObjects();
         });
 
-        afterEach(function () {
-            return managed.destroyAll();
+        afterEach(async function () {
+            await managed.destroyAll();
         });
 
-        after(function () {
-            return client.shutdown()
-                .then(() => RC.terminateCluster(cluster.id));
+        after(async function () {
+            await client.shutdown();
+            await RC.terminateCluster(cluster.id);
         });
 
-        it('getDistributedObject returns empty array when there is no distributed object', function () {
-            return client.getDistributedObjects().then(function (distributedObjects) {
-                return Promise.all([
-                    expect(distributedObjects).to.be.an('array'),
-                    expect(distributedObjects).to.be.empty
-                ]);
-            });
+        it('getDistributedObject returns empty array when there is no distributed object', async function () {
+            const distributedObjects = await client.getDistributedObjects();
+            expect(distributedObjects).to.be.an('array');
+            expect(distributedObjects).to.be.empty;
         });
 
         it('getLocalEndpoint returns correct info', function () {
@@ -117,44 +98,32 @@ configParams.forEach(function (cfg) {
             expect(info.labels).to.deep.equal(new Set());
         });
 
-        it('getDistributedObjects returns all dist objects', function (done) {
-            managed.getObject(client.getMap.bind(client, 'map'));
-            managed.getObject(client.getSet.bind(client, 'set'));
-            setTimeout(function () {
-                client.getDistributedObjects().then(function (distObjects) {
-                    try {
-                        const names = distObjects.map((o) => {
-                            return o.getName();
-                        });
-                        expect(names).to.have.members(['map', 'set']);
-                        done();
-                    } catch (e) {
-                        done(e);
-                    }
-                })
-            }, 300);
+        it('getDistributedObjects returns all dist objects', async function () {
+            managed.addObject(await client.getMap('map'));
+            managed.addObject(await client.getSet('set'));
+
+            await TestUtil.assertTrueEventually(async () => {
+                const distObjects = await client.getDistributedObjects();
+                const names = distObjects.map((o) => {
+                    return o.getName();
+                });
+                expect(names).to.have.members(['map', 'set']);
+            });
         });
 
-        it('getDistributedObjects does not return removed object', function (done) {
-            managed.getObject(client.getMap.bind(client, 'map1'));
-            managed.getObject(client.getMap.bind(client, 'map2'));
-            managed.getObject(client.getMap.bind(client, 'map3'));
+        it('getDistributedObjects does not return removed object', async function () {
+            managed.addObject(await client.getMap('map1'));
+            managed.addObject(await client.getMap('map2'));
+            managed.addObject(await client.getMap('map3'));
 
-            setTimeout(function () {
-                managed.destroy('map1').then(function () {
-                    client.getDistributedObjects().then(function (distObjects) {
-                        try {
-                            const names = distObjects.map(function (o) {
-                                return o.getName();
-                            });
-                            expect(names).to.have.members(['map2', 'map3']);
-                            done();
-                        } catch (e) {
-                            done(e);
-                        }
-                    });
+            await TestUtil.assertTrueEventually(async () => {
+                await managed.destroy('map1');
+                const distObjects = await client.getDistributedObjects();
+                const names = distObjects.map(function (o) {
+                    return o.getName();
                 });
-            }, 300);
+                expect(names).to.have.members(['map2', 'map3']);
+            });
         });
     });
 });
