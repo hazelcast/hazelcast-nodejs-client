@@ -19,7 +19,7 @@ const expect = require('chai').expect;
 const fs = require('fs');
 const RC = require('../RC');
 const { Client } = require('../../');
-const Util = require('../Util');
+const TestUtil = require('../Util');
 const { deferredPromise } = require('../../lib/util/Util');
 
 describe('MigratedDataTest', function () {
@@ -28,15 +28,13 @@ describe('MigratedDataTest', function () {
     let member1;
     let member2;
     let client;
-
     const mapName = 'ncmap';
 
-    function waitForPartitionTableEvent(partitionService) {
+    async function waitForPartitionTableEvent(partitionService) {
         const deferred = deferredPromise();
-        const expectedPartitionCount = partitionService.partitionCount;
 
         function checkPartitionTable(remainingTries) {
-            if (partitionService.partitionTable.partitions.size === expectedPartitionCount) {
+            if (partitionService.getPartitionOwner(0) != null) {
                 deferred.resolve();
             } else if (remainingTries > 0) {
                 setTimeout(checkPartitionTable, 1000, remainingTries - 1);
@@ -44,13 +42,13 @@ describe('MigratedDataTest', function () {
                 deferred.reject(new Error('Partition table is not received!'));
             }
         }
-        checkPartitionTable(10);
+        checkPartitionTable(600);
         return deferred.promise;
     }
 
-    function waitUntilPartitionMovesTo(partitionService, partitionId, uuid) {
+    async function waitUntilPartitionMovesTo(partitionService, partitionId, uuid) {
         const deferred = deferredPromise();
-        (function resolveOrTimeout(remainingTries) {
+        function resolveOrTimeout(remainingTries) {
             if (partitionService.getPartitionOwner(partitionId).toString() === uuid) {
                 deferred.resolve();
             } else if (remainingTries > 0) {
@@ -58,24 +56,20 @@ describe('MigratedDataTest', function () {
             } else {
                 deferred.reject(new Error('Partition ' + partitionId + ' was not moved to ' + uuid));
             }
-        })(20);
+        }
+        resolveOrTimeout(600);
         return deferred.promise;
     }
 
-    before(function () {
-        return RC.createCluster(null, fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8')).then(function (resp) {
-            cluster = resp;
-            return RC.startMember(cluster.id);
-        }).then(function (m) {
-            member1 = m;
-            return RC.startMember(cluster.id);
-        }).then(function (m) {
-            member2 = m;
-        });
+    before(async function () {
+        cluster = await RC.createCluster(null,
+            fs.readFileSync(__dirname + '/hazelcast_eventual_nearcache.xml', 'utf8'));
+        member1 = await RC.startMember(cluster.id);
+        member2 = await RC.startMember(cluster.id);
     });
 
-    beforeEach(function () {
-        return Client.newHazelcastClient({
+    beforeEach(async function () {
+        client = await Client.newHazelcastClient({
             clusterName: cluster.id,
             nearCaches: {
                 [mapName]: {}
@@ -84,56 +78,47 @@ describe('MigratedDataTest', function () {
                 'hazelcast.invalidation.reconciliation.interval.seconds': 1,
                 'hazelcast.invalidation.min.reconciliation.interval.seconds': 1
             }
-        }).then(function (resp) {
-            client = resp;
         });
     });
 
-    afterEach(function () {
-        return client.shutdown();
+    afterEach(async function () {
+        await client.shutdown();
     });
 
-    after(function () {
-        return RC.terminateCluster(cluster.id);
+    after(async function () {
+        await RC.terminateCluster(cluster.id);
     });
 
-    it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid', () => {
-        let map;
+    it('killing a server migrates data to the other node, migrated data has new uuid, '
+          + 'near cache discards data with old uuid', async function () {
         let survivingMember;
         const key = 1;
         const partitionService = client.getPartitionService();
+        const map = await client.getMap(mapName);
 
-        return client.getMap(mapName).then(function (mp) {
-            map = mp;
-            return map.put(key, 1);
-        }).then(function () {
-            return map.get(key);
-        }).then(function () {
-            return map.get(key);
-        }).then(function () {
-            return waitForPartitionTableEvent(partitionService);
-        }).then(function () {
-            const partitionIdForKey = partitionService.getPartitionId(key);
-            const keyOwner = partitionService.getPartitionOwner(partitionIdForKey).toString();
-            if (keyOwner === member1.uuid) {
-                survivingMember = member2;
-                return RC.terminateMember(cluster.id, member1.uuid);
-            } else {
-                survivingMember = member1;
-                return RC.terminateMember(cluster.id, member2.uuid);
-            }
-        }).then(function () {
-            const partitionIdForKey = partitionService.getPartitionId(key);
-            return waitUntilPartitionMovesTo(partitionService, partitionIdForKey, survivingMember.uuid);
-        }).then(function () {
-            return Util.promiseWaitMilliseconds(1500);
-        }).then(function () {
-            return map.get(key);
-        }).then(function () {
-            const stats = map.nearCache.getStatistics();
-            expect(stats.hitCount).to.equal(1);
-            expect(stats.missCount).to.equal(2);
-            expect(stats.entryCount).to.equal(1);
-        })
+        await map.put(key, 1);
+        await map.get(key);
+        await map.get(key);
+        await waitForPartitionTableEvent(partitionService);
+
+        const partitionIdForKey = partitionService.getPartitionId(key);
+        const keyOwner = partitionService.getPartitionOwner(partitionIdForKey).toString();
+        if (keyOwner === member1.uuid) {
+            survivingMember = member2;
+            await RC.terminateMember(cluster.id, member1.uuid);
+        } else {
+            survivingMember = member1;
+            await RC.terminateMember(cluster.id, member2.uuid);
+        }
+
+        await waitUntilPartitionMovesTo(partitionService, partitionIdForKey, survivingMember.uuid);
+        await TestUtil.promiseWaitMilliseconds(1500);
+
+        await map.get(key);
+
+        const stats = map.nearCache.getStatistics();
+        expect(stats.hitCount).to.equal(1);
+        expect(stats.missCount).to.equal(2);
+        expect(stats.entryCount).to.equal(1);
     });
 });
