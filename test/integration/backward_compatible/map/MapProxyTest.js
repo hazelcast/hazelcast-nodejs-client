@@ -110,31 +110,31 @@ describe('MapProxyTest', function () {
             });
 
             it('put with ttl removes value after ttl', async function () {
-                await map.put('key10', 'val10', 1000);
+                await map.put('key10', 'val10', 2000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
-                val = await TestUtil.promiseLater(1100, map.get.bind(map, 'key10'));
+                val = await TestUtil.promiseLater(2100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
             it('put with maxIdle removes value after maxIdle', async function () {
                 TestUtil.markClientVersionAtLeast(this, '4.1');
-                await map.put('key10', 'val10', undefined, 1000);
+                await map.put('key10', 'val10', undefined, 2000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
-                val = await TestUtil.promiseLater(1100, map.get.bind(map, 'key10'));
+                val = await TestUtil.promiseLater(2100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
             it('setTtl updates ttl for entry', async function () {
                 TestUtil.markClientVersionAtLeast(this, '4.1');
-                await map.put('key10', 'val10', 1000);
+                await map.put('key10', 'val10', 2000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
 
                 await map.setTtl('key10', 60000);
 
-                val = await TestUtil.promiseLater(1100, map.get.bind(map, 'key10'));
+                val = await TestUtil.promiseLater(2100, map.get.bind(map, 'key10'));
                 expect(val).to.equal('val10');
             });
 
@@ -327,19 +327,19 @@ describe('MapProxyTest', function () {
             });
 
             it('putIfAbsent_with_ttl', async function () {
-                await map.putIfAbsent('key10', 'new-val', 1000);
+                await map.putIfAbsent('key10', 'new-val', 2000);
                 let val = await map.get('key10');
                 expect(val).to.equal('new-val');
-                val = await TestUtil.promiseLater(1100, map.get.bind(map, 'key10'));
+                val = await TestUtil.promiseLater(2100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
             it('putIfAbsent_with_maxIdle', async function () {
                 TestUtil.markClientVersionAtLeast(this, '4.1');
-                await map.putIfAbsent('key10', 'new-val', undefined, 1000);
+                await map.putIfAbsent('key10', 'new-val', undefined, 2000);
                 let val = await map.get('key10');
                 expect(val).to.equal('new-val');
-                val = await TestUtil.promiseLater(1100, map.get.bind(map, 'key10'));
+                val = await TestUtil.promiseLater(2100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
@@ -350,19 +350,19 @@ describe('MapProxyTest', function () {
             });
 
             it('putTransient_with_ttl', async function () {
-                await map.putTransient('key10', 'val10', 1000);
+                await map.putTransient('key10', 'val10', 2000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
-                val = await TestUtil.promiseLater(1100, map.get.bind(map, 'key10'));
+                val = await TestUtil.promiseLater(2100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
             it('putTransient_with_maxIdle', async function () {
                 TestUtil.markClientVersionAtLeast(this, '4.1');
-                await map.putTransient('key10', 'val10', undefined, 1000);
+                await map.putTransient('key10', 'val10', undefined, 2000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
-                val = await TestUtil.promiseLater(1100, map.get.bind(map, 'key10'));
+                val = await TestUtil.promiseLater(2100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
@@ -394,19 +394,19 @@ describe('MapProxyTest', function () {
             });
 
             it('set_with_ttl', async function () {
-                await map.set('key10', 'val10', 1000);
+                await map.set('key10', 'val10', 2000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
-                val = await TestUtil.promiseLater(1100, map.get.bind(map, 'key10'));
+                val = await TestUtil.promiseLater(2100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
             it('set_with_maxIdle', async function () {
                 TestUtil.markClientVersionAtLeast(this, '4.1');
-                await map.set('key10', 'val10', undefined, 1000);
+                await map.set('key10', 'val10', undefined, 2000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
-                val = await TestUtil.promiseLater(1100, map.get.bind(map, 'key10'));
+                val = await TestUtil.promiseLater(2100, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
