@@ -42,13 +42,13 @@ describe('MigratedDataTest', function () {
                 deferred.reject(new Error('Partition table is not received!'));
             }
         }
-        checkPartitionTable(10);
+        checkPartitionTable(600);
         return deferred.promise;
     }
 
     async function waitUntilPartitionMovesTo(partitionService, partitionId, uuid) {
         const deferred = deferredPromise();
-        (function resolveOrTimeout(remainingTries) {
+        function resolveOrTimeout(remainingTries) {
             if (partitionService.getPartitionOwner(partitionId).toString() === uuid) {
                 deferred.resolve();
             } else if (remainingTries > 0) {
@@ -56,7 +56,8 @@ describe('MigratedDataTest', function () {
             } else {
                 deferred.reject(new Error('Partition ' + partitionId + ' was not moved to ' + uuid));
             }
-        })(20);
+        }
+        resolveOrTimeout(600);
         return deferred.promise;
     }
 
@@ -99,7 +100,7 @@ describe('MigratedDataTest', function () {
         await map.get(key);
         await waitForPartitionTableEvent(partitionService);
 
-        let partitionIdForKey = partitionService.getPartitionId(key);
+        const partitionIdForKey = partitionService.getPartitionId(key);
         const keyOwner = partitionService.getPartitionOwner(partitionIdForKey).toString();
         if (keyOwner === member1.uuid) {
             survivingMember = member2;
@@ -109,7 +110,6 @@ describe('MigratedDataTest', function () {
             await RC.terminateMember(cluster.id, member2.uuid);
         }
 
-        partitionIdForKey = partitionService.getPartitionId(key);
         await waitUntilPartitionMovesTo(partitionService, partitionIdForKey, survivingMember.uuid);
         await TestUtil.promiseWaitMilliseconds(1500);
 
