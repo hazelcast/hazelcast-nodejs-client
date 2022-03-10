@@ -21,8 +21,7 @@ const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
 
 /**
- * Verifies lock operations behavior in advanced scenarios,
- * like member restart.
+ * Verifies lock operations behavior in advanced scenarios.
  */
 describe('MapLockTest', function () {
     const INVOCATION_TIMEOUT_FOR_TWO = 1000;
@@ -87,44 +86,39 @@ describe('MapLockTest', function () {
         await testFactory.shutdownAll();
     });
 
-    it('should acquire the lock when key owner terminates', function (done) {
-        let clientTwo;
-        let keyOwner;
-        let key;
-
-        RC.startMember(cluster.id).then((m) => {
-            keyOwner = m;
-            return testFactory.newHazelcastClientForParallelTests({
+    it('should acquire the lock when key owner terminates', async function () {
+        let done = false;
+        const keyOwner = await RC.startMember(cluster.id);
+        const clientTwo = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 properties: {
                     ['hazelcast.client.invocation.timeout.millis']: INVOCATION_TIMEOUT_FOR_TWO
                 }
-            }, [member, m]);
-        }).then((c) => {
-            clientTwo = c;
-            return waitForNewPartitionTable(client, keyOwner);
+        }, [member, keyOwner]);
+        await waitForNewPartitionTable(client, keyOwner);
+        const key = generateKeyOwnedBy(client, keyOwner);
+        await map.lock(key);
+        // try to lock concurrently
+        let mapOnTwo;
+        clientTwo.getMap('test').then(map => {
+            mapOnTwo = map;
+            return mapOnTwo.lock(key);
         }).then(() => {
-            key = generateKeyOwnedBy(client, keyOwner);
-            return map.lock(key);
+            return mapOnTwo.unlock(key);
         }).then(() => {
-            return clientTwo.getMap('test');
-        }).then((mapOnTwo) => {
-            // try to lock concurrently
-            mapOnTwo.lock(key)
-                .then(() => {
-                    return mapOnTwo.unlock(key);
-                })
-                .then(() => clientTwo.shutdown())
-                .then(done)
-                .catch(done);
-            return TestUtil.promiseWaitMilliseconds(2 * INVOCATION_TIMEOUT_FOR_TWO);
+            clientTwo.shutdown();
         }).then(() => {
-            return map.isLocked(key);
-        }).then((locked) => {
-            expect(locked).to.be.true;
-            return RC.terminateMember(cluster.id, keyOwner.uuid);
-        }).then(() => {
-            return map.unlock(key);
-        }).catch(done);
+            done = true;
+        });
+        await TestUtil.promiseWaitMilliseconds(2 * INVOCATION_TIMEOUT_FOR_TWO);
+
+        const locked = await map.isLocked(key);
+        expect(locked).to.be.true;
+        await RC.terminateMember(cluster.id, keyOwner.uuid);
+        await map.unlock(key);
+
+        await TestUtil.assertTrueEventually(async () => {
+            expect(done).to.be.true;
+        });
     });
 });
