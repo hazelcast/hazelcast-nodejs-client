@@ -192,9 +192,9 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             const valuesData = ReplicatedMapValuesCodec.decodeResponse(clientMessage);
             if (comparator) {
                 const desValues = valuesData.map(this.toObject.bind(this));
-                return new ReadOnlyLazyList(this.deserializeList(desValues.sort(comparator)));
+                return new ReadOnlyLazyList(desValues.sort(comparator), this.serializationService);
             }
-            return new ReadOnlyLazyList(this.deserializeList(valuesData));
+            return new ReadOnlyLazyList(valuesData, this.serializationService);
         });
     }
 

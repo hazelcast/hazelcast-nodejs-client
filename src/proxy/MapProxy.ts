@@ -101,7 +101,15 @@ type EntryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: 
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     aggregate<R>(aggregator: Aggregator<R>): Promise<R> {
         assertNotNull(aggregator);
-        const aggregatorData = this.toData(aggregator);
+        let aggregatorData;
+        try {
+            aggregatorData = this.toData(aggregator);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.aggregate(aggregator));
+            }
+            return Promise.reject(e);
+        }
         return this.encodeInvokeOnRandomTarget(MapAggregateCodec, (clientMessage) => {
             const response = MapAggregateCodec.decodeResponse(clientMessage);
             return this.toObject(response);
@@ -112,8 +120,16 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         assertNotNull(aggregator);
         assertNotNull(predicate);
         MapProxy.checkNotPagingPredicate(predicate);
-        const aggregatorData = this.toData(aggregator);
-        const predicateData = this.toData(predicate);
+        let aggregatorData, predicateData;
+        try {
+            aggregatorData = this.toData(aggregator);
+            predicateData = this.toData(predicate);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.aggregateWithPredicate(aggregator, predicate));
+            }
+            return Promise.reject(e);
+        }
         return this.encodeInvokeOnRandomTarget(MapAggregateWithPredicateCodec, (clientMessage) => {
             const response = MapAggregateWithPredicateCodec.decodeResponse(clientMessage);
             return this.toObject(response);
@@ -209,7 +225,15 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 return this.deserializeEntryList(toObject, response.response);
             }, pagingPredicateHolder);
         } else {
-            const pData = this.toData(predicate);
+            let pData;
+            try {
+                pData = this.toData(predicate);
+            } catch (e) {
+                if (e instanceof SchemaNotReplicatedError) {
+                    return this.registerSchema(e.schema, e.clazz).then(() => this.entrySetWithPredicate(predicate));
+                }
+                return Promise.reject(e);
+            }
             return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, (clientMessage) => {
                 const response = MapEntriesWithPredicateCodec.decodeResponse(clientMessage);
                 return this.deserializeEntryList(toObject, response);
@@ -239,7 +263,15 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 return response.response.map<K>(toObject);
             }, pagingPredicateHolder);
         } else {
-            const predicateData = this.toData(predicate);
+            let predicateData;
+            try {
+                predicateData = this.toData(predicate);
+            } catch (e) {
+                if (e instanceof SchemaNotReplicatedError) {
+                    return this.registerSchema(e.schema, e.clazz).then(() => this.keySetWithPredicate(predicate));
+                }
+                return Promise.reject(e);
+            }
             return this.encodeInvokeOnRandomTarget(MapKeySetWithPredicateCodec, (clientMessage) => {
                 const response = MapKeySetWithPredicateCodec.decodeResponse(clientMessage);
                 return response.map<K>(toObject);
@@ -264,13 +296,21 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return this.encodeInvokeOnRandomTarget(MapValuesWithPagingPredicateCodec, (clientMessage) => {
                 const response = MapValuesWithPagingPredicateCodec.decodeResponse(clientMessage);
                 predicate.setAnchorList(response.anchorDataList.asAnchorList(serializationService));
-                return new ReadOnlyLazyList(this.deserializeList(response.response));
+                return new ReadOnlyLazyList(response.response, this.serializationService);
             }, pagingPredicateHolder);
         } else {
-            const predicateData = this.toData(predicate);
+            let predicateData;
+            try {
+                predicateData = this.toData(predicate);
+            } catch (e) {
+                if (e instanceof SchemaNotReplicatedError) {
+                    return this.registerSchema(e.schema, e.clazz).then(() => this.valuesWithPredicate(predicate));
+                }
+                return Promise.reject(e);
+            }
             return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, (clientMessage) => {
                 const response = MapValuesWithPredicateCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList(this.deserializeList(response));
+                return new ReadOnlyLazyList(response, this.serializationService);
             }, predicateData);
         }
     }
@@ -622,7 +662,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     values(): Promise<ReadOnlyLazyList<V>> {
         return this.encodeInvokeOnRandomTarget(MapValuesCodec, (clientMessage) => {
             const response = MapValuesCodec.decodeResponse(clientMessage);
-            return new ReadOnlyLazyList(this.deserializeList(response));
+            return new ReadOnlyLazyList(response, this.serializationService);
         });
     }
 

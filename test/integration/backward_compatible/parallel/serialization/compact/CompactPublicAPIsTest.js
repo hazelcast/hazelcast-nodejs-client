@@ -22,9 +22,9 @@ const sandbox = sinon.createSandbox();
 chai.use(require('chai-as-promised'));
 chai.should();
 
-const RC = require('../../RC');
-const TestUtil = require('../../../TestUtil');
-const { Predicates } = require('../../../../lib');
+const RC = require('../../../../RC');
+const TestUtil = require('../../../../../TestUtil');
+const { Predicates } = require('../../../../../../lib');
 
 class Car {
     constructor(name, price) {
@@ -80,8 +80,166 @@ const portableFactory = classId => {
     }
 };
 
+class CompactReturningAggregator {
+}
+
+class CompactReturningAggregatorSerializer {
+    constructor() {
+        this.hzClass = CompactReturningAggregator;
+        this.hzTypeName = 'CompactReturningAggregator';
+    }
+
+    read() {
+        compactSerializerUsed = true;
+        return new CompactReturningAggregator();
+    }
+
+    write() {
+        compactSerializerUsed = true;
+    }
+}
+
+class CompactPredicate {
+}
+
+class CompactPredicateSerializer {
+    constructor() {
+        this.hzClass = CompactPredicate;
+        this.hzTypeName = 'CompactPredicate';
+    }
+
+    read() {
+        compactSerializerUsed = true;
+        return new CompactPredicate();
+    }
+
+    write() {
+        compactSerializerUsed = true;
+    }
+}
+
+class Inner {
+    constructor(stringField) {
+        this.stringField = stringField;
+    }
+}
+
+class InnerSerializer {
+    constructor() {
+        this.hzClass = Inner;
+        this.hzTypeName = 'Inner';
+    }
+
+    read(reader) {
+        compactSerializerUsed = true;
+        const stringField = reader.readString('string_field');
+        return new Inner(stringField);
+    }
+
+    write(writer, instance) {
+        compactSerializerUsed = true;
+        writer.writeString('string_field', instance.stringField);
+    }
+}
+
+class Outer {
+    constructor(intField, innerField) {
+        this.intField = intField;
+        this.innerField = innerField;
+    }
+}
+
+class OuterSerializer {
+    constructor() {
+        this.hzClass = Outer;
+        this.hzTypeName = 'Outer';
+    }
+
+    read(reader) {
+        compactSerializerUsed = true;
+        const intField = reader.readInt32('int_field');
+        const innerField = reader.readCompact('inner_field');
+        return new Outer(intField, innerField);
+    }
+
+    write(writer, instance) {
+        compactSerializerUsed = true;
+        writer.writeInt32('int_field', instance.intField);
+        writer.writeCompact('inner_field', instance.innerField);
+    }
+}
+
+class CompactPagingPredicate {
+    constructor() {
+        this.delecate = Predicates.paging(Predicates.alwaysTrue(), 1);
+    }
+
+    getComparator() {
+        return null;
+    }
+
+    nextPage() {
+        this.delecate.nextPage();
+    }
+
+    previousPage() {
+        this.delecate.previousPage();
+    }
+
+    getPage() {
+        this.delecate.getPage();
+    }
+
+    setPage(page) {
+        this.delecate.setPage(page);
+    }
+
+    getPageSize() {
+        this.delecate.getPageSize();
+    }
+
+    getAnchor() {
+        return this.delecate.getAnchor();
+    }
+}
+
+class CompactPagingPredicateSerializer {
+    constructor() {
+        this.hzClass = CompactPagingPredicate;
+        this.hzTypeName = 'CompactPagingPredicate';
+    }
+
+    read() {
+        compactSerializerUsed = true;
+        return new CompactPagingPredicate();
+    }
+
+    write() {
+        compactSerializerUsed = true;
+    }
+}
+
+class CompactReturningEntryProcessor {
+}
+
+class CompactReturningEntryProcessorSerializer {
+    constructor() {
+        this.hzClass = CompactReturningEntryProcessor;
+        this.hzTypeName = 'CompactReturningEntryProcessor';
+    }
+
+    read() {
+        compactSerializerUsed = true;
+        return new CompactReturningEntryProcessor();
+    }
+
+    write() {
+        compactSerializerUsed = true;
+    }
+}
+
 /**
- * Tests all APIs if they can serialize compact objects.
+ * Tests all Public APIs if they can support compact objects.
  */
 describe('CompactAPISerializationTest', function () {
     let cluster;
@@ -92,10 +250,9 @@ describe('CompactAPISerializationTest', function () {
         replicatedMap, ringBuffer;
     let employee;
     let SchemaNotReplicatedError;
-    let CompactStreamSerializer;
     let CompactUtil;
 
-    const COMPACT_ENABLED_ZERO_CONFIG_XML = `
+    const CLUSTER_CONFIG_XML = `
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/config
@@ -104,24 +261,51 @@ describe('CompactAPISerializationTest', function () {
                 <port>0</port>
             </network>
             <serialization>
-                <compact-serialization enabled="true" />
+                <compact-serialization enabled="true">
+                    <registered-classes>
+                        <class type-name="${Inner.name}"
+                            serializer="com.hazelcast.compact.InnerSerializer">
+                            com.hazelcast.compact.Inner
+                        </class>
+                        <class type-name="${Outer.name}"
+                            serializer="com.hazelcast.compact.OuterSerializer">
+                            com.hazelcast.compact.Outer
+                        </class>
+                        <class type-name="${CompactPredicate.name}"
+                            serializer="com.hazelcast.compact.CompactPredicateSerializer">
+                            com.hazelcast.compact.CompactPredicate
+                        </class>
+                        <class type-name="${CompactReturningAggregator.name}"
+                            serializer="com.hazelcast.compact.CompactReturningAggregatorSerializer">
+                            com.hazelcast.compact.CompactReturningAggregator
+                        </class>
+                        <class type-name="${CompactPagingPredicate.name}"
+                            serializer="com.hazelcast.compact.CompactPagingPredicateSerializer">
+                            com.hazelcast.compact.CompactPagingPredicate
+                        </class>
+                        <class type-name="${CompactReturningEntryProcessor.name}"
+                            serializer="com.hazelcast.compact.CompactReturningEntryProcessorSerializer">
+                            com.hazelcast.compact.CompactReturningEntryProcessor
+                        </class>
+                    </registered-classes>
+                </compact-serialization>
             </serialization>
         </hazelcast>
     `;
 
     const car1 = new Car('ww', 123456);
     const car2 = new Car('porsche', 21231);
+    const INNER_INSTANCE = new Inner('42');
+    const OUTER_INSTANCE = new Outer(42, INNER_INSTANCE);
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        CompactUtil = require('../parallel/serialization/compact/CompactUtil');
+        CompactUtil = require('./CompactUtil');
         employee = new CompactUtil.Employee(1, Long.ONE);
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        cluster = await testFactory.createClusterForParallelTests(null, COMPACT_ENABLED_ZERO_CONFIG_XML);
+        cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG_XML);
         member = await RC.startMember(cluster.id);
-        SchemaNotReplicatedError = require('../../../../lib').SchemaNotReplicatedError;
-        CompactStreamSerializer = require('../../../../lib/serialization/compact/CompactStreamSerializer')
-            .CompactStreamSerializer;
+        SchemaNotReplicatedError = require('../../../../../../lib').SchemaNotReplicatedError;
     });
 
     beforeEach(async function () {
@@ -133,7 +317,13 @@ describe('CompactAPISerializationTest', function () {
                     new CarSerializer(),
                     new CompactUtil.EmployeeSerializer(),
                     new CompactUtil.EmployeeDTOSerializer(),
-                    new DummyEntryProcessorSerializer()
+                    new DummyEntryProcessorSerializer(),
+                    new CompactReturningAggregatorSerializer(),
+                    new CompactPredicateSerializer(),
+                    new InnerSerializer(),
+                    new OuterSerializer(),
+                    new CompactPagingPredicateSerializer(),
+                    new CompactReturningEntryProcessorSerializer()
                 ],
                 portableFactories: {
                     1: portableFactory
@@ -198,6 +388,24 @@ describe('CompactAPISerializationTest', function () {
     });
 
     describe('Map/NearCaches', function () {
+        it('aggregate', async function() {
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                compactSerializerUsed = false;
+                const result = await obj.aggregate(new CompactReturningAggregator());
+                result.should.be.deep.eq(OUTER_INSTANCE);
+                compactSerializerUsed.should.be.true;
+            }
+        });
+
+        it('aggregateWithPredicate', async function() {
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                compactSerializerUsed = false;
+                const result = await obj.aggregateWithPredicate(new CompactReturningAggregator(), new CompactPredicate());
+                result.should.be.deep.eq(OUTER_INSTANCE);
+                compactSerializerUsed.should.be.true;
+            }
+        });
+
         it('containsKey', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 compactSerializerUsed = false;
@@ -455,64 +663,60 @@ describe('CompactAPISerializationTest', function () {
 
         it('entrySetWithPredicate', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                // Since we use EmployeeDTOSerializer here we won't assert compactSerializerUsed here
-                // Instead we will spy CompactStreamSerializer.write
-                const compactWriteSpy = sandbox.replace(
-                    CompactStreamSerializer.prototype, 'write', sandbox.fake(CompactStreamSerializer.prototype.write)
-                );
-                const pagingPredicate = Predicates.paging(Predicates.alwaysTrue(), 1);
-                await obj.set(new CompactUtil.EmployeeDTO(1, Long.fromNumber(1)),
-                    new CompactUtil.EmployeeDTO(1, Long.fromNumber(1)));
-                await obj.set(new CompactUtil.EmployeeDTO(2, Long.fromNumber(2)),
-                    new CompactUtil.EmployeeDTO(2, Long.fromNumber(2)));
-                await obj.set(new CompactUtil.EmployeeDTO(3, Long.fromNumber(3)),
-                    new CompactUtil.EmployeeDTO(3, Long.fromNumber(3)));
-                // Clear schema retrieved via set()
-                client.schemaService.schemas.clear();
-                await obj.entrySetWithPredicate(pagingPredicate);
-                pagingPredicate.nextPage();
-                await obj.entrySetWithPredicate(pagingPredicate);
-                pagingPredicate.nextPage();
-                await obj.entrySetWithPredicate(pagingPredicate);
-                compactWriteSpy.called.should.be.true;
-                sandbox.restore();
+                await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
+                compactSerializerUsed = false;
+                const result = await obj.entrySetWithPredicate(new CompactPredicate());
+                result.should.be.deep.equal([[INNER_INSTANCE, OUTER_INSTANCE]]);
+                compactSerializerUsed.should.be.true;
             }
-            // little trick to make the test pass
-            compactSerializerUsed = true;
+        });
+
+        it('entrySetWithPredicate (paging predicate)', async function () {
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
+                compactSerializerUsed = false;
+                const result = await obj.entrySetWithPredicate(new CompactPagingPredicate());
+                result.should.be.deep.equal([[INNER_INSTANCE, OUTER_INSTANCE]]);
+                compactSerializerUsed.should.be.true;
+            }
         });
 
         it('keySetWithPredicate', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                const pagingPredicate = Predicates.paging(Predicates.alwaysTrue(), 1);
+                await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
                 compactSerializerUsed = false;
-                await obj.set(1, new Car('1', 1));
-                await obj.set(2, new Car('2', 2));
-                await obj.set(3, new Car('3', 3));
-                // Clear schema retrieved via set()
-                client.schemaService.schemas.clear();
-                await obj.keySetWithPredicate(pagingPredicate);
-                pagingPredicate.nextPage();
-                await obj.keySetWithPredicate(pagingPredicate);
-                pagingPredicate.nextPage();
-                await obj.keySetWithPredicate(pagingPredicate);
+                const result = await obj.keySetWithPredicate(new CompactPredicate());
+                result.should.be.deep.equal([INNER_INSTANCE]);
+                compactSerializerUsed.should.be.true;
+            }
+        });
+
+        it('keySetWithPredicate (paging predicate)', async function () {
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
+                compactSerializerUsed = false;
+                const result = await obj.keySetWithPredicate(new CompactPagingPredicate());
+                result.should.be.deep.equal([INNER_INSTANCE]);
                 compactSerializerUsed.should.be.true;
             }
         });
 
         it('valuesWithPredicate', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                const pagingPredicate = Predicates.paging(Predicates.alwaysTrue(), 1);
+                await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
                 compactSerializerUsed = false;
-                await obj.set(new Car('1', 1), 1);
-                await obj.set(new Car('2', 2), 2);
-                await obj.set(new Car('3', 3), 3);
-                // Clear schema retrieved via set()
-                client.schemaService.schemas.clear();
-                await obj.valuesWithPredicate(pagingPredicate);
-                pagingPredicate.nextPage();
-                await obj.valuesWithPredicate(pagingPredicate);
-                pagingPredicate.nextPage();
-                await obj.valuesWithPredicate(pagingPredicate);
+                const result = await obj.valuesWithPredicate(new CompactPredicate());
+                result.get(0).should.be.deep.equal(OUTER_INSTANCE);
+                compactSerializerUsed.should.be.true;
+            }
+        });
+
+        it('valuesWithPredicate (paging predicate)', async function () {
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
+                compactSerializerUsed = false;
+                const result = await obj.valuesWithPredicate(new CompactPagingPredicate());
+                result.get(0).should.be.deep.equal(OUTER_INSTANCE);
                 compactSerializerUsed.should.be.true;
             }
         });

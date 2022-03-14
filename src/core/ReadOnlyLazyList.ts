@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {SerializationService, SerializationServiceV1} from '../serialization/SerializationService';
+
 class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 
     private index = 0;
@@ -34,27 +36,23 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 }
 
 /**
- * Represents a list of values with lazy deserialization. This lazy list will throw an error when
- * used with compact objects. This is due to an technical limitation that happens when compact and lazy deserialization
- * are used together.
+ * Represents a list of values with lazy deserialization.
  */
 export class ReadOnlyLazyList<T> {
 
     private readonly internalArray: any[];
+    private readonly serializationService: SerializationService;
 
     /** @internal */
-    constructor(array: any[]) {
+    constructor(array: any[], serializationService: SerializationService) {
         this.internalArray = array;
+        this.serializationService = serializationService;
     }
 
     /**
-     * Returns list's element at the specified index. This method will throw {@link SchemaNotFoundError} when
-     * used with compact objects. This is due to an technical limitation that happens when compact and lazy deserialization
-     * are used together.
-     *
+     * Returns list's element at the specified index.
      *
      * @param index element's index
-     * @throws {@link SchemaNotFoundError}
      * @returns element
      */
     get(index: number): T {
@@ -62,8 +60,13 @@ export class ReadOnlyLazyList<T> {
         if (dataOrObject == null) {
             return undefined;
         }
-
-        return dataOrObject;
+        if ((this.serializationService as SerializationServiceV1).isData(dataOrObject)) {
+            const obj = this.serializationService.toObject(dataOrObject);
+            this.internalArray[index] = obj;
+            return obj;
+        } else {
+            return dataOrObject;
+        }
     }
 
     /**
@@ -87,7 +90,7 @@ export class ReadOnlyLazyList<T> {
      * @param end The end of the specified portion of the list (exclusive).
      */
     slice(start: number, end?: number): ReadOnlyLazyList<T> {
-        return new ReadOnlyLazyList<T>(this.internalArray.slice(start, end));
+        return new ReadOnlyLazyList<T>(this.internalArray.slice(start, end), this.serializationService);
     }
 
     /**

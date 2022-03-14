@@ -117,7 +117,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         }
         return this.encodeInvokeOnKey(MultiMapGetCodec, keyData, (clientMessage) => {
             const response = MultiMapGetCodec.decodeResponse(clientMessage);
-            return new ReadOnlyLazyList<V>(this.deserializeList(response));
+            return new ReadOnlyLazyList<V>(response, this.serializationService);
         }, keyData, 1);
     }
 
@@ -149,7 +149,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         }
         return this.encodeInvokeOnKey(MultiMapRemoveCodec, keyData, (clientMessage) => {
             const response = MultiMapRemoveCodec.decodeResponse(clientMessage);
-            return new ReadOnlyLazyList<V>(this.deserializeList(response));
+            return new ReadOnlyLazyList<V>(response, this.serializationService);
         }, keyData, 1);
     }
 
@@ -163,7 +163,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     values(): Promise<ReadOnlyLazyList<V>> {
         return this.encodeInvokeOnRandomTarget(MultiMapValuesCodec, (clientMessage) => {
             const response = MultiMapValuesCodec.decodeResponse(clientMessage);
-            return new ReadOnlyLazyList<V>(this.deserializeList(response));
+            return new ReadOnlyLazyList<V>(response, this.serializationService);
         });
     }
 
