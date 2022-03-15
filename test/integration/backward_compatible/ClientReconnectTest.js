@@ -36,10 +36,9 @@ describe('ClientReconnectTest', function () {
      */
     const waitForDisconnection = async (client) => {
         const clientRegistry = client.connectionRegistry;
-        const getConnectionsFn = clientRegistry.getConnections.bind(clientRegistry);
 
         await TestUtil.assertTrueEventually(async () => {
-            expect(getConnectionsFn()).to.be.empty;
+            expect(clientRegistry.getConnections()).to.be.empty;
         });
     };
 
