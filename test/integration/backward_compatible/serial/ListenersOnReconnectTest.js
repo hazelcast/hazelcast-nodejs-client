@@ -80,8 +80,13 @@ describe('ListenersOnReconnectTest', function () {
                 const activeConnections = TestUtil.getConnections(client);
                 expect(activeConnections.length).to.be.equal(0);
 
-                const eventHandlers = client.getInvocationService().eventHandlers;
-                expect(eventHandlers.has(correlationId)).to.be.false;
+                let invocationsWithEventHandlers;
+                if (TestUtil.isClientVersionAtLeast('5.1')) {
+                    invocationsWithEventHandlers = client.getInvocationService().invocationsWithEventHandlers;
+                } else {
+                    invocationsWithEventHandlers = client.getInvocationService().eventHandlers;
+                }
+                expect(invocationsWithEventHandlers.has(correlationId)).to.be.false;
             });
             await RC.startMember(cluster.id);
 
@@ -95,8 +100,13 @@ describe('ListenersOnReconnectTest', function () {
 
                 const connectionRegistration = activeRegistrations.get(activeConnections[0]);
                 const correlationId = connectionRegistration.correlationId;
-                const eventHandlers = client.getInvocationService().eventHandlers;
-                expect(eventHandlers.has(correlationId)).to.be.true;
+                let invocationsWithEventHandlers;
+                if (TestUtil.isClientVersionAtLeast('5.1')) {
+                    invocationsWithEventHandlers = client.getInvocationService().invocationsWithEventHandlers;
+                } else {
+                    invocationsWithEventHandlers = client.getInvocationService().eventHandlers;
+                }
+                expect(invocationsWithEventHandlers.has(correlationId)).to.be.true;
             });
             await map.put('keyx', 'valx');
             await deferred.promise;

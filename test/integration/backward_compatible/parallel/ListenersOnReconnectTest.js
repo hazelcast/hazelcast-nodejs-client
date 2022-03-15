@@ -82,8 +82,15 @@ describe('ListenersOnReconnectTest', function () {
 
             const connectionRegistration = activeRegistrations.get(activeConnections[0]);
             const correlationId = connectionRegistration.correlationId;
-            const eventHandlers = client.getInvocationService().eventHandlers;
-            expect(eventHandlers.has(correlationId)).to.be.true;
+
+            let invocationsWithEventHandlers;
+            if (TestUtil.isClientVersionAtLeast('5.1')) {
+                invocationsWithEventHandlers = client.getInvocationService().invocationsWithEventHandlers;
+            } else {
+                invocationsWithEventHandlers = client.getInvocationService().eventHandlers;
+            }
+
+            expect(invocationsWithEventHandlers.has(correlationId)).to.be.true;
         }, undefined, 600 * 1000);
 
         await map.put('keyx', 'valx');
