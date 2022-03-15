@@ -20,15 +20,16 @@ const { LazyReadResultSet } = require('../../../lib/proxy/ringbuffer/LazyReadRes
 
 describe('LazyReadResultSetTest', function () {
     const mockSerializationService = {
-        toObject: (x) => x + 100
+        toObject: (x) => x + 100,
+        isData: (x) => x < 3
     };
 
     it('get', function () {
-        const set = new LazyReadResultSet(4, [1, 2, 3, 4].map(mockSerializationService.toObject), [11, 12, 13, 14], 15);
+        const set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4], [11, 12, 13, 14], 15);
         expect(set.get(0)).to.equal(101);
         expect(set.get(1)).to.equal(102);
-        expect(set.get(2)).to.equal(103);
-        expect(set.get(3)).to.equal(104);
+        expect(set.get(2)).to.equal(3);
+        expect(set.get(3)).to.equal(4);
         expect(set.getSequence(0)).to.equal(11);
         expect(set.getSequence(1)).to.equal(12);
         expect(set.getSequence(2)).to.equal(13);
