@@ -20,7 +20,7 @@ const Long = require('long');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 chai.use(require('chai-as-promised'));
-chai.should();
+const should = chai.should();
 
 const RC = require('../../../../RC');
 const TestUtil = require('../../../../../TestUtil');
@@ -241,7 +241,7 @@ class CompactReturningEntryProcessorSerializer {
 /**
  * Tests all Public APIs if they can support compact objects.
  */
-describe('CompactAPISerializationTest', function () {
+describe('CompactPublicAPIsTest', function () {
     let cluster;
     let member;
     let client;
@@ -251,6 +251,7 @@ describe('CompactAPISerializationTest', function () {
     let employee;
     let SchemaNotReplicatedError;
     let CompactUtil;
+    let clientConfig;
 
     const CLUSTER_CONFIG_XML = `
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
@@ -310,7 +311,8 @@ describe('CompactAPISerializationTest', function () {
 
     beforeEach(async function () {
         const name = TestUtil.randomString(12);
-        client = await testFactory.newHazelcastClientForParallelTests({
+
+        clientConfig = {
             clusterName: cluster.id,
             serialization: {
                 compactSerializers: [
@@ -351,7 +353,9 @@ describe('CompactAPISerializationTest', function () {
                     evictionSamplingPoolSize: 8
                 }
             }
-        }, member);
+        };
+
+        client = await testFactory.newHazelcastClientForParallelTests(clientConfig, member);
         map = await client.getMap(name);
         nearCachedMap1 = await client.getMap('nearCached1' + name);
         nearCachedMap2 = await client.getMap('nearCached2' + name);
@@ -387,337 +391,298 @@ describe('CompactAPISerializationTest', function () {
         await testFactory.shutdownAll();
     });
 
+    const putToMapFromOtherClient = async (mapName, key, value) => {
+        const client = await testFactory.newHazelcastClientForParallelTests(clientConfig, member);
+        const map = await client.getMap(mapName);
+        await map.put(key, value);
+    };
+
+    const putToReplicatedMapFromOtherClient = async (replicatedMapName, key, value) => {
+        const client = await testFactory.newHazelcastClientForParallelTests(clientConfig, member);
+        const replicatedMap = await client.getReplicatedMap(replicatedMapName);
+        await replicatedMap.put(key, value);
+    };
+
+    const assertEntryEvent = async (events) => {
+        await TestUtil.assertTrueEventually(async () => {
+            events.length.should.be.equal(1);
+            const event = events[0];
+            event.key.should.be.deep.equal(INNER_INSTANCE);
+            event.value.should.be.deep.equal(OUTER_INSTANCE);
+            should.equal(event.oldValue, null);
+            should.equal(event.mergingValue, null);
+        });
+    };
+
     describe('Map/NearCaches', function () {
         it('aggregate', async function() {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 const result = await obj.aggregate(new CompactReturningAggregator());
                 result.should.be.deep.eq(OUTER_INSTANCE);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('aggregateWithPredicate', async function() {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 const result = await obj.aggregateWithPredicate(new CompactReturningAggregator(), new CompactPredicate());
                 result.should.be.deep.eq(OUTER_INSTANCE);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('containsKey', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.containsKey(car1);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('containsValue', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.containsValue(car1);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('put', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.put(car1, employee);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('putAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.putAll([[car1, car1], [employee, employee]]);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('setAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.setAll([[car1, car1], [employee, employee]]);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('get', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.get(car1);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('getAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.getAll([car1, employee]);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('remove', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.remove(car1, employee);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('delete', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.delete(car1);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('evict', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.evict(car1);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('forceUnlock', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.forceUnlock(car1);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('isLocked', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.isLocked(car1);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('loadAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 const error = await TestUtil.getRejectionReasonOrThrow(
                     async () => await obj.loadAll([car1, employee])
                 );
                 // MapStore configuration is needed for this to work, it throws NullPointerError.
                 // So we assert it does not throw SchemaNotReplicatedError
                 error.should.not.be.instanceOf(SchemaNotReplicatedError);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('putIfAbsent', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.putIfAbsent(car1, employee);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('putTransient', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.putTransient(car1, employee);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('replaceIfSame', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.replaceIfSame(car1, employee, car2);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('replace', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.replace(car1, employee);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('set', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.set(car1, employee);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('lock/unlock', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.lock(car1);
                 // Clear schema retrieved via lock()
                 client.schemaService.schemas.clear();
                 await obj.unlock(car1);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('getEntryView', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.getEntryView(car1);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('tryLock', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.tryLock(car1);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('tryPut', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.tryPut(car1, employee, 0);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('tryRemove', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.tryRemove(car1, 0);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('addEntryListener', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
-                await obj.addEntryListener(() => { }, car1);
-                compactSerializerUsed.should.be.true;
+                await obj.addEntryListener({}, car1);
             }
         });
 
-        it('addEntryListenerWithPredicate', async function () {
+        it('addEntryListenerWithPredicate (key argument serialization)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
-                await obj.addEntryListenerWithPredicate(() => { }, Predicates.sql('price > 1'), car1);
-                compactSerializerUsed.should.be.true;
+                await obj.addEntryListenerWithPredicate({}, Predicates.alwaysTrue(), car1);
             }
         });
 
-        it('executeOnKey', async function () {
+        it('addEntryListenerWithPredicate (compact predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
-                const error = await TestUtil.getRejectionReasonOrThrow(
-                    async () => await obj.executeOnKey(car1, new DummyEntryProcessor())
-                );
-                // This call will throw since it won't be able to cast to EntryProcessor.
-                // So we assert it does not throw SchemaNotReplicatedError
-                error.should.not.be.instanceOf(SchemaNotReplicatedError);
-                compactSerializerUsed.should.be.true;
+                const events = [];
+                await obj.addEntryListenerWithPredicate({
+                    added: event => {
+                        events.push(event);
+                    },
+                }, new CompactPredicate(), INNER_INSTANCE, true);
+                await putToMapFromOtherClient(obj.getName(), INNER_INSTANCE, OUTER_INSTANCE);
+                await assertEntryEvent(events);
             }
         });
 
         it('executeOnEntries', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
-                const error = await TestUtil.getRejectionReasonOrThrow(
-                    async () => await obj.executeOnEntries(new DummyEntryProcessor(), Predicates.sql('price > 1'))
-                );
-                // This call will throw since it won't be able to cast to EntryProcessor.
-                // So we assert it does not throw SchemaNotReplicatedError
-                error.should.not.be.instanceOf(SchemaNotReplicatedError);
-                compactSerializerUsed.should.be.true;
+                await putToMapFromOtherClient(obj.getName(), OUTER_INSTANCE, INNER_INSTANCE);
+                const results = await obj.executeOnEntries(new CompactReturningEntryProcessor());
+                results.should.be.deep.equal([[OUTER_INSTANCE, OUTER_INSTANCE]]);
+            }
+        });
+
+        it('executeOnEntries (with predicate)', async function () {
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                await putToMapFromOtherClient(obj.getName(), OUTER_INSTANCE, INNER_INSTANCE);
+                const results = await obj.executeOnEntries(new CompactReturningEntryProcessor(), new CompactPredicate());
+                results.should.be.deep.equal([[OUTER_INSTANCE, OUTER_INSTANCE]]);
+            }
+        });
+
+        it('executeOnKey', async function () {
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                await putToMapFromOtherClient(obj.getName(), OUTER_INSTANCE, INNER_INSTANCE);
+                const results = await obj.executeOnKey(OUTER_INSTANCE, new CompactReturningEntryProcessor());
+                results.should.be.deep.equal(OUTER_INSTANCE);
             }
         });
 
         it('executeOnKeys', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
-                const error = await TestUtil.getRejectionReasonOrThrow(
-                    async () => await obj.executeOnKeys([car1, employee], new DummyEntryProcessor())
-                );
-                // This call will throw since it won't be able to cast to EntryProcessor.
-                // So we assert it does not throw SchemaNotReplicatedError
-                error.should.not.be.instanceOf(SchemaNotReplicatedError);
-                compactSerializerUsed.should.be.true;
+                await putToMapFromOtherClient(obj.getName(), OUTER_INSTANCE, INNER_INSTANCE);
+                const results = await obj.executeOnKeys([OUTER_INSTANCE], new CompactReturningEntryProcessor());
+                results.should.be.deep.equal([[OUTER_INSTANCE, OUTER_INSTANCE]]);
             }
         });
 
         it('setTtl', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                compactSerializerUsed = false;
                 await obj.setTtl(car1, 1000);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('entrySetWithPredicate', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                compactSerializerUsed = false;
                 const result = await obj.entrySetWithPredicate(new CompactPredicate());
                 result.should.be.deep.equal([[INNER_INSTANCE, OUTER_INSTANCE]]);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('entrySetWithPredicate (paging predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                compactSerializerUsed = false;
                 const result = await obj.entrySetWithPredicate(new CompactPagingPredicate());
                 result.should.be.deep.equal([[INNER_INSTANCE, OUTER_INSTANCE]]);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('keySetWithPredicate', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                compactSerializerUsed = false;
                 const result = await obj.keySetWithPredicate(new CompactPredicate());
                 result.should.be.deep.equal([INNER_INSTANCE]);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('keySetWithPredicate (paging predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                compactSerializerUsed = false;
                 const result = await obj.keySetWithPredicate(new CompactPagingPredicate());
                 result.should.be.deep.equal([INNER_INSTANCE]);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('valuesWithPredicate', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                compactSerializerUsed = false;
                 const result = await obj.valuesWithPredicate(new CompactPredicate());
                 result.get(0).should.be.deep.equal(OUTER_INSTANCE);
-                compactSerializerUsed.should.be.true;
             }
         });
 
         it('valuesWithPredicate (paging predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                compactSerializerUsed = false;
                 const result = await obj.valuesWithPredicate(new CompactPagingPredicate());
                 result.get(0).should.be.deep.equal(OUTER_INSTANCE);
-                compactSerializerUsed.should.be.true;
             }
         });
     });
@@ -756,7 +721,7 @@ describe('CompactAPISerializationTest', function () {
         });
 
         it('addEntryListener', async function () {
-            await multimap.addEntryListener(() => { }, car1);
+            await multimap.addEntryListener({}, car1);
         });
 
         it('isLocked', async function () {
@@ -808,12 +773,23 @@ describe('CompactAPISerializationTest', function () {
             await replicatedMap.putAll([[car1, employee], [employee, car2]]);
         });
 
-        it('addEntryListenerToKeyWithPredicate', async function () {
-            await replicatedMap.addEntryListenerToKeyWithPredicate(() => {}, car1, Predicates.alwaysTrue());
+        it('addEntryListenerToKeyWithPredicate (key argument serialization)', async function () {
+            await replicatedMap.addEntryListenerToKeyWithPredicate({}, car1, Predicates.alwaysTrue());
+        });
+
+        it('addEntryListenerToKeyWithPredicate (compact predicate)', async function () {
+            const events = [];
+            await replicatedMap.addEntryListenerToKeyWithPredicate({
+                added: event => {
+                    events.push(event);
+                },
+            }, INNER_INSTANCE, new CompactPredicate());
+            await putToReplicatedMapFromOtherClient(replicatedMap.getName(), INNER_INSTANCE, OUTER_INSTANCE);
+            await assertEntryEvent(events);
         });
 
         it('addEntryListenerToKey', async function () {
-            await replicatedMap.addEntryListenerToKey(() => {}, car1);
+            await replicatedMap.addEntryListenerToKey({}, car1);
         });
     });
 

@@ -32,13 +32,12 @@ import {
     SqlPredicate,
     TruePredicate,
 } from '../serialization/DefaultPredicates';
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
 import {Comparator} from './Comparator';
 
 /**
  * Specifies conditions for entry lookup during iteration over a Map.
  */
-export interface Predicate extends IdentifiedDataSerializable {
+export interface Predicate {
 }
 
 /**

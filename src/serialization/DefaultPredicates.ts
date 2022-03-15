@@ -25,7 +25,7 @@ import {IdentifiedDataSerializable} from './Serializable';
 export const PREDICATE_FACTORY_ID = -20;
 
 /** @internal */
-abstract class AbstractPredicate implements Predicate {
+abstract class AbstractPredicate implements Predicate, IdentifiedDataSerializable {
 
     abstract classId: number;
     factoryId = PREDICATE_FACTORY_ID;
@@ -512,7 +512,7 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
 }
 
 interface PredicateConstructor {
-    new (): Predicate;
+    new (): IdentifiedDataSerializable;
     CLASS_ID: number;
 }
 

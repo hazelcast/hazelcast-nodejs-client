@@ -79,8 +79,6 @@ import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {Data} from '../serialization/Data';
 import {PagingPredicateImpl} from '../serialization/DefaultPredicates';
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
-import {Portable} from '../serialization/Portable';
 import {assertArray, assertNotNull} from '../util/Util';
 import {BaseProxy} from './BaseProxy';
 import {IMap} from './IMap';
@@ -136,7 +134,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }, aggregatorData, predicateData);
     }
 
-    executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable | Portable): Promise<any[]> {
+    executeOnKeys(keys: K[], entryProcessor: any): Promise<any[]> {
         assertNotNull(keys);
         assertArray(keys);
         if (keys.length === 0) {
@@ -159,7 +157,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    executeOnKey(key: K, entryProcessor: IdentifiedDataSerializable | Portable): Promise<V> {
+    executeOnKey(key: K, entryProcessor: any): Promise<V> {
         assertNotNull(key);
         assertNotNull(entryProcessor);
         let keyData: Data, proData: Data;
@@ -175,7 +173,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.executeOnKeyInternal(keyData, proData);
     }
 
-    executeOnEntries(entryProcessor: IdentifiedDataSerializable | Portable, predicate: Predicate = null): Promise<Array<[K, V]>> {
+    executeOnEntries(entryProcessor: any, predicate: Predicate = null): Promise<Array<[K, V]>> {
         assertNotNull(entryProcessor);
         let proData: Data;
         const toObject = this.toObject.bind(this);
@@ -194,7 +192,15 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 return this.deserializeEntryList(toObject, response);
             }, proData);
         } else {
-            const predData = this.toData(predicate);
+            let predData;
+            try {
+                predData = this.toData(predicate);
+            } catch (e) {
+                if (e instanceof SchemaNotReplicatedError) {
+                    return this.registerSchema(e.schema, e.clazz).then(() => this.executeOnEntries(entryProcessor, predicate));
+                }
+                return Promise.reject(e);
+            }
             return this.encodeInvokeOnRandomTarget(MapExecuteWithPredicateCodec, (clientMessage) => {
                 const response = MapExecuteWithPredicateCodec.decodeResponse(clientMessage);
                 return this.deserializeEntryList(toObject, response);
