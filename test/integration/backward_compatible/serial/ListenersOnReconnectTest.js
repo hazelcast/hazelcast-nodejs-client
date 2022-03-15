@@ -45,9 +45,6 @@ describe('ListenersOnReconnectTest', function () {
                 clusterName: cluster.id,
                 network: {
                     smartRouting: isSmart,
-                },
-                properties: {
-                    'hazelcast.client.heartbeat.interval': 1000
                 }
             });
             map = await client.getMap('testmap');
@@ -67,14 +64,42 @@ describe('ListenersOnReconnectTest', function () {
                     }
                 }
             };
-            await map.addEntryListener(listener, 'keyx', true);
+            const registrationId = await map.addEntryListener(listener, 'keyx', true);
+
+            // Retrieve correlationId we need it in the upcoming assertTrueEventually.
+            const activeConnections = TestUtil.getConnections(client);
+            expect(activeConnections.length).to.be.equal(1);
+            const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+            expect(activeRegistrations.has(activeConnections[0])).to.be.true;
+            const connectionRegistration = activeRegistrations.get(activeConnections[0]);
+            const correlationId = connectionRegistration.correlationId;
 
             await RC.terminateMember(cluster.id, member.uuid);
+            // Assert that the connection is closed and the listener is removed.
+            await TestUtil.assertTrueEventually(async () => {
+                const activeConnections = TestUtil.getConnections(client);
+                expect(activeConnections.length).to.be.equal(0);
+
+                const eventHandlers = client.getInvocationService().eventHandlers;
+                expect(eventHandlers.has(correlationId)).to.be.false;
+            });
             await RC.startMember(cluster.id);
 
-            await TestUtil.promiseWaitMilliseconds(8000);
+            // Assert that the connection reestablished and the listener is reregistered.
+            await TestUtil.assertTrueEventually(async () => {
+                const activeConnections = TestUtil.getConnections(client);
+                expect(activeConnections.length).to.be.equal(1);
+
+                const activeRegistrations = TestUtil.getActiveRegistrations(client, registrationId);
+                expect(activeRegistrations.has(activeConnections[0])).to.be.true;
+
+                const connectionRegistration = activeRegistrations.get(activeConnections[0]);
+                const correlationId = connectionRegistration.correlationId;
+                const eventHandlers = client.getInvocationService().eventHandlers;
+                expect(eventHandlers.has(correlationId)).to.be.true;
+            });
             await map.put('keyx', 'valx');
-            await deferred;
+            await deferred.promise;
         });
     });
 });

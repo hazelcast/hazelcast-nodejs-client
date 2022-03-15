@@ -59,7 +59,8 @@ import {
     ShortSerializer,
     StringArraySerializer,
     StringSerializer,
-    UuidSerializer
+    UuidSerializer,
+    JavaArraySerializer
 } from './DefaultSerializers';
 import {DATA_OFFSET, HeapData} from './HeapData';
 import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
@@ -325,6 +326,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('uuid', new UuidSerializer());
         this.registerSerializer('bigDecimal', new BigDecimalSerializer());
         this.registerSerializer('bigint', new BigIntSerializer());
+        this.registerSerializer('javaArray', new JavaArraySerializer());
         this.registerIdentifiedFactories();
         this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
         this.registerSerializer('!compact', this.compactStreamSerializer);
