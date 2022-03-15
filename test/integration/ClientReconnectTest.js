@@ -36,10 +36,9 @@ describe('ClientReconnectTest', function () {
      */
     const waitForDisconnection = async (client) => {
         const connManager = client.getConnectionManager();
-        const getConnectionsFn = connManager.getActiveConnections.bind(connManager);
 
         await TestUtil.assertTrueEventually(async () => {
-            expect(getConnectionsFn()).to.be.empty;
+            expect(connManager.getActiveConnections()).to.be.empty;
         });
     };
 
