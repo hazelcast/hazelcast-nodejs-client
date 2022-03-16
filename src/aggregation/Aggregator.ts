@@ -24,11 +24,11 @@ import {HazelcastError} from '../core';
  * Base interface for all aggregators.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface Aggregator<R> {
+export interface Aggregator<R> extends IdentifiedDataSerializable {
 }
 
 /** @internal */
-export abstract class AbstractAggregator<R> implements Aggregator<R>, IdentifiedDataSerializable {
+export abstract class AbstractAggregator<R> implements Aggregator<R> {
 
     abstract classId: number;
     factoryId = AggregatorConstants.AGGREGATOR_FACTORY_ID;
@@ -280,7 +280,7 @@ export class CanonicalizingHashSet<R> extends Set<R> implements IdentifiedDataSe
 }
 
 /** @internal */
-export const idToConstructor: { [id: number]: new () => IdentifiedDataSerializable } = {
+export const idToConstructor: { [id: number]: new () => Aggregator<any> } = {
     [AggregatorConstants.COUNT]: CountAggregator,
     [AggregatorConstants.DISTINCT]: DistinctValuesAggregator,
     [AggregatorConstants.DOUBLE_AVG]: DoubleAverageAggregator,
