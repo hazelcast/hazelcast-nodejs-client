@@ -17,7 +17,6 @@
 
 const { expect } = require('chai');
 const RC = require('../../RC');
-const { deferredPromise } = require('../../../../lib/util/Util');
 const TestUtil = require('../../../TestUtil');
 
 class ManagedObjects {
@@ -25,11 +24,8 @@ class ManagedObjects {
         this.managedObjects = [];
     }
 
-    getObject(func, name) {
-        return func(name).then((obj) => {
-            this.managedObjects.push(obj);
-            return obj;
-        });
+    addObject(obj) {
+        this.managedObjects.push(obj);
     }
 
     async destroyAll() {
@@ -40,40 +36,19 @@ class ManagedObjects {
         return Promise.all(promises);
     }
 
-    destroy(name) {
-        const deferred = deferredPromise();
-        this.managedObjects.filter((el) => {
+    async destroy(name) {
+        for (const el of this.managedObjects) {
             if (el.getName() === name) {
-                el.destroy().then(() => {
-                    deferred.resolve();
-                });
+                await el.destroy();
             }
-        });
-        return deferred.promise;
+        }
     }
 }
 
-const dummyConfig = {
-    network: {
-        smartRouting: false
-    }
-};
-
-const smartConfig = {
-    network: {
-        smartRouting: true
-    }
-};
-
-const configParams = [
-    dummyConfig,
-    smartConfig
-];
-
 const testFactory = new TestUtil.TestFactory();
 
-configParams.forEach((cfg) => {
-    describe('HazelcastClientTest[smart=' + cfg.network.smartRouting + ']', function () {
+[true, false].forEach((isSmart) => {
+    describe('HazelcastClientTest[smart=' + isSmart + ']', function () {
         let cluster;
         let client;
         let managed;
@@ -90,8 +65,12 @@ configParams.forEach((cfg) => {
 
         beforeEach(async function () {
             managed = new ManagedObjects();
-            cfg.clusterName = cluster.id;
-            client = await testFactory.newHazelcastClientForParallelTests(cfg, member);
+            client = await testFactory.newHazelcastClientForParallelTests({
+                network: {
+                    smartRouting: isSmart
+                },
+                clusterName: cluster.id
+            }, member);
         });
 
         afterEach(async function () {
@@ -109,7 +88,7 @@ configParams.forEach((cfg) => {
             expect(distributedObjects).to.be.empty;
         });
 
-        it('more than one call to shutdown returns same promise', async function () {
+        it('more than one call to shutdown returns same promise', function () {
             TestUtil.markClientVersionAtLeast(this, '5.0');
             const promise1 = client.shutdown();
             const promise2 = client.shutdown();
@@ -126,31 +105,32 @@ configParams.forEach((cfg) => {
             expect(info.labels).to.deep.equal(new Set());
         });
 
-        it('getDistributedObjects returns all dist objects', function () {
-            managed.getObject(client.getMap.bind(client, 'map'));
-            managed.getObject(client.getSet.bind(client, 'set'));
-            return TestUtil.assertTrueEventually(async () => {
+        it('getDistributedObjects returns all dist objects', async function () {
+            managed.addObject(await client.getMap('map'));
+            managed.addObject(await client.getSet('set'));
+
+            await TestUtil.assertTrueEventually(async () => {
                 const distObjects = filterInternalMaps(await client.getDistributedObjects());
                 const names = distObjects.map((o) => {
                     return o.getName();
                 });
                 expect(names).to.have.members(['map', 'set']);
-            }, 100, 5000);
+            });
         });
 
-        it('getDistributedObjects does not return removed object', function () {
-            managed.getObject(client.getMap.bind(client, 'map1'));
-            managed.getObject(client.getMap.bind(client, 'map2'));
-            managed.getObject(client.getMap.bind(client, 'map3'));
+        it('getDistributedObjects does not return removed object', async function () {
+            managed.addObject(await client.getMap('map1'));
+            managed.addObject(await client.getMap('map2'));
+            managed.addObject(await client.getMap('map3'));
 
-            return TestUtil.assertTrueEventually(async () => {
+            await TestUtil.assertTrueEventually(async () => {
                 await managed.destroy('map1');
                 const distObjects = filterInternalMaps(await client.getDistributedObjects());
                 const names = distObjects.map(o => {
                     return o.getName();
                 });
                 expect(names).to.have.members(['map2', 'map3']);
-            }, 100, 5000);
+            });
         });
     });
 });
