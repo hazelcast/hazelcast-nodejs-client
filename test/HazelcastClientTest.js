@@ -39,16 +39,12 @@ class ManagedObjects {
         return Promise.all(promises);
     }
 
-    destroy(name) {
-        const deferred = deferredPromise();
-        this.managedObjects.filter((el) => {
+    async destroy(name) {
+        for (const el of this.managedObjects) {
             if (el.getName() === name) {
-                el.destroy().then(function () {
-                    deferred.resolve();
-                });
+                await el.destroy();
             }
-        });
-        return deferred.promise;
+        }
     }
 }
 
