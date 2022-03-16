@@ -18,7 +18,6 @@
 const expect = require('chai').expect;
 const RC = require('./RC');
 const { Client } = require('../.');
-const { deferredPromise } = require('../lib/util/Util');
 const TestUtil = require('./Util');
 
 class ManagedObjects {
