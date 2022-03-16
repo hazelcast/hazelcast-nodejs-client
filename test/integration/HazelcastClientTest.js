@@ -18,7 +18,6 @@
 const { expect } = require('chai');
 const RC = require('./RC');
 const { Client } = require('../../');
-const { deferredPromise } = require('../../lib/util/Util');
 const TestUtil = require('../TestUtil');
 
 class ManagedObjects {
@@ -39,18 +38,13 @@ class ManagedObjects {
         return Promise.all(promises);
     }
 
-    destroy(name) {
-        const deferred = deferredPromise();
-        this.managedObjects.filter((el) => {
+    async destroy(name) {
+        for (const el of this.managedObjects) {
             if (el.getName() === name) {
-                el.destroy().then(function () {
-                    deferred.resolve();
-                });
+                await el.destroy();
             }
-        });
-        return deferred.promise;
+        }
     }
-
 }
 
 [true, false].forEach(function (isSmart) {
