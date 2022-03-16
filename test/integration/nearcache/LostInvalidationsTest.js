@@ -47,7 +47,7 @@ describe('LostInvalidationTest', function () {
         return {
             handler,
             correlationId,
-            notificationHandler: deferred.promise
+            notificationPromise: deferred.promise
         };
     }
 
