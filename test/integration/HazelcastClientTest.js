@@ -111,7 +111,6 @@ class ManagedObjects {
             managed.addObject(await client.getMap('map2'));
             managed.addObject(await client.getMap('map3'));
 
-
             await TestUtil.assertTrueEventually(async () => {
                 await managed.destroy('map1');
                 const distObjects = await client.getDistributedObjects();
