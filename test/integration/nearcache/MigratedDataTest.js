@@ -23,7 +23,6 @@ const { deferredPromise } = require('../../../lib/util/Util');
 const TestUtil = require('../../TestUtil');
 
 describe('MigratedDataTest', function () {
-
     const mapName = 'ncmap';
 
     let cluster;
@@ -33,10 +32,9 @@ describe('MigratedDataTest', function () {
 
     async function waitForPartitionTableEvent(partitionService) {
         const deferred = deferredPromise();
-        const expectedPartitionCount = partitionService.partitionCount;
 
         function checkPartitionTable(remainingTries) {
-            if (partitionService.partitionTable.partitions.size === expectedPartitionCount) {
+            if (partitionService.getPartitionOwner(0) != null) {
                 deferred.resolve();
             } else if (remainingTries > 0) {
                 setTimeout(checkPartitionTable, 1000, remainingTries - 1);
@@ -44,13 +42,13 @@ describe('MigratedDataTest', function () {
                 deferred.reject(new Error('Partition table is not received!'));
             }
         }
-        checkPartitionTable(10);
+        checkPartitionTable(600);
         return deferred.promise;
     }
 
     async function waitUntilPartitionMovesTo(partitionService, partitionId, uuid) {
         const deferred = deferredPromise();
-        (function resolveOrTimeout(remainingTries) {
+        function resolveOrTimeout(remainingTries) {
             if (partitionService.getPartitionOwner(partitionId).toString() === uuid) {
                 deferred.resolve();
             } else if (remainingTries > 0) {
@@ -58,7 +56,8 @@ describe('MigratedDataTest', function () {
             } else {
                 deferred.reject(new Error('Partition ' + partitionId + ' was not moved to ' + uuid));
             }
-        })(20);
+        }
+        resolveOrTimeout(600);
         return deferred.promise;
     }
 
@@ -89,7 +88,8 @@ describe('MigratedDataTest', function () {
         await RC.terminateCluster(cluster.id);
     });
 
-    it('killing a server migrates data to the other node, migrated data has new uuid, near cache discards data with old uuid', async function () {
+    it('killing a server migrates data to the other node, migrated data has new uuid, '
+          + 'near cache discards data with old uuid', async function () {
         let survivingMember;
         const key = 1;
         const partitionService = client.getPartitionService();
@@ -100,7 +100,7 @@ describe('MigratedDataTest', function () {
         await map.get(key);
         await waitForPartitionTableEvent(partitionService);
 
-        let partitionIdForKey = partitionService.getPartitionId(key);
+        const partitionIdForKey = partitionService.getPartitionId(key);
         const keyOwner = partitionService.getPartitionOwner(partitionIdForKey).toString();
         if (keyOwner === member1.uuid) {
             survivingMember = member2;
@@ -110,7 +110,6 @@ describe('MigratedDataTest', function () {
             await RC.terminateMember(cluster.id, member2.uuid);
         }
 
-        partitionIdForKey = partitionService.getPartitionId(key);
         await waitUntilPartitionMovesTo(partitionService, partitionIdForKey, survivingMember.uuid);
         await TestUtil.promiseWaitMilliseconds(1500);
 
