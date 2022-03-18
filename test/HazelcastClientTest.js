@@ -59,7 +59,7 @@ class ManagedObjects {
             await RC.startMember(cluster.id);
         });
 
-        beforeEach(function () {
+        beforeEach(async function () {
             managed = new ManagedObjects();
             client = await Client.newHazelcastClient({
                 network: {
