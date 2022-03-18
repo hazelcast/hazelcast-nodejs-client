@@ -57,6 +57,10 @@ class ManagedObjects {
         before(async function () {
             cluster = await RC.createCluster(null, null);
             await RC.startMember(cluster.id);
+        });
+
+        beforeEach(function () {
+            managed = new ManagedObjects();
             client = await Client.newHazelcastClient({
                 network: {
                     smartRouting: isSmart
@@ -65,16 +69,12 @@ class ManagedObjects {
             });
         });
 
-        beforeEach(function () {
-            managed = new ManagedObjects();
-        });
-
         afterEach(async function () {
             await managed.destroyAll();
+            await client.shutdown();
         });
 
         after(async function () {
-            await client.shutdown();
             await RC.terminateCluster(cluster.id);
         });
 
