@@ -22,7 +22,6 @@ const { deferredPromise } = require('../../../../../lib/util/Util');
 const TestUtil = require('../../../../TestUtil');
 
 describe('LostInvalidationTest', function () {
-    const entryCount = 1000;
     const mapName = 'ncmap';
     const testFactory = new TestUtil.TestFactory();
 
@@ -48,7 +47,7 @@ describe('LostInvalidationTest', function () {
         return {
             handler,
             correlationId,
-            notificationHandler: deferred.promise
+            notificationPromise: deferred.promise
         };
     }
 
@@ -94,24 +93,30 @@ describe('LostInvalidationTest', function () {
         const updatedval = 'updatedval';
 
         const map = await client.getMap(mapName);
-        await TestUtil.promiseWaitMilliseconds(100);
-        const invalidationHandlerStub = blockInvalidationEvents(client, map, 1);
+        // Wait for the near cache to be ready. This also means that invalidation listener is registered.
+        await map.nearCache.ready.promise;
+        // One event comes after the first put and the other comes after the second put of the modifying client.
+        const invalidationHandlerStub = blockInvalidationEvents(client, map, 2);
         const mp = await modifyingClient.getMap(mapName);
         await mp.put(key, value);
         await map.get(key);
         await mp.put(key, updatedval);
-        await TestUtil.promiseWaitMilliseconds(1000);
+        // Wait till invalidation events to come.
+        await invalidationHandlerStub.notificationPromise;
         unblockInvalidationEvents(client, invalidationHandlerStub);
-        await TestUtil.promiseWaitMilliseconds(1000);
-        const result = await map.get(key);
-        expect(result).to.equal(updatedval);
+        await TestUtil.assertTrueEventually(async () => {
+            const result = await map.get(key);
+            expect(result).to.equal(updatedval);
+        });
     });
 
     it('lost invalidation stress test', async function () {
-        let val;
+        const entryCount = 1000;
         const map = await client.getMap(mapName);
-        await TestUtil.promiseWaitMilliseconds(100);
-        const invalidationHandlerStub = blockInvalidationEvents(client, map);
+        // Wait for the near cache to be ready. This also means that invalidation listener is registered.
+        await map.nearCache.ready.promise;
+        // 1000 event comes after the first putAll and the other 1000 comes after the second putAll of the modifying client.
+        const invalidationHandlerStub = blockInvalidationEvents(client, map, 2000);
         let entries = [];
         for (let i = 0; i < entryCount; i++) {
             entries.push([i, i]);
@@ -129,11 +134,13 @@ describe('LostInvalidationTest', function () {
             entries.push([i, i + entryCount]);
         }
         await mp.putAll(entries);
+        await invalidationHandlerStub.notificationPromise;
         unblockInvalidationEvents(client, invalidationHandlerStub);
-        await TestUtil.promiseWaitMilliseconds(2000);
-        for (let i = 0; i < entryCount; i++) {
-            val = await map.get(i);
-            expect(val).to.equal(i + entryCount);
-        }
+        await TestUtil.assertTrueEventually(async () => {
+            for (let i = 0; i < entryCount; i++) {
+                const val = await map.get(i);
+                expect(val).to.equal(i + entryCount);
+            }
+        });
     });
 });
