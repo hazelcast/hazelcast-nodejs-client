@@ -127,13 +127,13 @@ describe('MapProxyTest', function () {
 
             it('setTtl updates ttl for entry', async function () {
                 TestUtil.markClientVersionAtLeast(this, '4.1');
-                await map.put('key10', 'val10', 2000);
+                await map.put('key10', 'val10', 20000);
                 let val = await map.get('key10');
                 expect(val).to.equal('val10');
 
                 await map.setTtl('key10', 60000);
 
-                val = await TestUtil.promiseLater(2100, map.get.bind(map, 'key10'));
+                val = await TestUtil.promiseLater(21000, map.get.bind(map, 'key10'));
                 expect(val).to.equal('val10');
             });
 
