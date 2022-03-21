@@ -86,7 +86,9 @@ describe('CompactSqlTest', function () {
         client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
-                compactSerializers: [new CompactUtil.EmployeeSerializer()]
+                compact: {
+                    serializers: [new CompactUtil.EmployeeSerializer()]
+                }
             }
         }, member);
         TestUtil.markServerVersionAtLeast(this, client, '5.0');
@@ -123,7 +125,9 @@ describe('CompactSqlTest', function () {
         client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
-                compactSerializers: [new CompactUtil.EmployeeSerializer()]
+                compact: {
+                    serializers: [new CompactUtil.EmployeeSerializer()]
+                }
             }
         }, member);
         TestUtil.markServerVersionAtLeast(this, client, '5.0');

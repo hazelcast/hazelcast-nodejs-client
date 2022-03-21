@@ -42,6 +42,7 @@ class Nested {
 class NestedSerializer {
     constructor() {
         this.class = Nested;
+        this.typeName = 'Nested';
     }
 
     read(reader) {
@@ -69,6 +70,7 @@ class Employee {
 class EmployeeSerializer {
     constructor() {
         this.class = Employee;
+        this.typeName = 'Employee';
     }
 
     read(reader) {
@@ -368,6 +370,7 @@ class Bits {
 class BitsSerializer {
     constructor() {
         this.class = Bits;
+        this.typeName = 'Bits';
     }
 
     read(reader) {
@@ -418,6 +421,7 @@ class Employer {
 class EmployerSerializer {
     constructor() {
         this.class = Employer;
+        this.typeName = 'Employer';
     }
 
     read(reader) {
@@ -442,7 +446,7 @@ class EmployerSerializer {
 
 const createSerializationService = (compactSerializers = []) => {
     const serializationConfig = new SerializationConfigImpl();
-    serializationConfig.compactSerializers = compactSerializers;
+    serializationConfig.compact.serializers = compactSerializers;
     return new SerializationServiceV1(serializationConfig, new InMemorySchemaService());
 };
 
@@ -634,6 +638,7 @@ class FlexibleSerializer {
         this.writerFieldNameMap = writerFieldNameMap;
         this.fieldKinds = fieldKinds;
         this.class = Flexible;
+        this.typeName = 'Flexible';
     }
 
     read(reader) {
@@ -946,6 +951,7 @@ const createMainDTO = () => {
 class InnerDTOSerializer {
     constructor() {
         this.class = InnerDTO;
+        this.typeName = 'InnerDTO';
     }
 
     read(reader) {
@@ -1036,6 +1042,7 @@ class InnerDTOSerializer {
 class NamedDTOSerializer {
     constructor() {
         this.class = NamedDTO;
+        this.typeName = 'NamedDTO';
     }
 
     read(reader) {
@@ -1061,6 +1068,7 @@ class NodeDTO {
 class NodeDTOSerializer {
     constructor() {
         this.class = NodeDTO;
+        this.typeName = 'NodeDTO';
     }
 
     read(reader) {
@@ -1079,6 +1087,7 @@ class NodeDTOSerializer {
 class MainDTOSerializer {
     constructor() {
         this.class = MainDTO;
+        this.typeName = 'MainDTO';
     }
 
     read(reader) {
@@ -1137,6 +1146,7 @@ class MainDTOSerializer {
 class MainDTOSerializerWithDefaults {
     constructor() {
         this.class = MainDTO;
+        this.typeName = 'MainDTO';
     }
 
     read(reader) {

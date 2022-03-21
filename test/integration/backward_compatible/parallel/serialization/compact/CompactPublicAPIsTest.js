@@ -315,18 +315,20 @@ describe('CompactPublicAPIsTest', function () {
         clientConfig = {
             clusterName: cluster.id,
             serialization: {
-                compactSerializers: [
-                    new CarSerializer(),
-                    new CompactUtil.EmployeeSerializer(),
-                    new CompactUtil.EmployeeDTOSerializer(),
-                    new DummyEntryProcessorSerializer(),
-                    new CompactReturningAggregatorSerializer(),
-                    new CompactPredicateSerializer(),
-                    new InnerSerializer(),
-                    new OuterSerializer(),
-                    new CompactPagingPredicateSerializer(),
-                    new CompactReturningEntryProcessorSerializer()
-                ],
+                compact: {
+                    serializers: [
+                        new CarSerializer(),
+                        new CompactUtil.EmployeeSerializer(),
+                        new CompactUtil.EmployeeDTOSerializer(),
+                        new DummyEntryProcessorSerializer(),
+                        new CompactReturningAggregatorSerializer(),
+                        new CompactPredicateSerializer(),
+                        new InnerSerializer(),
+                        new OuterSerializer(),
+                        new CompactPagingPredicateSerializer(),
+                        new CompactReturningEntryProcessorSerializer()
+                    ]
+                },
                 portableFactories: {
                     1: portableFactory
                 }

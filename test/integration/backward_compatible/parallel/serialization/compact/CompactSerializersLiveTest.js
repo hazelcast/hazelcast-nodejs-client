@@ -58,7 +58,9 @@ describe('CompactSerializersLiveTest', function () {
             client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 serialization: {
-                    compactSerializers: [new compactUtil.EmployeeDTOSerializer()]
+                    compact: {
+                        serializers: [new compactUtil.EmployeeDTOSerializer()]
+                    }
                 }
             }, member);
             mapName = TestUtil.randomString(10);
@@ -121,7 +123,7 @@ describe('CompactSerializersLiveTest', function () {
                 <serialization>
                     <compact-serialization enabled="true">
                          <registered-classes>
-                            <class 
+                            <class
                              type-name="example.serialization.EmployeeDTO"
                              serializer="example.serialization.EmployeeDTOSerializer"
                              >
@@ -139,7 +141,9 @@ describe('CompactSerializersLiveTest', function () {
             client = await testFactory.newHazelcastClientForParallelTests({
                 clusterName: cluster.id,
                 serialization: {
-                    compactSerializers: [new compactUtil.EmployeeDTOSerializer()]
+                    compact: {
+                        serializers: [new compactUtil.EmployeeDTOSerializer()]
+                    }
                 }
             }, member);
             mapName = TestUtil.randomString(10);

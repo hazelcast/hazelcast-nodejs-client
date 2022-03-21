@@ -55,7 +55,9 @@ describe('NearCachedMapTest', function () {
                     }
                 },
                 serialization: {
-                    compactSerializers: [new CompactUtil.EmployeeSerializer()]
+                    compact: {
+                        serializers: [new CompactUtil.EmployeeSerializer()]
+                    }
                 }
             };
             client1 = await testFactory.newHazelcastClientForParallelTests(cfg, member);
@@ -110,7 +112,9 @@ describe('NearCachedMapTest', function () {
                         }
                     },
                     serialization: {
-                        compactSerializers: [new CompactUtil.EmployeeSerializer()]
+                        compact: {
+                            serializers: [new CompactUtil.EmployeeSerializer()]
+                        }
                     }
                 };
                 client1 = await testFactory.newHazelcastClientForParallelTests(cfg, member);

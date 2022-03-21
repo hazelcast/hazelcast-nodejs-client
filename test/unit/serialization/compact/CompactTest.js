@@ -102,6 +102,7 @@ describe('CompactTest', function () {
         class EmployeeSerializerV2 {
             constructor() {
                 this.class = Employee;
+                this.typeName = 'Employee';
             }
 
             read() {
@@ -134,6 +135,7 @@ describe('CompactTest', function () {
         class EmployeeSerializerV2 {
             constructor() {
                 this.class = Employee;
+                this.typeName = 'Employee';
             }
 
             read() {

@@ -21,8 +21,8 @@ class A {
 }
 class ASerializer {
     constructor() {
-        this.typeName = 'A';
         this.class = A;
+        this.typeName = 'A';
     }
 
     read(reader) {

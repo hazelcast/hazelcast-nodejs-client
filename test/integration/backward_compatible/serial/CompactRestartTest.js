@@ -68,7 +68,9 @@ describe('CompactRestartTest', function() {
         const client = await testFactory.newHazelcastClientForSerialTests({
             clusterName: cluster.id,
             serialization: {
-                compactSerializers: [new CompactUtil.FlexibleSerializer([FieldKind.INT32])]
+                compact: {
+                    serializers: [new CompactUtil.FlexibleSerializer([FieldKind.INT32])]
+                }
             }
         });
         const map = await client.getMap(mapName);
