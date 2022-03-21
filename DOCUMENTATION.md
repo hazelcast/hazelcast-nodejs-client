@@ -862,7 +862,7 @@ Values object is the corresponding values for each field.
 ### 4.1.3 Compact Configuration and Usage
 
 The only configuration you need to make is to register compact serializers. You can do that via
-`serialization.compactSerializers` configuration option. The following is an example of compact configuration:
+`serialization.compact.serializers` configuration option. The following is an example of compact configuration:
 
 ```js
 'use strict';
@@ -878,7 +878,8 @@ class Employee {
 
 class EmployeeSerializer {
     constructor() {
-        this.hzClass = Employee;
+        this.class = Employee;
+        this.typeName = 'Employee';
     }
 
     read(reader) {
@@ -896,7 +897,9 @@ class EmployeeSerializer {
 async function main() {
     const client = await Client.newHazelcastClient({
         serialization: {
-            compactSerializers: [new EmployeeSerializer()]
+            compact: {
+                serializers: [new EmployeeSerializer()]
+            }
         }
     });
     const map = await client.getMap('mapName');
