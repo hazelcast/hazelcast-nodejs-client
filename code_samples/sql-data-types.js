@@ -47,8 +47,8 @@ class Employee {
 
 class EmployeeSerializer {
     constructor() {
-        this.hzClass = Employee;
-        this.hzTypeName = 'Employee';
+        this.class = Employee;
+        this.typeName = 'Employee';
     }
 
     read(reader) {
@@ -261,14 +261,16 @@ const objectExample2 = async (client, typeName) => {
             portableFactories: {
                 23: portableFactory
             },
-                compactSerializers: [employeeSerializer]
+            compact: {
+                serializers: [employeeSerializer]
+            }
         }
     });
 
     await varcharExample(client);
     await bigintExample(client);
     await objectExample(client, 1, 23);
-    await objectExample2(client, employeeSerializer.hzTypeName);
+    await objectExample2(client, employeeSerializer.typeName);
 
     await client.shutdown();
 })().catch(err => {

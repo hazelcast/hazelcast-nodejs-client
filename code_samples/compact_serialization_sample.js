@@ -26,7 +26,8 @@ class Employee {
 
 class EmployeeSerializer {
     constructor() {
-        this.hzClass = Employee;
+        this.class = Employee;
+        this.typeName = 'Employee';
     }
 
     read(reader) {
@@ -44,7 +45,9 @@ class EmployeeSerializer {
 async function main() {
     const client = await Client.newHazelcastClient({
         serialization: {
-            compactSerializers: [new EmployeeSerializer()]
+            compact: {
+                serializers: [new EmployeeSerializer()]
+            }
         }
     });
     const map = await client.getMap('mapName');
