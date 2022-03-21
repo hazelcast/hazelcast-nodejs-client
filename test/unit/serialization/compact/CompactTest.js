@@ -101,7 +101,7 @@ describe('CompactTest', function () {
     it('should work with evolved schema when field added', async function () {
         class EmployeeSerializerV2 {
             constructor() {
-                this.hzClass = Employee;
+                this.class = Employee;
             }
 
             read() {
@@ -133,7 +133,7 @@ describe('CompactTest', function () {
     it('should work with evolved schema when field removed and default value set', async function () {
         class EmployeeSerializerV2 {
             constructor() {
-                this.hzClass = Employee;
+                this.class = Employee;
             }
 
             read() {

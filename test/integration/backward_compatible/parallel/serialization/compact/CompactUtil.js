@@ -41,7 +41,7 @@ class Nested {
 
 class NestedSerializer {
     constructor() {
-        this.hzClass = Nested;
+        this.class = Nested;
     }
 
     read(reader) {
@@ -68,7 +68,7 @@ class Employee {
 
 class EmployeeSerializer {
     constructor() {
-        this.hzClass = Employee;
+        this.class = Employee;
     }
 
     read(reader) {
@@ -303,8 +303,8 @@ class EmployeeDTO {
 
 class EmployeeDTOSerializer {
     constructor() {
-        this.hzClass = EmployeeDTO; // used to match a js object to serialize with this serializer
-        this.hzTypeName = 'example.serialization.EmployeeDTO'; // used to match schema's typeName with serializer
+        this.class = EmployeeDTO; // used to match a js object to serialize with this serializer
+        this.typeName = 'example.serialization.EmployeeDTO'; // used to match schema's typeName with serializer
     }
 
     read(reader) {
@@ -367,7 +367,7 @@ class Bits {
 
 class BitsSerializer {
     constructor() {
-        this.hzClass = Bits;
+        this.class = Bits;
     }
 
     read(reader) {
@@ -417,7 +417,7 @@ class Employer {
 
 class EmployerSerializer {
     constructor() {
-        this.hzClass = Employer;
+        this.class = Employer;
     }
 
     read(reader) {
@@ -633,7 +633,7 @@ class FlexibleSerializer {
         this.readerFieldNameMap = readerFieldNameMap;
         this.writerFieldNameMap = writerFieldNameMap;
         this.fieldKinds = fieldKinds;
-        this.hzClass = Flexible;
+        this.class = Flexible;
     }
 
     read(reader) {
@@ -945,7 +945,7 @@ const createMainDTO = () => {
 
 class InnerDTOSerializer {
     constructor() {
-        this.hzClass = InnerDTO;
+        this.class = InnerDTO;
     }
 
     read(reader) {
@@ -1035,7 +1035,7 @@ class InnerDTOSerializer {
 
 class NamedDTOSerializer {
     constructor() {
-        this.hzClass = NamedDTO;
+        this.class = NamedDTO;
     }
 
     read(reader) {
@@ -1060,7 +1060,7 @@ class NodeDTO {
 
 class NodeDTOSerializer {
     constructor() {
-        this.hzClass = NodeDTO;
+        this.class = NodeDTO;
     }
 
     read(reader) {
@@ -1078,7 +1078,7 @@ class NodeDTOSerializer {
 
 class MainDTOSerializer {
     constructor() {
-        this.hzClass = MainDTO;
+        this.class = MainDTO;
     }
 
     read(reader) {
@@ -1136,7 +1136,7 @@ class MainDTOSerializer {
 
 class MainDTOSerializerWithDefaults {
     constructor() {
-        this.hzClass = MainDTO;
+        this.class = MainDTO;
     }
 
     read(reader) {

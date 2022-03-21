@@ -484,8 +484,8 @@ export class ConfigBuilder {
                 this.handleGlobalSerializer(jsonObject[key]);
             } else if (key === 'customSerializers') {
                 this.handleCustomSerializers(jsonObject[key]);
-            } else if (key === 'compactSerializers') {
-                this.handleCompactSerializers(jsonObject[key]);
+            } else if (key === 'compact') {
+                this.handleCompact(jsonObject[key]);
             } else if (key === 'jsonStringDeserializationPolicy') {
                 this.effectiveConfig.serialization
                     .jsonStringDeserializationPolicy = tryGetEnum(JsonStringDeserializationPolicy, jsonObject[key]);
@@ -495,18 +495,28 @@ export class ConfigBuilder {
         }
     }
 
+    private handleCompact(compactConfig: any) {
+        for (const key in compactConfig) {
+            if (key === 'serializers') {
+                this.handleCompactSerializers(compactConfig[key]);
+            } else {
+                throw new RangeError(`Unexpected compact config '${key}' is passed to the Hazelcast Client`);
+            }
+        }
+    }
+
     private handleCompactSerializers(customSerializers: any) {
         const serializersArray = tryGetArray(customSerializers);
 
         for (const serializer of serializersArray) {
-            if (typeof serializer.hzClass !== 'function') {
+            if (typeof serializer.class !== 'function') {
                 throw new RangeError(
-                    `Invalid compact serializer given: ${serializer}. Expected a 'hzClass' property that is a function.`
+                    `Invalid compact serializer given: ${serializer}. Expected a 'class' property that is a function.`
                 );
             }
-            if (serializer.hasOwnProperty('hzTypeName') && typeof serializer.hzTypeName !== 'string') {
+            if (typeof serializer.typeName !== 'string') {
                 throw new RangeError(
-                    `Invalid compact serializer given: ${serializer}. Expected a 'hzTypeName' property that is a string.`
+                    `Invalid compact serializer given: ${serializer}. Expected a 'typeName' property that is a string.`
                 );
             }
             if (typeof serializer.read !== 'function') {
@@ -520,7 +530,7 @@ export class ConfigBuilder {
                 );
             }
 
-            this.effectiveConfig.serialization.compactSerializers.push(serializer);
+            this.effectiveConfig.serialization.compact.serializers.push(serializer);
         }
     }
 

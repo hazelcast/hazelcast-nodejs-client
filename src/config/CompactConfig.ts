@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
-class A {
-    constructor(age) {
-        this.age = age;
-    }
-}
-class ASerializer {
-    constructor() {
-        this.typeName = 'A';
-        this.class = A;
-    }
 
-    read(reader) {
-        const age = reader.readInt32('age');
-        return new A(age);
-    }
-    write(writer, obj) {
-        writer.writeInt32('age', obj.age);
-    }
+import {CompactSerializer} from '../serialization/compact/CompactSerializer';
+
+/**
+ * User-defined serialization config for the client.
+ */
+export interface CompactConfig {
+
+    /**
+     * Defines Compact serializers.
+     */
+    serializers?: Array<CompactSerializer<any>>;
+
 }
-module.exports = {ASerializer, A};
+
+/** @internal */
+export class CompactConfigImpl implements CompactConfig {
+    serializers: Array<CompactSerializer<new () => any>> = [];
+}

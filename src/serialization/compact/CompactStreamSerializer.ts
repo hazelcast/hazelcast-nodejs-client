@@ -84,7 +84,7 @@ export class CompactStreamSerializer {
             return new DefaultCompactReader(this, input, schema, null).toSerialized();
         }
 
-        const genericRecord = new DefaultCompactReader(this, input, schema, serializer.hzTypeName || serializer.hzClass.name);
+        const genericRecord = new DefaultCompactReader(this, input, schema, serializer.typeName);
         return serializer.read(genericRecord);
     }
 
@@ -105,12 +105,8 @@ export class CompactStreamSerializer {
     }
 
     registerSerializer(serializer: CompactSerializer<new (...args: any[]) => any>) {
-        CompactStreamSerializer.classToSerializersMap.set(serializer.hzClass, serializer);
-        if (serializer.hzTypeName) {
-            this.typeNameToSerializersMap.set(serializer.hzTypeName, serializer);
-        } else {
-            this.typeNameToSerializersMap.set(serializer.hzClass.name, serializer);
-        }
+        CompactStreamSerializer.classToSerializersMap.set(serializer.class, serializer);
+        this.typeNameToSerializersMap.set(serializer.typeName, serializer);
     }
 
     writeSchema(output: PositionalObjectDataOutput, schema: Schema) {
@@ -151,10 +147,10 @@ export class CompactStreamSerializer {
 
     writeObject(output: PositionalObjectDataOutput, o: any, throwIfSchemaNotReplicated = true) : void {
         const compactSerializer = CompactStreamSerializer.getSerializerFromObject(o);
-        const clazz = compactSerializer.hzClass;
+        const clazz = compactSerializer.class;
         let schema = this.classToSchemaMap.get(clazz);
         if (schema === undefined) {
-            const writer = new SchemaWriter(compactSerializer.hzTypeName || clazz.name);
+            const writer = new SchemaWriter(compactSerializer.typeName);
             compactSerializer.write(writer, o);
             schema = writer.build();
             if (throwIfSchemaNotReplicated) {

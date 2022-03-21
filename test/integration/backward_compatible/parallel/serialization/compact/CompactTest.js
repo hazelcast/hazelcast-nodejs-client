@@ -231,7 +231,7 @@ describe('CompactTest', function () {
 
             class Serializer {
                 constructor(fieldNames) {
-                    this.hzClass = CompactUtil.Flexible;
+                    this.class = CompactUtil.Flexible;
                     this.fieldNames = fieldNames;
                 }
 

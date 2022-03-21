@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+* Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 import {IdentifiedDataSerializableFactory, CustomSerializable} from '../serialization/Serializable';
 import {PortableFactory} from '../serialization/Portable';
 import {Serializer} from '../serialization/Serializable';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
-import {CompactSerializer} from '../serialization/compact/CompactSerializer';
+import {CompactConfig, CompactConfigImpl} from './CompactConfig';
 
 /**
  * User-defined serialization config for the client.
@@ -78,9 +78,9 @@ export interface SerializationConfig {
     jsonStringDeserializationPolicy?: JsonStringDeserializationPolicy;
 
     /**
-     * Defines Compact serializers.
+     * Compact config.
      */
-    compactSerializers?: Array<CompactSerializer<any>>;
+    compact?: CompactConfig;
 
 }
 
@@ -93,7 +93,7 @@ export class SerializationConfigImpl implements SerializationConfig {
     portableFactories: { [id: number]: PortableFactory } = {};
     portableVersion = 0;
     customSerializers: Array<Serializer<CustomSerializable>> = [];
-    compactSerializers: Array<CompactSerializer<new () => any>> = [];
+    compact = new CompactConfigImpl();
     globalSerializer: Serializer = null;
     jsonStringDeserializationPolicy: JsonStringDeserializationPolicy = JsonStringDeserializationPolicy.EAGER;
 }

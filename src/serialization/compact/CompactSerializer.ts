@@ -22,30 +22,27 @@ import {CompactWriter} from './CompactWriter';
  * serialization.
  *
  * After defining a serializer for the objects of the class `C`,
- * it can be registered using the {@link compactSerializers}.
+ * it can be registered using the {@link ClientConfig.serialization.compactSerializers}.
  *
  * {@link write} and {@link read} methods must be consistent with each other.
  *
  * For more information about usage serializers, please see Node.js client documentation and code samples.
- *
- * @param C The class's type
  */
-export interface CompactSerializer<C> {
+ export interface CompactSerializer<C> {
     /**
      * The class which the serializer is written for. You need to give the class
      * constructor to this property. For example, if a class is instantiated with `new Employee()`,
-     * class constructor is `Employee`. `hzClass` is used to check a class instance compact
+     * class constructor is `Employee`. `class` is used to check a class instance compact
      * serializable.
      */
-    hzClass: new (...args: any[]) => any;
+    class: new (...args: any[]) => any;
 
     /**
      * The type name of the registered class. Type name is written into the serialized data and used while deserialization.
-     * This should have the same value with what other members of the cluster have. If `hzTypeName` is
-     * not given it will have the value `hzClass.name`. While deserializing there should be a matching serializer
-     * otherwise a {@link GenericRecord} will be returned.
+     * This should have the same value with what other members of the cluster have. While deserializing there should be
+     * a matching serializer otherwise a {@link GenericRecord} will be returned.
      */
-    hzTypeName?: string;
+    typeName: string;
 
     /**
      * This method should construct a class instance and return it.

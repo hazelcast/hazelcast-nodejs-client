@@ -360,7 +360,7 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     private registerCompactSerializers(): void {
-        const compactSerializers = this.serializationConfig.compactSerializers;
+        const compactSerializers = this.serializationConfig.compact.serializers;
         for (const compactSerializer of compactSerializers) {
             this.compactStreamSerializer.registerSerializer(compactSerializer);
         }

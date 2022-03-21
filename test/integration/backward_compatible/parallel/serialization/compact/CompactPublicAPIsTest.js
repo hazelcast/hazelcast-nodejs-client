@@ -37,8 +37,8 @@ let compactSerializerUsed = false;
 
 class CarSerializer {
     constructor() {
-        this.hzClass = Car;
-        this.hzTypeName = 'Car';
+        this.class = Car;
+        this.typeName = 'Car';
     }
 
     read(reader) {
@@ -60,8 +60,8 @@ class DummyEntryProcessor { }
 
 class DummyEntryProcessorSerializer {
     constructor() {
-        this.hzClass = DummyEntryProcessor;
-        this.hzTypeName = 'DummyEntryProcessor';
+        this.class = DummyEntryProcessor;
+        this.typeName = 'DummyEntryProcessor';
     }
 
     read() {
@@ -85,8 +85,8 @@ class CompactReturningAggregator {
 
 class CompactReturningAggregatorSerializer {
     constructor() {
-        this.hzClass = CompactReturningAggregator;
-        this.hzTypeName = 'CompactReturningAggregator';
+        this.class = CompactReturningAggregator;
+        this.typeName = 'CompactReturningAggregator';
     }
 
     read() {
@@ -104,8 +104,8 @@ class CompactPredicate {
 
 class CompactPredicateSerializer {
     constructor() {
-        this.hzClass = CompactPredicate;
-        this.hzTypeName = 'CompactPredicate';
+        this.class = CompactPredicate;
+        this.typeName = 'CompactPredicate';
     }
 
     read() {
@@ -126,8 +126,8 @@ class Inner {
 
 class InnerSerializer {
     constructor() {
-        this.hzClass = Inner;
-        this.hzTypeName = 'Inner';
+        this.class = Inner;
+        this.typeName = 'Inner';
     }
 
     read(reader) {
@@ -151,8 +151,8 @@ class Outer {
 
 class OuterSerializer {
     constructor() {
-        this.hzClass = Outer;
-        this.hzTypeName = 'Outer';
+        this.class = Outer;
+        this.typeName = 'Outer';
     }
 
     read(reader) {
@@ -205,8 +205,8 @@ class CompactPagingPredicate {
 
 class CompactPagingPredicateSerializer {
     constructor() {
-        this.hzClass = CompactPagingPredicate;
-        this.hzTypeName = 'CompactPagingPredicate';
+        this.class = CompactPagingPredicate;
+        this.typeName = 'CompactPagingPredicate';
     }
 
     read() {
@@ -224,8 +224,8 @@ class CompactReturningEntryProcessor {
 
 class CompactReturningEntryProcessorSerializer {
     constructor() {
-        this.hzClass = CompactReturningEntryProcessor;
-        this.hzTypeName = 'CompactReturningEntryProcessor';
+        this.class = CompactReturningEntryProcessor;
+        this.typeName = 'CompactReturningEntryProcessor';
     }
 
     read() {

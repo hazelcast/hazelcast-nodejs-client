@@ -21,8 +21,8 @@ class A {
 }
 class ASerializer {
     constructor() {
-        this.hzTypeName = 'B';
-        this.hzClass = A;
+        this.typeName = 'B';
+        this.class = A;
     }
 
     read(reader) {
