@@ -113,7 +113,7 @@ describe('MapProxyTest', function () {
             });
 
             it('put with ttl puts value to map', function () {
-                return map.put('key-with-ttl', 'val-with-ttl', 3000).then(function () {
+                return map.put('key-with-ttl', 'val-with-ttl', 20000).then(function () {
                     return map.get('key-with-ttl').then(function (val) {
                         return expect(val).to.equal('val-with-ttl');
                     });
@@ -121,12 +121,9 @@ describe('MapProxyTest', function () {
             });
 
             it('put with ttl removes value after ttl', function () {
-                return map.put('key10', 'val10', 1000).then(function () {
-                    return map.get('key10');
-                }).then(function (val) {
-                    return expect(val).to.equal('val10');
+                return map.put('key10', 'val10', 2000).then(function () {
                 }).then(function () {
-                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(3000, map.get.bind(map, 'key10'));
                 }).then(function (val) {
                     return expect(val).to.be.null;
                 });
@@ -361,12 +358,12 @@ describe('MapProxyTest', function () {
             });
 
             it('putIfAbsent_with_ttl', function () {
-                return map.putIfAbsent('key10', 'new-val', 1000).then(function () {
+                return map.putIfAbsent('key10', 'new-val', 20000).then(function () {
                     return map.get('key10');
                 }).then(function (val) {
                     return expect(val).to.equal('new-val');
                 }).then(function () {
-                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(21000, map.get.bind(map, 'key10'));
                 }).then(function (val) {
                     return expect(val).to.be.null;
                 });
@@ -382,12 +379,12 @@ describe('MapProxyTest', function () {
             });
 
             it('putTransient_withTTL', function () {
-                return map.putTransient('key10', 'val10', 1000).then(function () {
+                return map.putTransient('key10', 'val10', 20000).then(function () {
                     return map.get('key10');
                 }).then(function (val) {
                     return expect(val).to.equal('val10');
                 }).then(function () {
-                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(21000, map.get.bind(map, 'key10'));
                 }).then(function (val) {
                     return expect(val).to.be.null;
                 });
@@ -432,12 +429,12 @@ describe('MapProxyTest', function () {
             });
 
             it('set_withTTL', function () {
-                return map.set('key10', 'val10', 1000).then(function () {
+                return map.set('key10', 'val10', 20000).then(function () {
                     return map.get('key10');
                 }).then(function (val) {
                     return expect(val).to.equal('val10');
                 }).then(function () {
-                    return Util.promiseLater(1100, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(21000, map.get.bind(map, 'key10'));
                 }).then(function (val) {
                     return expect(val).to.be.null;
                 })
@@ -525,7 +522,7 @@ describe('MapProxyTest', function () {
             it('tryLock_success with timeout', function () {
                 return RC.executeOnController(cluster.id, generateLockScript(map.getName(), '"key0"'), 1)
                     .then(function () {
-                        const promise = map.tryLock('key0', 1000);
+                        const promise = map.tryLock('key0', 2000);
                         RC.executeOnController(cluster.id, generateUnlockScript(map.getName(), '"key0"'), 1);
                         return promise;
                     })
