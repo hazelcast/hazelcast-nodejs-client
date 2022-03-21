@@ -103,7 +103,7 @@ describe('MapLockTest', function () {
         mapOnTwo.lock(key).then(() => {
             return mapOnTwo.unlock(key);
         }).then(() => {
-            clientTwo.shutdown();
+            return clientTwo.shutdown();
         }).then(() => {
             done = true;
         });
