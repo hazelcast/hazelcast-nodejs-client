@@ -98,12 +98,9 @@ describe('MapLockTest', function () {
         await waitForNewPartitionTable(client, keyOwner);
         const key = generateKeyOwnedBy(client, keyOwner);
         await map.lock(key);
+        const mapOnTwo = await clientTwo.getMap('test');
         // try to lock concurrently
-        let mapOnTwo;
-        clientTwo.getMap('test').then(map => {
-            mapOnTwo = map;
-            return mapOnTwo.lock(key);
-        }).then(() => {
+        mapOnTwo.lock(key).then(() => {
             return mapOnTwo.unlock(key);
         }).then(() => {
             clientTwo.shutdown();
