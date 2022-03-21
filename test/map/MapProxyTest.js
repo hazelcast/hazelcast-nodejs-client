@@ -121,12 +121,9 @@ describe('MapProxyTest', function () {
             });
 
             it('put with ttl removes value after ttl', function () {
-                return map.put('key10', 'val10', 20000).then(function () {
-                    return map.get('key10');
-                }).then(function (val) {
-                    return expect(val).to.equal('val10');
+                return map.put('key10', 'val10', 2000).then(function () {
                 }).then(function () {
-                    return Util.promiseLater(21000, map.get.bind(map, 'key10'));
+                    return Util.promiseLater(3000, map.get.bind(map, 'key10'));
                 }).then(function (val) {
                     return expect(val).to.be.null;
                 });
