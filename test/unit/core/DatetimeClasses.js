@@ -504,225 +504,250 @@ describe('DateTimeClassesTest', function () {
     });
 
     describe('BoundaryTests', function() {
-        const testBoundary = ({callFrom, clazz, position, argCount, min, max, errorMessage}) => {
-            const minArgs1 = [];
-            const minArgs2 = [];
-            const minArgs3 = [];
-            const maxArgs1 = [];
-            const maxArgs2 = [];
-            const maxArgs3 = [];
-
-            for (let i = 0; i < argCount; i++) {
-                if (i === position) {
-                    minArgs1.push(min - 1);
-                    minArgs2.push(min);
-                    minArgs3.push(min + 1);
-                    maxArgs1.push(max - 1);
-                    maxArgs2.push(max);
-                    maxArgs3.push(max + 1);
-                } else {
-                    minArgs1.push(1);
-                    minArgs2.push(1);
-                    minArgs3.push(1);
-                    maxArgs1.push(1);
-                    maxArgs2.push(1);
-                    maxArgs3.push(1);
-                }
-            }
-
-            const constructorFn = callFrom ? clazz.from.bind(clazz) : (...args) => new clazz(...args);
-
-            (() => constructorFn(...minArgs1)).should.throw(RangeError, errorMessage);
-            (() => constructorFn(...minArgs2)).should.not.throw();
-            (() => constructorFn(...minArgs3)).should.not.throw();
-
-            (() => constructorFn(...maxArgs1)).should.not.throw();
-            (() => constructorFn(...maxArgs2)).should.not.throw();
-            (() => constructorFn(...maxArgs3)).should.throw(RangeError, errorMessage);
-        };
         describe('LocalTimeTest', function () {
             it('hour', function() {
-                testBoundary({
-                    callFrom: false,
-                    clazz: LocalTime,
-                    position: 0,
-                    argCount: 4,
-                    min: 0,
-                    max: 23,
-                    errorMessage: 'Hour'
-                });
+                // [0-23]
+                (() => new LocalTime(-1, 1, 1, 1)).should.throw(RangeError, 'Hour');
+                (() => new LocalTime(0, 1, 1, 1)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 1)).should.not.throw();
+
+                (() => new LocalTime(22, 1, 1, 1)).should.not.throw();
+                (() => new LocalTime(23, 1, 1, 1)).should.not.throw();
+                (() => new LocalTime(24, 1, 1, 1)).should.throw(RangeError, 'Hour');
             });
 
             it('minute', function() {
-                testBoundary({
-                    callFrom: false,
-                    clazz: LocalTime,
-                    position: 1,
-                    argCount: 4,
-                    min: 0,
-                    max: 59,
-                    errorMessage: 'Minute'
-                });
+                // [0-59]
+                (() => new LocalTime(1, -1, 1, 1)).should.throw(RangeError, 'Minute');
+                (() => new LocalTime(1, 0, 1, 1)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 1)).should.not.throw();
+
+                (() => new LocalTime(1, 58, 1, 1)).should.not.throw();
+                (() => new LocalTime(1, 59, 1, 1)).should.not.throw();
+                (() => new LocalTime(1, 60, 1, 1)).should.throw(RangeError, 'Minute');
             });
 
             it('second', function() {
-                testBoundary({
-                    callFrom: false,
-                    clazz: LocalTime,
-                    position: 2,
-                    argCount: 4,
-                    min: 0,
-                    max: 59,
-                    errorMessage: 'Second'
-                });
+                // [0-59]
+                (() => new LocalTime(1, 1, -1, 1)).should.throw(RangeError, 'Second');
+                (() => new LocalTime(1, 1, 0, 1)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 1)).should.not.throw();
+
+                (() => new LocalTime(1, 1, 58, 1)).should.not.throw();
+                (() => new LocalTime(1, 1, 59, 1)).should.not.throw();
+                (() => new LocalTime(1, 1, 60, 1)).should.throw(RangeError, 'Second');
             });
 
-            it('nano', function() {
-                testBoundary({
-                    callFrom: false,
-                    clazz: LocalTime,
-                    position: 3,
-                    argCount: 4,
-                    min: 0,
-                    max: 999999999,
-                    errorMessage: 'Nano'
-                });
+            it('nanosecond', function() {
+                // [0-999999999]
+                (() => new LocalTime(1, 1, 1, -1)).should.throw(RangeError, 'Nano');
+                (() => new LocalTime(1, 1, 1, 0)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 1)).should.not.throw();
+
+                (() => new LocalTime(1, 1, 1, 999999998)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 999999999)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 999999999 + 1)).should.throw(RangeError, 'Nano');
             });
         });
         describe('LocalDateTest', function () {
             it('year', function() {
-                testBoundary({
-                    callFrom: false,
-                    clazz: LocalDate,
-                    position: 0,
-                    argCount: 3,
-                    min: -999999999,
-                    max: 999999999,
-                    errorMessage: 'Year'
-                });
+                // [-999999999-999999999]
+                (() => new LocalDate(-(999999999+1), 1, 1)).should.throw(RangeError, 'Year');
+                (() => new LocalDate(-999999999, 1, 1)).should.not.throw();
+                (() => new LocalDate(-999999998, 1, 1)).should.not.throw();
+
+                (() => new LocalDate(999999998, 1, 1)).should.not.throw();
+                (() => new LocalDate(999999999, 1, 1)).should.not.throw();
+                (() => new LocalDate(999999999 + 1, 1, 1)).should.throw(RangeError, 'Year');
             });
 
             it('month', function() {
-                testBoundary({
-                    callFrom: false,
-                    clazz: LocalDate,
-                    position: 1,
-                    argCount: 3,
-                    min: 1,
-                    max: 12,
-                    errorMessage: 'Month'
-                });
+                // [1-12]
+                (() => new LocalDate(1, 0, 1)).should.throw(RangeError, 'Month');
+                (() => new LocalDate(1, 1, 1)).should.not.throw();
+                (() => new LocalDate(1, 2, 1)).should.not.throw();
+
+                (() => new LocalDate(1, 11, 1)).should.not.throw();
+                (() => new LocalDate(1, 12, 1)).should.not.throw();
+                (() => new LocalDate(1, 13, 1)).should.throw(RangeError, 'Month');
             });
 
             it('day', function() {
-                testBoundary({
-                    callFrom: false,
-                    clazz: LocalDate,
-                    position: 2,
-                    argCount: 3,
-                    min: 1,
-                    max: 31,
-                    errorMessage: 'Date'
-                });
+                // [1-31]
+                (() => new LocalDate(1, 1, 0)).should.throw(RangeError, 'Date');
+                (() => new LocalDate(1, 1, 1)).should.not.throw();
+                (() => new LocalDate(1, 1, 2)).should.not.throw();
+
+                (() => new LocalDate(1, 1, 30)).should.not.throw();
+                (() => new LocalDate(1, 1, 31)).should.not.throw();
+                (() => new LocalDate(1, 1, 32)).should.throw(RangeError, 'Date');
             });
         });
-        describe('LocalDateTimeTest/OffsetDateTimeTest', function () {
-            [OffsetDateTime, LocalDateTime].forEach(clazz => {
-                it('year', function() {
-                    testBoundary({
-                        callFrom: true,
-                        clazz: clazz,
-                        position: 0,
-                        argCount: clazz === LocalDateTime ? 7 : 8,
-                        min: -999999999,
-                        max: 999999999,
-                        errorMessage: 'Year',
-                    });
-                });
+        describe('LocalDateTimeTest', function () {
+            it('year', function() {
+                // [-999999999-999999999]
+                (() => LocalDateTime.from(-(999999999+1), 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Year');
+                (() => LocalDateTime.from(-999999999, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(-999999998, 1, 1, 1, 1, 1, 1)).should.not.throw();
 
-                it('month', function() {
-                    testBoundary({
-                        callFrom: true,
-                        clazz: clazz,
-                        position: 1,
-                        argCount: clazz === LocalDateTime ? 7 : 8,
-                        min: 1,
-                        max: 12,
-                        errorMessage: 'Month',
-                    });
-                });
+                (() => LocalDateTime.from(999999998, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(999999999, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(999999999 + 1, 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Year');
+            });
 
-                it('day', function() {
-                    testBoundary({
-                        callFrom: true,
-                        clazz: clazz,
-                        position: 2,
-                        argCount: clazz === LocalDateTime ? 7 : 8,
-                        min: 1,
-                        max: 31,
-                        errorMessage: 'Date',
-                    });
-                });
+            it('month', function() {
+                // [1-12]
+                (() => LocalDateTime.from(1, 0, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Month');
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 2, 1, 1, 1, 1, 1)).should.not.throw();
 
-                it('hour', function() {
-                    testBoundary({
-                        callFrom: true,
-                        clazz: clazz,
-                        position: 3,
-                        argCount: clazz === LocalDateTime ? 7 : 8,
-                        min: 0,
-                        max: 23,
-                        errorMessage: 'Hour',
-                    });
-                });
+                (() => LocalDateTime.from(1, 11, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 12, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 13, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Month');
+            });
 
-                it('minute', function() {
-                    testBoundary({
-                        callFrom: true,
-                        clazz: clazz,
-                        position: 4,
-                        argCount: clazz === LocalDateTime ? 7 : 8,
-                        min: 0,
-                        max: 59,
-                        errorMessage: 'Minute',
-                    });
-                });
+            it('day', function() {
+                // [1-31]
+                (() => LocalDateTime.from(1, 1, 0, 1, 1, 1, 1)).should.throw(RangeError, 'Date');
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 2, 1, 1, 1, 1)).should.not.throw();
 
-                it('second', function() {
-                    testBoundary({
-                        callFrom: true,
-                        clazz: clazz,
-                        position: 5,
-                        argCount: clazz === LocalDateTime ? 7 : 8,
-                        min: 0,
-                        max: 59,
-                        errorMessage: 'Second',
-                    });
-                });
+                (() => LocalDateTime.from(1, 1, 30, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 31, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 32, 1, 1, 1, 1)).should.throw(RangeError, 'Date');
+            });
 
-                it('nanosecond', function() {
-                    testBoundary({
-                        callFrom: true,
-                        clazz: clazz,
-                        position: 6,
-                        argCount: clazz === LocalDateTime ? 7 : 8,
-                        min: 0,
-                        max: 999999999,
-                        errorMessage: 'Nano',
-                    });
-                });
+            it('hour', function() {
+                // [0-23]
+                (() => LocalDateTime.from(1, 1, 1, -1, 1, 1, 1)).should.throw(RangeError, 'Hour');
+                (() => LocalDateTime.from(1, 1, 1, 0, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(1, 1, 1, 22, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 23, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 24, 1, 1, 1)).should.throw(RangeError, 'Hour');
+            });
+
+            it('minute', function() {
+                // [0-59]
+                (() => LocalDateTime.from(1, 1, 1, 1, -1, 1, 1)).should.throw(RangeError, 'Minute');
+                (() => LocalDateTime.from(1, 1, 1, 1, 0, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(1, 1, 1, 1, 58, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 59, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 60, 1, 1)).should.throw(RangeError, 'Minute');
+            });
+
+            it('second', function() {
+                // [0-59]
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, -1, 1)).should.throw(RangeError, 'Second');
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 0, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 58, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 59, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 60, 1)).should.throw(RangeError, 'Second');
+            });
+
+            it('nanosecond', function() {
+                // [0-999999999]
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, -1)).should.throw(RangeError, 'Nano');
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 0)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 999999998)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 999999999)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 999999999 + 1)).should.throw(RangeError, 'Nano');
+            });
+        });
+        describe('OffsetDateTimeTest', function () {
+            it('year', function() {
+                // [-999999999-999999999]
+                (() => OffsetDateTime.from(-(999999999+1), 1, 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Year');
+                (() => OffsetDateTime.from(-999999999, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(-999999998, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(999999998, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(999999999, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(999999999 + 1, 1, 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Year');
+            });
+
+            it('month', function() {
+                // [1-12]
+                (() => OffsetDateTime.from(1, 0, 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Month');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 2, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 11, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 12, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 13, 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Month');
+            });
+
+            it('day', function() {
+                // [1-31]
+                (() => OffsetDateTime.from(1, 1, 0, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Date');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 2, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 30, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 31, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 32, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Date');
+            });
+
+            it('hour', function() {
+                // [0-23]
+                (() => OffsetDateTime.from(1, 1, 1, -1, 1, 1, 1, 1)).should.throw(RangeError, 'Hour');
+                (() => OffsetDateTime.from(1, 1, 1, 0, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 1, 22, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 23, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 24, 1, 1, 1, 1)).should.throw(RangeError, 'Hour');
+            });
+
+            it('minute', function() {
+                // [0-59]
+                (() => OffsetDateTime.from(1, 1, 1, 1, -1, 1, 1, 1)).should.throw(RangeError, 'Minute');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 0, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 1, 1, 58, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 59, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 60, 1, 1, 1)).should.throw(RangeError, 'Minute');
+            });
+
+            it('second', function() {
+                // [0-59]
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, -1, 1, 1)).should.throw(RangeError, 'Second');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 0, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 58, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 59, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 60, 1, 1)).should.throw(RangeError, 'Second');
+            });
+
+            it('nanosecond', function() {
+                // [0-999999999]
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, -1, 1)).should.throw(RangeError, 'Nano');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 0, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 999999998, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 999999999, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 999999999 + 1, 1)).should.throw(RangeError, 'Nano');
             });
 
             it('offset seconds', function() {
-                testBoundary({
-                    callFrom: true,
-                    clazz: OffsetDateTime,
-                    position: 7,
-                    argCount: 8,
-                    min: -64800,
-                    max: 64800,
-                    errorMessage: 'Offset seconds',
-                });
+                // [-64800-64800]
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, -64801)).should.throw(RangeError, 'Offset seconds');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, -64800)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, -64799)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 64799)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 64800)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 64801)).should.throw(RangeError, 'Offset seconds');
             });
         });
     });
