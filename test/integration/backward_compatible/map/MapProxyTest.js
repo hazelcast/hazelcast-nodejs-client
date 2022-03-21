@@ -109,10 +109,8 @@ describe('MapProxyTest', function () {
             });
 
             it('put with ttl removes value after ttl', async function () {
-                await map.put('key10', 'val10', 20000);
-                let val = await map.get('key10');
-                expect(val).to.equal('val10');
-                val = await TestUtil.promiseLater(21000, map.get.bind(map, 'key10'));
+                await map.put('key10', 'val10', 2000);
+                const val = await TestUtil.promiseLater(3000, map.get.bind(map, 'key10'));
                 expect(val).to.be.null;
             });
 
