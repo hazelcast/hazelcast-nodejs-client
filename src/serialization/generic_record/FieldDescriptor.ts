@@ -28,4 +28,8 @@ export class FieldDescriptor {
 
     constructor(public fieldName: string, public kind: FieldKind) {
     }
+
+    equals(other: FieldDescriptor): boolean {
+        return this.fieldName === other.fieldName && this.kind === other.kind;
+    }
 }

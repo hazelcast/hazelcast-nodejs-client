@@ -136,4 +136,28 @@ export class Schema implements IdentifiedDataSerializable {
             output.writeInt(field.kind);
         }
     }
+
+    private hasSameFields(other: Schema): boolean {
+        if (other.fieldDefinitionMap.size !== this.fieldDefinitionMap.size) {
+            return false;
+        }
+        for (const [fieldName, field] of this.fieldDefinitionMap) {
+            const otherField = other.fieldDefinitionMap.get(fieldName);
+            if (!otherField.equals(field)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    equals(other: Schema): boolean {
+        if (this === other) {
+            return true;
+        }
+        return this.numberVarSizeFields === other.numberVarSizeFields &&
+            this.fixedSizeFieldsLength === other.fixedSizeFieldsLength &&
+            this.typeName === other.typeName &&
+            this.schemaId.equals(other.schemaId) &&
+            this.hasSameFields(other);
+    }
 }

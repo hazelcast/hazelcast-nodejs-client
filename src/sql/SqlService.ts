@@ -286,9 +286,8 @@ export class SqlServiceImpl implements SqlService {
                         serializedParams[i] = this.serializationService.toData(sqlStatement.params[i]);
                     }  catch (e) {
                         if (e instanceof SchemaNotReplicatedError) {
-                            return this.invocationService.registerSchema(
-                                e.schema, e.clazz).then(() => this.executeStatement(sqlStatement)
-                            );
+                            return this.invocationService.registerSchema(e.schema, e.clazz)
+                                .then(() => this.executeStatement(sqlStatement));
                         }
                         return Promise.reject(e);
                     }
