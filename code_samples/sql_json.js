@@ -35,6 +35,10 @@ const { Client, SqlColumnType } = require('hazelcast-client');
         `;
     await client.getSql().execute(createMappingQuery);
 
+    // Clear the map for a fresh start.
+    const map = await client.getMap(mapName);
+    await map.clear();
+
     // You need to use HazelcastJsonValue as parameter if you configured a global serializer
     await client.getSql().execute(`INSERT INTO ${mapName} VALUES (1, ?)`,
         [{age: 1}]
