@@ -74,8 +74,8 @@ class EmployeeSerializer {
     }
 
     read(reader) {
-        const age = reader.readInt32('age', 0);
-        const id = reader.readInt64('id', Long.ZERO);
+        const age = reader.readInt32OrDefault('age', 0);
+        const id = reader.readInt64OrDefault('id', Long.ZERO);
         return new Employee(age, id);
     }
 
@@ -651,130 +651,172 @@ class FlexibleSerializer {
 
             switch (fieldKind) {
             case FieldKind.BOOLEAN:
-                fields[fieldName] = {value: reader.readBoolean(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readBoolean(fieldName) :
+                    reader.readBooleanOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_BOOLEAN:
-                fields[fieldName] = {value: reader.readArrayOfBoolean(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfBoolean(fieldName) :
+                    reader.readArrayOfBooleanOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.INT8:
-                fields[fieldName] = {value: reader.readInt8(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readInt8(fieldName) :
+                    reader.readInt8OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_INT8:
-                fields[fieldName] = {value: reader.readArrayOfInt8(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfInt8(fieldName) :
+                    reader.readArrayOfInt8OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.INT16:
-                fields[fieldName] = {value: reader.readInt16(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readInt16(fieldName) :
+                    reader.readInt16OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_INT16:
-                fields[fieldName] = {value: reader.readArrayOfInt16(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfInt16(fieldName) :
+                    reader.readArrayOfInt16OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.INT32:
-                fields[fieldName] = {value: reader.readInt32(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readInt32(fieldName) :
+                    reader.readInt32OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_INT32:
-                fields[fieldName] = {value: reader.readArrayOfInt32(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfInt32(fieldName) :
+                    reader.readArrayOfInt32OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.INT64:
-                fields[fieldName] = {value: reader.readInt64(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readInt64(fieldName) :
+                    reader.readInt64OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_INT64:
-                fields[fieldName] = {value: reader.readArrayOfInt64(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfInt64(fieldName) :
+                    reader.readArrayOfInt64OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.FLOAT32:
-                fields[fieldName] = {value: reader.readFloat32(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readFloat32(fieldName) :
+                    reader.readFloat32OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_FLOAT32:
-                fields[fieldName] = {value: reader.readArrayOfFloat32(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfFloat32(fieldName) :
+                    reader.readArrayOfFloat32OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.FLOAT64:
-                fields[fieldName] = {value: reader.readFloat64(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readFloat64(fieldName) :
+                    reader.readFloat64OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_FLOAT64:
-                fields[fieldName] = {value: reader.readArrayOfFloat64(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfFloat64(fieldName) :
+                    reader.readArrayOfFloat64OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.STRING:
-                fields[fieldName] = {value: reader.readString(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readString(fieldName) :
+                    reader.readStringOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_STRING:
-                fields[fieldName] = {value: reader.readArrayOfString(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfString(fieldName) :
+                    reader.readArrayOfStringOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.DECIMAL:
-                fields[fieldName] = {value: reader.readDecimal(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readDecimal(fieldName) :
+                    reader.readDecimalOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_DECIMAL:
-                fields[fieldName] = {value: reader.readArrayOfDecimal(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfDecimal(fieldName) :
+                    reader.readArrayOfDecimalOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.TIME:
-                fields[fieldName] = {value: reader.readTime(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readTime(fieldName) :
+                    reader.readTimeOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_TIME:
-                fields[fieldName] = {value: reader.readArrayOfTime(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfTime(fieldName) :
+                    reader.readArrayOfTimeOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.DATE:
-                fields[fieldName] = {value: reader.readDate(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readDate(fieldName) :
+                    reader.readDateOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_DATE:
-                fields[fieldName] = {value: reader.readArrayOfDate(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfDate(fieldName) :
+                    reader.readArrayOfDateOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.TIMESTAMP:
-                fields[fieldName] = {value: reader.readTimestamp(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readTimestamp(fieldName) :
+                    reader.readTimestampOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_TIMESTAMP:
-                fields[fieldName] = {value: reader.readArrayOfTimestamp(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfTimestamp(fieldName) :
+                    reader.readArrayOfTimestampOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.TIMESTAMP_WITH_TIMEZONE:
-                fields[fieldName] = {value: reader.readTimestampWithTimezone(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readTimestampWithTimezone(fieldName) :
+                    reader.readTimestampWithTimezoneOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
-                fields[fieldName] = {value: reader.readArrayOfTimestampWithTimezone(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfTimestampWithTimezone(fieldName) :
+                    reader.readArrayOfTimestampWithTimezoneOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.COMPACT:
-                fields[fieldName] = {value: reader.readCompact(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readCompact(fieldName) :
+                    reader.readCompactOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_COMPACT:
-                fields[fieldName] = {value: reader.readArrayOfCompact(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfCompact(fieldName) :
+                    reader.readArrayOfCompactOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_BOOLEAN:
-                fields[fieldName] = {value: reader.readNullableBoolean(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readNullableBoolean(fieldName) :
+                    reader.readNullableBooleanOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
-                fields[fieldName] = {value: reader.readArrayOfNullableBoolean(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfNullableBoolean(fieldName) :
+                    reader.readArrayOfNullableBooleanOrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_INT8:
-                fields[fieldName] = {value: reader.readNullableInt8(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readNullableInt8(fieldName) :
+                    reader.readNullableInt8OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT8:
-                fields[fieldName] = {value: reader.readArrayOfNullableInt8(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfNullableInt8(fieldName) :
+                    reader.readArrayOfNullableInt8OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_INT16:
-                fields[fieldName] = {value: reader.readNullableInt16(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readNullableInt16(fieldName) :
+                    reader.readNullableInt16OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT16:
-                fields[fieldName] = {value: reader.readArrayOfNullableInt16(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfNullableInt16(fieldName) :
+                    reader.readArrayOfNullableInt16OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_INT32:
-                fields[fieldName] = {value: reader.readNullableInt32(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readNullableInt32(fieldName) :
+                    reader.readNullableInt32OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT32:
-                fields[fieldName] = {value: reader.readArrayOfNullableInt32(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfNullableInt32(fieldName) :
+                    reader.readArrayOfNullableInt32OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_INT64:
-                fields[fieldName] = {value: reader.readNullableInt64(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readNullableInt64(fieldName) :
+                    reader.readNullableInt64OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT64:
-                fields[fieldName] = {value: reader.readArrayOfNullableInt64(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfNullableInt64(fieldName) :
+                    reader.readArrayOfNullableInt64OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_FLOAT32:
-                fields[fieldName] = {value: reader.readNullableFloat32(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readNullableFloat32(fieldName) :
+                    reader.readNullableFloat32OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
-                fields[fieldName] = {value: reader.readArrayOfNullableFloat32(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfNullableFloat32(fieldName) :
+                    reader.readArrayOfNullableFloat32OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.NULLABLE_FLOAT64:
-                fields[fieldName] = {value: reader.readNullableFloat64(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readNullableFloat64(fieldName) :
+                    reader.readNullableFloat64OrDefault(fieldName, defaultValue)};
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
-                fields[fieldName] = {value: reader.readArrayOfNullableFloat64(fieldName, defaultValue)};
+                fields[fieldName] = {value: !this.useDefaultValue ? reader.readArrayOfNullableFloat64(fieldName) :
+                    reader.readArrayOfNullableFloat64OrDefault(fieldName, defaultValue)};
                 break;
             }
         }
@@ -1150,30 +1192,30 @@ class MainDTOSerializerWithDefaults {
     }
 
     read(reader) {
-        const b = reader.readInt8('b', 0);
-        const bool = reader.readBoolean('bool', false);
-        const s = reader.readInt16('s', 0);
-        const i = reader.readInt32('i', 0);
-        const l = reader.readInt64('l', 0);
-        const f = reader.readFloat32('f', 0);
-        const d = reader.readFloat64('d', 0);
-        const str = reader.readString('str', '');
-        const inner = reader.readCompact('inner', null);
-        const bigDecimal = reader.readDecimal('bigDecimal', new BigDecimal(0n, 0));
-        const localTime = reader.readTime('localTime', new LocalTime(0, 0, 0, 0));
-        const localDate = reader.readDate('localDate', new LocalDate(0, 1, 1));
-        const localDateTime = reader.readTimestamp('localDateTime',
+        const b = reader.readInt8OrDefault('b', 0);
+        const bool = reader.readBooleanOrDefault('bool', false);
+        const s = reader.readInt16OrDefault('s', 0);
+        const i = reader.readInt32OrDefault('i', 0);
+        const l = reader.readInt64OrDefault('l', 0);
+        const f = reader.readFloat32OrDefault('f', 0);
+        const d = reader.readFloat64OrDefault('d', 0);
+        const str = reader.readStringOrDefault('str', '');
+        const inner = reader.readCompactOrDefault('inner', null);
+        const bigDecimal = reader.readDecimalOrDefault('bigDecimal', new BigDecimal(0n, 0));
+        const localTime = reader.readTimeOrDefault('localTime', new LocalTime(0, 0, 0, 0));
+        const localDate = reader.readDateOrDefault('localDate', new LocalDate(0, 1, 1));
+        const localDateTime = reader.readTimestampOrDefault('localDateTime',
             new LocalDateTime(new LocalDate(0, 1, 1), new LocalTime(0, 0, 0, 0)));
-        const offsetDateTime = reader.readTimestampWithTimezone('offsetDateTime',
+        const offsetDateTime = reader.readTimestampWithTimezoneOrDefault('offsetDateTime',
             new OffsetDateTime(new LocalDateTime(new LocalDate(0, 1, 1), new LocalTime(0, 0, 0, 0)), 0)
         );
-        const nullableB = reader.readNullableInt8('nullableB', null);
-        const nullableBool = reader.readNullableBoolean('nullableBool', null);
-        const nullableS = reader.readNullableInt16('nullableS', null);
-        const nullableI = reader.readNullableInt32('nullableI', null);
-        const nullableL = reader.readNullableInt64('nullableL', null);
-        const nullableF = reader.readNullableFloat32('nullableF', null);
-        const nullableD = reader.readNullableFloat64('nullableD', null);
+        const nullableB = reader.readNullableInt8OrDefault('nullableB', null);
+        const nullableBool = reader.readNullableBooleanOrDefault('nullableBool', null);
+        const nullableS = reader.readNullableInt16OrDefault('nullableS', null);
+        const nullableI = reader.readNullableInt32OrDefault('nullableI', null);
+        const nullableL = reader.readNullableInt64OrDefault('nullableL', null);
+        const nullableF = reader.readNullableFloat32OrDefault('nullableF', null);
+        const nullableD = reader.readNullableFloat64OrDefault('nullableD', null);
 
         return new MainDTO(
             b, bool, s, i, l, f, d, str, inner, bigDecimal, localTime, localDate, localDateTime,

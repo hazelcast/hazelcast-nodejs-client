@@ -28,18 +28,35 @@ import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '.
  */
 export interface CompactReader {
     /**
+     * Reads a boolean.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readBoolean(fieldName: string): boolean;
+
+    /**
      * Reads a boolean or returns the default value.
      *
      * @param fieldName    name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readBoolean(fieldName: string, defaultValue?: boolean): boolean;
+    readBooleanOrDefault(fieldName: string, defaultValue: boolean): boolean;
+
+    /**
+     * Reads an 8-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readInt8(fieldName: string): number;
 
     /**
      * Reads an 8-bit two's complement signed integer or returns the default value.
@@ -48,12 +65,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readInt8(fieldName: string, defaultValue?: number): number;
+    readInt8OrDefault(fieldName: string, defaultValue: number): number;
+
+    /**
+     * Reads a 16-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readInt16(fieldName: string): number;
 
     /**
      * Reads a 16-bit two's complement signed integer or returns the default value.
@@ -62,12 +86,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readInt16(fieldName: string, defaultValue?: number): number;
+    readInt16OrDefault(fieldName: string, defaultValue: number): number;
+
+    /**
+     * Reads a 32-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readInt32(fieldName: string): number;
 
     /**
      * Reads a 32-bit two's complement signed integer or returns the default value.
@@ -76,26 +107,40 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readInt32(fieldName: string, defaultValue?: number): number;
+    readInt32OrDefault(fieldName: string, defaultValue: number): number;
 
     /**
-     * Reads a 64-bit two's complement signed integer (a Long object) or returns the default value.
+     * Reads a 64-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readInt64(fieldName: string): Long;
+
+    /**
+     * Reads a 64-bit two's complement signed integer or returns the default value.
      *
      * @param fieldName    name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readInt64(fieldName: string, defaultValue?: Long): Long;
+    readInt64OrDefault(fieldName: string, defaultValue: Long): Long;
+
+    /**
+     * Reads a 32-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readFloat32(fieldName: string): number;
 
     /**
      * Reads a 32-bit IEEE 754 floating point number or returns the default value.
@@ -104,12 +149,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readFloat32(fieldName: string, defaultValue?: number): number;
+    readFloat32OrDefault(fieldName: string, defaultValue: number): number;
+
+    /**
+     * Reads a 64-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readFloat64(fieldName: string): number;
 
     /**
      * Reads a 64-bit IEEE 754 floating point number or returns the default value.
@@ -118,12 +170,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readFloat64(fieldName: string, defaultValue?: number): number;
+    readFloat64OrDefault(fieldName: string, defaultValue: number): number;
+
+    /**
+     * Reads a UTF-8 encoded string.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readString(fieldName: string): string | null;
 
     /**
      * Reads a UTF-8 encoded string or returns the default value.
@@ -132,27 +191,40 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readString(fieldName: string, defaultValue?: string | null): string | null;
+    readStringOrDefault(fieldName: string, defaultValue: string | null): string | null;
 
     /**
-     * Reads an arbitrary precision and scale floating point number
-     * or returns the default value.
+     * Reads an arbitrary precision and scale floating point number.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readDecimal(fieldName: string): BigDecimal | null;
+
+    /**
+     * Reads an arbitrary precision and scale floating point number or returns the default value.
      *
      * @param fieldName    name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readDecimal(fieldName: string, defaultValue?: BigDecimal | null): BigDecimal | null;
+    readDecimalOrDefault(fieldName: string, defaultValue: BigDecimal | null): BigDecimal | null;
+
+    /**
+     * Reads a {@link LocalTime} consisting of hour, minute, second, and nano seconds.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readTime(fieldName: string): LocalTime | null;
 
     /**
      * Reads a {@link LocalTime} consisting of hour, minute, second, and nano seconds
@@ -162,12 +234,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readTime(fieldName: string, defaultValue?: LocalTime | null): LocalTime | null;
+    readTimeOrDefault(fieldName: string, defaultValue: LocalTime | null): LocalTime | null;
+
+    /**
+     * Reads a {@link LocalDate} consisting of year, month, and day.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readDate(fieldName: string): LocalDate | null;
 
     /**
      * Reads a {@link LocalDate} consisting of year, month, and day or returns the default value.
@@ -176,12 +255,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readDate(fieldName: string, defaultValue?: LocalDate | null): LocalDate | null;
+    readDateOrDefault(fieldName: string, defaultValue: LocalDate | null): LocalDate | null;
+
+    /**
+     * Reads a {@link LocalDateTime} consisting of date and time.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readTimestamp(fieldName: string): LocalDateTime | null;
 
     /**
      * Reads a {@link LocalDateTime} consisting of date and time or returns the default value.
@@ -190,12 +276,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readTimestamp(fieldName: string, defaultValue?: LocalDateTime | null): LocalDateTime | null;
+    readTimestampOrDefault(fieldName: string, defaultValue: LocalDateTime | null): LocalDateTime | null;
+
+    /**
+     * Reads a {@link OffsetDateTime} consisting of date, time and timezone offset.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readTimestampWithTimezone(fieldName: string): OffsetDateTime | null;
 
     /**
      * Reads a {@link OffsetDateTime} consisting of date, time and timezone offset
@@ -205,27 +298,40 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readTimestampWithTimezone(fieldName: string, defaultValue?: OffsetDateTime | null): OffsetDateTime | null;
+    readTimestampWithTimezoneOrDefault(fieldName: string, defaultValue: OffsetDateTime | null): OffsetDateTime | null;
 
     /**
-     * Reads a compact object
-     * or returns the default value
+     * Reads a compact object.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readCompact<T>(fieldName: string): T | null;
+
+    /**
+     * Reads a compact object or returns the default value.
      *
      * @param fieldName    name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readCompact<T>(fieldName: string, defaultValue?: T | null): T | null;
+    readCompactOrDefault<T>(fieldName: string, defaultValue: T | null): T | null;
+
+    /**
+     * Reads an array of booleans.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfBoolean(fieldName: string): boolean[] | null;
 
     /**
      * Reads an array of booleans or returns the default value.
@@ -234,26 +340,40 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfBoolean(fieldName: string, defaultValue?: boolean[] | null): boolean[] | null;
+    readArrayOfBooleanOrDefault(fieldName: string, defaultValue: boolean[] | null): boolean[] | null;
 
     /**
-     * Reads an array of 8-bit two's complement signed integers as Buffer or returns the default value.
+     * Reads an array of 8-bit two's complement signed integers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfInt8(fieldName: string): Buffer | null;
+
+    /**
+     * Reads an array of 8-bit two's complement signed integers or returns the default value.
      *
      * @param fieldName    name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfInt8(fieldName: string, defaultValue?: Buffer | null): Buffer | null;
+    readArrayOfInt8OrDefault(fieldName: string, defaultValue: Buffer | null): Buffer | null;
+
+    /**
+     * Reads an array of 16-bit two's complement signed integers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfInt16(fieldName: string): number[] | null;
 
     /**
      * Reads an array of 16-bit two's complement signed integers or returns the default value.
@@ -262,12 +382,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfInt16(fieldName: string, defaultValue?: number[] | null): number[] | null;
+    readArrayOfInt16OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null;
+
+    /**
+     * Reads an array of 32-bit two's complement signed integers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfInt32(fieldName: string): number[] | null;
 
     /**
      * Reads an array of 32-bit two's complement signed integers or returns the default value.
@@ -276,26 +403,40 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfInt32(fieldName: string, defaultValue?: number[] | null): number[] | null;
+    readArrayOfInt32OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null;
 
     /**
-     * Reads an array of 64-bit two's complement signed integers (Long objects) or returns the default value.
+     * Reads an array of 64-bit two's complement signed integers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfInt64(fieldName: string): Long[] | null;
+
+    /**
+     * Reads an array of 64-bit two's complement signed integers or returns the default value.
      *
      * @param fieldName    name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfInt64(fieldName: string, defaultValue?: Long[] | null): Long[] | null;
+    readArrayOfInt64OrDefault(fieldName: string, defaultValue: Long[] | null): Long[] | null;
+
+    /**
+     * Reads an array of 32-bit IEEE 754 floating point numbers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfFloat32(fieldName: string): number[] | null;
 
     /**
      * Reads an array of 32-bit IEEE 754 floating point numbers or returns the default value.
@@ -304,12 +445,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfFloat32(fieldName: string, defaultValue?: number[] | null): number[] | null;
+    readArrayOfFloat32OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null;
+
+    /**
+     * Reads an array of 64-bit IEEE 754 floating point numbers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfFloat64(fieldName: string): number[] | null;
 
     /**
      * Reads an array of 64-bit IEEE 754 floating point numbers or returns the default value.
@@ -318,12 +466,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfFloat64(fieldName: string, defaultValue?: number[] | null): number[] | null;
+    readArrayOfFloat64OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null;
+
+    /**
+     * Reads an array of UTF-8 encoded strings.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfString(fieldName: string): (string | null)[] | null;
 
     /**
      * Reads an array of UTF-8 encoded strings or returns the default value.
@@ -332,12 +487,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfString(fieldName: string, defaultValue?: (string | null)[] | null): (string | null)[] | null;
+    readArrayOfStringOrDefault(fieldName: string, defaultValue: (string | null)[] | null): (string | null)[] | null;
+
+    /**
+     * Reads an array of {@link BigDecimal} objects.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfDecimal(fieldName: string): (BigDecimal | null)[] | null;
 
     /**
      * Reads an array of {@link BigDecimal} objects or returns the default value.
@@ -346,12 +508,20 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfDecimal(fieldName: string, defaultValue?: (BigDecimal | null)[] | null): (BigDecimal | null)[] | null;
+    readArrayOfDecimalOrDefault(fieldName: string, defaultValue: (BigDecimal | null)[] | null): (BigDecimal | null)[] | null;
+
+    /**
+     * Reads an array of {@link LocalTime} objects consisting of hour, minute, second,
+     * and nanoseconds.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfTime(fieldName: string): (LocalTime | null)[] | null;
 
     /**
      * Reads an array of {@link LocalTime} objects consisting of hour, minute, second,
@@ -361,56 +531,89 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfTime(fieldName: string, defaultValue?: (LocalTime | null)[] | null): (LocalTime | null)[] | null;
+    readArrayOfTimeOrDefault(fieldName: string, defaultValue: (LocalTime | null)[] | null): (LocalTime | null)[] | null;
 
     /**
-     * Reads an array of {@link LocalDate} objects consisting of year, month, and day or returns the default value.
+     * Reads an array of {@link LocalDate} objects consisting of year, month, and day.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfDate(fieldName: string): (LocalDate | null)[] | null;
+
+    /**
+     * Reads an array of {@link LocalDate} objects consisting of year, month, and day
+     * or returns the default value.
      *
      * @param fieldName    name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfDate(fieldName: string, defaultValue?: (LocalDate | null)[] | null): (LocalDate | null)[] | null;
+    readArrayOfDateOrDefault(fieldName: string, defaultValue: (LocalDate | null)[] | null): (LocalDate | null)[] | null;
 
     /**
-     * Reads an array of {@link LocalDateTime} objects consisting of date and time or returns the default value.
+     * Reads an array of {@link LocalDateTime} objects consisting of date and time.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfTimestamp(fieldName: string): (LocalDateTime | null)[] | null;
+
+    /**
+     * Reads an array of {@link LocalDateTime} objects consisting of date and time
+     * or returns the default value.
      *
      * @param fieldName    name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfTimestamp(fieldName: string, defaultValue?: (LocalDateTime | null)[] | null): (LocalDateTime | null)[] | null;
+    readArrayOfTimestampOrDefault(
+        fieldName: string, defaultValue: (LocalDateTime | null)[] | null
+    ): (LocalDateTime | null)[] | null;
 
     /**
-     * Reads an array of {@link OffsetDateTime} objects consisting of date, time and timezone offset or returns the default value.
+     * Reads an array of {@link OffsetDateTime} objects consisting of date, time and timezone offset.
      *
-     * @param fieldName    name of the field.
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfTimestampWithTimezone(fieldName: string): (OffsetDateTime | null)[] | null;
+
+    /**
+     * Reads an array of {@link OffsetDateTime} objects consisting of date, time and timezone offset
+     * or returns the default value.
+     *
+     * @param fieldName name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfTimestampWithTimezone(
-        fieldName: string, defaultValue?: (OffsetDateTime | null)[] | null
+    readArrayOfTimestampWithTimezoneOrDefault(
+        fieldName: string, defaultValue: (OffsetDateTime | null)[] | null
     ): (OffsetDateTime | null)[] | null;
+
+    /**
+     * Reads an array of compact objects.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfCompact<T>(fieldName: string): (T | null)[] | null;
 
     /**
      * Reads an array of compact objects or returns the default value.
@@ -419,12 +622,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfCompact<T>(fieldName: string, defaultValue?: (T | null)[] | null): (T | null)[] | null;
+    readArrayOfCompactOrDefault<T>(fieldName: string, defaultValue: (T | null)[] | null): (T | null)[] | null;
+
+    /**
+     * Reads a nullable boolean.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readNullableBoolean(fieldName: string): boolean | null;
 
     /**
      * Reads a nullable boolean or returns the default value.
@@ -433,12 +643,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readNullableBoolean(fieldName : string, defaultValue?: boolean | null) : boolean | null;
+    readNullableBooleanOrDefault(fieldName: string, defaultValue: boolean | null): boolean | null;
+
+    /**
+     * Reads a nullable 8-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readNullableInt8(fieldName: string): number | null;
 
     /**
      * Reads a nullable 8-bit two's complement signed integer or returns the default value.
@@ -447,12 +664,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readNullableInt8(fieldName : string, defaultValue?: number | null) : number | null;
+    readNullableInt8OrDefault(fieldName: string, defaultValue: number | null): number | null;
+
+    /**
+     * Reads a nullable 16-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readNullableInt16(fieldName: string): number | null;
 
     /**
      * Reads a nullable 16-bit two's complement signed integer or returns the default value.
@@ -461,12 +685,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readNullableInt16(fieldName : string, defaultValue?: number | null) : number | null;
+    readNullableInt16OrDefault(fieldName: string, defaultValue: number | null): number | null;
+
+    /**
+     * Reads a nullable 32-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readNullableInt32(fieldName: string): number | null;
 
     /**
      * Reads a nullable 32-bit two's complement signed integer or returns the default value.
@@ -475,26 +706,40 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readNullableInt32(fieldName : string, defaultValue?: number | null) : number | null;
+    readNullableInt32OrDefault(fieldName: string, defaultValue: number | null): number | null;
 
     /**
-     * Reads a nullable 64-bit two's complement signed integer (Long object) or returns the default value.
+     * Reads a nullable 64-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readNullableInt64(fieldName: string): Long | null;
+
+    /**
+     * Reads a nullable 64-bit two's complement signed integer or returns the default value.
      *
      * @param fieldName    name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readNullableInt64(fieldName : string, defaultValue?: Long | null) : Long | null;
+    readNullableInt64OrDefault(fieldName: string, defaultValue: Long | null): Long | null;
+
+    /**
+     * Reads a nullable 32-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readNullableFloat32(fieldName: string): number | null;
 
     /**
      * Reads a nullable 32-bit IEEE 754 floating point number or returns the default value.
@@ -503,12 +748,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readNullableFloat32(fieldName : string, defaultValue?: number | null) : number | null;
+    readNullableFloat32OrDefault(fieldName: string, defaultValue: number | null): number | null;
+
+    /**
+     * Reads a nullable 64-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readNullableFloat64(fieldName: string): number | null;
 
     /**
      * Reads a nullable 64-bit IEEE 754 floating point number or returns the default value.
@@ -517,12 +769,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readNullableFloat64(fieldName : string, defaultValue?: number | null) : number | null;
+    readNullableFloat64OrDefault(fieldName: string, defaultValue: number | null): number | null;
+
+    /**
+     * Reads a nullable array of nullable booleans.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfNullableBoolean(fieldName: string): (boolean | null)[] | null;
 
     /**
      * Reads a nullable array of nullable booleans or returns the default value.
@@ -531,12 +790,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfNullableBoolean(fieldName : string, defaultValue?: (boolean | null)[] | null) : (boolean | null)[] | null;
+    readArrayOfNullableBooleanOrDefault(fieldName: string, defaultValue: (boolean | null)[] | null): (boolean | null)[] | null;
+
+    /**
+     * Reads a nullable array of nullable 8-bit two's complement signed integers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfNullableInt8(fieldName: string): (number | null)[] | null;
 
     /**
      * Reads a nullable array of nullable 8-bit two's complement signed integers or returns the default value.
@@ -545,12 +811,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfNullableInt8(fieldName : string, defaultValue?: (number | null)[] | null) : (number | null)[] | null;
+    readArrayOfNullableInt8OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null;
+
+    /**
+     * Reads a nullable array of nullable 16-bit two's complement signed integers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfNullableInt16(fieldName: string): (number | null)[] | null;
 
     /**
      * Reads a nullable array of nullable 16-bit two's complement signed integers or returns the default value.
@@ -559,12 +832,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfNullableInt16(fieldName : string, defaultValue?: (number | null)[] | null) : (number | null)[] | null;
+    readArrayOfNullableInt16OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null;
+
+    /**
+     * Reads a nullable array of nullable 32-bit two's complement signed integers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfNullableInt32(fieldName: string): (number | null)[] | null;
 
     /**
      * Reads a nullable array of nullable 32-bit two's complement signed integers or returns the default value.
@@ -573,26 +853,40 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfNullableInt32(fieldName : string, defaultValue?: (number | null)[] | null) : (number | null)[] | null;
+    readArrayOfNullableInt32OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null;
 
     /**
-     * Reads a nullable array of nullable 64-bit two's complement signed integers (Long objects) or returns the default value.
+     * Reads a nullable array of nullable 64-bit two's complement signed integers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfNullableInt64(fieldName: string): (Long | null)[] | null;
+
+    /**
+     * Reads a nullable array of nullable 64-bit two's complement signed integers or returns the default value.
      *
      * @param fieldName    name of the field.
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfNullableInt64(fieldName : string, defaultValue?: (Long | null)[] | null) : (Long | null)[] | null;
+    readArrayOfNullableInt64OrDefault(fieldName: string, defaultValue: (Long | null)[] | null): (Long | null)[] | null;
+
+    /**
+     * Reads a nullable array of nullable 32-bit IEEE 754 floating point numbers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfNullableFloat32(fieldName: string): (number | null)[] | null;
 
     /**
      * Reads a nullable array of nullable 32-bit IEEE 754 floating point numbers or returns the default value.
@@ -601,12 +895,19 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfNullableFloat32(fieldName : string, defaultValue?: (number | null)[] | null) : (number | null)[] | null;
+    readArrayOfNullableFloat32OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null;
+
+    /**
+     * Reads a nullable array of nullable 64-bit IEEE 754 floating point numbers.
+     *
+     * @param fieldName name of the field.
+     * @throws {@link HazelcastSerializationError} if the field does not exist in the
+     * schema, or the type of the field does not match with the one defined in the schema.
+     * @return the value of the field.
+     */
+    readArrayOfNullableFloat64(fieldName: string): (number | null)[] | null;
 
     /**
      * Reads a nullable array of nullable 64-bit IEEE 754 floating point numbers or returns the default value.
@@ -615,10 +916,7 @@ export interface CompactReader {
      * @param defaultValue default value to return if the field with the given name
      *                     does not exist in the schema or the type of the field does
      *                     not match with the one defined in the schema.
-     * @throws {@link HazelcastSerializationError} if defaultValue is not provided and
-     * the field does not exist in the schema, or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @return the value of the field or the default value.
      */
-    readArrayOfNullableFloat64(fieldName : string, defaultValue?: (number | null)[] | null) : (number | null)[] | null;
+    readArrayOfNullableFloat64OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null;
 }
