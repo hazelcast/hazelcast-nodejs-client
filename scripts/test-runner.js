@@ -113,7 +113,7 @@ const startRC = async () => {
 
     console.log('Please wait for Hazelcast Remote Controller to start ...');
 
-    const retryCount = 10;
+    const retryCount = 100;
 
     for (let i = 0; i < retryCount; i++) {
         console.log('Trying to connect to Hazelcast Remote Controller (127.0.0.1:9701)...');
