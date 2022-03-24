@@ -78,12 +78,8 @@ export class HazelcastSerializationError extends HazelcastError {
 }
 
 export class SchemaNotFoundError extends HazelcastError {
-
-    schemaId: Long;
-
-    constructor(msg: string, schemaId: Long, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+    constructor(msg: string, public readonly schemaId: Long, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
         super(msg, cause, serverStackTrace);
-        this.schemaId = schemaId;
     }
 }
 

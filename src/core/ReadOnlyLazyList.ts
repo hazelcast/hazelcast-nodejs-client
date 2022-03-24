@@ -25,6 +25,10 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
         this.list = list;
     }
 
+    /**
+     * Returns the next element in the iteration.
+     * @throws {@link SchemaNotFoundError} if the next item is a compact object whose schema is not known
+     */
     next(): IteratorResult<T> {
         if (this.index < this.list.size()) {
             return {done: false, value: this.list.get(this.index++)};
@@ -36,7 +40,8 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 }
 
 /**
- * Represents a list of values with lazy deserialization.
+ * Represents a list of values with lazy deserialization. Iterating over this list and some of its methods will
+ * throw {@link SchemaNotFoundError} in case a compact object is read and its schema is not known by the client.
  */
 export class ReadOnlyLazyList<T> {
 
@@ -53,6 +58,7 @@ export class ReadOnlyLazyList<T> {
      * Returns list's element at the specified index.
      *
      * @param index element's index
+     * @throws {@link SchemaNotFoundError} if the object to be returned is a compact object whose schema is not known
      * @returns element
      */
     get(index: number): T {
@@ -95,6 +101,7 @@ export class ReadOnlyLazyList<T> {
 
     /**
      * Returns an array that contains all elements of this list in proper sequence.
+     * @throws {@link SchemaNotFoundError} if the list includes a compact object whose schema is not known
      */
     toArray(): T[] {
         const arr: T[] = [];

@@ -498,7 +498,6 @@ export class HazelcastClient {
 
     /**
      * Returns a service to execute distributed SQL queries.
-     * The service is in beta state. Behavior and API might be changed in future releases.
      *
      * @returns SQL service
      *

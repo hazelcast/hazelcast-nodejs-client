@@ -315,12 +315,12 @@ export class ConfigBuilder {
         if (sslOptionsFactory) {
             if (typeof sslOptionsFactory.init !== 'function') {
                 throw new RangeError(
-                    `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. Expected a 'init' property that is a function.`
+                    `Invalid SSLOptionsFactory is given: ${sslOptionsFactory}. Expected a 'init' property that is a function.`
                 );
             }
             if (typeof sslOptionsFactory.getSSLOptions !== 'function') {
                 throw new RangeError(
-                    `Invalid SSLOptionsFactory given: ${sslOptionsFactory}. ` +
+                    `Invalid SSLOptionsFactory is given: ${sslOptionsFactory}. ` +
                     'Expected a \'getSSLOptions\' property that is a function.'
                 );
             }
@@ -485,7 +485,7 @@ export class ConfigBuilder {
             } else if (key === 'customSerializers') {
                 this.handleCustomSerializers(jsonObject[key]);
             } else if (key === 'compact') {
-                this.handleCompact(jsonObject[key]);
+                this.handleCompactSerializationConfig(jsonObject[key]);
             } else if (key === 'jsonStringDeserializationPolicy') {
                 this.effectiveConfig.serialization
                     .jsonStringDeserializationPolicy = tryGetEnum(JsonStringDeserializationPolicy, jsonObject[key]);
@@ -495,38 +495,38 @@ export class ConfigBuilder {
         }
     }
 
-    private handleCompact(compactConfig: any) {
-        for (const key in compactConfig) {
+    private handleCompactSerializationConfig(compactSerializationConfig: any) {
+        for (const key in compactSerializationConfig) {
             if (key === 'serializers') {
-                this.handleCompactSerializers(compactConfig[key]);
+                this.handleCompactSerializers(compactSerializationConfig[key]);
             } else {
-                throw new RangeError(`Unexpected compact config '${key}' is passed to the Hazelcast Client`);
+                throw new RangeError(`Unexpected compact serialization config '${key}' is passed to the Hazelcast Client`);
             }
         }
     }
 
-    private handleCompactSerializers(customSerializers: any) {
-        const serializersArray = tryGetArray(customSerializers);
+    private handleCompactSerializers(compactSerializers: any) {
+        const serializersArray = tryGetArray(compactSerializers);
 
         for (const serializer of serializersArray) {
             if (typeof serializer.class !== 'function') {
                 throw new RangeError(
-                    `Invalid compact serializer given: ${serializer}. Expected a 'class' property that is a function.`
+                    `Invalid compact serializer is given: ${serializer}. Expected a 'class' property that is a function.`
                 );
             }
             if (typeof serializer.typeName !== 'string') {
                 throw new RangeError(
-                    `Invalid compact serializer given: ${serializer}. Expected a 'typeName' property that is a string.`
+                    `Invalid compact serializer is given: ${serializer}. Expected a 'typeName' property that is a string.`
                 );
             }
             if (typeof serializer.read !== 'function') {
                 throw new RangeError(
-                    `Invalid compact serializer given: ${serializer}. Expected a 'read' property that is function.`
+                    `Invalid compact serializer is given: ${serializer}. Expected a 'read' property that is function.`
                 );
             }
             if (typeof serializer.write !== 'function') {
                 throw new RangeError(
-                    `Invalid compact serializer given: ${serializer}. Expected a 'write' property that is function.`
+                    `Invalid compact serializer is given: ${serializer}. Expected a 'write' property that is function.`
                 );
             }
 
@@ -537,25 +537,25 @@ export class ConfigBuilder {
 
     private handleGlobalSerializer(globalSerializer: any) {
         if (!globalSerializer) {
-            throw new RangeError(`Invalid global serializer given: ${globalSerializer}. Expected a truthy value.`)
+            throw new RangeError(`Invalid global serializer is given: ${globalSerializer}. Expected a truthy value.`)
         }
         if (typeof globalSerializer.id !== 'number') {
             throw new RangeError(
-                `Invalid global serializer given: ${globalSerializer}. Expected a 'id' property that is a number.`
+                `Invalid global serializer is given: ${globalSerializer}. Expected a 'id' property that is a number.`
             );
         }
         if (!Number.isInteger(globalSerializer.id) || globalSerializer.id < 1) {
-            throw new RangeError(`Invalid global serializer given: ${globalSerializer}`
+            throw new RangeError(`Invalid global serializer is given: ${globalSerializer}`
                 + 'Expected the \'id\' property to be an integer greater or equal to 1.');
         }
         if (typeof globalSerializer.read !== 'function') {
             throw new RangeError(
-                `Invalid global serializer given: ${globalSerializer}. Expected a 'read' property that is function.`
+                `Invalid global serializer is given: ${globalSerializer}. Expected a 'read' property that is function.`
             );
         }
         if (typeof globalSerializer.write !== 'function') {
             throw new RangeError(
-                `Invalid global serializer given: ${globalSerializer}. Expected a 'write' property that is function.`
+                `Invalid global serializer is given: ${globalSerializer}. Expected a 'write' property that is function.`
             );
         }
 
@@ -604,21 +604,21 @@ export class ConfigBuilder {
         for (const serializer of serializersArray) {
             if (typeof serializer.id !== 'number') {
                 throw new RangeError(
-                    `Invalid custom serializer given: ${serializer}. Expected a 'id' property that is a number.`
+                    `Invalid custom serializer is given: ${serializer}. Expected a 'id' property that is a number.`
                 );
             }
             if (!Number.isInteger(serializer.id) || serializer.id < 1) {
-                throw new RangeError(`Invalid custom serializer given: ${serializer}`
+                throw new RangeError(`Invalid custom serializer is given: ${serializer}`
                     + 'Expected the \'id\' property to be an integer greater or equal to 1.');
             }
             if (typeof serializer.read !== 'function') {
                 throw new RangeError(
-                    `Invalid custom serializer given: ${serializer}. Expected a 'read' property that is function.`
+                    `Invalid custom serializer is given: ${serializer}. Expected a 'read' property that is function.`
                 );
             }
             if (typeof serializer.write !== 'function') {
                 throw new RangeError(
-                    `Invalid custom serializer given: ${serializer}. Expected a 'write' property that is function.`
+                    `Invalid custom serializer is given: ${serializer}. Expected a 'write' property that is function.`
                 );
             }
 
@@ -725,17 +725,17 @@ export class ConfigBuilder {
     private handleCustomLoadBalancer(customLB: any) {
         if (!customLB) {
             throw new RangeError(
-                `Invalid LoadBalancer given: ${customLB}. Expected a truthy value.`
+                `Invalid LoadBalancer is given: ${customLB}. Expected a truthy value.`
             );
         }
         if (typeof customLB.initLoadBalancer !== 'function') {
             throw new RangeError(
-                `Invalid LoadBalancer given: ${customLB}. Expected a 'initLoadBalancer' property to be a function.`
+                `Invalid LoadBalancer is given: ${customLB}. Expected a 'initLoadBalancer' property to be a function.`
             );
         }
         if (typeof customLB.next !== 'function') {
             throw new RangeError(
-                `Invalid LoadBalancer given: ${customLB}. Expected a 'next' property to be a function.`
+                `Invalid LoadBalancer is given: ${customLB}. Expected a 'next' property to be a function.`
             );
         }
 
@@ -746,14 +746,14 @@ export class ConfigBuilder {
     private handleLogger(customLogger: any): void {
         if (!customLogger) {
             throw new RangeError(
-                `Invalid custom logger given: ${customLogger}. Expected a truthy value.`
+                `Invalid custom logger is given: ${customLogger}. Expected a truthy value.`
             );
         }
         const functionProps = ['log', 'error', 'warn', 'info', 'debug', 'trace'];
         for (const functionProp of functionProps) {
             if (typeof customLogger[functionProp] !== 'function') {
                 throw new RangeError(
-                    `Invalid custom logger given: ${customLogger}. Expected a '${functionProp}' property that is function.`
+                    `Invalid custom logger is given: ${customLogger}. Expected a '${functionProp}' property that is function.`
                 );
             }
         }

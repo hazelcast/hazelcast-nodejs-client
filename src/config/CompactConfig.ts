@@ -17,18 +17,20 @@
 import {CompactSerializer} from '../serialization/compact/CompactSerializer';
 
 /**
- * User-defined serialization config for the client.
+ * Compact serialization config for the client. This API is currently in BETA and
+ * can change at any time.
+ *
  */
-export interface CompactConfig {
+export interface CompactSerializationConfig {
 
     /**
      * Defines Compact serializers.
      */
-    serializers?: Array<CompactSerializer<any>>;
+    serializers?: Array<CompactSerializer<new() => any>>;
 
 }
 
 /** @internal */
-export class CompactConfigImpl implements CompactConfig {
+export class CompactSerializationConfigImpl implements CompactSerializationConfig {
     serializers: Array<CompactSerializer<new () => any>> = [];
 }
