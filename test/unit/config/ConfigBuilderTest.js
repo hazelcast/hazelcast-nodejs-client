@@ -569,7 +569,7 @@ describe('ConfigBuilderValidationTest', function () {
                            sslOptionsFactoryProperties: {}
                        }
                    }
-               }).build()).to.throw(InvalidConfigurationError, 'Invalid SSLOptionsFactory given');
+               }).build()).to.throw(InvalidConfigurationError, 'Invalid SSLOptionsFactory is given');
            }
 
            const validFactory = {
@@ -600,7 +600,7 @@ describe('ConfigBuilderValidationTest', function () {
                     loadBalancer: {
                         customLoadBalancer: invalidCustomLoadBalancer
                     }
-                }).build()).to.throw(InvalidConfigurationError, 'Invalid LoadBalancer given');
+                }).build()).to.throw(InvalidConfigurationError, 'Invalid LoadBalancer is given');
             }
 
             const validCustomLoadBalancer = {
