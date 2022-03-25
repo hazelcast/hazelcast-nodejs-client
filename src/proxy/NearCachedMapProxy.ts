@@ -18,6 +18,7 @@
 import * as Long from 'long';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
+import {MapGetAllCodec} from './../codec/MapGetAllCodec';
 import {EventType} from './EventType';
 import {UUID} from '../core/UUID';
 import {PartitionService, PartitionServiceImpl} from '../PartitionService';
@@ -191,8 +192,37 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             .then<V | boolean>(oldValue => this.invalidateCacheEntryAndReturn(keyData, oldValue));
     }
 
+    private getAllInternalHelper(
+        partitionsToKeys: { [id: string]: Data[] },
+        result: Array<[any, any]> = []
+    ): Promise<Array<[Data, Data]>> {
+        const partitionPromises: Array<Promise<Array<[Data, Data]>>> = [];
+        for (const partition in partitionsToKeys) {
+            partitionPromises.push(
+                this.encodeInvokeOnPartition(MapGetAllCodec, Number(partition), (clientMessage: ClientMessage) : any => {
+                    const getAllResponse = MapGetAllCodec.decodeResponse(clientMessage);
+                    for (const [data1, data2] of getAllResponse) {
+                        // We need to make sure compact objects' schemas are fetched
+                        if (data1.isCompact() || data2.isCompact()) {
+                            this.toObject(data1);
+                            this.toObject(data2);
+                        }
+                    }
+                return getAllResponse;
+            }, partitionsToKeys[partition]));
+        }
+        const deserializeEntry = (entry: [Data, Data]) : [any, any] => {
+            return [this.toObject(entry[0]), this.toObject(entry[1])];
+        };
+        return Promise.all(partitionPromises).then((serializedEntryArrayArray: Array<Array<[Data, Data]>>) => {
+            const serializedEntryArray: Array<[Data, Data]> = Array.prototype.concat.apply([], serializedEntryArrayArray);
+            result.push(...(serializedEntryArray.map(deserializeEntry)));
+            return serializedEntryArray;
+        });
+    }
+
     protected getAllInternal(partitionsToKeys: { [id: string]: Data[] },
-                             result: Array<[any, any]> = []): Promise<any[]> {
+                             result: Array<[any, any]> = []): Promise<Array<[any, any]>> {
         const promises = [];
         try {
             for (const partition in partitionsToKeys) {
@@ -218,10 +248,10 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
                     reservations.push(this.nearCache.tryReserveForUpdate(key));
                 }
             }
-            return super.getAllInternal(partitionsToKeys, result).then((serializedEntryArray) => {
-                serializedEntryArray.forEach((serializedEntry, index) => {
-                    const key = serializedEntry[0];
-                    const value = serializedEntry[1];
+            return this.getAllInternalHelper(partitionsToKeys, result).then((serializedEntryArray) => {
+                serializedEntryArray.forEach((entry, index) => {
+                    const key = entry[0];
+                    const value = entry[1];
                     this.nearCache.tryPublishReserved(key, value, reservations[index]);
                 });
                 return result;

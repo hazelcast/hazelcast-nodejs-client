@@ -106,7 +106,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.aggregate(aggregator));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnRandomTarget(MapAggregateCodec, (clientMessage) => {
             const response = MapAggregateCodec.decodeResponse(clientMessage);
@@ -126,7 +126,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.aggregateWithPredicate(aggregator, predicate));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnRandomTarget(MapAggregateWithPredicateCodec, (clientMessage) => {
             const response = MapAggregateWithPredicateCodec.decodeResponse(clientMessage);
@@ -140,20 +140,21 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         if (keys.length === 0) {
             return Promise.resolve([]);
         } else {
+            let keysData: Data[];
+            let proData: Data;
             try {
-                const toObject = this.toObject.bind(this);
-                const keysData = this.serializeList(keys);
-                const proData = this.toData(entryProcessor);
-                return this.encodeInvokeOnRandomTarget(MapExecuteOnKeysCodec, (clientMessage) => {
-                    const response = MapExecuteOnKeysCodec.decodeResponse(clientMessage);
-                    return this.deserializeEntryList(toObject, response);
-                }, proData, keysData);
+                keysData = this.serializeList(keys);
+                proData = this.toData(entryProcessor);
             } catch (e) {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.executeOnKeys(keys, entryProcessor));
                 }
-                return Promise.reject(e);
+                throw e;
             }
+            return this.encodeInvokeOnRandomTarget(MapExecuteOnKeysCodec, (clientMessage) => {
+                const response = MapExecuteOnKeysCodec.decodeResponse(clientMessage);
+                return this.deserializeEntryList(response);
+            }, proData, keysData);
         }
     }
 
@@ -168,28 +169,27 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.executeOnKey(key, entryProcessor));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.executeOnKeyInternal(keyData, proData);
     }
 
-    executeOnEntries(entryProcessor: any, predicate: Predicate = null): Promise<Array<[K, V]>> {
+    executeOnEntries(entryProcessor: any, predicate?: Predicate): Promise<Array<[K, V]>> {
         assertNotNull(entryProcessor);
         let proData: Data;
-        const toObject = this.toObject.bind(this);
         try {
             proData = this.toData(entryProcessor);
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.executeOnEntries(entryProcessor, predicate));
             }
-            return Promise.reject(e);
+            throw e;
         }
 
-        if (predicate == null) {
+        if (predicate === undefined) {
             return this.encodeInvokeOnRandomTarget(MapExecuteOnAllKeysCodec, (clientMessage) => {
                 const response = MapExecuteOnAllKeysCodec.decodeResponse(clientMessage);
-                return this.deserializeEntryList(toObject, response);
+                return this.deserializeEntryList(response);
             }, proData);
         } else {
             let predData;
@@ -199,11 +199,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.executeOnEntries(entryProcessor, predicate));
                 }
-                return Promise.reject(e);
+                throw e;
             }
             return this.encodeInvokeOnRandomTarget(MapExecuteWithPredicateCodec, (clientMessage) => {
                 const response = MapExecuteWithPredicateCodec.decodeResponse(clientMessage);
-                return this.deserializeEntryList(toObject, response);
+                return this.deserializeEntryList(response);
             }, proData, predData);
         }
 
@@ -212,7 +212,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     entrySetWithPredicate(predicate: Predicate): Promise<any[]> {
         assertNotNull(predicate);
 
-        const toObject = this.toObject.bind(this);
         if (predicate instanceof PagingPredicateImpl) {
             predicate.setIterationType(IterationType.ENTRY);
             const serializationService = this.serializationService;
@@ -223,12 +222,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.entrySetWithPredicate(predicate));
                 }
-                return Promise.reject(e);
+                throw e;
             }
             return this.encodeInvokeOnRandomTarget(MapEntriesWithPagingPredicateCodec, (clientMessage) => {
                 const response = MapEntriesWithPagingPredicateCodec.decodeResponse(clientMessage);
                 predicate.setAnchorList(response.anchorDataList.asAnchorList(serializationService));
-                return this.deserializeEntryList(toObject, response.response);
+                return this.deserializeEntryList(response.response);
             }, pagingPredicateHolder);
         } else {
             let pData;
@@ -238,11 +237,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.entrySetWithPredicate(predicate));
                 }
-                return Promise.reject(e);
+                throw e;
             }
             return this.encodeInvokeOnRandomTarget(MapEntriesWithPredicateCodec, (clientMessage) => {
                 const response = MapEntriesWithPredicateCodec.decodeResponse(clientMessage);
-                return this.deserializeEntryList(toObject, response);
+                return this.deserializeEntryList(response);
             }, pData);
         }
     }
@@ -250,7 +249,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     keySetWithPredicate(predicate: Predicate): Promise<K[]> {
         assertNotNull(predicate);
 
-        const toObject = this.toObject.bind(this);
         if (predicate instanceof PagingPredicateImpl) {
             predicate.setIterationType(IterationType.KEY);
             const serializationService = this.serializationService;
@@ -261,12 +259,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.keySetWithPredicate(predicate));
                 }
-                return Promise.reject(e);
+                throw e;
             }
             return this.encodeInvokeOnRandomTarget(MapKeySetWithPagingPredicateCodec, (clientMessage) => {
                 const response = MapKeySetWithPagingPredicateCodec.decodeResponse(clientMessage);
                 predicate.setAnchorList(response.anchorDataList.asAnchorList(serializationService));
-                return response.response.map<K>(toObject);
+                return this.deserializeList(response.response);
             }, pagingPredicateHolder);
         } else {
             let predicateData;
@@ -276,11 +274,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.keySetWithPredicate(predicate));
                 }
-                return Promise.reject(e);
+                throw e;
             }
             return this.encodeInvokeOnRandomTarget(MapKeySetWithPredicateCodec, (clientMessage) => {
                 const response = MapKeySetWithPredicateCodec.decodeResponse(clientMessage);
-                return response.map<K>(toObject);
+                return this.deserializeList(response);
             }, predicateData);
         }
     }
@@ -297,7 +295,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.valuesWithPredicate(predicate));
                 }
-                return Promise.reject(e);
+                throw e;
             }
             return this.encodeInvokeOnRandomTarget(MapValuesWithPagingPredicateCodec, (clientMessage) => {
                 const response = MapValuesWithPagingPredicateCodec.decodeResponse(clientMessage);
@@ -312,7 +310,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.valuesWithPredicate(predicate));
                 }
-                return Promise.reject(e);
+                throw e;
             }
             return this.encodeInvokeOnRandomTarget(MapValuesWithPredicateCodec, (clientMessage) => {
                 const response = MapValuesWithPredicateCodec.decodeResponse(clientMessage);
@@ -321,9 +319,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    addEntryListenerWithPredicate(listener: MapListener<K, V>, predicate: Predicate, key: K,
-                                  includeValue: boolean): Promise<string> {
-        return this.addEntryListenerInternal(listener, predicate, key, includeValue);
+    addEntryListenerWithPredicate(
+        listener: MapListener<K, V>, predicate: Predicate, key?: K, includeValue = false
+    ): Promise<string> {
+        return this.addEntryListenerInternal(listener, includeValue, key, predicate);
     }
 
     containsKey(key: K): Promise<boolean> {
@@ -335,7 +334,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.containsKey(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.containsKeyInternal(keyData);
     }
@@ -349,7 +348,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.containsValue(value));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnRandomTarget(MapContainsValueCodec, MapContainsValueCodec.decodeResponse, valueData);
     }
@@ -365,7 +364,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.put(key, value, ttl, maxIdle));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.putInternal(keyData, valueData, ttl, maxIdle);
     }
@@ -380,14 +379,6 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     get(key: K): Promise<V> {
         assertNotNull(key);
-        /**
-         * You will see a lot of try/catch blocks around {@link toData} in proxy methods. This is called controlled serialization
-         * and needed due to compact serialization. While serializing a compact object we need to be sure that its schema
-         * is replicated to cluster for data integrity. If not, we throw {@link SchemaNotReplicatedError}. Therefore, we
-         * check if toData calls throw this error and if so, we registerSchema to the cluster and then try the proxy call
-         * again. We need try/catch calls everywhere to avoid performance penalty of returning Promise.resolve(data) instead
-         * of data.
-         */
         let keyData: Data;
         try {
             keyData = this.toData(key);
@@ -395,25 +386,25 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.get(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.getInternal(keyData);
     }
 
-    remove(key: K, value: V = null): Promise<V | boolean> {
+    remove(key: K, value?: V): Promise<V | boolean> {
         assertNotNull(key);
         let keyData: Data;
         let valueData: Data | undefined = undefined;
         try {
             keyData = this.toData(key);
-            if (value !== null) {
+            if (value !== undefined) {
                 valueData = this.toData(value);
             }
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.remove(key, value));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.removeInternal(keyData, valueData);
     }
@@ -445,7 +436,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.getAll(keys));
                 }
-                return Promise.reject(e);
+                throw e;
             }
             const pId: number = partitionService.getPartitionId(keyData);
             if (!partitionsToKeys[pId]) {
@@ -466,7 +457,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.delete(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.deleteInternal(keyData);
     }
@@ -474,7 +465,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     entrySet(): Promise<any[]> {
         return this.encodeInvokeOnRandomTarget(MapEntrySetCodec, (clientMessage) => {
             const response = MapEntrySetCodec.decodeResponse(clientMessage);
-            return this.deserializeEntryList(this.toObject.bind(this), response);
+            return this.deserializeEntryList(response);
         });
     }
 
@@ -487,7 +478,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.evict(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.evictInternal(keyData);
     }
@@ -509,7 +500,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.lock(key, leaseTime));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnKeyWithTimeout(
             Number.MAX_SAFE_INTEGER, MapLockCodec, keyData, () => {}, keyData, 0, leaseTime, 0
@@ -525,7 +516,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.isLocked(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnKey(MapIsLockedCodec, keyData, MapIsLockedCodec.decodeResponse, keyData);
     }
@@ -539,7 +530,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.unlock(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnKey(MapUnlockCodec, keyData, () => {}, keyData, 0, 0);
     }
@@ -553,7 +544,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.forceUnlock(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnKey(MapForceUnlockCodec, keyData, () => {}, keyData, 0);
     }
@@ -561,22 +552,22 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     keySet(): Promise<K[]> {
         return this.encodeInvokeOnRandomTarget(MapKeySetCodec, (clientMessage) => {
             const response = MapKeySetCodec.decodeResponse(clientMessage);
-            return response.map<K>(this.toObject.bind(this));
+            return this.deserializeList(response);
         });
     }
 
-    loadAll(keys: K[] = null, replaceExistingValues = true): Promise<void> {
-        if (keys == null) {
+    loadAll(keys?: K[], replaceExistingValues = true): Promise<void> {
+        if (keys === undefined) {
             return this.encodeInvokeOnRandomTarget(MapLoadAllCodec, () => {}, replaceExistingValues);
         } else {
             let keysData: Data[];
             try {
-                keysData = keys.map<Data>(v => this.toData(v));
+                keysData = this.serializeList(keys);
             } catch (e) {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.loadAll(keys, replaceExistingValues));
                 }
-                return Promise.reject(e);
+                throw e;
             }
             return this.encodeInvokeOnRandomTarget(MapLoadGivenKeysCodec, () => {}, keysData, replaceExistingValues);
         }
@@ -593,11 +584,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.putIfAbsent(key, value, ttl, maxIdle));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.putIfAbsentInternal(keyData, valueData, ttl, maxIdle);
     }
-
 
     putTransient(key: K, value: V, ttl?: number | Long, maxIdle?: number | Long): Promise<void> {
         assertNotNull(key);
@@ -610,7 +600,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.putTransient(key, value, ttl, maxIdle));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.putTransientInternal(keyData, valueData, ttl, maxIdle);
     }
@@ -626,7 +616,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.replace(key, newValue));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.replaceInternal(keyData, newValueData);
     }
@@ -644,7 +634,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.replaceIfSame(key, oldValue, newValue));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.replaceIfSameInternal(keyData, oldValueData, newValueData);
     }
@@ -660,7 +650,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.set(key, value, ttl, maxIdle));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.setInternal(keyData, valueData, ttl, maxIdle);
     }
@@ -681,7 +671,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.getEntryView(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnKey(MapGetEntryViewCodec, keyData, (clientMessage) => {
             const response = MapGetEntryViewCodec.decodeResponse(clientMessage);
@@ -712,7 +702,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.tryLock(key, timeout, leaseTime));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnKeyWithTimeout(
             Number.MAX_SAFE_INTEGER, MapTryLockCodec, keyData, MapTryLockCodec.decodeResponse, keyData, 0, leaseTime, timeout, 0
@@ -731,7 +721,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.tryPut(key, value, timeout));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.tryPutInternal(keyData, valueData, timeout);
     }
@@ -746,13 +736,13 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.tryRemove(key, timeout));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.tryRemoveInternal(keyData, timeout);
     }
 
-    addEntryListener(listener: MapListener<K, V>, key: K, includeValue = false): Promise<string> {
-        return this.addEntryListenerInternal(listener, undefined, key, includeValue);
+    addEntryListener(listener: MapListener<K, V>, key?: K, includeValue = false): Promise<string> {
+        return this.addEntryListenerInternal(listener, includeValue, key);
     }
 
     removeEntryListener(listenerId: string): Promise<boolean> {
@@ -769,7 +759,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.setTtl(key, ttl));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.setTtlInternal(keyData, ttl);
     }
@@ -789,19 +779,17 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                           valueData: Data,
                           ttl: number | Long = -1,
                           maxIdle?: number | Long): Promise<V> {
-        let request: Promise<V>;
         const handler = (clientMessage: ClientMessage) => {
             const response = MapPutCodec.decodeResponse(clientMessage);
             return this.toObject(response);
         };
         if (maxIdle !== undefined) {
-            request = this.encodeInvokeOnKey(MapPutWithMaxIdleCodec,
+            return this.encodeInvokeOnKey(MapPutWithMaxIdleCodec,
                 keyData, handler, keyData, valueData, 0, ttl, maxIdle);
         } else {
-            request = this.encodeInvokeOnKey(MapPutCodec,
+            return this.encodeInvokeOnKey(MapPutCodec,
                 keyData, handler, keyData, valueData, 0, ttl);
         }
-        return request;
     }
 
     protected finalizePutAll(_partitionsToKeys: { [id: string]: Array<[Data, Data]> }): void {
@@ -828,35 +816,26 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         }
     }
 
-    protected getAllInternal(partitionsToKeys: { [id: string]: Data[] },
-                             result: Array<[any, any]> = []): Promise<Array<[Data, Data]>> {
-        const partitionPromises: Array<Promise<Array<[Data, Data]>>> = [];
+    protected getAllInternal(
+        partitionsToKeys: { [id: string]: Data[] },
+        result: Array<[any, any]> = []
+    ): Promise<Array<[any, any]>> {
+        const partitionPromises: Array<Promise<Array<[any, any]>>> = [];
         for (const partition in partitionsToKeys) {
             partitionPromises.push(
                 this.encodeInvokeOnPartition(
-                    MapGetAllCodec, Number(partition), (clientMessage: ClientMessage) : any => {
+                    MapGetAllCodec, Number(partition), (clientMessage: ClientMessage): Array<[any, any]> => {
                         const getAllResponse = MapGetAllCodec.decodeResponse(clientMessage);
-                        for (const [data1, data2] of getAllResponse) {
-                            // We need to make sure compact objects' schemas are fetched
-                            if (data1.isCompact() || data2.isCompact()) {
-                                this.toObject(data1);
-                                this.toObject(data2);
-                            }
-                        }
-                        return getAllResponse;
+                        return this.deserializeEntryList<any, any>(getAllResponse);
                     }, partitionsToKeys[partition]
                 )
             );
         }
-        const deserializeEntry = (entry: [Data, Data]) : [any, any] => {
-            return [this.toObject(entry[0]), this.toObject(entry[1])];
-        };
-        return Promise.all(partitionPromises)
-            .then((serializedEntryArrayArray: Array<Array<[Data, Data]>>) => {
-                const serializedEntryArray: Array<[Data, Data]> = Array.prototype.concat.apply([], serializedEntryArrayArray);
-                result.push(...(serializedEntryArray.map(deserializeEntry)));
-                return serializedEntryArray;
-            });
+        return Promise.all(partitionPromises).then((entryArrayArray: Array<Array<[any, any]>>) => {
+            const entryArray: Array<[any, any]> = Array.prototype.concat.apply([], entryArrayArray);
+            result.push(...entryArray);
+            return entryArray;
+        });
     }
 
     protected deleteInternal(keyData: Data): Promise<void> {
@@ -953,7 +932,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.putAllInternal(pairs, triggerMapLoader));
                 }
-                return Promise.reject(e);
+                throw e;
             }
         }
 
@@ -973,7 +952,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     private addEntryListenerInternal(
-        listener: MapListener<K, V>, predicate: Predicate, key: K, includeValue: boolean,
+        listener: MapListener<K, V>, includeValue: boolean, key?: K, predicate?: Predicate,
     ): Promise<string> {
         let flags: any = null;
         const conversionTable: { [funcName: string]: EventType } = {
@@ -1041,16 +1020,16 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         let codec: ListenerMessageCodec;
         let listenerHandler: (message: ClientMessage, handler: EntryEventHandler) => void;
         try {
-            if (key && predicate) {
+            if (key !== undefined && predicate !== undefined) {
                 const keyData = this.toData(key);
                 const predicateData = this.toData(predicate);
                 codec = this.createEntryListenerToKeyWithPredicate(this.name, keyData, predicateData, includeValue, flags);
                 listenerHandler = MapAddEntryListenerToKeyWithPredicateCodec.handle;
-            } else if (key && !predicate) {
+            } else if (key !== undefined && predicate === undefined) {
                 const keyData = this.toData(key);
                 codec = this.createEntryListenerToKey(this.name, keyData, includeValue, flags);
                 listenerHandler = MapAddEntryListenerToKeyCodec.handle;
-            } else if (!key && predicate) {
+            } else if (key === undefined && predicate !== undefined) {
                 const predicateData = this.toData(predicate);
                 codec = this.createEntryListenerWithPredicate(this.name, predicateData, includeValue, flags);
                 listenerHandler = MapAddEntryListenerWithPredicateCodec.handle;
@@ -1061,10 +1040,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(
-                    () => this.addEntryListenerInternal(listener, predicate, key, includeValue)
+                    () => this.addEntryListenerInternal(listener, includeValue, key, predicate)
                 );
             }
-            return Promise.reject(e);
+            throw e;
         }
 
         return this.listenerService.registerListener(codec, (m: ClientMessage): void => {

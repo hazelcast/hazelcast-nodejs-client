@@ -321,7 +321,7 @@ describe('CompactGenericRecordTest', function () {
     });
 
     it('should have working getters', async function() {
-        CompactStreamSerializer.classToSerializersMap.set(Employee, {});
+        CompactStreamSerializer.classToSerializerMap.set(Employee, {});
         const record = getGiganticRecord();
 
         for (const key in referenceObjects) {
@@ -573,7 +573,7 @@ describe('CompactGenericRecordTest', function () {
         describe('cloning', function () {
             it('should be able to clone every field', function() {
                 // Needed for compact validation
-                CompactStreamSerializer.classToSerializersMap.set(Employee, {});
+                CompactStreamSerializer.classToSerializerMap.set(Employee, {});
                 const record = getGiganticRecord();
                 record.clone();
             });

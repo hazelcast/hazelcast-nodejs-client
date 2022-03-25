@@ -58,7 +58,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.compareAndSet(expect, update));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnRandomTarget(
             AtomicRefCompareAndSetCodec,
@@ -90,7 +90,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.set(newValue));
             }
-            return Promise.reject(e);
+            throw e;
         }
 
         return this.encodeInvokeOnRandomTarget(
@@ -111,7 +111,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.getAndSet(newValue));
             }
-            return Promise.reject(e);
+            throw e;
         }
 
         return this.encodeInvokeOnRandomTarget(
@@ -143,7 +143,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.contains(value));
             }
-            return Promise.reject(e);
+            throw e;
         }
 
         return this.encodeInvokeOnRandomTarget(

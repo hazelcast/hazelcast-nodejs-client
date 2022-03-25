@@ -130,7 +130,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.publish(message));
             }
-            return Promise.reject(e);
+            throw e;
         }
 
         reliableTopicMessage.publishTime = Long.fromNumber(Date.now());

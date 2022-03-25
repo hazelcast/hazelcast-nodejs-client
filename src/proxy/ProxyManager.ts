@@ -115,7 +115,7 @@ export class ProxyManager {
                 return this.initializeLocalProxy(name, serviceName, createAtServer);
             });
         } else {
-            createProxyPromise = Promise.resolve(this.initializeLocalProxy(name, serviceName, createAtServer));
+            createProxyPromise = this.initializeLocalProxy(name, serviceName, createAtServer);
         }
 
         createProxyPromise

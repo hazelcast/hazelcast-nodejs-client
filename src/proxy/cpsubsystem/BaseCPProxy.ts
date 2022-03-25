@@ -23,6 +23,7 @@ import {Data} from '../../serialization/Data';
 import {SerializationService} from '../../serialization/SerializationService';
 import {InvocationService} from '../../invocation/InvocationService';
 import {Schema} from '../../serialization/compact/Schema';
+import {Class} from '../../serialization/compact/CompactSerializer';
 
 /**
  * Common super class for any CP Subsystem proxy.
@@ -69,7 +70,7 @@ export abstract class BaseCPProxy {
         return this.serializationService.toObject(data);
     }
 
-    protected registerSchema(schema: Schema, clazz: (new (...args: any[]) => any) | undefined): Promise<void> {
+    protected registerSchema(schema: Schema, clazz: Class | undefined): Promise<void> {
         return this.invocationService.registerSchema(schema, clazz);
     }
 

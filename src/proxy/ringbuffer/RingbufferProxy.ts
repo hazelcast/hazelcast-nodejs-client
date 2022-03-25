@@ -66,7 +66,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.add(item, overflowPolicy));
             }
-            return Promise.reject(e);
+            throw e;
         }
         const policyId = overflowPolicyToId(overflowPolicy);
         return this.encodeInvoke(RingbufferAddCodec, RingbufferAddCodec.decodeResponse, policyId, itemData);
@@ -81,7 +81,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.addAll(items, overflowPolicy));
             }
-            return Promise.reject(e);
+            throw e;
         }
 
         return this.encodeInvoke(RingbufferAddAllCodec, RingbufferAddAllCodec.decodeResponse, dataList, policyId);

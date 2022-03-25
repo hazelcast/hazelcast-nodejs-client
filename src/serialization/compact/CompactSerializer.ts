@@ -18,6 +18,11 @@ import {CompactReader} from './CompactReader';
 import {CompactWriter} from './CompactWriter';
 
 /**
+ * A type for any class.
+ */
+export type Class = new (...args: any[]) => any;
+
+/**
  * Defines the contract of the serializers used for Compact
  * serialization.
  *
@@ -26,16 +31,16 @@ import {CompactWriter} from './CompactWriter';
  *
  * {@link write} and {@link read} methods must be consistent with each other.
  *
- * For more information about usage serializers, please see Node.js client documentation and code samples.
+ * This API is currently in BETA and can change at any time.
  */
  export interface CompactSerializer<C> {
     /**
      * The class which the serializer is written for. You need to give the class
      * constructor to this property. For example, if a class is instantiated with `new Employee()`,
-     * class constructor is `Employee`. `class` is used to check a class instance compact
+     * class constructor is `Employee`. `class` is used to check a class instance is compact
      * serializable.
      */
-    class: new (...args: any[]) => any;
+    class: Class;
 
     /**
      * The type name of the registered class. Type name is written into the serialized data and used while deserialization.

@@ -47,7 +47,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.add(entry));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(SetAddCodec, SetAddCodec.decodeResponse, entryData);
     }
@@ -60,7 +60,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.addAll(items));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(SetAddAllCodec, SetAddAllCodec.decodeResponse, itemsData);
     }
@@ -68,7 +68,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
     toArray(): Promise<E[]> {
         return this.encodeInvoke(SetGetAllCodec, (clientMessage) => {
             const response = SetGetAllCodec.decodeResponse(clientMessage);
-            return response.map(this.toObject.bind(this));
+            return this.deserializeList(response);
         });
     }
 
@@ -84,7 +84,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.contains(entry));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(SetContainsCodec, SetContainsCodec.decodeResponse, entryData);
     }
@@ -97,7 +97,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.containsAll(items));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(SetContainsAllCodec, SetContainsAllCodec.decodeResponse, itemsData);
     }
@@ -114,7 +114,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.remove(entry));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(SetRemoveCodec, SetRemoveCodec.decodeResponse, entryData);
     }
@@ -127,7 +127,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.removeAll(items));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(
             SetCompareAndRemoveAllCodec, SetCompareAndRemoveAllCodec.decodeResponse, itemsData
@@ -142,7 +142,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.retainAll(items));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(
             SetCompareAndRetainAllCodec, SetCompareAndRetainAllCodec.decodeResponse, itemsData

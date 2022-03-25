@@ -72,6 +72,7 @@ import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
 import {Schema} from './compact/Schema';
+import {Class} from './compact/CompactSerializer';
 
 /**
  * Serializes objects and deserializes data.
@@ -87,7 +88,7 @@ export interface SerializationService {
 
     readObject(inp: DataInput): any;
 
-    registerSchemaToClass(schema: Schema, className: new (...args: any[]) => any): void;
+    registerSchemaToClass(schema: Schema, clazz: Class): void;
 }
 
 type PartitionStrategy = (obj: any) => number;
@@ -106,14 +107,18 @@ export class SerializationServiceV1 implements SerializationService {
     private readonly registry: { [id: number]: Serializer };
     private readonly serializerNameToId: { [name: string]: number };
     private readonly compactStreamSerializer: CompactStreamSerializer;
+    private readonly portableSerializer: PortableSerializer;
+    private readonly identifiedSerializer: IdentifiedDataSerializableSerializer;
 
     constructor(
         private readonly serializationConfig: SerializationConfigImpl,
-        private readonly schemaService: SchemaService
+        schemaService: SchemaService
     ) {
         this.registry = {};
         this.serializerNameToId = {};
         this.compactStreamSerializer = new CompactStreamSerializer(schemaService);
+        this.portableSerializer = new PortableSerializer(this.serializationConfig);
+        this.identifiedSerializer = this.createIdentifiedSerializer();
         this.registerDefaultSerializers();
         this.registerCustomSerializers();
         this.registerCompactSerializers();
@@ -151,7 +156,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (serializer instanceof CompactStreamSerializer) {
             serializer.write(dataOutput, object, throwIfSchemaNotReplicated);
         } else {
-            (serializer as Serializer).write(dataOutput, object);
+            serializer.write(dataOutput, object);
         }
         return new HeapData(dataOutput.toBuffer());
     }
@@ -239,14 +244,14 @@ export class SerializationServiceV1 implements SerializationService {
 
     private lookupDefaultSerializer(obj: any): Serializer {
         let serializer: Serializer = null;
-        if (SerializationServiceV1.isCompactSerializable(obj)) {
-            return this.findSerializerByName('!compact', false);
+        if (this.isCompactSerializable(obj)) {
+            return this.compactStreamSerializer;
         }
         if (SerializationServiceV1.isIdentifiedDataSerializable(obj)) {
-            return this.findSerializerByName('identified', false);
+            return this.identifiedSerializer;
         }
         if (SerializationServiceV1.isPortableSerializable(obj)) {
-            return this.findSerializerByName('!portable', false);
+            return this.portableSerializer
         }
 
         const objectType = Util.getType(obj);
@@ -283,8 +288,8 @@ export class SerializationServiceV1 implements SerializationService {
             && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
-    static isCompactSerializable(obj: any): boolean {
-        if (obj instanceof CompactGenericRecordImpl) {
+    isCompactSerializable(obj: any): boolean {
+       if (obj instanceof CompactGenericRecordImpl) {
             return true;
         }
         // Null object case: Object.create(null)
@@ -292,7 +297,7 @@ export class SerializationServiceV1 implements SerializationService {
             return false;
         }
 
-        return CompactStreamSerializer.isRegisteredAsCompact(obj.constructor);
+        return this.compactStreamSerializer.isRegisteredAsCompact(obj.constructor);
     }
 
     private registerDefaultSerializers(): void {
@@ -327,8 +332,6 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('bigDecimal', new BigDecimalSerializer());
         this.registerSerializer('bigint', new BigIntSerializer());
         this.registerSerializer('javaArray', new JavaArraySerializer());
-        this.registerIdentifiedFactories();
-        this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
         this.registerSerializer('!compact', this.compactStreamSerializer);
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
             this.registerSerializer('!json', new JsonSerializer());
@@ -337,7 +340,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
-    private registerIdentifiedFactories(): void {
+    private createIdentifiedSerializer(): IdentifiedDataSerializableSerializer {
         const factories: { [id: number]: IdentifiedDataSerializableFactory } = {};
         for (const id in this.serializationConfig.dataSerializableFactories) {
             factories[id] = this.serializationConfig.dataSerializableFactories[id];
@@ -347,15 +350,13 @@ export class SerializationServiceV1 implements SerializationService {
         factories[CLUSTER_DATA_FACTORY_ID] = clusterDataFactory;
         factories[AGGREGATOR_FACTORY_ID] = aggregatorFactory;
         factories[REST_VALUE_FACTORY_ID] = restValueFactory;
-        this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
+        return new IdentifiedDataSerializableSerializer(factories);
     }
 
     private registerCustomSerializers(): void {
         const customSerializers = this.serializationConfig.customSerializers;
-        for (const key in customSerializers) {
-            const candidate = customSerializers[key];
-            SerializationServiceV1.assertValidCustomSerializer(candidate);
-            this.registerSerializer('!custom' + candidate.id, candidate);
+        for (const customSerializer of customSerializers) {
+            this.registerSerializer('!custom' + customSerializer.id, customSerializer);
         }
     }
 
@@ -372,24 +373,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (candidate == null) {
             return;
         }
-        SerializationServiceV1.assertValidCustomSerializer(candidate);
         this.registerSerializer('!global', candidate);
-    }
-
-    private static assertValidCustomSerializer(candidate: any): void {
-        const idProp = 'id';
-        const fRead = 'read';
-        const fWrite = 'write';
-        if (typeof candidate[idProp] !== 'number') {
-            throw new TypeError('Custom serializer should have ' + idProp + ' property.');
-        }
-        if (typeof candidate[fRead] !== 'function' || typeof candidate[fWrite] !== 'function') {
-            throw new TypeError('Custom serializer should have ' + fRead + ' and ' + fWrite + ' methods.');
-        }
-        const typeId = candidate[idProp];
-        if (!Number.isInteger(typeId) || typeId < 1) {
-            throw new TypeError('Custom serializer should have its "id" greater than or equal to 1.');
-        }
     }
 
     private static isCustomSerializable(object: any): boolean {
@@ -422,7 +406,7 @@ export class SerializationServiceV1 implements SerializationService {
         return strategy(object);
     }
 
-    registerSchemaToClass(schema: Schema, clazz: new (...args: any[]) => any): void {
+    registerSchemaToClass(schema: Schema, clazz: Class): void {
         this.compactStreamSerializer.registerSchemaToClass(schema, clazz);
     }
 }

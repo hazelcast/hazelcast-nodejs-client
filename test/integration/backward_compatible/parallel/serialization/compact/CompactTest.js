@@ -161,7 +161,7 @@ describe('CompactTest', function () {
 
     it('should be able to read and write empty class', async function () {
         // Clear serializer list
-        CompactStreamSerializer.classToSerializersMap.clear();
+        CompactStreamSerializer.classToSerializerMap.clear();
         await shouldReadAndWrite(new CompactUtil.Flexible({}), []);
     });
 

@@ -17,8 +17,9 @@
 import {CompactSerializer} from '../serialization/compact/CompactSerializer';
 
 /**
- * Compact serialization config for the client. This API is currently in BETA and
- * can change at any time.
+ * Compact serialization config for the client.
+ *
+ * This API is currently in BETA and can change at any time.
  *
  */
 export interface CompactSerializationConfig {

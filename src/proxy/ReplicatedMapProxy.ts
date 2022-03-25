@@ -69,7 +69,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.put(key, value, ttl));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnKey(ReplicatedMapPutCodec, keyData, (clientMessage) => {
             const response = ReplicatedMapPutCodec.decodeResponse(clientMessage);
@@ -90,7 +90,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.get(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
 
         return this.encodeInvokeOnKey(ReplicatedMapGetCodec, keyData, (clientMessage) => {
@@ -109,7 +109,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.containsKey(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnKey(
             ReplicatedMapContainsKeyCodec, keyData, ReplicatedMapContainsKeyCodec.decodeResponse, keyData
@@ -126,7 +126,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.containsValue(value));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(ReplicatedMapContainsValueCodec, ReplicatedMapContainsValueCodec.decodeResponse, valueData);
     }
@@ -149,7 +149,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.remove(key));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvokeOnKey(ReplicatedMapRemoveCodec, keyData, (clientMessage) => {
             const response = ReplicatedMapRemoveCodec.decodeResponse(clientMessage);
@@ -171,7 +171,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
                 if (e instanceof SchemaNotReplicatedError) {
                     return this.registerSchema(e.schema, e.clazz).then(() => this.putAll(pairs));
                 }
-                return Promise.reject(e);
+                throw e;
             }
             entries.push([keyData, valueData]);
         }
@@ -180,10 +180,9 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     }
 
     keySet(): Promise<K[]> {
-        const toObject = this.toObject.bind(this);
         return this.encodeInvoke(ReplicatedMapKeySetCodec, (clientMessage) => {
             const response = ReplicatedMapKeySetCodec.decodeResponse(clientMessage);
-            return response.map(toObject);
+            return this.deserializeList(response);
         });
     }
 
@@ -191,7 +190,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         return this.encodeInvoke(ReplicatedMapValuesCodec, (clientMessage) => {
             const valuesData = ReplicatedMapValuesCodec.decodeResponse(clientMessage);
             if (comparator) {
-                const desValues = valuesData.map(this.toObject.bind(this));
+                const desValues = this.deserializeList(valuesData);
                 return new ReadOnlyLazyList(desValues.sort(comparator), this.serializationService);
             }
             return new ReadOnlyLazyList(valuesData, this.serializationService);
@@ -201,7 +200,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     entrySet(): Promise<Array<[K, V]>> {
         return this.encodeInvoke(ReplicatedMapEntrySetCodec, (clientMessage) => {
             const response = ReplicatedMapEntrySetCodec.decodeResponse(clientMessage);
-            return this.deserializeEntryList(this.toObject.bind(this), response);
+            return this.deserializeEntryList(response);
         });
     }
 
@@ -225,9 +224,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         return this.listenerService.deregisterListener(listenerId);
     }
 
-    private addEntryListenerInternal(listener: EntryListener<K, V>, predicate: Predicate,
-                                     key: K): Promise<string> {
-        const toObject = this.toObject.bind(this);
+    private addEntryListenerInternal(listener: EntryListener<K, V>, predicate?: Predicate, key?: K): Promise<string> {
         const entryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data,
                                    event: number, uuid: UUID, numberOfAffectedEntries: number): void => {
             const member = this.clusterService.getMember(uuid.toString());
@@ -235,10 +232,10 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
 
             const entryEvent = new EntryEvent<K,V>(
                 name,
-                toObject(key),
-                toObject(value),
-                toObject(oldValue),
-                toObject(mergingValue),
+                this.toObject(key),
+                this.toObject(value),
+                this.toObject(oldValue),
+                this.toObject(mergingValue),
                 member
             );
 
@@ -263,9 +260,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
                 (listener[mapEventMethod] as MapEventListener<K, V>).apply(null, [mapEvent]);
             }
         };
-        let listenerHandler: (message: ClientMessage,
-                              handler: EntryEventHandler,
-                              toObjectFn: (data: Data) => any) => void;
+        let listenerHandler: (message: ClientMessage, handler: EntryEventHandler) => void;
         let codec: ListenerMessageCodec;
 
         try {
@@ -290,12 +285,12 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.addEntryListenerInternal(listener, predicate, key));
             }
-            return Promise.reject(e);
+            throw e;
         }
 
         return this.listenerService.registerListener(codec,
             (m: ClientMessage) => {
-                listenerHandler(m, entryEventHandler, toObject);
+                listenerHandler(m, entryEventHandler);
             });
     }
 

@@ -58,7 +58,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.add(element));
             }
-            return Promise.reject(e);
+            throw e;
         }
     }
 
@@ -69,7 +69,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.addAll(elements));
             }
-            return Promise.reject(e);
+            throw e;
         }
     }
 
@@ -82,7 +82,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.addAllAt(index, elements));
             }
-            return Promise.reject(e);
+            throw e;
         }
     }
 
@@ -93,7 +93,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.addAt(index, element));
             }
-            return Promise.reject(e);
+            throw e;
         }
     }
 
@@ -108,7 +108,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.contains(entry));
             }
-            return Promise.reject(e);
+            throw e;
         }
     }
 
@@ -119,7 +119,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.containsAll(elements));
             }
-            return Promise.reject(e);
+            throw e;
         }
     }
 
@@ -134,7 +134,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.remove(entry));
             }
-            return Promise.reject(e);
+            throw e;
         }
     }
 
@@ -147,7 +147,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.removeAll(elements));
             }
-            return Promise.reject(e);
+            throw e;
         }
     }
 
@@ -160,7 +160,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.retainAll(elements));
             }
-            return Promise.reject(e);
+            throw e;
         }
     }
 
@@ -186,7 +186,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.set(index, element));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(ListSetCodec, (clientMessage) => {
             const response = ListSetCodec.decodeResponse(clientMessage);
@@ -202,7 +202,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.indexOf(element));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(ListIndexOfCodec, ListIndexOfCodec.decodeResponse, elementData);
     }
@@ -215,7 +215,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.lastIndexOf(element));
             }
-            return Promise.reject(e);
+            throw e;
         }
         return this.encodeInvoke(ListLastIndexOfCodec, ListLastIndexOfCodec.decodeResponse, elementData);
     }
@@ -234,7 +234,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
     toArray(): Promise<E[]> {
         return this.encodeInvoke(ListGetAllCodec, (clientMessage) => {
             const response = ListGetAllCodec.decodeResponse(clientMessage);
-            return response.map<E>(this.toObject.bind(this));
+            return this.deserializeList(response);
         });
     }
 

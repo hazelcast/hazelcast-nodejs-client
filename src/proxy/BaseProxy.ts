@@ -28,10 +28,18 @@ import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
 import {SchemaService} from '../serialization/compact/SchemaService';
 import {Schema} from '../serialization/compact/Schema';
+import {Class} from '../serialization/compact/CompactSerializer';
 
 /**
  * Common super class for any proxy.
  * @internal
+ *
+ * You will see a lot of try/catch blocks around {@link toData} in proxy methods. This is called controlled serialization
+ * and needed due to compact serialization. While serializing a compact object we need to be sure that its schema
+ * is replicated to cluster for data integrity. If not, we throw {@link SchemaNotReplicatedError}. Therefore, we
+ * check if toData calls throw the error and if so, we register the schema to the cluster and then retry the proxy api call.
+ * We need try/catch blocks everywhere to avoid performance penalty of returning Promise.resolve(data) instead
+ * of data.
  */
 export abstract class BaseProxy {
 
@@ -70,7 +78,7 @@ export abstract class BaseProxy {
         return this.postDestroy();
     }
 
-    protected registerSchema(schema: Schema, clazz: (new (...args: any[]) => any) | undefined): Promise<void> {
+    protected registerSchema(schema: Schema, clazz: Class | undefined): Promise<void> {
         return this.invocationService.registerSchema(schema, clazz);
     }
 
@@ -78,22 +86,24 @@ export abstract class BaseProxy {
         return Promise.resolve();
     }
 
-    protected serializeList(input: any[]): Data[] {
-        return input.map((each) => {
-            return this.toData(each);
+    protected serializeList(items: any[]): Data[] {
+        return items.map((item: any) => {
+            return this.toData(item);
         });
     }
 
     protected deserializeList(items: Data[]): any[] {
-        return items.map(this.toObject.bind(this));
+        return items.map((item: Data) => {
+            return this.toObject(item);
+        });
     }
 
-    protected deserializeEntryList<K, V>(toObject: (data: Data) => any, entrySet: Array<[Data, Data]>): Array<[K, V]> {
-        const deserializedSet: Array<[K, V]> = [];
-        entrySet.forEach((entry) => {
-            deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
-        });
-        return deserializedSet;
+    protected deserializeEntryList<K, V>(entrySet: Array<[Data, Data]>): Array<[K, V]> {
+        const deserializedList: Array<[K, V]> = new Array(entrySet.length);
+        for (let i = 0; i < entrySet.length; i++) {
+            deserializedList[i] = [this.toObject(entrySet[i][0]), this.toObject(entrySet[i][1])];
+        }
+        return deserializedList;
     }
 
     /**

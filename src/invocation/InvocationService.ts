@@ -50,6 +50,7 @@ import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import * as Long from 'long';
 import {SchemaService} from '../serialization/compact/SchemaService';
 import {Schema} from '../serialization/compact/Schema';
+import {Class} from '../serialization/compact/CompactSerializer';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -130,8 +131,8 @@ export class Invocation {
     eventHandler: (clientMessage: ClientMessage) => any;
 
     /**
-     * Handler is responsible for handling the client message and return the object user expects. The default value
-     * is the identity function which returns the clientMessage itself. If you need clientMessage you can use that.
+     * Handler is responsible for handling the client message and returning an object. The default value
+     * is the identity function which returns the clientMessage itself.
      */
     handler: (clientMessage: ClientMessage) => any = x => x;
 
@@ -389,7 +390,7 @@ export class InvocationService {
      * Invokes given invocation on specified connection.
      * @param connection
      * @param request
-     * @param handler Handler is responsible for handling the client message and return the object user expects.
+     * @param handler Handler is responsible for handling the client message and returning the object user expects.
      * @returns a promise that resolves to {@link ClientMessage}
      */
     invokeOnConnection<V>(
@@ -460,7 +461,7 @@ export class InvocationService {
         return this.schemaService.fetchSchema(schemaId);
     }
 
-    registerSchema(schema: Schema, clazz: (new (...args: any[]) => any) | undefined): Promise<void> {
+    registerSchema(schema: Schema, clazz: Class | undefined): Promise<void> {
         return this.schemaService.put(schema).then(() => {
             this.serializationService.registerSchemaToClass(schema, clazz);
         })
@@ -484,11 +485,12 @@ export class InvocationService {
                             this.logger.trace(
                                 'SchemaService', `Could not find schema id ${e.schemaId} locally, will search on the cluster`
                             );
+
                             this.fetchSchema(e.schemaId).then(() => {
                                 // Reset nextFrame since we tried to parse the message once.
                                 clientMessage.resetNextFrame();
                                 invocation.eventHandler(clientMessage);
-                            }).catch((err: Error) => {
+                            }, (err: Error) => {
                                 this.logger.error(
                                     'InvocationService', `The schema needed for an event could not be fetched ${err}`
                                 );
