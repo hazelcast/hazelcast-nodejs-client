@@ -64,7 +64,7 @@ exports.promiseWaitMilliseconds = function (milliseconds) {
     }));
 };
 
-exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutMs = 10000) {
+exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
     const errorsToCount = {};
     return new Promise(((resolve, reject) => {
         let intervalTimer;
@@ -92,7 +92,7 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
 
             let errorString = '';
             for (const error in errorsToCount) {
-                errorString += `\tThe error "${error}" happened ${errorsToCount[error]} times. \n\n`;
+                errorString += `\tThe following error happened ${errorsToCount[error]} times:\n\n\t${error} \n\n`;
             }
 
             reject(new Error('Rejected due to timeout of ' + timeoutMs
