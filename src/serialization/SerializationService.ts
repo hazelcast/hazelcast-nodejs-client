@@ -333,6 +333,8 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('bigint', new BigIntSerializer());
         this.registerSerializer('javaArray', new JavaArraySerializer());
         this.registerSerializer('!compact', this.compactStreamSerializer);
+        this.registerSerializer('identified', this.identifiedSerializer);
+        this.registerSerializer('!portable', this.portableSerializer);
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
             this.registerSerializer('!json', new JsonSerializer());
         } else {
