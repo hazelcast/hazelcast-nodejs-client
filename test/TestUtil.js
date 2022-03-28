@@ -64,8 +64,8 @@ exports.promiseWaitMilliseconds = function (milliseconds) {
     }));
 };
 
-exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
-    let errorString = '';
+exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutMs = 10000) {
+    const errorsToCount = {};
     return new Promise(((resolve, reject) => {
         let intervalTimer;
         function scheduleNext() {
@@ -76,7 +76,11 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
                         resolve();
                     })
                     .catch(e => {
-                        errorString += e.stack + '\n';
+                        if (e.stack in errorsToCount) {
+                            errorsToCount[e.stack]++;
+                        } else {
+                            errorsToCount[e.stack] = 1;
+                        }
                         scheduleNext();
                     });
             }, intervalMs);
@@ -85,7 +89,14 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
 
         const timeoutTimer = setTimeout(() => {
             clearInterval(intervalTimer);
-            reject(new Error('Rejected due to timeout of ' + timeoutMs + 'ms. Errors occurred in order: \n\n' + errorString));
+
+            let errorString = '';
+            for (const error in errorsToCount) {
+                errorString += `\tThe error "${error}" happened ${errorsToCount[error]} times. \n\n`;
+            }
+
+            reject(new Error('Rejected due to timeout of ' + timeoutMs
+                + 'ms. The following are the errors occurred and their counts: \n\n' + errorString));
         }, timeoutMs);
     }));
 };
