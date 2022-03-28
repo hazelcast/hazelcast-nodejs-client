@@ -72,7 +72,7 @@ describe('MultiMap Proxy Listener', function () {
     it('listens for add with value excluded', function (done) {
         const listener = new Listener('added', done, 'test', 'foo', null, null, null);
 
-        map.addEntryListener(listener, null, false).then(() => {
+        map.addEntryListener(listener, undefined, false).then(() => {
             map.put('foo', 'bar');
         });
     });
@@ -80,7 +80,7 @@ describe('MultiMap Proxy Listener', function () {
     it('listens for add with value included', function (done) {
         const listener = new Listener('added', done, 'test', 'foo', 'bar', null, null);
 
-        map.addEntryListener(listener, null, true).then(() => {
+        map.addEntryListener(listener, undefined, true).then(() => {
             map.put('foo', 'bar');
         });
     });
@@ -114,7 +114,7 @@ describe('MultiMap Proxy Listener', function () {
     it('listens for remove with value excluded', function (done) {
         const listener = new Listener('removed', done, 'test', 'foo', null, null, null);
 
-        map.addEntryListener(listener, null, false).then(() => {
+        map.addEntryListener(listener, undefined, false).then(() => {
             return map.put('foo', 'bar');
         }).then(() => {
             return map.remove('foo', 'bar');
@@ -124,7 +124,7 @@ describe('MultiMap Proxy Listener', function () {
     it('listens for remove with value included', function (done) {
         const listener = new Listener('removed', done, 'test', 'foo', null, 'bar', null);
 
-        map.addEntryListener(listener, null, true).then(() => {
+        map.addEntryListener(listener, undefined, true).then(() => {
             return map.put('foo', 'bar');
         }).then(() => {
             return map.remove('foo', 'bar');
@@ -175,7 +175,7 @@ describe('MultiMap Proxy Listener', function () {
             }
         };
 
-        map.addEntryListener(listener, null, true).then(() => {
+        map.addEntryListener(listener, undefined, true).then(() => {
             return map.put('foo', 'bar');
         }).then(() => {
             return map.clear();
@@ -183,7 +183,7 @@ describe('MultiMap Proxy Listener', function () {
     });
 
     it('removes present listener', async function () {
-        const registrationId = await map.addEntryListener({}, null, true);
+        const registrationId = await map.addEntryListener({}, undefined, true);
         const removed = await map.removeEntryListener(registrationId);
         expect(removed).to.be.true;
     });

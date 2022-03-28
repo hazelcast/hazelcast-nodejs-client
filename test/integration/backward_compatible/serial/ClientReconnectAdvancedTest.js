@@ -127,7 +127,7 @@ describe('ClientReconnectAdvancedTest', function () {
             loaded: eventHandler,
             mapEvicted: eventHandler,
             mapCleared: eventHandler
-        }, false);
+        }, undefined, false);
 
         await TestUtil.assertTrueEventually(async () => {
             expect(client.getCluster().getMembers()).to.have.lengthOf(1);

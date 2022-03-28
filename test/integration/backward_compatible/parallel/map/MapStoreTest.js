@@ -176,7 +176,7 @@ describe('MapStoreTest', function () {
         };
         map.evictAll()
             .then(() => map.put('1', '1'))
-            .then(() => map.addEntryListener(listener, null, true))
+            .then(() => map.addEntryListener(listener, undefined, true))
             .then(id => {
                 listenerId = id;
                 return map.putAll([['1', '2']]);
@@ -201,7 +201,7 @@ describe('MapStoreTest', function () {
         };
         map.evictAll()
             .then(() => map.put('1', '1'))
-            .then(() => map.addEntryListener(listener, null, true))
+            .then(() => map.addEntryListener(listener, undefined, true))
             .then(id => {
                 listenerId = id;
                 return map.setAll([['1', '2']]);
