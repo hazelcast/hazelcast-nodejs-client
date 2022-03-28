@@ -37,7 +37,7 @@ import * as Long from 'long';
  * Represents a deserialized compact generic record. This class is what user gets.
  * @internal
  */
-export class CompactGenericRecordImpl {
+export class CompactGenericRecordImpl implements GenericRecord {
 
     private readonly schema: Schema;
 

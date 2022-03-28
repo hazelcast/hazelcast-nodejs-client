@@ -34,7 +34,7 @@ export class FieldOperations {
                 writer.writeBoolean(fieldName, record.getBoolean(fieldName));
             },
             kindSizeInBytes(): number {
-                //Boolean is actually 1 bit. To make it look like smaller than Byte we use 0.
+                // Boolean is actually 1 bit. To make it look like smaller than Byte we use 0.
                 return 0;
             },
         },

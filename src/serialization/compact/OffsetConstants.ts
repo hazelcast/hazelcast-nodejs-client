@@ -19,23 +19,10 @@ import {OffsetReader} from './OffsetReader';
 import {ObjectDataInput} from '../ObjectData';
 import {BitsUtil} from '../../util/BitsUtil';
 
-/**
- * @internal
- */
-export const BYTE_MAX_VALUE = 127;
-/**
- * @internal
- */
-export const BYTE_MIN_VALUE = -128;
-
-/**
- * @internal
- */
-export const SHORT_MAX_VALUE = 32767;
-/**
- * @internal
- */
-export const SHORT_MIN_VALUE = -32768;
+const BYTE_MAX_VALUE = 127;
+const BYTE_MIN_VALUE = -128;
+const SHORT_MAX_VALUE = 32767;
+const SHORT_MIN_VALUE = -32768;
 
 /**
  * Range of the offsets that can be represented by a single byte

@@ -21,7 +21,7 @@ import {DefaultCompactReader} from './DefaultCompactReader';
 import {SchemaService} from './SchemaService';
 import {DefaultCompactWriter} from './DefaultCompactWriter';
 import {FieldOperations} from '../generic_record/FieldOperations';
-import {HazelcastSerializationError, SchemaNotFoundError, SchemaNotReplicatedError} from '../../core';
+import {SchemaNotFoundError, SchemaNotReplicatedError} from '../../core';
 import {ObjectDataInput, ObjectDataOutput, PositionalObjectDataOutput} from '../ObjectData';
 import {CompactGenericRecordImpl} from '../generic_record/CompactGenericRecord';
 import {SchemaWriter} from './SchemaWriter';
@@ -80,10 +80,10 @@ export class CompactStreamSerializer {
 
         if (serializer === undefined) {
             // Registration does not exist, we will return a GenericRecord
-            return new DefaultCompactReader(this, input, schema, null).toSerialized();
+            return new DefaultCompactReader(this, input, schema).toDeserialized();
         }
 
-        const reader = new DefaultCompactReader(this, input, schema, serializer.typeName);
+        const reader = new DefaultCompactReader(this, input, schema);
         return serializer.read(reader);
     }
 
@@ -141,19 +141,19 @@ export class CompactStreamSerializer {
         writer.end();
     }
 
-    writeObject(output: PositionalObjectDataOutput, o: any, throwIfSchemaNotReplicated = true) : void {
-        const compactSerializer = this.getSerializerFromObject(o);
+    writeObject(output: PositionalObjectDataOutput, obj: any, throwIfSchemaNotReplicated = true) : void {
+        const compactSerializer = this.classToSerializerMap.get(obj.constructor);
         const clazz = compactSerializer.class;
         let schema = this.classToSchemaMap.get(clazz);
         if (schema === undefined) {
             const writer = new SchemaWriter(compactSerializer.typeName);
-            compactSerializer.write(writer, o);
+            compactSerializer.write(writer, obj);
             schema = writer.build();
             if (throwIfSchemaNotReplicated) {
                 this.throwIfSchemaNotReplicatedToCluster(schema, clazz);
             }
         }
-        this.writeSchemaAndObject(compactSerializer, output, schema, o);
+        this.writeSchemaAndObject(compactSerializer, output, schema, obj);
     }
 
     private throwIfSchemaNotReplicatedToCluster(schema: Schema, clazz: Class | undefined): void {
@@ -161,15 +161,5 @@ export class CompactStreamSerializer {
         if (this.schemaService.get(schema.schemaId) === null) {
             throw new SchemaNotReplicatedError(`The schema ${schema.schemaId} is not replicated yet.`, schema, clazz);
         }
-    }
-
-    private getSerializerFromObject(obj: any) : CompactSerializer<Class> {
-        const serializer = this.classToSerializerMap.get(obj.constructor);
-
-        if (serializer !== undefined) {
-            return serializer;
-        }
-        // This is an unreachable line. It is ok for this line to be not covered in tests.
-        throw new HazelcastSerializationError(`Explicit compact serializer is needed for obj: ${obj}`);
     }
 }
