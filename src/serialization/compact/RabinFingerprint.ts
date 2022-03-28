@@ -17,7 +17,6 @@
 
 import {Schema} from './Schema';
 import * as Long from 'long';
-import {BitsUtil} from '../../util/BitsUtil';
 import {Buffer} from 'buffer';
 
 export const INIT =  Long.fromString('0xc15d213aa4d7a795', false, 16);
@@ -32,64 +31,53 @@ for (let i = 0; i < 256; i++) {
 }
 
 /**
- * Used in tests.
+ * Used to compute rabin fingerprint of compact schema.
  * @internal
  */
-export const RabinFingerprintBytes = (buffer: Buffer): Long => {
-    let fp: Long = INIT;
-    for (const byte of buffer) {
-        fp = RabinFingerPrintLongByte(fp, byte);
+export class RabinFingerprint64 {
+    /**
+     * Used in tests.
+     */
+    private static ofBuffer(buffer: Buffer): Long {
+        let fp: Long = INIT;
+        for (const byte of buffer) {
+            fp = RabinFingerprint64.ofLongByte(fp, byte);
+        }
+        return fp;
     }
-    return fp;
-};
 
-/**
- * A very collision-resistant fingerprint method used to create automatic
- * schema ids for the Compact format.
- * @internal
- */
-export const RabinFingerprint64 = (schema: Schema): Long => {
-    let fp: Long = RabinFingerPrintLongString(INIT, schema.typeName);
-    fp = RabinFingerPrintLongInt(fp, schema.fieldDefinitionMap.size);
-    for (const descriptor of schema.fieldDefinitionMap.values()) {
-        fp = RabinFingerPrintLongString(fp, descriptor.fieldName);
-        fp = RabinFingerPrintLongInt(fp, descriptor.kind);
+    /**
+     * A very collision-resistant fingerprint method used to create automatic
+     * schema ids for the Compact format.
+     */
+    static ofSchema(schema: Schema): Long {
+        let fp: Long = RabinFingerprint64.ofLongString(INIT, schema.typeName);
+        fp = RabinFingerprint64.ofLongInt(fp, schema.fieldDefinitionMap.size);
+        for (const descriptor of schema.fieldDefinitionMap.values()) {
+            fp = RabinFingerprint64.ofLongString(fp, descriptor.fieldName);
+            fp = RabinFingerprint64.ofLongInt(fp, descriptor.kind);
+        }
+        return fp;
     }
-    return fp;
-};
 
-/**
- * Used by RabinFingerprint64
- * @internal
- */
-export const RabinFingerPrintLongString = (fp: Long, value: string | null): Long => {
-    if (value === null) {
-        return RabinFingerPrintLongInt(fp, BitsUtil.NULL_ARRAY_LENGTH);
+    private static ofLongString(fp: Long, value: string): Long {
+        const utf8Bytes = Buffer.from(value, 'utf8');
+        fp = RabinFingerprint64.ofLongInt(fp, utf8Bytes.length);
+        for (let i = 0; i < utf8Bytes.length; i++) {
+            fp = RabinFingerprint64.ofLongByte(fp, utf8Bytes[i]);
+        }
+        return fp;
     }
-    const utf8Bytes = Buffer.from(value, 'utf8');
-    fp = RabinFingerPrintLongInt(fp, utf8Bytes.length);
-    for (let i = 0; i < utf8Bytes.length; i++) {
-        fp = RabinFingerPrintLongByte(fp, utf8Bytes[i]);
+
+    private static ofLongInt(fp: Long, int: number) : Long {
+        fp = RabinFingerprint64.ofLongByte(fp, int & 0xff);
+        fp = RabinFingerprint64.ofLongByte(fp, (int >> 8) & 0xff);
+        fp = RabinFingerprint64.ofLongByte(fp, (int >> 16) & 0xff);
+        fp = RabinFingerprint64.ofLongByte(fp, (int >> 24) & 0xff);
+        return fp;
     }
-    return fp;
-};
 
-/**
- * Used by RabinFingerprint64
- * @internal
- */
-export const RabinFingerPrintLongInt = (fp: Long, int: number) : Long =>  {
-    fp = RabinFingerPrintLongByte(fp, int & 0xff);
-    fp = RabinFingerPrintLongByte(fp, (int >> 8) & 0xff);
-    fp = RabinFingerPrintLongByte(fp, (int >> 16) & 0xff);
-    fp = RabinFingerPrintLongByte(fp, (int >> 24) & 0xff);
-    return fp;
-}
-
-/**
- * Used by RabinFingerprint64
- * @internal
- */
-export const RabinFingerPrintLongByte = (fp: Long, byte: number) : Long => {
-    return fp.shiftRightUnsigned(8).xor(FP_TABLE[fp.xor(byte).and(Long.fromString('0xff', true, 16)).toNumber()]);
+    private static ofLongByte(fp: Long, byte: number) : Long {
+        return fp.shiftRightUnsigned(8).xor(FP_TABLE[fp.xor(byte).and(Long.fromString('0xff', true, 16)).toNumber()]);
+    }
 }

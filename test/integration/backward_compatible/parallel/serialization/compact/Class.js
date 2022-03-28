@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 'use strict';
+
 class A {
     constructor(age) {
         this.age = age;
     }
 }
+
 class ASerializer {
     constructor() {
         this.class = A;
@@ -33,4 +35,5 @@ class ASerializer {
         writer.writeInt32('age', obj.age);
     }
 }
+
 module.exports = {ASerializer, A};

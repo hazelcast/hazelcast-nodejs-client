@@ -25,6 +25,7 @@ const { A, ASerializer } = require('./Class');
 const B = require('./SameNamedClass').A;
 const BSerializer = require('./SameNamedClass').ASerializer;
 const { Predicates, HazelcastSerializationError } = require('../../../../../../lib/core');
+const CompactUtil = require('./CompactUtil');
 
 const COMPACT_ENABLED_ZERO_CONFIG_XML = `
     <hazelcast xmlns="http://www.hazelcast.com/schema/config"
@@ -51,13 +52,11 @@ describe('CompactTest', function () {
     let fixedSizeFields;
     let arrayOfNullableFixedSizeFields;
 
-    let CompactUtil;
     let FieldKind;
 
     const testFactory = new TestUtil.TestFactory();
 
     try {
-        CompactUtil = require('./CompactUtil');
         FieldKind = require('../../../../../../lib/serialization/generic_record/FieldKind').FieldKind;
 
         varSizeFields = CompactUtil.varSizeFields;

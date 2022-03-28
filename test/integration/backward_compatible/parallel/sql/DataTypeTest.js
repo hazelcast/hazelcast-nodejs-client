@@ -19,6 +19,7 @@
 const { Lang } = require('../../../remote_controller/remote_controller_types');
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
+const CompactUtil = require('../serialization/compact/CompactUtil');
 const { InvocationService } = require('../../../../../lib/invocation/InvocationService');
 
 const chai = require('chai');
@@ -66,7 +67,6 @@ describe('SQLDataTypeTest', function () {
     let mapName;
     let member;
     let serverVersionNewerThanFive;
-    let CompactUtil;
 
     const clientVersionNewerThanFive = TestUtil.isClientVersionAtLeast('5.0');
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
@@ -87,11 +87,6 @@ describe('SQLDataTypeTest', function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
         member = await RC.startMember(cluster.id);
-        try {
-            CompactUtil = require('../serialization/compact/CompactUtil');
-        } catch (e) {
-            // no-op
-        }
     });
 
     const basicSetup = async (testFn) => {
@@ -111,9 +106,7 @@ describe('SQLDataTypeTest', function () {
         if (someMap) {
             await someMap.clear();
         }
-        if (client) {
-            await client.shutdown();
-        }
+        await testFactory.shutdownAllClients();
         sandbox.restore();
     });
 
@@ -925,66 +918,6 @@ describe('SQLDataTypeTest', function () {
         }
     });
 
-    it('should work when compact is used, schema is not known and lazy deserialization is not used', async function () {
-        TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        const SqlColumnType = TestUtil.getSqlColumnType();
-        client = await testFactory.newHazelcastClientForParallelTests({
-            clusterName: cluster.id,
-            serialization: {
-                compact: {
-                    serializers: [new CompactUtil.EmployeeSerializer()]
-                }
-            }
-        }, member);
-        TestUtil.markServerVersionAtLeast(this, client, '5.0');
-        mapName = TestUtil.randomString(10);
-        someMap = await client.getMap(mapName);
-        await someMap.addIndex({
-            type: 'SORTED',
-            attributes: ['age']
-        });
-
-        await TestUtil.createMappingForCompact(
-            'double',
-            {age: 'integer', id: 'bigint'},
-            client,
-            mapName,
-            'Employee'
-        );
-
-        const employee1 = new CompactUtil.Employee(12, Long.fromNumber(1));
-        const employee2 = new CompactUtil.Employee(15, Long.fromNumber(2));
-        const employee3 = new CompactUtil.Employee(17, Long.fromNumber(3));
-        await someMap.put(0, employee1);
-        await someMap.put(1, employee2);
-        await someMap.put(2, employee3);
-
-        const result = await TestUtil.getSql(client).execute(
-            `SELECT * FROM ${mapName} WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER) ORDER BY age DESC`,
-            [13, 18]
-        );
-
-        const rowMetadata = await TestUtil.getRowMetadata(result);
-        rowMetadata.getColumn(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.INTEGER);
-        rowMetadata.getColumn(rowMetadata.findColumn('id')).type.should.be.eq(SqlColumnType.BIGINT);
-
-        const rows = [];
-
-        for await (const row of result) {
-            rows.push(row);
-        }
-
-        const expectedKeys = [2, 1];
-        const expectedValues = [employee3, employee2];
-
-        rows.length.should.be.eq(expectedValues.length);
-
-        for (let i = 0; i < rows.length; i++) {
-            rows[i]['age'].should.be.eq(expectedValues[i].age);
-            (rows[i]['id'].eq(expectedValues[i].id)).should.be.true;
-            rows[i]['__key'].should.be.eq(expectedKeys[i]);
-        }
-    });
     it('should be able to decode/serialize JSON', async function () {
         const inputs = [new HazelcastJsonValue(JSON.stringify({age: 3})), {age: 3}];
         for (const input of inputs) {

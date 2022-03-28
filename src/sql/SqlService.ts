@@ -321,24 +321,6 @@ export class SqlServiceImpl implements SqlService {
                 connection, requestMessage, SqlExecuteCodec.decodeResponse
             ).then(response => {
                 SqlServiceImpl.handleExecuteResponse(response, result);
-                // Try to deserialize the first row for compact schema fetching if lazy deserialization won't be used.
-                if (!result.isRawResult() && result.isRowSet()) {
-                    try {
-                        result.getCurrentRow();
-                    } catch (e) {
-                        if (e instanceof HazelcastSqlException && e.cause instanceof SchemaNotFoundError) {
-                            // We need to fetch the schema to deserialize compact.
-                            this.invocationService.logger.trace(
-                                'SqlService', `Could not find schema id ${e.cause.schemaId} locally, will search on the cluster`
-                            );
-                            return this.invocationService.fetchSchema(e.cause.schemaId).then(() => {
-                                return result;
-                            })
-                        } else {
-                            throw e;
-                        }
-                    }
-                }
                 return result;
             }).catch(err => {
                 const error = this.rethrow(err, connection);
@@ -409,10 +391,10 @@ export class SqlServiceImpl implements SqlService {
             let message;
             if (e instanceof SchemaNotFoundError) {
                 message = 'You tried to deserialize an SQL row which includes a compact serializable object, however '
-                        + 'the schema for that object is not known by the client. You can try registering a compact '
-                        + 'serializer for that object, or setting `returnRawResult` to `false` in the SQL statement '
-                        + 'options. This will disable lazy deserialization for this SQL result and enable automatic '
-                        + 'schema fetching which will solve this error.'
+                        + 'the schema for that object is not known by the client. The client won\'t fetch the schema of '
+                        + 'the field because of lazy deserialization support. In order not to get this error, you can change '
+                        + 'your mapping to use the fields of the compact object. SQL\'s lazy deserialization support may '
+                        + 'be removed in the future, after that you will no longer get this error.'
             } else {
                 message = 'Failed to deserialize query result value.';
                 if (!isRaw) {

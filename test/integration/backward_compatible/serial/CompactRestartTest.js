@@ -16,6 +16,7 @@
 'use strict';
 
 const TestUtil = require('../../../TestUtil');
+const CompactUtil = require('../parallel/serialization/compact/CompactUtil');
 const RC = require('../../RC');
 const { Predicates } = require('../../../../lib');
 
@@ -35,13 +36,11 @@ describe('CompactRestartTest', function() {
     let mapName;
     let member;
     let FieldKind;
-    let CompactUtil;
 
     const testFactory = new TestUtil.TestFactory();
 
     try {
         FieldKind = require('../../../../lib/serialization/generic_record/FieldKind').FieldKind;
-        CompactUtil = require('../parallel/serialization/compact/CompactUtil');
     } catch (e) {
         // no-op
     }

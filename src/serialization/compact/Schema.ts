@@ -42,8 +42,8 @@ export class Schema implements IdentifiedDataSerializable {
     factoryId = COMPACT_FACTORY_ID;
 
     constructor(typeName = '', fields: FieldDescriptor[] = []) {
-        if (typeof typeName !== 'string' && typeName !== null) {
-            throw new TypeError('Type name must be a string or null');
+        if (typeof typeName !== 'string') {
+            throw new TypeError('Type name must be a string');
         }
         this.typeName = typeName;
         this.fields = fields;
@@ -105,7 +105,7 @@ export class Schema implements IdentifiedDataSerializable {
             index++;
         }
         this.numberVarSizeFields = index;
-        this.schemaId = RabinFingerprint64(this);
+        this.schemaId = RabinFingerprint64.ofSchema(this);
     }
 
     getFields() : IterableIterator<FieldDescriptor> {

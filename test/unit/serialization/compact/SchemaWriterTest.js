@@ -24,14 +24,14 @@ const {
     supportedFields
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { PositionalObjectDataOutput } = require('../../../../lib/serialization/ObjectData');
-const { RabinFingerprintBytes } = require('../../../../lib/serialization/compact/RabinFingerprint');
+const { RabinFingerprint64 } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const TestUtil = require('../../../TestUtil');
 chai.should();
 
 describe('SchemaWriterTest', function () {
     it('should use RabinFingerprint to compute schema id', function () {
         const writer = new SchemaWriter('typeName');
-        writer.addField(new FieldDescriptor(null, FieldKind.BOOLEAN));
+        writer.addField(new FieldDescriptor('a', FieldKind.BOOLEAN));
         writer.addField(new FieldDescriptor('b', FieldKind.ARRAY_OF_BOOLEAN));
         writer.addField(new FieldDescriptor('c', FieldKind.TIMESTAMP_WITH_TIMEZONE));
         const schema = writer.build();
@@ -41,7 +41,7 @@ describe('SchemaWriterTest', function () {
         const out = new PositionalObjectDataOutput(serializationService, false);
         schema.writeData(out);
 
-        const fingerprint64 = RabinFingerprintBytes(out.toBuffer());
+        const fingerprint64 = RabinFingerprint64.ofBuffer(out.toBuffer());
         fingerprint64.eq(schema.schemaId).should.be.true;
     });
 

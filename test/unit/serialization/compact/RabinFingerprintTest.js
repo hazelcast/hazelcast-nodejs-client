@@ -15,14 +15,9 @@
  */
 'use strict';
 
-const {
-    RabinFingerPrintLongByte,
-    RabinFingerPrintLongInt,
-    INIT
-} = require('../../../../lib/serialization/compact/RabinFingerprint');
 const chai = require('chai');
 const Long = require('long');
-const { RabinFingerPrintLongString } = require('../../../../lib/serialization/compact/RabinFingerprint');
+const { RabinFingerprint64, INIT } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const { SchemaWriter } = require('../../../../lib/serialization/compact/SchemaWriter');
 chai.should();
 
@@ -40,7 +35,7 @@ describe('RabinFingerprintTest', function () {
         ['127', -128, '-7333697815154264656']
     ].forEach((params) => {
         it(`i8 test ${params}`, function () {
-            RabinFingerPrintLongByte(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
+            RabinFingerprint64.ofLongByte(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
         });
     });
 
@@ -57,7 +52,7 @@ describe('RabinFingerprintTest', function () {
         ['2147483647', -2147483648, '-7679311364898232185'],
     ].forEach(params => {
         it(`i32 test ${params}`, function () {
-            RabinFingerPrintLongInt(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
+            RabinFingerprint64.ofLongInt(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
         });
     });
 
@@ -75,9 +70,11 @@ describe('RabinFingerprintTest', function () {
     ].forEach(params => {
         it(`string test ${params}`, function () {
             if (params[0] === INIT) {
-                RabinFingerPrintLongString(params[0], params[1]).eq(Long.fromString(params[2])).should.be.true;
+                RabinFingerprint64.ofLongString(params[0], params[1]).eq(Long.fromString(params[2])).should.be.true;
             } else {
-                RabinFingerPrintLongString(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
+                RabinFingerprint64.ofLongString(
+                    Long.fromString(params[0]), params[1]
+                ).eq(Long.fromString(params[2])).should.be.true;
             }
         });
     });

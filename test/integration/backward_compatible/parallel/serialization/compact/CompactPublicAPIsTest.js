@@ -24,6 +24,7 @@ const should = chai.should();
 
 const RC = require('../../../../RC');
 const TestUtil = require('../../../../../TestUtil');
+const CompactUtil = require('./CompactUtil');
 const { Predicates } = require('../../../../../../lib');
 
 class Car {
@@ -169,56 +170,6 @@ class OuterSerializer {
     }
 }
 
-class CompactPagingPredicate {
-    constructor() {
-        this.delecate = Predicates.paging(Predicates.alwaysTrue(), 1);
-    }
-
-    getComparator() {
-        return null;
-    }
-
-    nextPage() {
-        this.delecate.nextPage();
-    }
-
-    previousPage() {
-        this.delecate.previousPage();
-    }
-
-    getPage() {
-        this.delecate.getPage();
-    }
-
-    setPage(page) {
-        this.delecate.setPage(page);
-    }
-
-    getPageSize() {
-        this.delecate.getPageSize();
-    }
-
-    getAnchor() {
-        return this.delecate.getAnchor();
-    }
-}
-
-class CompactPagingPredicateSerializer {
-    constructor() {
-        this.class = CompactPagingPredicate;
-        this.typeName = 'CompactPagingPredicate';
-    }
-
-    read() {
-        compactSerializerUsed = true;
-        return new CompactPagingPredicate();
-    }
-
-    write() {
-        compactSerializerUsed = true;
-    }
-}
-
 class CompactReturningEntryProcessor {
 }
 
@@ -250,7 +201,6 @@ describe('CompactPublicAPIsTest', function () {
         replicatedMap, ringBuffer;
     let employee;
     let SchemaNotReplicatedError;
-    let CompactUtil;
     let clientConfig;
 
     const CLUSTER_CONFIG_XML = `
@@ -280,10 +230,6 @@ describe('CompactPublicAPIsTest', function () {
                             serializer="com.hazelcast.compact.CompactReturningAggregatorSerializer">
                             com.hazelcast.compact.CompactReturningAggregator
                         </class>
-                        <class type-name="${CompactPagingPredicate.name}"
-                            serializer="com.hazelcast.compact.CompactPagingPredicateSerializer">
-                            com.hazelcast.compact.CompactPagingPredicate
-                        </class>
                         <class type-name="${CompactReturningEntryProcessor.name}"
                             serializer="com.hazelcast.compact.CompactReturningEntryProcessorSerializer">
                             com.hazelcast.compact.CompactReturningEntryProcessor
@@ -299,9 +245,9 @@ describe('CompactPublicAPIsTest', function () {
     const INNER_INSTANCE = new Inner('42');
     const OUTER_INSTANCE = new Outer(42, INNER_INSTANCE);
     const testFactory = new TestUtil.TestFactory();
+    const pagingPredicate = Predicates.paging(new CompactPredicate(), 1);
 
     before(async function () {
-        CompactUtil = require('./CompactUtil');
         employee = new CompactUtil.Employee(1, Long.ONE);
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG_XML);
@@ -325,7 +271,6 @@ describe('CompactPublicAPIsTest', function () {
                         new CompactPredicateSerializer(),
                         new InnerSerializer(),
                         new OuterSerializer(),
-                        new CompactPagingPredicateSerializer(),
                         new CompactReturningEntryProcessorSerializer()
                     ]
                 },
@@ -651,7 +596,7 @@ describe('CompactPublicAPIsTest', function () {
         it('entrySetWithPredicate (paging predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                const result = await obj.entrySetWithPredicate(new CompactPagingPredicate());
+                const result = await obj.entrySetWithPredicate(pagingPredicate);
                 result.should.be.deep.equal([[INNER_INSTANCE, OUTER_INSTANCE]]);
             }
         });
@@ -667,7 +612,7 @@ describe('CompactPublicAPIsTest', function () {
         it('keySetWithPredicate (paging predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                const result = await obj.keySetWithPredicate(new CompactPagingPredicate());
+                const result = await obj.keySetWithPredicate(pagingPredicate);
                 result.should.be.deep.equal([INNER_INSTANCE]);
             }
         });
@@ -683,7 +628,7 @@ describe('CompactPublicAPIsTest', function () {
         it('valuesWithPredicate (paging predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                const result = await obj.valuesWithPredicate(new CompactPagingPredicate());
+                const result = await obj.valuesWithPredicate(pagingPredicate);
                 result.get(0).should.be.deep.equal(OUTER_INSTANCE);
             }
         });

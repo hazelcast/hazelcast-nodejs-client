@@ -19,19 +19,19 @@ const chai = require('chai');
 chai.should();
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
+const CompactUtil = require('../parallel/serialization/compact/CompactUtil');
 const Long = require('long');
 const sinon = require('sinon');
-const { CompactStreamSerializer } = require('../../../../lib/serialization/compact/CompactStreamSerializer');
 const sandbox = sinon.createSandbox();
 
 describe('PartitionServiceTest', function () {
     let cluster;
     let member;
     let client;
-    let CompactUtil;
+    let CompactStreamSerializer;
 
     try {
-        CompactUtil = require('../parallel/serialization/compact/CompactUtil');
+        CompactStreamSerializer = require('../../../../lib/serialization/compact/CompactStreamSerializer');
     } catch (e) {
         // no op
     }

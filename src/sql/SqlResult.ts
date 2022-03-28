@@ -209,10 +209,6 @@ export class SqlResultImpl implements SqlResult {
         return this.rowMetadata !== null;
     }
 
-    isRawResult(): boolean {
-        return this.returnRawResult;
-    }
-
     close(): Promise<void> {
         // Return the close promise if a close request is already started
         if (this.closeDeferred) {

@@ -31,7 +31,7 @@ const verifySchema = (typeName, schema, fields, rabinFingerPrint, fieldDefinitio
     schema.typeName.should.be.eq(typeName);
     schema.fieldDefinitionMap.size.should.be.eq(fields.length);
     schema.fieldDefinitionMap.should.be.deep.eq(fieldDefinitionMap);
-    RabinFingerprint64(schema).eq(rabinFingerPrint).should.be.true;
+    RabinFingerprint64.ofSchema(schema).eq(rabinFingerPrint).should.be.true;
 };
 
 describe('SchemaTest', function () {
@@ -55,7 +55,7 @@ describe('SchemaTest', function () {
         const schema2 = new Schema();
         schema2.readData(input);
 
-        verifySchema('something', schema2, fields, RabinFingerprint64(schema), schema.fieldDefinitionMap);
+        verifySchema('something', schema2, fields, RabinFingerprint64.ofSchema(schema), schema.fieldDefinitionMap);
     });
 
     it('construct correctly when no arguments given', function () {

@@ -28,29 +28,7 @@ import { IllegalStateError } from '../../core';
  * Service to put and get metadata to cluster.
  * @internal
  */
-export interface ISchemaService {
-    /**
-     * Returns the schema with id {@link schemaId} in schema service's local registry,
-     * returning null if it is not found.
-     */
-    get(schemaId: Long): Schema | null;
-
-
-    /**
-     * Fetches the schema with id {@link schemaId} from cluster to local registry of the schema service.
-     */
-    fetchSchema(schemaId: Long): Promise<void>;
-
-    /**
-     * Puts the schema with the given id to the cluster.
-     */
-    put(schema: Schema): Promise<void>;
-}
-
-/**
- * @internal
- */
-export class SchemaService implements ISchemaService {
+export class SchemaService {
     schemas: Map<string, Schema>;
 
     constructor(
@@ -61,6 +39,9 @@ export class SchemaService implements ISchemaService {
         this.schemas = new Map<string, Schema>();
     }
 
+    /**
+     * Fetches the schema with id {@link schemaId} from cluster to local registry of the schema service.
+     */
     fetchSchema(schemaId: Long): Promise<void> {
         const invocation = new Invocation(this.getInvocationService(), ClientFetchSchemaCodec.encodeRequest(schemaId));
         return this.getInvocationService().invoke(invocation).then(message => {
@@ -74,6 +55,10 @@ export class SchemaService implements ISchemaService {
         });
     }
 
+    /**
+     * Returns the schema with id {@link schemaId} in schema service's local registry,
+     * returning null if it is not found.
+     */
     get(schemaId: Long): Schema | null {
         const schema = this.schemas.get(schemaId.toString());
         if (schema !== undefined) {
@@ -83,7 +68,9 @@ export class SchemaService implements ISchemaService {
         }
     }
 
-
+    /**
+     * Puts the schema with the given id to the cluster.
+     */
     put(schema: Schema): Promise<void> {
         const schemaId = schema.schemaId;
         const existingSchema = this.schemas.get(schemaId.toString());
@@ -98,7 +85,7 @@ export class SchemaService implements ISchemaService {
         });
     }
 
-    private putIfAbsent(schema: Schema) : void {
+    private putIfAbsent(schema: Schema): void {
         const schemaId = schema.schemaId;
         const existingSchema = this.schemas.get(schemaId.toString());
         if (existingSchema === undefined) {
@@ -113,7 +100,7 @@ export class SchemaService implements ISchemaService {
         }
     }
 
-    sendAllSchemas() : Promise<void> {
+    sendAllSchemas(): Promise<void> {
         if (this.schemas.size === 0) {
             this.logger.trace('SchemaService', 'There is no schemas to send to the cluster');
             return Promise.resolve();

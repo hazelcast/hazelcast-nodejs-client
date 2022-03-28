@@ -35,7 +35,7 @@ export class SchemaWriter implements CompactWriter {
     }
 
     addField(field: FieldDescriptor): void {
-        this.fields.push(...arguments);
+        this.fields.push(field);
     }
 
     build() : Schema {

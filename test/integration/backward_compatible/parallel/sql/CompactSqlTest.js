@@ -19,6 +19,7 @@
 const { Lang } = require('../../../remote_controller/remote_controller_types');
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
+const CompactUtil = require('../serialization/compact/CompactUtil');
 
 const chai = require('chai');
 const { HazelcastSqlException } = require('../../../../../lib');
@@ -28,7 +29,6 @@ chai.should();
 describe('CompactSqlTest', function () {
     let client;
     let cluster;
-    let CompactUtil;
     let member;
     let someMap;
     let mapName;
@@ -62,11 +62,6 @@ describe('CompactSqlTest', function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
         cluster = await testFactory.createClusterForParallelTests(null, COMPACT_AND_JET_ENABLED_WITH_SERIALIZER_CONFIG);
         member = await RC.startMember(cluster.id);
-        try {
-            CompactUtil = require('../serialization/compact/CompactUtil');
-        } catch (e) {
-            // no-op
-        }
     });
 
     afterEach(async function () {
