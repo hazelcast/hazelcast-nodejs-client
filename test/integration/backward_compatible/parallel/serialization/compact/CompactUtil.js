@@ -25,11 +25,9 @@ const { FieldOperations } = require('../../../../../../lib/serialization/generic
 const Fields = require('../../../../../../lib/serialization/generic_record/Fields');
 const { SchemaNotReplicatedError } = require('../../../../../../lib/core/HazelcastError');
 
-const mimicSchemaReplication = (serializationService1, serializationService2) => {
-    serializationService1.schemaService.schemas =
-        {...serializationService1.schemaService.schemas, ...serializationService2.schemaService.schemas};
-    serializationService2.schemaService.schemas =
-        {...serializationService1.schemaService.schemas, ...serializationService2.schemaService.schemas};
+const mimicSchemaReplication = (schemaService1, schemaService2) => {
+    schemaService1.schemas = {...schemaService1.schemas, ...schemaService2.schemas};
+    schemaService2.schemas = {...schemaService1.schemas, ...schemaService2.schemas};
 };
 
 class Nested {
@@ -447,7 +445,12 @@ class EmployerSerializer {
 const createSerializationService = (compactSerializers = []) => {
     const serializationConfig = new SerializationConfigImpl();
     serializationConfig.compact.serializers = compactSerializers;
-    return new SerializationServiceV1(serializationConfig, new InMemorySchemaService());
+    const schemaService = new InMemorySchemaService();
+
+    return {
+        serializationService: new SerializationServiceV1(serializationConfig, schemaService),
+        schemaService
+    };
 };
 
 class NamedDTO {
@@ -1341,14 +1344,14 @@ const createCompactGenericRecord = (mainDTO) => {
     });
 };
 
-const serialize = async (serializationService, obj) => {
+const serialize = async (serializationService, schemaService, obj) => {
     try {
         return serializationService.toData(obj);
     } catch (e) {
         if (e instanceof SchemaNotReplicatedError) {
-            await serializationService.schemaService.put(e.schema);
+            await schemaService.put(e.schema);
         }
-        return await serialize(serializationService, obj);
+        return await serialize(serializationService, schemaService, obj);
     }
 };
 

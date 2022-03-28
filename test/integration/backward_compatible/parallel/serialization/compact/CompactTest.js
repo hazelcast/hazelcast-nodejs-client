@@ -53,15 +53,12 @@ describe('CompactTest', function () {
 
     let CompactUtil;
     let FieldKind;
-    let CompactStreamSerializer;
 
     const testFactory = new TestUtil.TestFactory();
 
     try {
         CompactUtil = require('./CompactUtil');
         FieldKind = require('../../../../../../lib/serialization/generic_record/FieldKind').FieldKind;
-        CompactStreamSerializer = require('../../../../../../lib/serialization/compact/CompactStreamSerializer')
-            .CompactStreamSerializer;
 
         varSizeFields = CompactUtil.varSizeFields;
         supportedFields = CompactUtil.supportedFields;
@@ -160,8 +157,6 @@ describe('CompactTest', function () {
     });
 
     it('should be able to read and write empty class', async function () {
-        // Clear serializer list
-        CompactStreamSerializer.classToSerializerMap.clear();
         await shouldReadAndWrite(new CompactUtil.Flexible({}), []);
     });
 

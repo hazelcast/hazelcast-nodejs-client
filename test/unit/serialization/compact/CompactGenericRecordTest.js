@@ -29,10 +29,8 @@ const {
     mimicSchemaReplication,
     validationTestParams,
     referenceObjects,
-    Employee
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { Fields, FieldKind } = require('../../../../lib/serialization/generic_record');
-const { CompactStreamSerializer } = require('../../../../lib/serialization/compact/CompactStreamSerializer');
 const Long = require('long');
 
 const testIntRange = (invalidValueFn, validValueFn) => {
@@ -211,17 +209,18 @@ const getGiganticRecord = () => {
 
 describe('CompactGenericRecordTest', function () {
     it('toString should produce valid JSON string', async function() {
-        const serializationService = createSerializationService(
+        const {serializationService, schemaService: schemaService1} = createSerializationService(
             [new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]
         );
-        const serializationService2 = createSerializationService(); // serializationService that does not have the serializers
+        // create a serializationService that does not have the serializers
+        const {serializationService: serializationService2, schemaService: schemaService2} = createSerializationService();
         const expectedDTO = createMainDTO();
         expectedDTO.nullableBool = null;
         expectedDTO.inner.localDateTimes[0] = null;
-        const data = await serialize(serializationService, expectedDTO);
+        const data = await serialize(serializationService, schemaService1, expectedDTO);
         data.isCompact().should.be.true;
 
-        mimicSchemaReplication(serializationService, serializationService2);
+        mimicSchemaReplication(schemaService1, schemaService2);
 
         // GenericRecord returned from toObject
         const genericRecord = serializationService2.toObject(data);
@@ -245,9 +244,9 @@ describe('CompactGenericRecordTest', function () {
             bar: Fields.int64
         }, values);
 
-        const serializationService = createSerializationService();
+        const {serializationService, schemaService} = createSerializationService();
 
-        const data = await serialize(serializationService, record);
+        const data = await serialize(serializationService, schemaService, record);
         const recordObj = serializationService.toObject(data);
 
         const cloneRecord = recordObj.clone({
@@ -321,7 +320,6 @@ describe('CompactGenericRecordTest', function () {
     });
 
     it('should have working getters', async function() {
-        CompactStreamSerializer.classToSerializerMap.set(Employee, {});
         const record = getGiganticRecord();
 
         for (const key in referenceObjects) {
@@ -459,7 +457,7 @@ describe('CompactGenericRecordTest', function () {
 
     it('should be able to write every field', async function() {
         const record = getGiganticRecord();
-        const serializationService = createSerializationService();
+        const {serializationService} = createSerializationService();
         serializationService.toData(record, undefined, false);
     });
 
@@ -572,8 +570,6 @@ describe('CompactGenericRecordTest', function () {
 
         describe('cloning', function () {
             it('should be able to clone every field', function() {
-                // Needed for compact validation
-                CompactStreamSerializer.classToSerializerMap.set(Employee, {});
                 const record = getGiganticRecord();
                 record.clone();
             });

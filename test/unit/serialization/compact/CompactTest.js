@@ -37,59 +37,62 @@ const {
     NodeDTO,
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const Long = require('long');
-const { SerializationServiceV1 } = require('../../../../lib/serialization/SerializationService');
 const { CompactGenericRecordImpl } = require('../../../../lib/serialization/generic_record/CompactGenericRecord');
 const { GenericRecords } = require('../../../../lib');
 const { Fields } = require('../../../../lib/serialization/generic_record');
 
 describe('CompactTest', function () {
+    let serializationService;
+
     it('should work with all fields', async function () {
-        const serializationService = createSerializationService(
+        const bundle = createSerializationService(
             [new MainDTOSerializer(), new InnerDTOSerializer(), new NamedDTOSerializer()]
         );
 
+        serializationService = bundle.serializationService;
+
         const mainDTO = createMainDTO();
-        const data = await serialize(serializationService, mainDTO);
+        const data = await serialize(serializationService, bundle.schemaService, mainDTO);
         const object = serializationService.toObject(data);
 
         object.should.deep.equal(mainDTO);
     });
 
     it('should behave null object as not compact serializable', async function () {
-        SerializationServiceV1.isCompactSerializable(Object.create(null)).should.be.false;
+        serializationService.isCompactSerializable(Object.create(null)).should.be.false;
     });
 
     it('should work with all fields and defaults enabled serializer', async function () {
-        const serializationService = createSerializationService(
+        const {serializationService, schemaService} = createSerializationService(
             [new MainDTOSerializerWithDefaults(), new InnerDTOSerializer(), new NamedDTOSerializer()]
         );
 
         const mainDTO = createMainDTO();
-        const data = await serialize(serializationService, mainDTO);
+        const data = await serialize(serializationService, schemaService, mainDTO);
         const object = serializationService.toObject(data);
 
         object.should.deep.equal(mainDTO);
     });
 
     it('should work with recursive fields', async function () {
-        const serializationService = createSerializationService([new NodeDTOSerializer()]);
+        const {serializationService, schemaService} = createSerializationService([new NodeDTOSerializer()]);
 
         const node = new NodeDTO(0, new NodeDTO(1, new NodeDTO(2, null)));
-        const data = await serialize(serializationService, node);
+        const data = await serialize(serializationService, schemaService, node);
         const object = serializationService.toObject(data);
 
         object.should.deep.equal(node);
     });
 
     it('should deserialize to generic record when serializer is not registered', async function () {
-        const serializationService = createSerializationService([new EmployeeSerializer()]);
+        const {serializationService, schemaService: schemaService1} = createSerializationService([new EmployeeSerializer()]);
 
         const employee = new Employee(30, Long.ONE);
-        const data = await serialize(serializationService, employee);
+        const data = await serialize(serializationService, schemaService1, employee);
 
-        const serializationService2 = createSerializationService();
+        const {serializationService: serializationService2, schemaService: schemaService2} = createSerializationService();
 
-        mimicSchemaReplication(serializationService, serializationService2);
+        mimicSchemaReplication(schemaService1, schemaService2);
 
         const object = serializationService2.toObject(data);
 
@@ -116,14 +119,16 @@ describe('CompactTest', function () {
             }
         }
 
-        const serializationService = createSerializationService([new EmployeeSerializerV2()]);
+        const {serializationService, schemaService: schemaService1} = createSerializationService([new EmployeeSerializerV2()]);
 
         const expected = new Employee(30, Long.ONE);
-        const data = await serialize(serializationService, expected);
+        const data = await serialize(serializationService, schemaService1, expected);
 
-        const serializationService2 = createSerializationService([new EmployeeSerializer()]);
+        const {serializationService: serializationService2, schemaService: schemaService2} = createSerializationService(
+            [new EmployeeSerializer()]
+        );
 
-        mimicSchemaReplication(serializationService, serializationService2);
+        mimicSchemaReplication(schemaService1, schemaService2);
 
         const actual = serializationService2.toObject(data);
 
@@ -147,14 +152,16 @@ describe('CompactTest', function () {
             }
         }
 
-        const serializationService = createSerializationService([new EmployeeSerializerV2()]);
+        const {serializationService, schemaService: schemaService1} = createSerializationService([new EmployeeSerializerV2()]);
 
         const expected = new Employee(30, Long.ONE);
-        const data = await serialize(serializationService, expected);
+        const data = await serialize(serializationService, schemaService1, expected);
 
-        const serializationService2 = createSerializationService([new EmployeeSerializer()]);
+        const {serializationService: serializationService2, schemaService: schemaService2} = createSerializationService(
+            [new EmployeeSerializer()]
+        );
 
-        mimicSchemaReplication(serializationService, serializationService2);
+        mimicSchemaReplication(schemaService1, schemaService2);
 
         const actual = serializationService2.toObject(data);
 
@@ -163,7 +170,7 @@ describe('CompactTest', function () {
     });
 
     it('should work with evolved schema with generic records', async function () {
-        const serializationService = createSerializationService();
+        const {serializationService, schemaService: schemaService1} = createSerializationService();
         const record = GenericRecords.compact('fooBarTypeName', {
             foo: Fields.int32,
             bar: Fields.int64
@@ -172,9 +179,9 @@ describe('CompactTest', function () {
             bar: Long.ONE
         });
 
-        const data = await serialize(serializationService, record);
+        const data = await serialize(serializationService, schemaService1, record);
 
-        const serializationService2 = createSerializationService();
+        const {serializationService: serializationService2, schemaService: schemaService2} = createSerializationService();
 
         const record2 = GenericRecords.compact('fooBarTypeName', {
             foo: Fields.int32,
@@ -186,9 +193,9 @@ describe('CompactTest', function () {
             foobar: 'new field'
         });
 
-        await serialize(serializationService2, record2);
+        await serialize(serializationService2, schemaService2, record2);
 
-        mimicSchemaReplication(serializationService, serializationService2);
+        mimicSchemaReplication(schemaService1, schemaService2);
 
         const obj = serializationService2.toObject(data);
         obj.hasField('foobar').should.be.false;
@@ -198,7 +205,7 @@ describe('CompactTest', function () {
     });
 
     it('should work with Bits', async function () {
-        const serializationService = createSerializationService([new BitsSerializer()]);
+        const {serializationService, schemaService} = createSerializationService([new BitsSerializer()]);
 
         const bits = new Bits();
         bits.a = true;
@@ -208,7 +215,7 @@ describe('CompactTest', function () {
         bits.booleans[0] = true;
         bits.booleans[4] = true;
 
-        const data = await serialize(serializationService, bits);
+        const data = await serialize(serializationService, schemaService, bits);
 
         // hash(4) + typeid(4) + schemaId(8) + (4 byte length) + (1 bytes for 8 bits) + (4 bytes for int)
         // (4 byte length of byte array) + (1 byte for booleans array of 8 bits) + (1 byte offset bytes)
@@ -218,7 +225,9 @@ describe('CompactTest', function () {
     });
 
     it('should work with nested fields', async function () {
-        const serializationService = createSerializationService([new EmployeeSerializer(), new EmployerSerializer()]);
+        const {serializationService, schemaService} = createSerializationService(
+            [new EmployeeSerializer(), new EmployerSerializer()]
+        );
 
         const employee = new Employee(30, Long.fromNumber(102310312));
         const ids = [Long.fromNumber(22), Long.fromNumber(44)];
@@ -229,7 +238,7 @@ describe('CompactTest', function () {
         }
         const employer = new Employer('nbss', 40, HIRING_STATUS.HIRING, ids, employee, employees);
 
-        const data = await serialize(serializationService, employer);
+        const data = await serialize(serializationService, schemaService, employer);
         const object = await serializationService.toObject(data);
         object.should.be.deep.equal(employer);
     });

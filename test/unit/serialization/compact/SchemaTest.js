@@ -44,7 +44,7 @@ describe('SchemaTest', function () {
                 fields.push(new FieldDescriptor(FieldKind[fieldKind], fieldKind));
             }
         }
-        const serializationService = createSerializationService();
+        const {serializationService} = createSerializationService();
         const out = new ObjectDataOutput(serializationService, serializationService.serializationConfig.isBigEndian);
         const schema = new Schema('something', fields.sort((field1, field2) => {
             return field1.fieldName > field2.fieldName ? 1 : -1;

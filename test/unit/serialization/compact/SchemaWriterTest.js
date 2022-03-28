@@ -36,7 +36,7 @@ describe('SchemaWriterTest', function () {
         writer.addField(new FieldDescriptor('c', FieldKind.TIMESTAMP_WITH_TIMEZONE));
         const schema = writer.build();
 
-        const serializationService = createSerializationService();
+        const {serializationService} = createSerializationService();
 
         const out = new PositionalObjectDataOutput(serializationService, false);
         schema.writeData(out);

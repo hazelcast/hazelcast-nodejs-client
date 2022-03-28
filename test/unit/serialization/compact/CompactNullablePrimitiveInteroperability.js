@@ -143,8 +143,8 @@ describe('CompactNullablePrimitiveInteroperability', function () {
         record.should.be.instanceof(CompactGenericRecordImpl);
         assertReadAsNullable(record);
 
-        const serializationService = createSerializationService();
-        const data = await serialize(serializationService, record);
+        const {serializationService, schemaService} = createSerializationService();
+        const data = await serialize(serializationService, schemaService, record);
         const serializedRecord = serializationService.toObject(data);
 
         serializedRecord.should.be.instanceOf(CompactGenericRecordImpl);
@@ -189,8 +189,8 @@ describe('CompactNullablePrimitiveInteroperability', function () {
         record.should.be.instanceof(CompactGenericRecordImpl);
         assertReadAsPrimitive(record);
 
-        const serializationService = createSerializationService();
-        const data = await serialize(serializationService, record);
+        const {serializationService, schemaService} = createSerializationService();
+        const data = await serialize(serializationService, schemaService, record);
         const serializedRecord = serializationService.toObject(data);
 
         serializedRecord.should.be.instanceOf(CompactGenericRecordImpl);
@@ -234,8 +234,8 @@ describe('CompactNullablePrimitiveInteroperability', function () {
 
         assertReadNullAsPrimitiveThrowsException(record);
 
-        const serializationService = createSerializationService();
-        const data = await serialize(serializationService, record);
+        const {serializationService, schemaService} = createSerializationService();
+        const data = await serialize(serializationService, schemaService, record);
         const serializedRecord = serializationService.toObject(data);
 
         serializedRecord.should.be.instanceOf(CompactGenericRecordImpl);
