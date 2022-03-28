@@ -31,7 +31,8 @@ describe('PartitionServiceTest', function () {
     let CompactStreamSerializer;
 
     try {
-        CompactStreamSerializer = require('../../../../lib/serialization/compact/CompactStreamSerializer');
+        CompactStreamSerializer = require('../../../../lib/serialization/compact/CompactStreamSerializer')
+        .CompactStreamSerializer;
     } catch (e) {
         // no op
     }
