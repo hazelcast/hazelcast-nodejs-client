@@ -36,8 +36,7 @@ let testProcess;
 let runTests = true;
 let CLASSPATH = `hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar${PATH_SEPARATOR}`
               + `hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
-              + `hazelcast-sql-${HAZELCAST_VERSION}.jar${PATH_SEPARATOR}`
-              + 'test/integration/resources/compact-test-resources-1.0.jar';
+              + `hazelcast-sql-${HAZELCAST_VERSION}.jar${PATH_SEPARATOR}`;
 
 if (HAZELCAST_ENTERPRISE_KEY) {
     CLASSPATH = `hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar${PATH_SEPARATOR}`

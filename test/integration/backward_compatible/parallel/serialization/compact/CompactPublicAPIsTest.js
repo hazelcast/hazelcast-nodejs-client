@@ -87,7 +87,7 @@ class CompactReturningAggregator {
 class CompactReturningAggregatorSerializer {
     constructor() {
         this.class = CompactReturningAggregator;
-        this.typeName = 'CompactReturningAggregator';
+        this.typeName = 'com.hazelcast.serialization.compact.CompactReturningAggregator';
     }
 
     read() {
@@ -106,7 +106,7 @@ class CompactPredicate {
 class CompactPredicateSerializer {
     constructor() {
         this.class = CompactPredicate;
-        this.typeName = 'CompactPredicate';
+        this.typeName = 'com.hazelcast.serialization.compact.CompactPredicate';
     }
 
     read() {
@@ -119,54 +119,54 @@ class CompactPredicateSerializer {
     }
 }
 
-class Inner {
+class InnerCompact {
     constructor(stringField) {
         this.stringField = stringField;
     }
 }
 
-class InnerSerializer {
+class InnerCompactSerializer {
     constructor() {
-        this.class = Inner;
-        this.typeName = 'Inner';
+        this.class = InnerCompact;
+        this.typeName = 'com.hazelcast.serialization.compact.InnerCompact';
     }
 
     read(reader) {
         compactSerializerUsed = true;
-        const stringField = reader.readString('string_field');
-        return new Inner(stringField);
+        const stringField = reader.readString('stringField');
+        return new InnerCompact(stringField);
     }
 
     write(writer, instance) {
         compactSerializerUsed = true;
-        writer.writeString('string_field', instance.stringField);
+        writer.writeString('stringField', instance.stringField);
     }
 }
 
-class Outer {
+class OuterCompact {
     constructor(intField, innerField) {
         this.intField = intField;
         this.innerField = innerField;
     }
 }
 
-class OuterSerializer {
+class OuterCompactSerializer {
     constructor() {
-        this.class = Outer;
-        this.typeName = 'Outer';
+        this.class = OuterCompact;
+        this.typeName = 'com.hazelcast.serialization.compact.OuterCompact';
     }
 
     read(reader) {
         compactSerializerUsed = true;
-        const intField = reader.readInt32('int_field');
-        const innerField = reader.readCompact('inner_field');
-        return new Outer(intField, innerField);
+        const intField = reader.readInt32('intField');
+        const innerField = reader.readCompact('innerField');
+        return new OuterCompact(intField, innerField);
     }
 
     write(writer, instance) {
         compactSerializerUsed = true;
-        writer.writeInt32('int_field', instance.intField);
-        writer.writeCompact('inner_field', instance.innerField);
+        writer.writeInt32('intField', instance.intField);
+        writer.writeCompact('innerField', instance.innerField);
     }
 }
 
@@ -176,7 +176,7 @@ class CompactReturningEntryProcessor {
 class CompactReturningEntryProcessorSerializer {
     constructor() {
         this.class = CompactReturningEntryProcessor;
-        this.typeName = 'CompactReturningEntryProcessor';
+        this.typeName = 'com.hazelcast.serialization.compact.CompactReturningEntryProcessor';
     }
 
     read() {
@@ -212,38 +212,15 @@ describe('CompactPublicAPIsTest', function () {
                 <port>0</port>
             </network>
             <serialization>
-                <compact-serialization enabled="true">
-                    <registered-classes>
-                        <class type-name="${Inner.name}"
-                            serializer="com.hazelcast.compact.InnerSerializer">
-                            com.hazelcast.compact.Inner
-                        </class>
-                        <class type-name="${Outer.name}"
-                            serializer="com.hazelcast.compact.OuterSerializer">
-                            com.hazelcast.compact.Outer
-                        </class>
-                        <class type-name="${CompactPredicate.name}"
-                            serializer="com.hazelcast.compact.CompactPredicateSerializer">
-                            com.hazelcast.compact.CompactPredicate
-                        </class>
-                        <class type-name="${CompactReturningAggregator.name}"
-                            serializer="com.hazelcast.compact.CompactReturningAggregatorSerializer">
-                            com.hazelcast.compact.CompactReturningAggregator
-                        </class>
-                        <class type-name="${CompactReturningEntryProcessor.name}"
-                            serializer="com.hazelcast.compact.CompactReturningEntryProcessorSerializer">
-                            com.hazelcast.compact.CompactReturningEntryProcessor
-                        </class>
-                    </registered-classes>
-                </compact-serialization>
+                <compact-serialization enabled="true"/>
             </serialization>
         </hazelcast>
     `;
 
     const car1 = new Car('ww', 123456);
     const car2 = new Car('porsche', 21231);
-    const INNER_INSTANCE = new Inner('42');
-    const OUTER_INSTANCE = new Outer(42, INNER_INSTANCE);
+    const INNER_INSTANCE = new InnerCompact('42');
+    const OUTER_INSTANCE = new OuterCompact(42, INNER_INSTANCE);
     const testFactory = new TestUtil.TestFactory();
     const pagingPredicate = Predicates.paging(new CompactPredicate(), 1);
 
@@ -269,8 +246,8 @@ describe('CompactPublicAPIsTest', function () {
                         new DummyEntryProcessorSerializer(),
                         new CompactReturningAggregatorSerializer(),
                         new CompactPredicateSerializer(),
-                        new InnerSerializer(),
-                        new OuterSerializer(),
+                        new InnerCompactSerializer(),
+                        new OuterCompactSerializer(),
                         new CompactReturningEntryProcessorSerializer()
                     ]
                 },
