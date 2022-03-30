@@ -61,8 +61,7 @@ export class PagingPredicateHolder {
             pageList[i] = item[0];
             const anchorEntry = item[1];
             anchorDataList[i] =
-                [serializationService.toData(anchorEntry[0], undefined, false),
-                 serializationService.toData(anchorEntry[1], undefined, false)];
+                [serializationService.toData(anchorEntry[0]), serializationService.toData(anchorEntry[1])];
         }
 
         const anchorDataListHolder = new AnchorDataListHolder(pageList, anchorDataList);

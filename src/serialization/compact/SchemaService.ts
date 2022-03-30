@@ -44,8 +44,8 @@ export class SchemaService {
      */
     fetchSchema(schemaId: Long): Promise<void> {
         const invocation = new Invocation(this.getInvocationService(), ClientFetchSchemaCodec.encodeRequest(schemaId));
-        return this.getInvocationService().invoke(invocation).then(message => {
-            const schema = ClientFetchSchemaCodec.decodeResponse(message);
+        invocation.handler = ClientFetchSchemaCodec.decodeResponse;
+        return this.getInvocationService().invoke(invocation).then(schema => {
             if (schema !== null) {
                 this.putIfAbsent(schema);
                 this.logger.trace('SchemaService', `Found schema id ${schemaId} on the cluster`);

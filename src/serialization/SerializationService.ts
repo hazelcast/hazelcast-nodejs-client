@@ -80,7 +80,7 @@ import {Class} from './compact/CompactSerializer';
  */
 export interface SerializationService {
 
-    toData(object: any, partitioningStrategy?: any, throwIfSchemaNotReplicated?: boolean): Data;
+    toData(object: any, partitioningStrategy?: any): Data;
 
     toObject(data: Data): any;
 
@@ -136,9 +136,7 @@ export class SerializationServiceV1 implements SerializationService {
      * @param partitioningStrategy
      * @throws RangeError if object is not serializable
      */
-    toData(
-        object: any, partitioningStrategy: PartitionStrategy = defaultPartitionStrategy, throwIfSchemaNotReplicated = true
-    ): Data {
+    toData(object: any, partitioningStrategy: PartitionStrategy = defaultPartitionStrategy): Data {
         if (this.isData(object)) {
             return object as Data;
         }
@@ -153,11 +151,7 @@ export class SerializationServiceV1 implements SerializationService {
             dataOutput.writeIntBE(SerializationServiceV1.calculatePartitionHash(object, partitioningStrategy));
         }
         dataOutput.writeIntBE(serializer.id);
-        if (serializer instanceof CompactStreamSerializer) {
-            serializer.write(dataOutput, object, throwIfSchemaNotReplicated);
-        } else {
-            serializer.write(dataOutput, object);
-        }
+        serializer.write(dataOutput, object);
         return new HeapData(dataOutput.toBuffer());
     }
 
@@ -173,19 +167,19 @@ export class SerializationServiceV1 implements SerializationService {
             throw new RangeError(`There is no suitable deserializer for data with type ${data.getType()}`);
         }
         const dataInput = new ObjectDataInput(data.toBuffer(), DATA_OFFSET, this, this.serializationConfig.isBigEndian);
-        return (serializer as Serializer).read(dataInput);
+        return serializer.read(dataInput);
     }
 
     writeObject(out: DataOutput, object: any): void {
         const serializer = this.findSerializerFor(object);
         out.writeInt(serializer.id);
-        (serializer as Serializer).write(out, object);
+        serializer.write(out, object);
     }
 
     readObject(inp: DataInput): any {
         const serializerId = inp.readInt();
         const serializer = this.findSerializerById(serializerId);
-        return (serializer as Serializer).read(inp);
+        return serializer.read(inp);
     }
 
     registerSerializer(name: string, serializer: Serializer): void {
@@ -368,7 +362,6 @@ export class SerializationServiceV1 implements SerializationService {
             this.compactStreamSerializer.registerSerializer(compactSerializer);
         }
     }
-
 
     private registerGlobalSerializer(): void {
         const candidate: any = this.serializationConfig.globalSerializer;

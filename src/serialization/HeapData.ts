@@ -114,17 +114,6 @@ export class HeapData implements Data {
             && this.payload.readIntBE(PARTITION_HASH_OFFSET, 4) !== 0;
     }
 
-    /**
-     * Returns true if the object is a portable object
-     */
-    isPortable(): boolean {
-        return this.getType() === HeapData.TYPE_PORTABLE;
-    }
-
-    isJson(): boolean {
-        return this.getType() === HeapData.TYPE_JSON;
-    }
-
     isCompact(): boolean {
         return this.getType() === HeapData.TYPE_COMPACT;
     }

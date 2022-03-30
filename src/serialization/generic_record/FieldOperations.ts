@@ -240,9 +240,9 @@ export class FieldOperations {
         },
         [FieldKind.COMPACT]: {
             writeFieldFromRecordToWriter(
-                writer: DefaultCompactWriter, record: GenericRecord, fieldName: string, throwIfSchemaNotReplicated = true
+                writer: DefaultCompactWriter, record: GenericRecord, fieldName: string
             ) {
-                writer.writeGenericRecord(fieldName, record.getGenericRecord(fieldName), throwIfSchemaNotReplicated);
+                writer.writeGenericRecord(fieldName, record.getGenericRecord(fieldName));
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
@@ -250,11 +250,9 @@ export class FieldOperations {
         },
         [FieldKind.ARRAY_OF_COMPACT]: {
             writeFieldFromRecordToWriter(
-                writer: DefaultCompactWriter, record: GenericRecord, fieldName: string, throwIfSchemaNotReplicated = true
+                writer: DefaultCompactWriter, record: GenericRecord, fieldName: string
             ) {
-                writer.writeArrayOfGenericRecords(
-                    fieldName, record.getArrayOfGenericRecord(fieldName), throwIfSchemaNotReplicated
-                );
+                writer.writeArrayOfGenericRecords(fieldName, record.getArrayOfGenericRecord(fieldName));
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;

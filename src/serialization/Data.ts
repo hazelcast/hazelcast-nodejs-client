@@ -62,16 +62,6 @@ export interface Data {
     equals(other: Data): boolean;
 
     /**
-     * Returns true if the object is a portable object
-     */
-    isPortable(): boolean;
-
-    /**
-     * Returns true if this Data is created from a {@link HazelcastJsonValue} object
-     */
-    isJson(): boolean;
-
-    /**
      * Returns true if this Data is serialized in CompactFormat
      */
     isCompact(): boolean;

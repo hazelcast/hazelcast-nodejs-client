@@ -107,7 +107,7 @@ export class PartitionServiceImpl implements PartitionService {
         if (typeof key === 'object' && 'getPartitionHash' in key) {
             partitionHash = key.getPartitionHash();
         } else {
-            partitionHash = this.serializationService.toData(key, undefined, false).getPartitionHash();
+            partitionHash = this.serializationService.toData(key).getPartitionHash();
         }
         return Math.abs(partitionHash) % this.partitionCount;
     }

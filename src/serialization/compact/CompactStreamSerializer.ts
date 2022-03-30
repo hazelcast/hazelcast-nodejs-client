@@ -87,11 +87,11 @@ export class CompactStreamSerializer {
         return serializer.read(reader);
     }
 
-    write(output: ObjectDataOutput, object: any, throwIfSchemaNotReplicated = true): void {
+    write(output: ObjectDataOutput, object: any): void {
         if (object instanceof CompactGenericRecordImpl) {
-            this.writeGenericRecord(output as PositionalObjectDataOutput, object, throwIfSchemaNotReplicated);
+            this.writeGenericRecord(output as PositionalObjectDataOutput, object);
         } else {
-            this.writeObject(output as PositionalObjectDataOutput, object, throwIfSchemaNotReplicated);
+            this.writeObject(output as PositionalObjectDataOutput, object);
         }
     }
 
@@ -112,19 +112,13 @@ export class CompactStreamSerializer {
         output.writeLong(schema.schemaId);
     }
 
-    writeGenericRecord(
-        output: PositionalObjectDataOutput, record: CompactGenericRecordImpl, throwIfSchemaNotReplicated = true
-    ) : void {
+    writeGenericRecord(output: PositionalObjectDataOutput, record: CompactGenericRecordImpl) : void {
         const schema: Schema = record.getSchema();
-        if (throwIfSchemaNotReplicated) {
-            this.throwIfSchemaNotReplicatedToCluster(schema, undefined);
-        }
+        this.throwIfSchemaNotReplicatedToCluster(schema, undefined);
         this.writeSchema(output, schema);
         const writer = new DefaultCompactWriter(this, output, schema);
         for (const field of schema.getFields()) {
-            FieldOperations.fieldOperations(field.kind).writeFieldFromRecordToWriter(
-                writer, record, field.fieldName, throwIfSchemaNotReplicated
-            );
+            FieldOperations.fieldOperations(field.kind).writeFieldFromRecordToWriter(writer, record, field.fieldName);
         }
         writer.end();
     }
@@ -141,7 +135,7 @@ export class CompactStreamSerializer {
         writer.end();
     }
 
-    writeObject(output: PositionalObjectDataOutput, obj: any, throwIfSchemaNotReplicated = true) : void {
+    writeObject(output: PositionalObjectDataOutput, obj: any) : void {
         const compactSerializer = this.classToSerializerMap.get(obj.constructor);
         const clazz = compactSerializer.class;
         let schema = this.classToSchemaMap.get(clazz);
@@ -149,9 +143,7 @@ export class CompactStreamSerializer {
             const writer = new SchemaWriter(compactSerializer.typeName);
             compactSerializer.write(writer, obj);
             schema = writer.build();
-            if (throwIfSchemaNotReplicated) {
-                this.throwIfSchemaNotReplicatedToCluster(schema, clazz);
-            }
+            this.throwIfSchemaNotReplicatedToCluster(schema, clazz);
         }
         this.writeSchemaAndObject(compactSerializer, output, schema, obj);
     }

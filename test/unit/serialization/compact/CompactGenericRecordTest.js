@@ -457,8 +457,8 @@ describe('CompactGenericRecordTest', function () {
 
     it('should be able to write every field', async function() {
         const record = getGiganticRecord();
-        const {serializationService} = createSerializationService();
-        serializationService.toData(record, undefined, false);
+        const {serializationService, schemaService} = createSerializationService();
+        await serialize(serializationService, schemaService, record);
     });
 
     it('should be able to get kind of a field', async function() {

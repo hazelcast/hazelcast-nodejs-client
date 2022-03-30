@@ -27,9 +27,7 @@ export interface FieldKindBasedOperations {
     /**
      * Writes a field from a generic record to a writer
      */
-    writeFieldFromRecordToWriter(
-        writer: DefaultCompactWriter, genericRecord: GenericRecord, fieldName: string, throwIfSchemaNotReplicated?: boolean
-    ) : void;
+    writeFieldFromRecordToWriter(writer: DefaultCompactWriter, genericRecord: GenericRecord, fieldName: string) : void;
     /**
      * Returns byte size of a field kind.
      */

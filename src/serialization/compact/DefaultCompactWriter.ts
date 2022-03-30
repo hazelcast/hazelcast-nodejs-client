@@ -291,16 +291,16 @@ export class DefaultCompactWriter implements CompactWriter {
         });
     }
 
-    writeGenericRecord(fieldName: string, value: GenericRecord, throwIfSchemaNotReplicated = true): void {
+    writeGenericRecord(fieldName: string, value: GenericRecord): void {
         return this.writeVariableSizeField(fieldName, FieldKind.COMPACT, value, (out, value) => {
-            return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl, throwIfSchemaNotReplicated);
+            return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl);
         });
 
     }
 
-    writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[], throwIfSchemaNotReplicated = true) : void {
+    writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[]) : void {
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
-            return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl, throwIfSchemaNotReplicated);
+            return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl);
         });
     }
 

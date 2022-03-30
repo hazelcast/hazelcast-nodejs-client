@@ -15,8 +15,6 @@
  */
 /** @ignore *//** */
 
-import {IdentifiedDataSerializable} from '../Serializable';
-import {DataInput, DataOutput} from '../Data';
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
 import * as Long from 'long';
 import {FieldOperations} from '../generic_record/FieldOperations';
@@ -30,7 +28,7 @@ const SCHEMA = 1;
 /**
  * @internal
  */
-export class Schema implements IdentifiedDataSerializable {
+export class Schema {
 
     typeName: string;
     fieldDefinitionMap: Map<string, FieldDescriptor>;
@@ -110,31 +108,6 @@ export class Schema implements IdentifiedDataSerializable {
 
     getFields() : IterableIterator<FieldDescriptor> {
         return this.fieldDefinitionMap.values();
-    }
-
-    // Not used but may be needed in the future
-    readData(input: DataInput): void {
-        this.typeName = input.readString();
-        const fieldDefinitionsSize = input.readInt();
-        this.fieldDefinitionMap = new Map<string, FieldDescriptor>();
-        for (let i = 0; i < fieldDefinitionsSize; i++) {
-            const name = input.readString();
-            const kind = input.readInt();
-            const fieldDescriptor = new FieldDescriptor(name, kind);
-            this.fieldDefinitionMap.set(name, fieldDescriptor);
-        }
-        this.init();
-    }
-
-    // Not used but may be needed in the future
-    writeData(output: DataOutput): void {
-        output.writeString(this.typeName);
-        output.writeInt(this.fieldDefinitionMap.size);
-        const fields = this.fieldDefinitionMap.values();
-        for (const field of fields) {
-            output.writeString(field.fieldName);
-            output.writeInt(field.kind);
-        }
     }
 
     private hasSameFields(other: Schema): boolean {
