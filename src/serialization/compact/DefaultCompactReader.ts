@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 /** @ignore *//** */
 
 import {CompactReader} from './CompactReader';
@@ -43,6 +43,7 @@ import {OffsetReader} from './OffsetReader';
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
 import {CompactExceptions} from './CompactUtil';
 import {IOUtil} from '../../util/IOUtil';
+import {FieldOperations} from '../generic_record/FieldOperations';
 
 /**
  * Represents unserialized form of a compact object. Users do not receive this object.
@@ -88,370 +89,203 @@ export class DefaultCompactReader implements CompactReader {
     }
 
     readBoolean(fieldName: string): boolean {
-        return this.getBoolean(fieldName);
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.BOOLEAN:
+                return this.getBooleanWithFieldDescriptor(fd);
+            case FieldKind.NULLABLE_BOOLEAN:
+                return this.getVariableSizeAsNonNull(fd, reader => reader.readBoolean(), 'Boolean');
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.BOOLEAN, FieldKind.NULLABLE_BOOLEAN]
+                );
+        }
     }
 
     readBooleanOrDefault(fieldName: string, defaultValue: boolean): boolean {
-        return this.isFieldExists(fieldName, FieldKind.BOOLEAN) ? this.getBoolean(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.BOOLEAN) ? this.readBoolean(fieldName) : defaultValue;
     }
 
     readInt8(fieldName: string): number {
-        return this.getInt8(fieldName);
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.INT8:
+                return this.input.readInt8(this.readFixedSizePosition(fd));
+            case FieldKind.NULLABLE_INT8:
+                return this.getVariableSizeAsNonNull(fd, reader => reader.readInt8(), 'Int8');
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT8, FieldKind.NULLABLE_INT8]
+                );
+        }
     }
 
     readInt8OrDefault(fieldName: string, defaultValue: number): number {
-        return this.isFieldExists(fieldName, FieldKind.INT8) ? this.getInt8(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.INT8) ? this.readInt8(fieldName) : defaultValue;
     }
 
     readInt16(fieldName: string): number {
-        return this.getInt16(fieldName);
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.INT16:
+                return this.input.readShort(this.readFixedSizePosition(fd));
+            case FieldKind.NULLABLE_INT16:
+                return this.getVariableSizeAsNonNull(fd, reader => reader.readShort(), 'Int16');
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT16, FieldKind.NULLABLE_INT16]
+                );
+        }
     }
 
     readInt16OrDefault(fieldName: string, defaultValue: number): number {
-        return this.isFieldExists(fieldName, FieldKind.INT16) ? this.getInt16(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.INT16) ? this.readInt16(fieldName) : defaultValue;
     }
 
     readInt32(fieldName: string): number {
-        return this.getInt32(fieldName);
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.INT32:
+                return this.input.readInt(this.readFixedSizePosition(fd));
+            case FieldKind.NULLABLE_INT32:
+                return this.getVariableSizeAsNonNull(fd, reader => reader.readInt(), 'Int32');
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT32, FieldKind.NULLABLE_INT32]
+                );
+        }
     }
 
     readInt32OrDefault(fieldName: string, defaultValue: number): number {
-        return this.isFieldExists(fieldName, FieldKind.INT32) ? this.getInt32(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.INT32) ? this.readInt32(fieldName) : defaultValue;
     }
 
     readInt64(fieldName: string): Long {
-        return this.getInt64(fieldName);
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.INT64:
+                return this.input.readLong(this.readFixedSizePosition(fd));
+            case FieldKind.NULLABLE_INT64:
+                return this.getVariableSizeAsNonNull(fd, reader => reader.readLong(), 'Int64');
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT64, FieldKind.NULLABLE_INT64]
+                );
+        }
     }
 
     readInt64OrDefault(fieldName: string, defaultValue: Long): Long {
-        return this.isFieldExists(fieldName, FieldKind.INT64) ? this.getInt64(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.INT64) ? this.readInt64(fieldName) : defaultValue;
     }
 
     readFloat32(fieldName: string): number {
-        return this.getFloat32(fieldName);
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.FLOAT32:
+                return this.input.readFloat(this.readFixedSizePosition(fd));
+            case FieldKind.NULLABLE_FLOAT32:
+                return this.getVariableSizeAsNonNull(fd, reader => reader.readFloat(), 'Float32');
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32]
+                );
+        }
     }
 
     readFloat32OrDefault(fieldName: string, defaultValue: number): number {
-        return this.isFieldExists(fieldName, FieldKind.FLOAT32) ? this.getFloat32(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.FLOAT32) ? this.readFloat32(fieldName) : defaultValue;
     }
 
     readFloat64(fieldName: string): number {
-        return this.getFloat64(fieldName);
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.FLOAT64:
+                return this.input.readDouble(this.readFixedSizePosition(fd));
+            case FieldKind.NULLABLE_FLOAT64:
+                return this.getVariableSizeAsNonNull(fd, reader => reader.readDouble(), 'Float64');
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64]
+                );
+        }
     }
 
     readFloat64OrDefault(fieldName: string, defaultValue: number): number {
-        return this.isFieldExists(fieldName, FieldKind.FLOAT64) ? this.getFloat64(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.FLOAT64) ? this.readFloat64(fieldName) : defaultValue;
     }
 
     readString(fieldName: string): string | null {
-        return this.getString(fieldName);
+        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.STRING, reader => reader.readString());
     }
 
     readStringOrDefault(fieldName: string, defaultValue: string | null): string | null {
-        return this.isFieldExists(fieldName, FieldKind.STRING) ? this.getString(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.STRING) ? this.readString(fieldName) : defaultValue;
     }
 
     readDecimal(fieldName: string): BigDecimal | null {
-        return this.getDecimal(fieldName);
+        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.DECIMAL, IOUtil.readDecimal);
     }
 
     readDecimalOrDefault(fieldName: string, defaultValue: BigDecimal | null): BigDecimal | null {
-        return this.isFieldExists(fieldName, FieldKind.DECIMAL) ? this.getDecimal(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.DECIMAL) ? this.readDecimal(fieldName) : defaultValue;
     }
 
     readTime(fieldName: string): LocalTime | null {
-        return this.getTime(fieldName);
+        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.TIME, IOUtil.readLocalTime);
     }
 
     readTimeOrDefault(fieldName: string, defaultValue: LocalTime | null): LocalTime | null {
-        return this.isFieldExists(fieldName, FieldKind.TIME) ? this.getTime(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.TIME) ? this.readTime(fieldName) : defaultValue;
     }
 
     readDate(fieldName: string): LocalDate | null {
-        return this.getDate(fieldName);
+        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.DATE, IOUtil.readLocalDate);
     }
 
     readDateOrDefault(fieldName: string, defaultValue: LocalDate | null): LocalDate | null {
-        return this.isFieldExists(fieldName, FieldKind.DATE) ? this.getDate(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.DATE) ? this.readDate(fieldName) : defaultValue;
     }
 
     readTimestamp(fieldName: string): LocalDateTime | null {
-        return this.getTimestamp(fieldName);
+        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.TIMESTAMP, IOUtil.readLocalDateTime);
     }
 
     readTimestampOrDefault(fieldName: string, defaultValue: LocalDateTime | null): LocalDateTime | null {
-        return this.isFieldExists(fieldName, FieldKind.TIMESTAMP) ? this.getTimestamp(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.TIMESTAMP) ? this.readTimestamp(fieldName) : defaultValue;
     }
 
     readTimestampWithTimezone(fieldName: string): OffsetDateTime | null {
-        return this.getTimestampWithTimezone(fieldName);
+        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.TIMESTAMP_WITH_TIMEZONE, IOUtil.readOffsetDateTime);
     }
 
     readTimestampWithTimezoneOrDefault(fieldName: string, defaultValue: OffsetDateTime | null): OffsetDateTime | null {
         return this.isFieldExists(fieldName, FieldKind.TIMESTAMP_WITH_TIMEZONE) ?
-            this.getTimestampWithTimezone(fieldName) : defaultValue;
+            this.readTimestampWithTimezone(fieldName) : defaultValue;
     }
 
     readCompact<T>(fieldName: string): T | null {
-        return this.getCompact(fieldName);
+        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.COMPACT, reader => this.serializer.read(reader));
     }
 
     readCompactOrDefault<T>(fieldName: string, defaultValue: T): T {
-        return this.isFieldExists(fieldName, FieldKind.COMPACT) ? this.getCompact(fieldName) : defaultValue;
+        return this.isFieldExists(fieldName, FieldKind.COMPACT) ? this.readCompact(fieldName) : defaultValue;
     }
 
     readArrayOfBoolean(fieldName: string): boolean[] | null {
-        return this.getArrayOfBoolean(fieldName);
-    }
-
-    readArrayOfBooleanOrDefault(fieldName: string, defaultValue: boolean[] | null): boolean[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_BOOLEAN) ? this.getArrayOfBoolean(fieldName) : defaultValue;
-    }
-
-    readArrayOfInt8(fieldName: string): Buffer | null {
-        return this.getArrayOfInt8(fieldName);
-    }
-
-    readArrayOfInt8OrDefault(fieldName: string, defaultValue: Buffer | null): Buffer | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT8) ? this.getArrayOfInt8(fieldName) : defaultValue;
-    }
-
-    readArrayOfInt16(fieldName: string): number[] | null {
-        return this.getArrayOfInt16(fieldName);
-    }
-
-    readArrayOfInt16OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT16) ? this.getArrayOfInt16(fieldName) : defaultValue;
-    }
-
-    readArrayOfInt32(fieldName: string): number[] | null {
-        return this.getArrayOfInt32(fieldName);
-    }
-
-    readArrayOfInt32OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT32) ? this.getArrayOfInt32(fieldName) : defaultValue;
-    }
-
-    readArrayOfInt64(fieldName: string): Long[] | null {
-        return this.getArrayOfInt64(fieldName);
-    }
-
-    readArrayOfInt64OrDefault(fieldName: string, defaultValue: Long[]): Long[] {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT64) ? this.getArrayOfInt64(fieldName) : defaultValue;
-    }
-
-    readArrayOfFloat32(fieldName: string): number[] | null {
-        return this.getArrayOfFloat32(fieldName);
-    }
-
-    readArrayOfFloat32OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_FLOAT32) ? this.getArrayOfFloat32(fieldName) : defaultValue;
-    }
-
-    readArrayOfFloat64(fieldName: string): number[] | null {
-        return this.getArrayOfFloat64(fieldName);
-    }
-
-    readArrayOfFloat64OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_FLOAT64) ? this.getArrayOfFloat64(fieldName) : defaultValue;
-    }
-
-    readArrayOfString(fieldName: string): (string | null)[] | null {
-        return this.getArrayOfString(fieldName);
-    }
-
-    readArrayOfStringOrDefault(fieldName: string, defaultValue: (string | null)[]): (string | null)[] {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_STRING) ? this.getArrayOfString(fieldName) : defaultValue;
-    }
-
-    readArrayOfDecimal(fieldName: string): (BigDecimal | null)[] | null {
-        return this.getArrayOfDecimal(fieldName);
-    }
-
-    readArrayOfDecimalOrDefault(fieldName: string, defaultValue: (BigDecimal | null)[] | null): (BigDecimal | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_DECIMAL) ? this.getArrayOfDecimal(fieldName) : defaultValue;
-    }
-
-    readArrayOfTime(fieldName: string): (LocalTime | null)[] | null {
-        return this.getArrayOfTime(fieldName);
-    }
-
-    readArrayOfTimeOrDefault(fieldName: string, defaultValue: (LocalTime | null)[] | null): (LocalTime | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_TIME) ? this.getArrayOfTime(fieldName) : defaultValue;
-    }
-
-    readArrayOfDate(fieldName: string): (LocalDate | null)[] | null {
-        return this.getArrayOfDate(fieldName);
-    }
-
-    readArrayOfDateOrDefault(fieldName: string, defaultValue: (LocalDate | null)[] | null): (LocalDate | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_DATE) ? this.getArrayOfDate(fieldName) : defaultValue;
-    }
-
-    readArrayOfTimestamp(fieldName: string): (LocalDateTime | null)[] | null {
-        return this.getArrayOfTimestamp(fieldName);
-    }
-
-    readArrayOfTimestampOrDefault(
-        fieldName: string, defaultValue: (LocalDateTime | null)[] | null
-    ): (LocalDateTime | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_TIMESTAMP) ? this.getArrayOfTimestamp(fieldName) : defaultValue;
-    }
-
-    readArrayOfTimestampWithTimezone(fieldName: string): (OffsetDateTime | null)[] | null {
-        return this.getArrayOfTimestampWithTimezone(fieldName);
-    }
-
-    readArrayOfTimestampWithTimezoneOrDefault(
-        fieldName: string, defaultValue: (OffsetDateTime | null)[] | null
-    ): (OffsetDateTime | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE) ?
-            this.getArrayOfTimestampWithTimezone(fieldName) : defaultValue;
-    }
-
-    readArrayOfCompact<T>(fieldName: string): (T | null)[] | null {
-        return this.getArrayOfCompact(fieldName);
-    }
-
-    readArrayOfCompactOrDefault<T>(fieldName: string, defaultValue: (T | null)[] | null): (T | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_COMPACT) ? this.getArrayOfCompact(fieldName) : defaultValue;
-    }
-
-    readNullableBoolean(fieldName: string): boolean | null {
-        return this.getNullableBoolean(fieldName);
-    }
-
-    readNullableBooleanOrDefault(fieldName: string, defaultValue: boolean | null): boolean | null {
-        return this.isFieldExists(fieldName, FieldKind.NULLABLE_BOOLEAN) ? this.getNullableBoolean(fieldName) : defaultValue;
-    }
-
-    readNullableInt8(fieldName: string): number | null {
-        return this.getNullableInt8(fieldName);
-    }
-
-    readNullableInt8OrDefault(fieldName: string, defaultValue: number | null): number | null {
-        return this.isFieldExists(fieldName, FieldKind.NULLABLE_INT8) ? this.getNullableInt8(fieldName) : defaultValue;
-    }
-
-    readNullableInt16(fieldName: string): number | null {
-        return this.getNullableInt16(fieldName);
-    }
-
-    readNullableInt16OrDefault(fieldName: string, defaultValue: number | null): number | null {
-        return this.isFieldExists(fieldName, FieldKind.NULLABLE_INT16) ? this.getNullableInt16(fieldName) : defaultValue;
-    }
-
-    readNullableInt32(fieldName: string): number | null {
-        return this.getNullableInt32(fieldName);
-    }
-
-    readNullableInt32OrDefault(fieldName: string, defaultValue: number | null): number | null {
-        return this.isFieldExists(fieldName, FieldKind.NULLABLE_INT32) ? this.getNullableInt32(fieldName) : defaultValue;
-    }
-
-    readNullableInt64(fieldName: string): Long | null {
-        return this.getNullableInt64(fieldName);
-    }
-
-    readNullableInt64OrDefault(fieldName: string, defaultValue: Long | null): Long | null {
-        return this.isFieldExists(fieldName, FieldKind.NULLABLE_INT64) ? this.getNullableInt64(fieldName) : defaultValue;
-    }
-
-    readNullableFloat32(fieldName: string): number | null {
-        return this.getNullableFloat32(fieldName);
-    }
-
-    readNullableFloat32OrDefault(fieldName: string, defaultValue: number | null): number | null {
-        return this.isFieldExists(fieldName, FieldKind.NULLABLE_FLOAT32) ? this.getNullableFloat32(fieldName) : defaultValue;
-    }
-
-    readNullableFloat64(fieldName: string): number | null {
-        return this.getNullableFloat64(fieldName);
-    }
-
-    readNullableFloat64OrDefault(fieldName: string, defaultValue: number | null): number | null {
-        return this.isFieldExists(fieldName, FieldKind.NULLABLE_FLOAT64) ? this.getNullableFloat64(fieldName) : defaultValue;
-    }
-
-    readArrayOfNullableBoolean(fieldName: string): (boolean | null)[] | null {
-        return this.getArrayOfNullableBoolean(fieldName);
-    }
-
-    readArrayOfNullableBooleanOrDefault(fieldName: string, defaultValue: (boolean | null)[] | null): (boolean | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN) ?
-                this.getArrayOfNullableBoolean(fieldName) : defaultValue;
-    }
-
-    readArrayOfNullableInt8(fieldName: string): (number | null)[] | null {
-        return this.getArrayOfNullableInt8(fieldName);
-    }
-
-    readArrayOfNullableInt8OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT8) ?
-            this.getArrayOfNullableInt8(fieldName) : defaultValue;
-    }
-
-    readArrayOfNullableInt16(fieldName: string): (number | null)[] | null {
-        return this.getArrayOfNullableInt16(fieldName);
-    }
-
-    readArrayOfNullableInt16OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT16)
-                ? this.getArrayOfNullableInt16(fieldName) : defaultValue;
-    }
-
-    readArrayOfNullableInt32(fieldName: string): (number | null)[] | null {
-        return this.getArrayOfNullableInt32(fieldName);
-    }
-
-    readArrayOfNullableInt32OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT32) ?
-                this.getArrayOfNullableInt32(fieldName) : defaultValue;
-    }
-
-    readArrayOfNullableInt64(fieldName: string): (Long | null)[] | null {
-        return this.getArrayOfNullableInt64(fieldName);
-    }
-
-    readArrayOfNullableInt64OrDefault(fieldName: string, defaultValue: (Long | null)[] | null): (Long | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT64)
-                ? this.getArrayOfNullableInt64(fieldName) : defaultValue;
-    }
-
-    readArrayOfNullableFloat32(fieldName: string): (number | null)[] | null {
-        return this.getArrayOfNullableFloat32(fieldName);
-    }
-
-    readArrayOfNullableFloat32OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOAT32) ?
-                this.getArrayOfNullableFloat32(fieldName) : defaultValue;
-    }
-
-    readArrayOfNullableFloat64(fieldName: string): (number | null)[] | null {
-        return this.getArrayOfNullableFloat64(fieldName);
-    }
-
-    readArrayOfNullableFloat64OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null {
-        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOAT64) ?
-                this.getArrayOfNullableFloat64(fieldName) : defaultValue;
-    }
-
-    getArrayOfCompact(fieldName: string): any[] {
-        return this.getArrayOfVariableSizes(
-            fieldName,
-            FieldKind.ARRAY_OF_COMPACT,
-            reader => this.serializer.read(reader)
-        );
-    }
-
-    getArrayOfBoolean(fieldName: string): boolean[] {
         const fd = this.getFieldDefinition(fieldName);
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.ARRAY_OF_BOOLEAN:
                 return this.getVariableSize(fd, DefaultCompactReader.readBooleanBits);
             case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
-                return this.getNullableArrayAsPrimitiveArray(fd, (input) => input.readBooleanArray(), 'Booleans');
+                return this.getNullableArrayAsPrimitiveArray(fd, (input) => input.readBooleanArray(), 'ArrayOfBoolean');
             default:
                 throw DefaultCompactReader.toFieldKindIsNotOneOfError(
                     fieldKind, fieldName, [FieldKind.ARRAY_OF_BOOLEAN, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN]
@@ -459,101 +293,165 @@ export class DefaultCompactReader implements CompactReader {
         }
     }
 
-    getArrayOfInt8(fieldName: string): Buffer {
+    readArrayOfBooleanOrDefault(fieldName: string, defaultValue: boolean[] | null): boolean[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_BOOLEAN) ? this.readArrayOfBoolean(fieldName) : defaultValue;
+    }
+
+    readArrayOfInt8(fieldName: string): Buffer | null {
         return this.getArrayOfPrimitives(
             fieldName,
             reader => reader.readByteArray(),
             FieldKind.ARRAY_OF_INT8,
             FieldKind.ARRAY_OF_NULLABLE_INT8,
-            'Bytes'
+            'ArrayOfInt8'
         );
     }
 
-    getArrayOfString(fieldName: string): string[] {
-        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_STRING, reader => reader.readString());
+    readArrayOfInt8OrDefault(fieldName: string, defaultValue: Buffer | null): Buffer | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT8) ? this.readArrayOfInt8(fieldName) : defaultValue;
     }
 
-    getArrayOfTime(fieldName: string): LocalTime[] {
-        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIME, IOUtil.readLocalTime);
-    }
-
-    getArrayOfTimestampWithTimezone(fieldName: string): OffsetDateTime[] {
-        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE, IOUtil.readOffsetDateTime);
-    }
-
-    getArrayOfTimestamp(fieldName: string): LocalDateTime[] {
-        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMESTAMP, IOUtil.readLocalDateTime);
-    }
-
-    getArrayOfDate(fieldName: string): LocalDate[] {
-        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DATE, IOUtil.readLocalDate);
-    }
-
-    getArrayOfDecimal(fieldName: string): BigDecimal[] {
-        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DECIMAL, IOUtil.readDecimal);
-    }
-
-    getArrayOfFloat64(fieldName: string): number[] {
-        return this.getArrayOfPrimitives(
-            fieldName,
-            reader => reader.readDoubleArray(),
-            FieldKind.ARRAY_OF_FLOAT64,
-            FieldKind.ARRAY_OF_NULLABLE_FLOAT64,
-            'Doubles'
-        );
-    }
-
-    getArrayOfFloat32(fieldName: string): number[] {
-        return this.getArrayOfPrimitives(
-            fieldName,
-            reader => reader.readFloatArray(),
-            FieldKind.ARRAY_OF_FLOAT32,
-            FieldKind.ARRAY_OF_NULLABLE_FLOAT32,
-            'Floats'
-        );
-    }
-
-    getArrayOfInt16(fieldName: string): number[] {
+    readArrayOfInt16(fieldName: string): number[] | null {
         return this.getArrayOfPrimitives(
             fieldName,
             reader => reader.readShortArray(),
             FieldKind.ARRAY_OF_INT16,
             FieldKind.ARRAY_OF_NULLABLE_INT16,
-            'Shorts'
+            'ArrayOfInt16'
         );
     }
 
-    getArrayOfInt32(fieldName: string): number[] {
+    readArrayOfInt16OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT16) ? this.readArrayOfInt16(fieldName) : defaultValue;
+    }
+
+    readArrayOfInt32(fieldName: string): number[] | null {
         return this.getArrayOfPrimitives(
             fieldName,
             reader => reader.readIntArray(),
             FieldKind.ARRAY_OF_INT32,
             FieldKind.ARRAY_OF_NULLABLE_INT32,
-            'Ints'
+            'ArrayOfInt32'
         );
     }
 
-    getArrayOfInt64(fieldName: string): Long[] {
+    readArrayOfInt32OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT32) ? this.readArrayOfInt32(fieldName) : defaultValue;
+    }
+
+    readArrayOfInt64(fieldName: string): Long[] | null {
         return this.getArrayOfPrimitives(
             fieldName,
             reader => reader.readLongArray(),
             FieldKind.ARRAY_OF_INT64,
             FieldKind.ARRAY_OF_NULLABLE_INT64,
-            'Longs'
+            'ArrayOfInt64'
         );
     }
 
-    readFixedSizePosition(fd: FieldDescriptor) {
-        const primitiveOffset = fd.offset;
-        return primitiveOffset + this.dataStartPosition;
+    readArrayOfInt64OrDefault(fieldName: string, defaultValue: Long[]): Long[] {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_INT64) ? this.readArrayOfInt64(fieldName) : defaultValue;
     }
 
-    getNullableBoolean(fieldName: string): boolean | null {
+    readArrayOfFloat32(fieldName: string): number[] | null {
+        return this.getArrayOfPrimitives(
+            fieldName,
+            reader => reader.readFloatArray(),
+            FieldKind.ARRAY_OF_FLOAT32,
+            FieldKind.ARRAY_OF_NULLABLE_FLOAT32,
+            'ArrayOfFloat32'
+        );
+    }
+
+    readArrayOfFloat32OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_FLOAT32) ? this.readArrayOfFloat32(fieldName) : defaultValue;
+    }
+
+    readArrayOfFloat64(fieldName: string): number[] | null {
+        return this.getArrayOfPrimitives(
+            fieldName,
+            reader => reader.readDoubleArray(),
+            FieldKind.ARRAY_OF_FLOAT64,
+            FieldKind.ARRAY_OF_NULLABLE_FLOAT64,
+            'ArrayOfFloat64'
+        );
+    }
+
+    readArrayOfFloat64OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_FLOAT64) ? this.readArrayOfFloat64(fieldName) : defaultValue;
+    }
+
+    readArrayOfString(fieldName: string): (string | null)[] | null {
+        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_STRING, reader => reader.readString());
+    }
+
+    readArrayOfStringOrDefault(fieldName: string, defaultValue: (string | null)[]): (string | null)[] {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_STRING) ? this.readArrayOfString(fieldName) : defaultValue;
+    }
+
+    readArrayOfDecimal(fieldName: string): (BigDecimal | null)[] | null {
+        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DECIMAL, IOUtil.readDecimal);
+    }
+
+    readArrayOfDecimalOrDefault(fieldName: string, defaultValue: (BigDecimal | null)[] | null): (BigDecimal | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_DECIMAL) ? this.readArrayOfDecimal(fieldName) : defaultValue;
+    }
+
+    readArrayOfTime(fieldName: string): (LocalTime | null)[] | null {
+        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIME, IOUtil.readLocalTime);
+    }
+
+    readArrayOfTimeOrDefault(fieldName: string, defaultValue: (LocalTime | null)[] | null): (LocalTime | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_TIME) ? this.readArrayOfTime(fieldName) : defaultValue;
+    }
+
+    readArrayOfDate(fieldName: string): (LocalDate | null)[] | null {
+        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DATE, IOUtil.readLocalDate);
+    }
+
+    readArrayOfDateOrDefault(fieldName: string, defaultValue: (LocalDate | null)[] | null): (LocalDate | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_DATE) ? this.readArrayOfDate(fieldName) : defaultValue;
+    }
+
+    readArrayOfTimestamp(fieldName: string): (LocalDateTime | null)[] | null {
+        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMESTAMP, IOUtil.readLocalDateTime);
+    }
+
+    readArrayOfTimestampOrDefault(
+        fieldName: string, defaultValue: (LocalDateTime | null)[] | null
+    ): (LocalDateTime | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_TIMESTAMP) ? this.readArrayOfTimestamp(fieldName) : defaultValue;
+    }
+
+    readArrayOfTimestampWithTimezone(fieldName: string): (OffsetDateTime | null)[] | null {
+        return this.getArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE, IOUtil.readOffsetDateTime);
+    }
+
+    readArrayOfTimestampWithTimezoneOrDefault(
+        fieldName: string, defaultValue: (OffsetDateTime | null)[] | null
+    ): (OffsetDateTime | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE) ?
+            this.readArrayOfTimestampWithTimezone(fieldName) : defaultValue;
+    }
+
+    readArrayOfCompact<T>(fieldName: string): (T | null)[] | null {
+        return this.getArrayOfVariableSizes(
+            fieldName,
+            FieldKind.ARRAY_OF_COMPACT,
+            reader => this.serializer.read(reader)
+        );
+    }
+
+    readArrayOfCompactOrDefault<T>(fieldName: string, defaultValue: (T | null)[] | null): (T | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_COMPACT) ? this.readArrayOfCompact(fieldName) : defaultValue;
+    }
+
+    readNullableBoolean(fieldName: string): boolean | null {
         const fd = this.getFieldDefinition(fieldName);
         const fieldKind = fd.kind;
         switch (fieldKind) {
             case FieldKind.BOOLEAN:
-                return this.getBoolean(fieldName);
+                return this.readBoolean(fieldName);
             case FieldKind.NULLABLE_BOOLEAN:
                 return this.getVariableSize(fd, reader => reader.readBoolean());
             default:
@@ -563,7 +461,11 @@ export class DefaultCompactReader implements CompactReader {
         }
     }
 
-    getNullableInt8(fieldName: string): number | null {
+    readNullableBooleanOrDefault(fieldName: string, defaultValue: boolean | null): boolean | null {
+        return this.isFieldExists(fieldName, FieldKind.NULLABLE_BOOLEAN) ? this.readNullableBoolean(fieldName) : defaultValue;
+    }
+
+    readNullableInt8(fieldName: string): number | null {
         const fd = this.getFieldDefinition(fieldName);
         const fieldKind = fd.kind;
         switch (fieldKind) {
@@ -578,67 +480,11 @@ export class DefaultCompactReader implements CompactReader {
         }
     }
 
-    getNullableFloat64(fieldName: string): number | null {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.FLOAT64:
-                return this.input.readDouble(this.readFixedSizePosition(fd));
-            case FieldKind.NULLABLE_FLOAT64:
-                return this.getVariableSize(fd, reader => reader.readDouble());
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64]
-                );
-        }
+    readNullableInt8OrDefault(fieldName: string, defaultValue: number | null): number | null {
+        return this.isFieldExists(fieldName, FieldKind.NULLABLE_INT8) ? this.readNullableInt8(fieldName) : defaultValue;
     }
 
-    getNullableFloat32(fieldName: string): number | null {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.FLOAT32:
-                return this.input.readFloat(this.readFixedSizePosition(fd));
-            case FieldKind.NULLABLE_FLOAT32:
-                return this.getVariableSize(fd, reader => reader.readFloat());
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32]
-                );
-        }
-    }
-
-    getNullableInt32(fieldName: string): number | null {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.INT32:
-                return this.input.readInt(this.readFixedSizePosition(fd));
-            case FieldKind.NULLABLE_INT32:
-                return this.getVariableSize(fd, reader => reader.readInt());
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.INT32, FieldKind.NULLABLE_INT32]
-                );
-        }
-    }
-
-    getNullableInt64(fieldName: string): Long | null {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.INT64:
-                return this.input.readLong(this.readFixedSizePosition(fd));
-            case FieldKind.NULLABLE_INT64:
-                return this.getVariableSize(fd, reader => reader.readLong());
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.INT64, FieldKind.NULLABLE_INT64]
-                );
-        }
-    }
-
-    getNullableInt16(fieldName: string): number | null {
+    readNullableInt16(fieldName: string): number | null {
         const fd = this.getFieldDefinition(fieldName);
         const fieldKind = fd.kind;
         switch (fieldKind) {
@@ -653,7 +499,87 @@ export class DefaultCompactReader implements CompactReader {
         }
     }
 
-    getArrayOfNullableBoolean(fieldName: string): (boolean | null)[] {
+    readNullableInt16OrDefault(fieldName: string, defaultValue: number | null): number | null {
+        return this.isFieldExists(fieldName, FieldKind.NULLABLE_INT16) ? this.readNullableInt16(fieldName) : defaultValue;
+    }
+
+    readNullableInt32(fieldName: string): number | null {
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.INT32:
+                return this.input.readInt(this.readFixedSizePosition(fd));
+            case FieldKind.NULLABLE_INT32:
+                return this.getVariableSize(fd, reader => reader.readInt());
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT32, FieldKind.NULLABLE_INT32]
+                );
+        }
+    }
+
+    readNullableInt32OrDefault(fieldName: string, defaultValue: number | null): number | null {
+        return this.isFieldExists(fieldName, FieldKind.NULLABLE_INT32) ? this.readNullableInt32(fieldName) : defaultValue;
+    }
+
+    readNullableInt64(fieldName: string): Long | null {
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.INT64:
+                return this.input.readLong(this.readFixedSizePosition(fd));
+            case FieldKind.NULLABLE_INT64:
+                return this.getVariableSize(fd, reader => reader.readLong());
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.INT64, FieldKind.NULLABLE_INT64]
+                );
+        }
+    }
+
+    readNullableInt64OrDefault(fieldName: string, defaultValue: Long | null): Long | null {
+        return this.isFieldExists(fieldName, FieldKind.NULLABLE_INT64) ? this.readNullableInt64(fieldName) : defaultValue;
+    }
+
+    readNullableFloat32(fieldName: string): number | null {
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.FLOAT32:
+                return this.input.readFloat(this.readFixedSizePosition(fd));
+            case FieldKind.NULLABLE_FLOAT32:
+                return this.getVariableSize(fd, reader => reader.readFloat());
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32]
+                );
+        }
+    }
+
+    readNullableFloat32OrDefault(fieldName: string, defaultValue: number | null): number | null {
+        return this.isFieldExists(fieldName, FieldKind.NULLABLE_FLOAT32) ? this.readNullableFloat32(fieldName) : defaultValue;
+    }
+
+    readNullableFloat64(fieldName: string): number | null {
+        const fd = this.getFieldDefinition(fieldName);
+        const fieldKind = fd.kind;
+        switch (fieldKind) {
+            case FieldKind.FLOAT64:
+                return this.input.readDouble(this.readFixedSizePosition(fd));
+            case FieldKind.NULLABLE_FLOAT64:
+                return this.getVariableSize(fd, reader => reader.readDouble());
+            default:
+                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
+                    fieldKind, fieldName, [FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64]
+                );
+        }
+    }
+
+    readNullableFloat64OrDefault(fieldName: string, defaultValue: number | null): number | null {
+        return this.isFieldExists(fieldName, FieldKind.NULLABLE_FLOAT64) ? this.readNullableFloat64(fieldName) : defaultValue;
+    }
+
+    readArrayOfNullableBoolean(fieldName: string): (boolean | null)[] | null {
         const fd = this.getFieldDefinition(fieldName);
         const fieldKind = fd.kind;
         switch (fieldKind) {
@@ -670,173 +596,80 @@ export class DefaultCompactReader implements CompactReader {
         }
     }
 
-    getArrayOfNullableInt8(fieldName: string): (number | null)[] {
+    readArrayOfNullableBooleanOrDefault(fieldName: string, defaultValue: (boolean | null)[] | null): (boolean | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN) ?
+                this.readArrayOfNullableBoolean(fieldName) : defaultValue;
+    }
+
+    readArrayOfNullableInt8(fieldName: string): (number | null)[] | null {
         return this.getArrayOfNullables(
             fieldName, reader => reader.readInt8(), FieldKind.ARRAY_OF_INT8, FieldKind.ARRAY_OF_NULLABLE_INT8
         );
     }
 
-    getArrayOfNullableFloat64(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(
-            fieldName, reader => reader.readDouble(), FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64
-        );
+    readArrayOfNullableInt8OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT8) ?
+            this.readArrayOfNullableInt8(fieldName) : defaultValue;
     }
 
-    getArrayOfNullableFloat32(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(
-            fieldName, reader => reader.readFloat(), FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32
-        );
-    }
-
-    getArrayOfNullableInt32(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(
-            fieldName, reader => reader.readInt(), FieldKind.ARRAY_OF_INT32, FieldKind.ARRAY_OF_NULLABLE_INT32
-        );
-    }
-
-    getArrayOfNullableInt64(fieldName: string): (Long | null)[] {
-        return this.getArrayOfNullables(
-            fieldName, reader => reader.readLong(), FieldKind.ARRAY_OF_INT64, FieldKind.ARRAY_OF_NULLABLE_INT64
-        );
-    }
-
-    getArrayOfNullableInt16(fieldName: string): (number | null)[] {
+    readArrayOfNullableInt16(fieldName: string): (number | null)[] | null {
         return this.getArrayOfNullables(
             fieldName, reader => reader.readShort(), FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16
         );
     }
 
-    getBoolean(fieldName: string): boolean {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.BOOLEAN:
-                return this.getBooleanWithFieldDescriptor(fd);
-            case FieldKind.NULLABLE_BOOLEAN:
-                return this.getVariableSizeAsNonNull(fd, reader => reader.readBoolean(), 'Boolean');
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.BOOLEAN, FieldKind.NULLABLE_BOOLEAN]
-                );
-        }
+    readArrayOfNullableInt16OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT16)
+                ? this.readArrayOfNullableInt16(fieldName) : defaultValue;
     }
 
-    getInt8(fieldName: string): number {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.INT8:
-                return this.input.readInt8(this.readFixedSizePosition(fd));
-            case FieldKind.NULLABLE_INT8:
-                return this.getVariableSizeAsNonNull(fd, reader => reader.readInt8(), 'Byte');
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.INT8, FieldKind.NULLABLE_INT8]
-                );
-        }
+    readArrayOfNullableInt32(fieldName: string): (number | null)[] | null {
+        return this.getArrayOfNullables(
+            fieldName, reader => reader.readInt(), FieldKind.ARRAY_OF_INT32, FieldKind.ARRAY_OF_NULLABLE_INT32
+        );
     }
 
-    getDate(fieldName: string): LocalDate {
-        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.DATE, IOUtil.readLocalDate);
+    readArrayOfNullableInt32OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT32) ?
+                this.readArrayOfNullableInt32(fieldName) : defaultValue;
     }
 
-    getDecimal(fieldName: string): BigDecimal {
-        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.DECIMAL, IOUtil.readDecimal);
+    readArrayOfNullableInt64(fieldName: string): (Long | null)[] | null {
+        return this.getArrayOfNullables(
+            fieldName, reader => reader.readLong(), FieldKind.ARRAY_OF_INT64, FieldKind.ARRAY_OF_NULLABLE_INT64
+        );
     }
 
-    getFloat64(fieldName: string): number {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.FLOAT64:
-                return this.input.readDouble(this.readFixedSizePosition(fd));
-            case FieldKind.NULLABLE_FLOAT64:
-                return this.getVariableSizeAsNonNull(fd, reader => reader.readDouble(), 'Double');
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64]
-                );
-        }
+    readArrayOfNullableInt64OrDefault(fieldName: string, defaultValue: (Long | null)[] | null): (Long | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_INT64)
+                ? this.readArrayOfNullableInt64(fieldName) : defaultValue;
     }
 
-    getFloat32(fieldName: string): number {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.FLOAT32:
-                return this.input.readFloat(this.readFixedSizePosition(fd));
-            case FieldKind.NULLABLE_FLOAT32:
-                return this.getVariableSizeAsNonNull(fd, reader => reader.readFloat(), 'Float');
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32]
-                );
-        }
+    readArrayOfNullableFloat32(fieldName: string): (number | null)[] | null {
+        return this.getArrayOfNullables(
+            fieldName, reader => reader.readFloat(), FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32
+        );
     }
 
-    getInt32(fieldName: string): number {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.INT32:
-                return this.input.readInt(this.readFixedSizePosition(fd));
-            case FieldKind.NULLABLE_INT32:
-                return this.getVariableSizeAsNonNull(fd, reader => reader.readInt(), 'Int');
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.INT32, FieldKind.NULLABLE_INT32]
-                );
-        }
+    readArrayOfNullableFloat32OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOAT32) ?
+                this.readArrayOfNullableFloat32(fieldName) : defaultValue;
     }
 
-    getInt64(fieldName: string): Long {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.INT64:
-                return this.input.readLong(this.readFixedSizePosition(fd));
-            case FieldKind.NULLABLE_INT64:
-                return this.getVariableSizeAsNonNull(fd, reader => reader.readLong(), 'Long');
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.INT64, FieldKind.NULLABLE_INT64]
-                );
-        }
+    readArrayOfNullableFloat64(fieldName: string): (number | null)[] | null {
+        return this.getArrayOfNullables(
+            fieldName, reader => reader.readDouble(), FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64
+        );
     }
 
-    getInt16(fieldName: string): number {
-        const fd = this.getFieldDefinition(fieldName);
-        const fieldKind = fd.kind;
-        switch (fieldKind) {
-            case FieldKind.INT16:
-                return this.input.readShort(this.readFixedSizePosition(fd));
-            case FieldKind.NULLABLE_INT16:
-                return this.getVariableSizeAsNonNull(fd, reader => reader.readShort(), 'Short');
-            default:
-                throw DefaultCompactReader.toFieldKindIsNotOneOfError(
-                    fieldKind, fieldName, [FieldKind.INT16, FieldKind.NULLABLE_INT16]
-                );
-        }
+    readArrayOfNullableFloat64OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null {
+        return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_NULLABLE_FLOAT64) ?
+                this.readArrayOfNullableFloat64(fieldName) : defaultValue;
     }
 
-    getString(fieldName: string): string {
-        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.STRING, reader => reader.readString());
-    }
-
-    getTime(fieldName: string): LocalTime {
-        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.TIME, IOUtil.readLocalTime);
-    }
-
-    getTimestamp(fieldName: string): LocalDateTime {
-        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.TIMESTAMP, IOUtil.readLocalDateTime);
-    }
-
-    getTimestampWithTimezone(fieldName: string): OffsetDateTime {
-        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.TIMESTAMP_WITH_TIMEZONE, IOUtil.readOffsetDateTime);
-    }
-
-    getCompact(fieldName: string): any {
-        return this.getVariableSizeByNameAndKind(fieldName, FieldKind.COMPACT, reader => this.serializer.read(reader));
+    readFixedSizePosition(fd: FieldDescriptor) {
+        const primitiveOffset = fd.offset;
+        return primitiveOffset + this.dataStartPosition;
     }
 
     toDeserialized(): CompactGenericRecordImpl {
@@ -845,134 +678,7 @@ export class DefaultCompactReader implements CompactReader {
 
         for (const field of this.schema.fields) {
             fields[field.fieldName] = field;
-            switch (field.kind) {
-                case FieldKind.BOOLEAN:
-                    values[field.fieldName] = this.readBoolean(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_BOOLEAN:
-                    values[field.fieldName] = this.readArrayOfBoolean(field.fieldName);
-                    break;
-                case FieldKind.INT8:
-                    values[field.fieldName] = this.readInt8(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_INT8:
-                    values[field.fieldName] = this.readArrayOfInt8(field.fieldName);
-                    break;
-                case FieldKind.INT16:
-                    values[field.fieldName] = this.readInt16(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_INT16:
-                    values[field.fieldName] = this.readArrayOfInt16(field.fieldName);
-                    break;
-                case FieldKind.INT32:
-                    values[field.fieldName] = this.readInt32(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_INT32:
-                    values[field.fieldName] = this.readArrayOfInt32(field.fieldName);
-                    break;
-                case FieldKind.INT64:
-                    values[field.fieldName] = this.readInt64(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_INT64:
-                    values[field.fieldName] = this.readArrayOfInt64(field.fieldName);
-                    break;
-                case FieldKind.FLOAT32:
-                    values[field.fieldName] = this.readFloat32(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_FLOAT32:
-                    values[field.fieldName] = this.readArrayOfFloat32(field.fieldName);
-                    break;
-                case FieldKind.FLOAT64:
-                    values[field.fieldName] = this.readFloat64(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_FLOAT64:
-                    values[field.fieldName] = this.readArrayOfFloat64(field.fieldName);
-                    break;
-                case FieldKind.STRING:
-                    values[field.fieldName] = this.readString(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_STRING:
-                    values[field.fieldName] = this.readArrayOfString(field.fieldName);
-                    break;
-                case FieldKind.DECIMAL:
-                    values[field.fieldName] = this.readDecimal(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_DECIMAL:
-                    values[field.fieldName] = this.readArrayOfDecimal(field.fieldName);
-                    break;
-                case FieldKind.TIME:
-                    values[field.fieldName] = this.readTime(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_TIME:
-                    values[field.fieldName] = this.readArrayOfTime(field.fieldName);
-                    break;
-                case FieldKind.DATE:
-                    values[field.fieldName] = this.readDate(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_DATE:
-                    values[field.fieldName] = this.readArrayOfDate(field.fieldName);
-                    break;
-                case FieldKind.TIMESTAMP:
-                    values[field.fieldName] = this.readTimestamp(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_TIMESTAMP:
-                    values[field.fieldName] = this.readArrayOfTimestamp(field.fieldName);
-                    break;
-                case FieldKind.TIMESTAMP_WITH_TIMEZONE:
-                    values[field.fieldName] = this.readTimestampWithTimezone(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
-                    values[field.fieldName] = this.readArrayOfTimestampWithTimezone(field.fieldName);
-                    break;
-                case FieldKind.COMPACT:
-                    values[field.fieldName] = this.readCompact(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_COMPACT:
-                    values[field.fieldName] = this.readArrayOfCompact(field.fieldName);
-                    break;
-                case FieldKind.NULLABLE_BOOLEAN:
-                    values[field.fieldName] = this.readNullableBoolean(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
-                    values[field.fieldName] = this.readArrayOfNullableBoolean(field.fieldName);
-                    break;
-                case FieldKind.NULLABLE_INT8:
-                    values[field.fieldName] = this.readNullableInt8(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_INT8:
-                    values[field.fieldName] = this.readArrayOfNullableInt8(field.fieldName);
-                    break;
-                case FieldKind.NULLABLE_INT16:
-                    values[field.fieldName] = this.readNullableInt16(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_INT16:
-                    values[field.fieldName] = this.readArrayOfNullableInt16(field.fieldName);
-                    break;
-                case FieldKind.NULLABLE_INT32:
-                    values[field.fieldName] = this.readNullableInt32(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_INT32:
-                    values[field.fieldName] = this.readArrayOfNullableInt32(field.fieldName);
-                    break;
-                case FieldKind.NULLABLE_INT64:
-                    values[field.fieldName] = this.readNullableInt64(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_INT64:
-                    values[field.fieldName] = this.readArrayOfNullableInt64(field.fieldName);
-                    break;
-                case FieldKind.NULLABLE_FLOAT32:
-                    values[field.fieldName] = this.readNullableFloat32(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
-                    values[field.fieldName] = this.readArrayOfNullableFloat32(field.fieldName);
-                    break;
-                case FieldKind.NULLABLE_FLOAT64:
-                    values[field.fieldName] = this.readNullableFloat64(field.fieldName);
-                    break;
-                case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
-                    values[field.fieldName] = this.readArrayOfNullableFloat64(field.fieldName);
-                    break;
-            }
+            values[field.fieldName] = FieldOperations.fieldOperations(field.kind).readFromReader(this, field.fieldName);
         }
         return new CompactGenericRecordImpl(this.schema.typeName, fields, values);
     }

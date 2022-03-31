@@ -15,6 +15,7 @@
  */
 /** @ignore *//** */
 
+import { CompactReader } from '../compact';
 import {DefaultCompactWriter} from '../compact/DefaultCompactWriter';
 import {GenericRecord} from './GenericRecord';
 
@@ -32,4 +33,9 @@ export interface FieldKindBasedOperations {
      * Returns byte size of a field kind.
      */
     kindSizeInBytes(): number;
+
+    /**
+     * Reads a field from reader.
+     */
+    readFromReader(reader: CompactReader, fieldName: string): any;
 }

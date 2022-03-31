@@ -398,13 +398,13 @@ export class CompactGenericRecordImpl implements GenericRecord {
 
     getArrayOfBoolean(fieldName: string): boolean[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Booleans', FieldKind.ARRAY_OF_BOOLEAN, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN
+            fieldName, 'ArrayOfBoolean', FieldKind.ARRAY_OF_BOOLEAN, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN
         );
     }
 
     getArrayOfInt8(fieldName: string): Buffer {
         return Buffer.from(this.getArrayOfPrimitives(
-            fieldName, 'Bytes', FieldKind.ARRAY_OF_INT8, FieldKind.ARRAY_OF_NULLABLE_INT8
+            fieldName, 'ArrayOfInt8', FieldKind.ARRAY_OF_INT8, FieldKind.ARRAY_OF_NULLABLE_INT8
         ));
     }
 
@@ -422,13 +422,13 @@ export class CompactGenericRecordImpl implements GenericRecord {
 
     getArrayOfFloat64(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Doubles', FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64
+            fieldName, 'ArrayOfFloat64', FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64
         );
     }
 
     getArrayOfFloat32(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Floats', FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32
+            fieldName, 'ArrayOfFloat32', FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32
         );
     }
 
@@ -438,13 +438,13 @@ export class CompactGenericRecordImpl implements GenericRecord {
 
     getArrayOfInt32(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Ints', FieldKind.ARRAY_OF_INT32, FieldKind.ARRAY_OF_NULLABLE_INT32
+            fieldName, 'ArrayOfInt32', FieldKind.ARRAY_OF_INT32, FieldKind.ARRAY_OF_NULLABLE_INT32
         );
     }
 
     getArrayOfInt64(fieldName: string): Long[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Longs', FieldKind.ARRAY_OF_INT64, FieldKind.ARRAY_OF_NULLABLE_INT64
+            fieldName, 'ArrayOfInt64', FieldKind.ARRAY_OF_INT64, FieldKind.ARRAY_OF_NULLABLE_INT64
         );
     }
 
@@ -478,7 +478,7 @@ export class CompactGenericRecordImpl implements GenericRecord {
 
     getArrayOfInt16(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'Shorts', FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16
+            fieldName, 'ArrayOfInt16', FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16
         );
     }
 
@@ -503,7 +503,7 @@ export class CompactGenericRecordImpl implements GenericRecord {
     }
 
     getInt8(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.INT8, FieldKind.NULLABLE_INT8, 'Byte');
+        return this.getNonNull(fieldName, FieldKind.INT8, FieldKind.NULLABLE_INT8, 'Int8');
     }
 
     getDate(fieldName: string): LocalDate {
@@ -515,7 +515,7 @@ export class CompactGenericRecordImpl implements GenericRecord {
     }
 
     getFloat32(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32, 'Float');
+        return this.getNonNull(fieldName, FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32, 'Float32');
     }
 
     getFieldKind(fieldName: string): FieldKind {
@@ -530,7 +530,7 @@ export class CompactGenericRecordImpl implements GenericRecord {
     }
 
     getFloat64(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64, 'Double');
+        return this.getNonNull(fieldName, FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64, 'Float64');
     }
 
     getGenericRecord(fieldName: string): GenericRecord {
@@ -538,11 +538,11 @@ export class CompactGenericRecordImpl implements GenericRecord {
     }
 
     getInt32(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.INT32, FieldKind.NULLABLE_INT32, 'Int');
+        return this.getNonNull(fieldName, FieldKind.INT32, FieldKind.NULLABLE_INT32, 'Int32');
     }
 
     getInt64(fieldName: string): Long {
-        return this.getNonNull(fieldName, FieldKind.INT64, FieldKind.NULLABLE_INT64, 'Long');
+        return this.getNonNull(fieldName, FieldKind.INT64, FieldKind.NULLABLE_INT64, 'Int64');
     }
 
     getNullableBoolean(fieldName: string): boolean | null {
@@ -574,7 +574,7 @@ export class CompactGenericRecordImpl implements GenericRecord {
     }
 
     getInt16(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.INT16, FieldKind.NULLABLE_INT16, 'Short');
+        return this.getNonNull(fieldName, FieldKind.INT16, FieldKind.NULLABLE_INT16, 'Int16');
     }
 
     getString(fieldName: string): string {

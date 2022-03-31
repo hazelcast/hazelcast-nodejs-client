@@ -20,6 +20,7 @@ import {FieldKindBasedOperations} from './FieldKindBasedOperations';
 import {DefaultCompactWriter} from '../compact/DefaultCompactWriter';
 import {GenericRecord} from './GenericRecord';
 import {BitsUtil} from '../../util/BitsUtil';
+import {CompactReader} from '../compact/CompactReader';
 
 /**
  * Implementation of {@link FieldKindBasedOperations} for each field
@@ -37,6 +38,9 @@ export class FieldOperations {
                 // Boolean is actually 1 bit. To make it look like smaller than Byte we use 0.
                 return 0;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readBoolean(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_BOOLEAN]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -45,6 +49,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfBoolean(fieldName);
+            }
         },
         [FieldKind.INT8]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -53,6 +60,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.BYTE_SIZE_IN_BYTES;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readInt8(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_INT8]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -61,6 +71,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfInt8(fieldName);
+            }
         },
         [FieldKind.INT16]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -69,6 +82,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.SHORT_SIZE_IN_BYTES;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readInt16(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_INT16]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -77,6 +93,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfInt16(fieldName);
+            }
         },
         [FieldKind.INT32]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -85,6 +104,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.INT_SIZE_IN_BYTES;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readInt32(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_INT32]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -93,6 +115,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfInt32(fieldName);
+            }
         },
         [FieldKind.INT64]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -101,6 +126,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.LONG_SIZE_IN_BYTES;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readInt64(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_INT64]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -109,6 +137,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfInt64(fieldName);
+            }
         },
         [FieldKind.FLOAT32]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -117,6 +148,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.FLOAT_SIZE_IN_BYTES;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readFloat32(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_FLOAT32]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -125,6 +159,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfFloat32(fieldName);
+            }
         },
         [FieldKind.FLOAT64]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -133,6 +170,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return BitsUtil.DOUBLE_SIZE_IN_BYTES;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readFloat64(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_FLOAT64]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -141,6 +181,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfFloat64(fieldName);
+            }
         },
         [FieldKind.STRING]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -149,6 +192,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readString(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_STRING]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -157,6 +203,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfString(fieldName);
+            }
         },
         [FieldKind.DECIMAL]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -165,6 +214,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readDecimal(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_DECIMAL]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -173,6 +225,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfDecimal(fieldName);
+            }
         },
         [FieldKind.TIME]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -181,6 +236,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readTime(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_TIME]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -189,6 +247,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfTime(fieldName);
+            }
         },
         [FieldKind.DATE]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -197,6 +258,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readDate(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_DATE]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -205,6 +269,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfDate(fieldName);
+            }
         },
         [FieldKind.TIMESTAMP]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -213,6 +280,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readTimestamp(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_TIMESTAMP]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -221,6 +291,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfTimestamp(fieldName);
+            }
         },
         [FieldKind.TIMESTAMP_WITH_TIMEZONE]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -229,6 +302,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readTimestampWithTimezone(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -237,6 +313,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfTimestampWithTimezone(fieldName);
+            }
         },
         [FieldKind.COMPACT]: {
             writeFieldFromRecordToWriter(
@@ -247,6 +326,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readCompact(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_COMPACT]: {
             writeFieldFromRecordToWriter(
@@ -257,6 +339,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfCompact(fieldName);
+            }
         },
         [FieldKind.NULLABLE_BOOLEAN]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -265,6 +350,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readNullableBoolean(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_NULLABLE_BOOLEAN]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -273,6 +361,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfNullableBoolean(fieldName);
+            }
         },
         [FieldKind.NULLABLE_INT8]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -281,6 +372,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readNullableInt8(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT8]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -289,6 +383,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfNullableInt8(fieldName);
+            }
         },
         [FieldKind.NULLABLE_INT16]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -297,6 +394,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readNullableInt16(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT16]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -305,6 +405,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfNullableInt16(fieldName);
+            }
         },
         [FieldKind.NULLABLE_INT32]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -313,6 +416,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readNullableInt32(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT32]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -321,6 +427,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfNullableInt32(fieldName);
+            }
         },
         [FieldKind.NULLABLE_INT64]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -329,6 +438,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readNullableInt64(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT64]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -337,6 +449,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfNullableInt64(fieldName);
+            }
         },
         [FieldKind.NULLABLE_FLOAT32]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -345,6 +460,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readNullableFloat32(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_NULLABLE_FLOAT32]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -353,6 +471,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfNullableFloat32(fieldName);
+            }
         },
         [FieldKind.NULLABLE_FLOAT64]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -361,6 +482,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readNullableFloat64(fieldName);
+            }
         },
         [FieldKind.ARRAY_OF_NULLABLE_FLOAT64]: {
             writeFieldFromRecordToWriter(writer: DefaultCompactWriter, record: GenericRecord, fieldName: string) {
@@ -369,6 +493,9 @@ export class FieldOperations {
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
+            readFromReader(reader: CompactReader, fieldName: string): any {
+                return reader.readArrayOfNullableFloat64(fieldName);
+            }
         },
     };
 
