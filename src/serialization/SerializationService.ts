@@ -286,10 +286,6 @@ export class SerializationServiceV1 implements SerializationService {
        if (obj instanceof CompactGenericRecordImpl) {
             return true;
         }
-        // Null object case: Object.create(null)
-        if (!obj.constructor) {
-            return false;
-        }
 
         return this.compactStreamSerializer.isRegisteredAsCompact(obj.constructor);
     }

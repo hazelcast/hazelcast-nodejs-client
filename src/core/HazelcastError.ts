@@ -77,6 +77,9 @@ export class HazelcastSerializationError extends HazelcastError {
     }
 }
 
+/**
+ * @internal
+ */
 export class SchemaNotFoundError extends HazelcastError {
     constructor(msg: string, public readonly schemaId: Long, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
         super(msg, cause, serverStackTrace);

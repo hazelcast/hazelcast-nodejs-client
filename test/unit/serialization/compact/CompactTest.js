@@ -58,10 +58,6 @@ describe('CompactTest', function () {
         object.should.deep.equal(mainDTO);
     });
 
-    it('should behave null object as not compact serializable', async function () {
-        serializationService.isCompactSerializable(Object.create(null)).should.be.false;
-    });
-
     it('should work with all fields and defaults enabled serializer', async function () {
         const {serializationService, schemaService} = createSerializationService(
             [new MainDTOSerializerWithDefaults(), new InnerDTOSerializer(), new NamedDTOSerializer()]

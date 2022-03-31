@@ -277,7 +277,7 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             }
         };
 
-        if (key) {
+        if (key !== undefined) {
             let keyData: Data;
             try {
                 keyData = this.toData(key);

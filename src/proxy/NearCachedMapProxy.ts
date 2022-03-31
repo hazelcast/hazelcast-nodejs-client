@@ -38,7 +38,7 @@ import {SerializationService} from '../serialization/SerializationService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ClusterService} from '../invocation/ClusterService';
 import {SchemaService} from '../serialization/compact/SchemaService';
-import { SchemaNotFoundError } from '../core';
+import {SchemaNotFoundError} from '../core';
 
 /** @internal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {

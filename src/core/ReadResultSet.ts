@@ -19,8 +19,7 @@ import * as Long from 'long';
 export const SEQUENCE_UNAVAILABLE = -1;
 
 /**
- * Defines the result of a {@link Ringbuffer.readMany} operation. This result set's methods will
- * throw {@link SchemaNotFoundError} if it includes compact objects whose schemas are not known.
+ * Defines the result of a {@link Ringbuffer.readMany} operation.
  */
 export interface ReadResultSet<T> {
 
@@ -41,7 +40,7 @@ export interface ReadResultSet<T> {
      * Gets the item at the given index.
      *
      * @param index
-     * @throws {@link SchemaNotFoundError} if the object to be returned is a compact object whose schema is not known
+     * @throws {@link HazelcastSerializationError} if the object to be returned is a compact object whose schema is not known
      * @returns the found item or `undefined` if the index is out of bounds
      */
     get(index: number): T;

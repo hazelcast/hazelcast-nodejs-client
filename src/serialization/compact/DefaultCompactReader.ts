@@ -256,60 +256,64 @@ export class DefaultCompactReader implements CompactReader {
         return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_FLOAT64) ? this.getArrayOfFloat64(fieldName) : defaultValue;
     }
 
-    readArrayOfString(fieldName: string): string[] | null {
+    readArrayOfString(fieldName: string): (string | null)[] | null {
         return this.getArrayOfString(fieldName);
     }
 
-    readArrayOfStringOrDefault(fieldName: string, defaultValue: string[]): string[] {
+    readArrayOfStringOrDefault(fieldName: string, defaultValue: (string | null)[]): (string | null)[] {
         return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_STRING) ? this.getArrayOfString(fieldName) : defaultValue;
     }
 
-    readArrayOfDecimal(fieldName: string): BigDecimal[] | null {
+    readArrayOfDecimal(fieldName: string): (BigDecimal | null)[] | null {
         return this.getArrayOfDecimal(fieldName);
     }
 
-    readArrayOfDecimalOrDefault(fieldName: string, defaultValue: BigDecimal[] | null): BigDecimal[] | null {
+    readArrayOfDecimalOrDefault(fieldName: string, defaultValue: (BigDecimal | null)[] | null): (BigDecimal | null)[] | null {
         return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_DECIMAL) ? this.getArrayOfDecimal(fieldName) : defaultValue;
     }
 
-    readArrayOfTime(fieldName: string): LocalTime[] | null {
+    readArrayOfTime(fieldName: string): (LocalTime | null)[] | null {
         return this.getArrayOfTime(fieldName);
     }
 
-    readArrayOfTimeOrDefault(fieldName: string, defaultValue: LocalTime[] | null): LocalTime[] | null {
+    readArrayOfTimeOrDefault(fieldName: string, defaultValue: (LocalTime | null)[] | null): (LocalTime | null)[] | null {
         return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_TIME) ? this.getArrayOfTime(fieldName) : defaultValue;
     }
 
-    readArrayOfDate(fieldName: string): LocalDate[] | null {
+    readArrayOfDate(fieldName: string): (LocalDate | null)[] | null {
         return this.getArrayOfDate(fieldName);
     }
 
-    readArrayOfDateOrDefault(fieldName: string, defaultValue: LocalDate[] | null): LocalDate[] | null {
+    readArrayOfDateOrDefault(fieldName: string, defaultValue: (LocalDate | null)[] | null): (LocalDate | null)[] | null {
         return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_DATE) ? this.getArrayOfDate(fieldName) : defaultValue;
     }
 
-    readArrayOfTimestamp(fieldName: string): LocalDateTime[] | null {
+    readArrayOfTimestamp(fieldName: string): (LocalDateTime | null)[] | null {
         return this.getArrayOfTimestamp(fieldName);
     }
 
-    readArrayOfTimestampOrDefault(fieldName: string, defaultValue: LocalDateTime[] | null): LocalDateTime[] | null {
+    readArrayOfTimestampOrDefault(
+        fieldName: string, defaultValue: (LocalDateTime | null)[] | null
+    ): (LocalDateTime | null)[] | null {
         return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_TIMESTAMP) ? this.getArrayOfTimestamp(fieldName) : defaultValue;
     }
 
-    readArrayOfTimestampWithTimezone(fieldName: string): OffsetDateTime[] | null {
+    readArrayOfTimestampWithTimezone(fieldName: string): (OffsetDateTime | null)[] | null {
         return this.getArrayOfTimestampWithTimezone(fieldName);
     }
 
-    readArrayOfTimestampWithTimezoneOrDefault(fieldName: string, defaultValue: OffsetDateTime[] | null): OffsetDateTime[] | null {
+    readArrayOfTimestampWithTimezoneOrDefault(
+        fieldName: string, defaultValue: (OffsetDateTime | null)[] | null
+    ): (OffsetDateTime | null)[] | null {
         return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE) ?
             this.getArrayOfTimestampWithTimezone(fieldName) : defaultValue;
     }
 
-    readArrayOfCompact<T>(fieldName: string): T[] | null {
+    readArrayOfCompact<T>(fieldName: string): (T | null)[] | null {
         return this.getArrayOfCompact(fieldName);
     }
 
-    readArrayOfCompactOrDefault<T>(fieldName: string, defaultValue: T[] | null): T[] | null {
+    readArrayOfCompactOrDefault<T>(fieldName: string, defaultValue: (T | null)[] | null): (T | null)[] | null {
         return this.isFieldExists(fieldName, FieldKind.ARRAY_OF_COMPACT) ? this.getArrayOfCompact(fieldName) : defaultValue;
     }
 

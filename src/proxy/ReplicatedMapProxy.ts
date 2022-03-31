@@ -264,16 +264,16 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
         let codec: ListenerMessageCodec;
 
         try {
-            if (key && predicate) {
+            if (key !== undefined && predicate !== undefined) {
                 const keyData = this.toData(key);
                 const predicateData = this.toData(predicate);
                 codec = this.createEntryListenerToKeyWithPredicate(this.name, keyData, predicateData);
                 listenerHandler = ReplicatedMapAddEntryListenerToKeyWithPredicateCodec.handle;
-            } else if (key && !predicate) {
+            } else if (key !== undefined && predicate === undefined) {
                 const keyData = this.toData(key);
                 codec = this.createEntryListenerToKey(this.name, keyData);
                 listenerHandler = ReplicatedMapAddEntryListenerToKeyCodec.handle;
-            } else if (!key && predicate) {
+            } else if (key === undefined && predicate !== undefined) {
                 const predicateData = this.toData(predicate);
                 codec = this.createEntryListenerWithPredicate(this.name, predicateData);
                 listenerHandler = ReplicatedMapAddEntryListenerWithPredicateCodec.handle;

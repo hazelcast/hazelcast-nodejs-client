@@ -41,7 +41,7 @@ export class CompactStreamSerializer {
      * Users' serializer config for classes are stored here. Used to determine if a class is compact serializable.
      * Also used to get serializer of an object while serializing.
      */
-    private readonly classToSerializerMap: Map<Class, CompactSerializer<Class>> = new Map();
+    private readonly classToSerializerMap: Map<Class, CompactSerializer<Class>>;
     /**
      * Used to cache created schema of an object after initial serialization. If an object has schema,
      * no need to create schema again and put to schema service.
@@ -56,6 +56,7 @@ export class CompactStreamSerializer {
     constructor(
         private readonly schemaService: SchemaService
     ) {
+        this.classToSerializerMap = new Map<Class, CompactSerializer<Class>>();
         this.classToSchemaMap = new Map<Class, Schema>();
         this.typeNameToSerializersMap = new Map<string, CompactSerializer<Class>>();
     }
