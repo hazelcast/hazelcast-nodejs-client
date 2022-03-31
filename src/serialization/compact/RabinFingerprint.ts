@@ -41,7 +41,7 @@ export class RabinFingerprint64 {
     private static ofBuffer(buffer: Buffer): Long {
         let fp: Long = INIT;
         for (const byte of buffer) {
-            fp = RabinFingerprint64.ofLongByte(fp, byte);
+            fp = RabinFingerprint64.ofByte(fp, byte);
         }
         return fp;
     }
@@ -51,33 +51,33 @@ export class RabinFingerprint64 {
      * schema ids for the Compact format.
      */
     static ofSchema(schema: Schema): Long {
-        let fp: Long = RabinFingerprint64.ofLongString(INIT, schema.typeName);
-        fp = RabinFingerprint64.ofLongInt(fp, schema.fieldDefinitionMap.size);
-        for (const descriptor of schema.fieldDefinitionMap.values()) {
-            fp = RabinFingerprint64.ofLongString(fp, descriptor.fieldName);
-            fp = RabinFingerprint64.ofLongInt(fp, descriptor.kind);
+        let fp: Long = RabinFingerprint64.ofString(INIT, schema.typeName);
+        fp = RabinFingerprint64.ofInt(fp, schema.fieldDefinitionMap.size);
+        for (const descriptor of schema.getFields()) {
+            fp = RabinFingerprint64.ofString(fp, descriptor.fieldName);
+            fp = RabinFingerprint64.ofInt(fp, descriptor.kind);
         }
         return fp;
     }
 
-    private static ofLongString(fp: Long, value: string): Long {
+    private static ofString(fp: Long, value: string): Long {
         const utf8Bytes = Buffer.from(value, 'utf8');
-        fp = RabinFingerprint64.ofLongInt(fp, utf8Bytes.length);
+        fp = RabinFingerprint64.ofInt(fp, utf8Bytes.length);
         for (let i = 0; i < utf8Bytes.length; i++) {
-            fp = RabinFingerprint64.ofLongByte(fp, utf8Bytes[i]);
+            fp = RabinFingerprint64.ofByte(fp, utf8Bytes[i]);
         }
         return fp;
     }
 
-    private static ofLongInt(fp: Long, int: number) : Long {
-        fp = RabinFingerprint64.ofLongByte(fp, int & 0xff);
-        fp = RabinFingerprint64.ofLongByte(fp, (int >> 8) & 0xff);
-        fp = RabinFingerprint64.ofLongByte(fp, (int >> 16) & 0xff);
-        fp = RabinFingerprint64.ofLongByte(fp, (int >> 24) & 0xff);
+    private static ofInt(fp: Long, int: number) : Long {
+        fp = RabinFingerprint64.ofByte(fp, int & 0xff);
+        fp = RabinFingerprint64.ofByte(fp, (int >> 8) & 0xff);
+        fp = RabinFingerprint64.ofByte(fp, (int >> 16) & 0xff);
+        fp = RabinFingerprint64.ofByte(fp, (int >> 24) & 0xff);
         return fp;
     }
 
-    private static ofLongByte(fp: Long, byte: number) : Long {
+    private static ofByte(fp: Long, byte: number) : Long {
         return fp.shiftRightUnsigned(8).xor(FP_TABLE[fp.xor(byte).and(Long.fromString('0xff', true, 16)).toNumber()]);
     }
 }

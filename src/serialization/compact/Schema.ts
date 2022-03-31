@@ -39,10 +39,7 @@ export class Schema {
     classId = SCHEMA;
     factoryId = COMPACT_FACTORY_ID;
 
-    constructor(typeName = '', fields: FieldDescriptor[] = []) {
-        if (typeof typeName !== 'string') {
-            throw new TypeError('Type name must be a string');
-        }
+    constructor(typeName: string, fields: FieldDescriptor[]) {
         this.typeName = typeName;
         this.fields = fields;
         this.fieldDefinitionMap = new Map<string, FieldDescriptor>();
@@ -115,7 +112,12 @@ export class Schema {
             return false;
         }
         for (const [fieldName, field] of this.fieldDefinitionMap) {
+            if (!other.fieldDefinitionMap.has(fieldName)) {
+                return false;
+            }
+
             const otherField = other.fieldDefinitionMap.get(fieldName);
+
             if (!otherField.equals(field)) {
                 return false;
             }

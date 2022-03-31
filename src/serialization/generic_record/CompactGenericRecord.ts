@@ -46,6 +46,9 @@ export class CompactGenericRecordImpl implements GenericRecord {
         private readonly fields: {[name: string]: Field<any>} = {},
         readonly values: {[name: string]: any} = {}
     ) {
+        if (typeof typeName !== 'string') {
+            throw new TypeError('Type name must be a string');
+        }
         const schemaWriter = new SchemaWriter(typeName);
         for (const [fieldName, field] of Object.entries(fields)) {
             this.validateField(fieldName, field.kind, this.values[fieldName]);

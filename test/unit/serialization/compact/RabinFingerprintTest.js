@@ -35,7 +35,7 @@ describe('RabinFingerprintTest', function () {
         ['127', -128, '-7333697815154264656']
     ].forEach((params) => {
         it(`i8 test ${params}`, function () {
-            RabinFingerprint64.ofLongByte(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
+            RabinFingerprint64.ofByte(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
         });
     });
 
@@ -52,7 +52,7 @@ describe('RabinFingerprintTest', function () {
         ['2147483647', -2147483648, '-7679311364898232185'],
     ].forEach(params => {
         it(`i32 test ${params}`, function () {
-            RabinFingerprint64.ofLongInt(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
+            RabinFingerprint64.ofInt(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
         });
     });
 
@@ -70,9 +70,9 @@ describe('RabinFingerprintTest', function () {
     ].forEach(params => {
         it(`string test ${params}`, function () {
             if (params[0] === INIT) {
-                RabinFingerprint64.ofLongString(params[0], params[1]).eq(Long.fromString(params[2])).should.be.true;
+                RabinFingerprint64.ofString(params[0], params[1]).eq(Long.fromString(params[2])).should.be.true;
             } else {
-                RabinFingerprint64.ofLongString(
+                RabinFingerprint64.ofString(
                     Long.fromString(params[0]), params[1]
                 ).eq(Long.fromString(params[2])).should.be.true;
             }

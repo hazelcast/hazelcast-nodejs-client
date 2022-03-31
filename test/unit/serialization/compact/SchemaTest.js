@@ -23,13 +23,6 @@ const { BitsUtil } = require('../../../../lib/util/BitsUtil');
 chai.should();
 
 describe('SchemaTest', function () {
-    it('construct correctly when no arguments given', function () {
-        const schema = new Schema();
-        schema.typeName.should.be.eq('');
-        schema.fields.should.be.deep.eq([]);
-        schema.fieldDefinitionMap.size.should.be.eq(0);
-    });
-
     it('should work with multiple booleans', function () {
         const boolCount = 100;
         const boolFields = new Array(100);
