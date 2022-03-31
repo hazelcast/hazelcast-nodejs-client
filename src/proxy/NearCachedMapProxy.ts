@@ -38,6 +38,7 @@ import {SerializationService} from '../serialization/SerializationService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ClusterService} from '../invocation/ClusterService';
 import {SchemaService} from '../serialization/compact/SchemaService';
+import { SchemaNotFoundError } from '../core';
 
 /** @internal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
@@ -200,24 +201,41 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         for (const partition in partitionsToKeys) {
             partitionPromises.push(
                 this.encodeInvokeOnPartition(MapGetAllCodec, Number(partition), (clientMessage: ClientMessage) : any => {
-                    const getAllResponse = MapGetAllCodec.decodeResponse(clientMessage);
-                    for (const [data1, data2] of getAllResponse) {
-                        // We need to make sure compact objects' schemas are fetched
-                        if (data1.isCompact() || data2.isCompact()) {
-                            this.toObject(data1);
-                            this.toObject(data2);
-                        }
-                    }
+                const getAllResponse = MapGetAllCodec.decodeResponse(clientMessage);
                 return getAllResponse;
             }, partitionsToKeys[partition]));
         }
         const deserializeEntry = (entry: [Data, Data]) : [any, any] => {
             return [this.toObject(entry[0]), this.toObject(entry[1])];
         };
+
+        const deserializeEntries = (
+            serializedEntryArray: Array<[Data, Data]>
+        ): Promise<Array<[any, any]>> => {
+            try {
+                return Promise.resolve(serializedEntryArray.map(deserializeEntry));
+            } catch (e) {
+                if (e instanceof SchemaNotFoundError) {
+                    return this.invocationService.fetchSchema(e.schemaId).then(() => {
+                        return serializedEntryArray.map(deserializeEntry);
+                    }).catch(e => {
+                        if (e instanceof SchemaNotFoundError) {
+                            return deserializeEntries(serializedEntryArray);
+                        } else {
+                            throw e;
+                        }
+                    });
+                }
+                throw e;
+            }
+        };
+
         return Promise.all(partitionPromises).then((serializedEntryArrayArray: Array<Array<[Data, Data]>>) => {
             const serializedEntryArray: Array<[Data, Data]> = Array.prototype.concat.apply([], serializedEntryArrayArray);
-            result.push(...(serializedEntryArray.map(deserializeEntry)));
-            return serializedEntryArray;
+            return deserializeEntries(serializedEntryArray).then((deserializedEntries: Array<[any, any]>) => {
+                result.push(...deserializedEntries);
+                return serializedEntryArray;
+            })
         });
     }
 

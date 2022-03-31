@@ -878,7 +878,7 @@ describe('CompactTest', function () {
     });
 
     // All events are handled in the same place in listener service, so there should not be need to test all event types.
-    it('should received compact data with events', async function () {
+    it('should receive compact data with events', async function () {
         const client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
@@ -902,8 +902,7 @@ describe('CompactTest', function () {
         let counter = 0;
 
         await map2.addEntryListener({
-            added: (entryEvent) => {
-                console.log(entryEvent);
+            added: () => {
                 counter++;
             }
         }, undefined, true);

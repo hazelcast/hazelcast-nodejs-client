@@ -53,7 +53,7 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
     add(element: E): Promise<boolean> {
         try {
-            return this.encodeInvoke(ListAddCodec, ListAddAllCodec.decodeResponse, this.toData(element));
+            return this.encodeInvoke(ListAddCodec, ListAddCodec.decodeResponse, this.toData(element));
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.add(element));

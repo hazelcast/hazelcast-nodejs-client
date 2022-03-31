@@ -226,8 +226,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
             return this.encodeInvokeOnRandomTarget(MapEntriesWithPagingPredicateCodec, (clientMessage) => {
                 const response = MapEntriesWithPagingPredicateCodec.decodeResponse(clientMessage);
-                predicate.setAnchorList(response.anchorDataList.asAnchorList(serializationService));
-                return this.deserializeEntryList(response.response);
+                const anchorList = response.anchorDataList.asAnchorList(serializationService);
+                const responseList = this.deserializeEntryList(response.response);
+                predicate.setAnchorList(anchorList);
+                return responseList;
             }, pagingPredicateHolder);
         } else {
             let pData;
@@ -263,8 +265,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
             return this.encodeInvokeOnRandomTarget(MapKeySetWithPagingPredicateCodec, (clientMessage) => {
                 const response = MapKeySetWithPagingPredicateCodec.decodeResponse(clientMessage);
-                predicate.setAnchorList(response.anchorDataList.asAnchorList(serializationService));
-                return this.deserializeList(response.response);
+                const anchorList = response.anchorDataList.asAnchorList(serializationService);
+                const responseList = this.deserializeList(response.response);
+                predicate.setAnchorList(anchorList);
+                return responseList;
             }, pagingPredicateHolder);
         } else {
             let predicateData;

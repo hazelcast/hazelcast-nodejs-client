@@ -467,6 +467,24 @@ export class InvocationService {
         })
     }
 
+    private fetchSchemaAndTryAgain(schemaId: Long, clientMessage: ClientMessage, invocation: Invocation): void {
+        // We need to fetch the schema to deserialize compact.
+        this.logger.trace(
+            'SchemaService', `Could not find schema id ${schemaId} locally, will search on the cluster`
+        );
+
+        this.fetchSchema(schemaId).then(() => {
+            // Reset nextFrame since we tried to parse the message once.
+            clientMessage.resetNextFrame();
+            invocation.eventHandler(clientMessage);
+        }, (err: Error) => {
+            this.logger.error(
+                'InvocationService', `The schema needed for an event could not be fetched ${err}`
+            );
+            this.fetchSchemaAndTryAgain(schemaId, clientMessage, invocation);
+        });
+    }
+
     /**
      * Extracts codec specific properties in a protocol message and resolves waiting promise.
      */
@@ -481,20 +499,7 @@ export class InvocationService {
                         invocation.eventHandler(clientMessage);
                     } catch (e) {
                         if (e instanceof SchemaNotFoundError) {
-                            // We need to fetch the schema to deserialize compact.
-                            this.logger.trace(
-                                'SchemaService', `Could not find schema id ${e.schemaId} locally, will search on the cluster`
-                            );
-
-                            this.fetchSchema(e.schemaId).then(() => {
-                                // Reset nextFrame since we tried to parse the message once.
-                                clientMessage.resetNextFrame();
-                                invocation.eventHandler(clientMessage);
-                            }, (err: Error) => {
-                                this.logger.error(
-                                    'InvocationService', `The schema needed for an event could not be fetched ${err}`
-                                );
-                            });
+                            this.fetchSchemaAndTryAgain(e.schemaId, clientMessage, invocation);
                         } else {
                             throw e;
                         }
