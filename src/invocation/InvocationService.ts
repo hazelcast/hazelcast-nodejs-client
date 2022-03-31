@@ -478,10 +478,11 @@ export class InvocationService {
             clientMessage.resetNextFrame();
             invocation.eventHandler(clientMessage);
         }, (err: Error) => {
-            this.logger.error(
-                'InvocationService', `The schema needed for an event could not be fetched ${err}`
-            );
-            this.fetchSchemaAndTryAgain(schemaId, clientMessage, invocation);
+            if (err instanceof SchemaNotFoundError) {
+                this.fetchSchemaAndTryAgain(schemaId, clientMessage, invocation);
+            } else {
+                throw err;
+            }
         });
     }
 

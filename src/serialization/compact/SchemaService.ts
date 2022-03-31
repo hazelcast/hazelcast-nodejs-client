@@ -22,7 +22,7 @@ import {Invocation, InvocationService} from '../../invocation/InvocationService'
 import {ClientSendAllSchemasCodec} from '../../codec/ClientSendAllSchemasCodec';
 import {ClientFetchSchemaCodec} from '../../codec/ClientFetchSchemaCodec';
 import {ClientSendSchemaCodec} from '../../codec/ClientSendSchemaCodec';
-import { IllegalStateError } from '../../core';
+import { HazelcastSerializationError, IllegalStateError } from '../../core';
 
 /**
  * Service to put and get metadata to cluster.
@@ -51,21 +51,17 @@ export class SchemaService {
                 this.logger.trace('SchemaService', `Found schema id ${schemaId} on the cluster`);
             } else {
                 this.logger.trace('SchemaService', `Did not find schema id ${schemaId} on the cluster`);
+                throw new HazelcastSerializationError(`The schema can not be found with id ${schemaId}`);
             }
         });
     }
 
     /**
      * Returns the schema with id {@link schemaId} in schema service's local registry,
-     * returning null if it is not found.
+     * returning `undefined` if it is not found.
      */
-    get(schemaId: Long): Schema | null {
-        const schema = this.schemas.get(schemaId.toString());
-        if (schema !== undefined) {
-            return schema;
-        } else {
-            return null;
-        }
+    get(schemaId: Long): Schema | undefined {
+        return this.schemas.get(schemaId.toString());
     }
 
     /**

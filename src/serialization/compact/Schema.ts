@@ -22,9 +22,6 @@ import {FieldKind} from '../generic_record/FieldKind';
 import {BitsUtil} from '../../util/BitsUtil';
 import {RabinFingerprint64} from './RabinFingerprint';
 
-const COMPACT_FACTORY_ID = -42;
-const SCHEMA = 1;
-
 /**
  * @internal
  */
@@ -36,8 +33,6 @@ export class Schema {
     numberVarSizeFields: number;
     fixedSizeFieldsLength: number;
     schemaId: Long;
-    classId = SCHEMA;
-    factoryId = COMPACT_FACTORY_ID;
 
     constructor(typeName: string, fields: FieldDescriptor[]) {
         this.typeName = typeName;

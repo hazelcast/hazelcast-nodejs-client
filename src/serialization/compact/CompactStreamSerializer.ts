@@ -64,7 +64,7 @@ export class CompactStreamSerializer {
     getOrReadSchema(input: ObjectDataInput): Schema {
         const schemaId = input.readLong();
         const schema = this.schemaService.get(schemaId);
-        if (schema !== null) {
+        if (schema !== undefined) {
             return schema;
         }
 
@@ -151,7 +151,7 @@ export class CompactStreamSerializer {
 
     private throwIfSchemaNotReplicatedToCluster(schema: Schema, clazz: Class | undefined): void {
         // We guarantee that if Schema is not in the schemaService, it is not replicated to the cluster.
-        if (this.schemaService.get(schema.schemaId) === null) {
+        if (this.schemaService.get(schema.schemaId) === undefined) {
             throw new SchemaNotReplicatedError(`The schema ${schema.schemaId} is not replicated yet.`, schema, clazz);
         }
     }

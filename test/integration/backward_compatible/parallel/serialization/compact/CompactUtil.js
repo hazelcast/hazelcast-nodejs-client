@@ -325,11 +325,7 @@ class InMemorySchemaService {
     }
 
     get(schemaId) {
-        const schema = this.schemas[schemaId.toString()];
-        if (schema === undefined) {
-            return null;
-        }
-        return schema;
+        return this.schemas[schemaId.toString()];
     }
 
     put(schema) {

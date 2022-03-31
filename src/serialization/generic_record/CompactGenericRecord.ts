@@ -42,9 +42,9 @@ export class CompactGenericRecordImpl implements GenericRecord {
     private readonly schema: Schema;
 
     constructor(
-        typeName = '',
-        private readonly fields: {[name: string]: Field<any>} = {},
-        readonly values: {[name: string]: any} = {}
+        typeName: string,
+        private readonly fields: {[name: string]: Field<any>},
+        readonly values: {[name: string]: any}
     ) {
         if (typeof typeName !== 'string') {
             throw new TypeError('Type name must be a string');

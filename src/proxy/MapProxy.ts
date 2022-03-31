@@ -176,6 +176,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     executeOnEntries(entryProcessor: any, predicate?: Predicate): Promise<Array<[K, V]>> {
         assertNotNull(entryProcessor);
+        assertNotNull(predicate);
         let proData: Data;
         try {
             proData = this.toData(entryProcessor);
@@ -397,6 +398,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
     remove(key: K, value?: V): Promise<V | boolean> {
         assertNotNull(key);
+        assertNotNull(value);
         let keyData: Data;
         let valueData: Data | undefined = undefined;
         try {
@@ -958,6 +960,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     private addEntryListenerInternal(
         listener: MapListener<K, V>, includeValue: boolean, key?: K, predicate?: Predicate,
     ): Promise<string> {
+        assertNotNull(key);
+        assertNotNull(predicate);
         let flags: any = null;
         const conversionTable: { [funcName: string]: EventType } = {
             added: EventType.ADDED,
