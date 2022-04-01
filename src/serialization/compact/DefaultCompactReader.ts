@@ -680,7 +680,7 @@ export class DefaultCompactReader implements CompactReader {
             fields[field.fieldName] = field;
             values[field.fieldName] = FieldOperations.fieldOperations(field.kind).readFromReader(this, field.fieldName);
         }
-        return new CompactGenericRecordImpl(this.schema.typeName, fields, values);
+        return new CompactGenericRecordImpl(this.schema.typeName, fields, values, this.schema);
     }
 
     private getVariableSizeAsNonNull<T>(

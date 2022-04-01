@@ -268,7 +268,7 @@ export class SqlResultImpl implements SqlResult {
      * Used by {@link next}.
      * @returns the current row.
      */
-    getCurrentRow(): SqlRowType {
+    private getCurrentRow(): SqlRowType {
         if (this.returnRawResult) { // Return SqlRow
             const columnCount = this.currentPage.getColumnCount();
             const values = new Array(columnCount);

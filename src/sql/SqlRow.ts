@@ -22,6 +22,11 @@ import {Data} from '../serialization';
  *
  * If you set {@link SqlStatementOptions.returnRawResult} to `true`, `SqlRow` objects will be returned.
  * Otherwise, you will get regular JavaScript objects where keys are column names and values are values in the SQL row.
+ *
+ * Values in an `SqlRow` deserialized lazily. If there is an {@link SqlColumnType.OBJECT} field in the result that can't be
+ * deserialized, it is advised to set the option {@link SqlStatementOptions.returnRawResult} to `false` while running the query.
+ * Otherwise, since you will get a regular JSON object, values will be tried to be deserialized; and you may get a serialization
+ * error.
  */
 export interface SqlRow {
     /**

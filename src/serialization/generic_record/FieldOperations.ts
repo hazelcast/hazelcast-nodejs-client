@@ -21,6 +21,12 @@ import {DefaultCompactWriter} from '../compact/DefaultCompactWriter';
 import {GenericRecord} from './GenericRecord';
 import {BitsUtil} from '../../util/BitsUtil';
 import {CompactReader} from '../compact/CompactReader';
+import {FieldValidator} from './FieldValidator';
+import {BigDecimal} from '../../core/BigDecimal';
+import {LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core/DateTimeClasses';
+import {CompactGenericRecordImpl} from './CompactGenericRecord';
+
+import * as Long from 'long';
 
 /**
  * Implementation of {@link FieldKindBasedOperations} for each field
@@ -40,6 +46,13 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readBoolean(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateType(fieldName, 'boolean', value, getErrorStringFn);
             }
         },
         [FieldKind.ARRAY_OF_BOOLEAN]: {
@@ -51,6 +64,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfBoolean(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.BOOLEAN);
             }
         },
         [FieldKind.INT8]: {
@@ -62,6 +81,14 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readInt8(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateType(fieldName, 'number', value, getErrorStringFn);
+                FieldValidator.validateInt8Range(fieldName, value);
             }
         },
         [FieldKind.ARRAY_OF_INT8]: {
@@ -73,6 +100,14 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfInt8(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                if (!Buffer.isBuffer(value) && value !== null) {
+                    throw new TypeError(FieldValidator.getErrorStringForField(fieldName, 'Buffer or null', value));
+                }
             }
         },
         [FieldKind.INT16]: {
@@ -84,6 +119,14 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readInt16(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateType(fieldName, 'number', value, getErrorStringFn);
+                FieldValidator.validateInt16Range(fieldName, value);
             }
         },
         [FieldKind.ARRAY_OF_INT16]: {
@@ -95,6 +138,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfInt16(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.INT16);
             }
         },
         [FieldKind.INT32]: {
@@ -106,6 +155,14 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readInt32(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateType(fieldName, 'number', value, getErrorStringFn);
+                FieldValidator.validateInt32Range(fieldName, value);
             }
         },
         [FieldKind.ARRAY_OF_INT32]: {
@@ -117,6 +174,13 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfInt32(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.INT32);
             }
         },
         [FieldKind.INT64]: {
@@ -128,6 +192,15 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readInt64(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                if (!Long.isLong(value)) {
+                    FieldValidator.throwTypeErrorWithMessage(fieldName, 'Long', value, getErrorStringFn);
+                }
             }
         },
         [FieldKind.ARRAY_OF_INT64]: {
@@ -139,6 +212,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfInt64(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.INT64);
             }
         },
         [FieldKind.FLOAT32]: {
@@ -150,6 +229,13 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readFloat32(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateType(fieldName, 'number', value, getErrorStringFn);
             }
         },
         [FieldKind.ARRAY_OF_FLOAT32]: {
@@ -161,6 +247,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfFloat32(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.FLOAT32);
             }
         },
         [FieldKind.FLOAT64]: {
@@ -172,6 +264,13 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readFloat64(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateType(fieldName, 'number', value, getErrorStringFn);
             }
         },
         [FieldKind.ARRAY_OF_FLOAT64]: {
@@ -183,6 +282,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfFloat64(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.FLOAT64);
             }
         },
         [FieldKind.STRING]: {
@@ -194,6 +299,15 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readString(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                if (typeof value !== 'string' && value !== null) {
+                    FieldValidator.throwTypeErrorWithMessage(fieldName, 'String or null', value, getErrorStringFn);
+                }
             }
         },
         [FieldKind.ARRAY_OF_STRING]: {
@@ -205,6 +319,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfString(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.STRING);
             }
         },
         [FieldKind.DECIMAL]: {
@@ -216,6 +336,15 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readDecimal(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                if (!(value instanceof BigDecimal) && value !== null) {
+                    FieldValidator.throwTypeErrorWithMessage(fieldName, 'BigDecimal or null', value, getErrorStringFn);
+                }
             }
         },
         [FieldKind.ARRAY_OF_DECIMAL]: {
@@ -227,6 +356,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfDecimal(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.DECIMAL);
             }
         },
         [FieldKind.TIME]: {
@@ -238,6 +373,15 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readTime(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                if (!(value instanceof LocalTime) && value !== null) {
+                    FieldValidator.throwTypeErrorWithMessage(fieldName, 'LocalTime or null', value, getErrorStringFn);
+                }
             }
         },
         [FieldKind.ARRAY_OF_TIME]: {
@@ -249,6 +393,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfTime(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.TIME);
             }
         },
         [FieldKind.DATE]: {
@@ -260,6 +410,15 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readDate(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                if (!(value instanceof LocalDate) && value !== null) {
+                    FieldValidator.throwTypeErrorWithMessage(fieldName, 'LocalDate or null', value, getErrorStringFn);
+                }
             }
         },
         [FieldKind.ARRAY_OF_DATE]: {
@@ -271,6 +430,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfDate(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.DATE);
             }
         },
         [FieldKind.TIMESTAMP]: {
@@ -282,6 +447,15 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readTimestamp(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                if (!(value instanceof LocalDateTime) && value !== null) {
+                    FieldValidator.throwTypeErrorWithMessage(fieldName, 'LocalDateTime or null', value, getErrorStringFn);
+                }
             }
         },
         [FieldKind.ARRAY_OF_TIMESTAMP]: {
@@ -293,6 +467,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfTimestamp(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.TIMESTAMP);
             }
         },
         [FieldKind.TIMESTAMP_WITH_TIMEZONE]: {
@@ -304,6 +484,15 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readTimestampWithTimezone(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                if (!(value instanceof OffsetDateTime) && value !== null) {
+                    FieldValidator.throwTypeErrorWithMessage(fieldName, 'OffsetDateTime or null', value, getErrorStringFn);
+                }
             }
         },
         [FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE]: {
@@ -315,6 +504,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfTimestampWithTimezone(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.TIMESTAMP_WITH_TIMEZONE);
             }
         },
         [FieldKind.COMPACT]: {
@@ -328,19 +523,34 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readCompact(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                if (value !== null && !(value instanceof CompactGenericRecordImpl)) {
+                    FieldValidator.throwTypeErrorWithMessage(fieldName, 'Compact', value, getErrorStringFn);
+                }
             }
         },
         [FieldKind.ARRAY_OF_COMPACT]: {
             writeFieldFromRecordToWriter(
                 writer: DefaultCompactWriter, record: GenericRecord, fieldName: string
             ) {
-                writer.writeArrayOfGenericRecords(fieldName, record.getArrayOfGenericRecord(fieldName));
+                writer.writeArrayOfGenericRecord(fieldName, record.getArrayOfGenericRecord(fieldName));
             },
             kindSizeInBytes(): number {
                 return FieldOperations.VARIABLE_SIZE;
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfCompact(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.COMPACT);
             }
         },
         [FieldKind.NULLABLE_BOOLEAN]: {
@@ -352,6 +562,13 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readNullableBoolean(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateNullableType(fieldName, 'boolean', value, getErrorStringFn);
             }
         },
         [FieldKind.ARRAY_OF_NULLABLE_BOOLEAN]: {
@@ -363,6 +580,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfNullableBoolean(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.NULLABLE_BOOLEAN);
             }
         },
         [FieldKind.NULLABLE_INT8]: {
@@ -374,6 +597,14 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readNullableInt8(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateNullableType(fieldName, 'number', value, getErrorStringFn);
+                FieldValidator.validateInt8Range(fieldName, value);
             }
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT8]: {
@@ -385,6 +616,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfNullableInt8(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.NULLABLE_INT8);
             }
         },
         [FieldKind.NULLABLE_INT16]: {
@@ -396,6 +633,14 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readNullableInt16(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateNullableType(fieldName, 'number', value, getErrorStringFn);
+                FieldValidator.validateInt16Range(fieldName, value);
             }
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT16]: {
@@ -407,6 +652,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfNullableInt16(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.NULLABLE_INT16);
             }
         },
         [FieldKind.NULLABLE_INT32]: {
@@ -418,6 +669,14 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readNullableInt32(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateNullableType(fieldName, 'number', value, getErrorStringFn);
+                FieldValidator.validateInt32Range(fieldName, value);
             }
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT32]: {
@@ -429,6 +688,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfNullableInt32(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.NULLABLE_INT32);
             }
         },
         [FieldKind.NULLABLE_INT64]: {
@@ -440,6 +705,15 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readNullableInt64(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                if (!Long.isLong(value) && value !== null) {
+                    FieldValidator.throwTypeErrorWithMessage(fieldName, 'Long or null', value, getErrorStringFn);
+                }
             }
         },
         [FieldKind.ARRAY_OF_NULLABLE_INT64]: {
@@ -451,6 +725,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfNullableInt64(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.NULLABLE_INT64);
             }
         },
         [FieldKind.NULLABLE_FLOAT32]: {
@@ -462,6 +742,13 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readNullableFloat32(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateNullableType(fieldName, 'number', value, getErrorStringFn);
             }
         },
         [FieldKind.ARRAY_OF_NULLABLE_FLOAT32]: {
@@ -473,6 +760,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfNullableFloat32(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.NULLABLE_FLOAT32);
             }
         },
         [FieldKind.NULLABLE_FLOAT64]: {
@@ -484,6 +777,13 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readNullableFloat64(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+                getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+            ): void {
+                FieldValidator.validateNullableType(fieldName, 'number', value, getErrorStringFn);
             }
         },
         [FieldKind.ARRAY_OF_NULLABLE_FLOAT64]: {
@@ -495,6 +795,12 @@ export class FieldOperations {
             },
             readFromReader(reader: CompactReader, fieldName: string): any {
                 return reader.readArrayOfNullableFloat64(fieldName);
+            },
+            validateField(
+                fieldName: string,
+                value: any,
+            ): void {
+                FieldValidator.validateArray(fieldName, value, FieldKind.NULLABLE_FLOAT64);
             }
         },
     };

@@ -36,17 +36,17 @@ const Long = require('long');
 const testIntRange = (invalidValueFn, validValueFn) => {
     for (const test of [
         {
-            field: Fields.int8,
+            field: Fields.INT8,
             validValues: [-128, 127, 12, 0, 122],
             invalidValues: [11111111, -129, -1232, 128, 1000]
         },
         {
-            field: Fields.int16,
+            field: Fields.INT16,
             validValues: [-128, 127, 12, 0, 122, -32768, 32767, 10000, -10000],
             invalidValues: [11111111, 32768, 52768, -32769, -132768]
         },
         {
-            field: Fields.int32,
+            field: Fields.INT32,
             validValues: [-128, 127, 12, 0, 122, -32768, 32767, 10000, -10000, 1234567890, -1234567890, -2147483648, 2147483647],
             invalidValues: [Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER, -2147483649, 2147483648, 2147483648213]
         }
@@ -56,11 +56,11 @@ const testIntRange = (invalidValueFn, validValueFn) => {
     }
 };
 
-const sampleGenericRecord = GenericRecords.compact('aa', {nested: Fields.genericRecord},
+const sampleGenericRecord = GenericRecords.compact('aa', {nested: Fields.GENERIC_RECORD},
     {nested: GenericRecords.compact('bb', {}, {})});
 
-const sampleArrayOfGenericRecords = [GenericRecords.compact('cc', {foo: Fields.int16}, {foo: 3}),
-GenericRecords.compact('dd', {bar: Fields.arrayOfInt8}, {bar: Buffer.from([])})];
+const sampleArrayOfGenericRecords = [GenericRecords.compact('cc', {foo: Fields.INT16}, {foo: 3}),
+GenericRecords.compact('dd', {bar: Fields.ARRAY_OF_INT8}, {bar: Buffer.from([])})];
 
 const getGiganticRecord = () => {
     const values = {};
@@ -76,130 +76,130 @@ const getGiganticRecord = () => {
         }
         switch (FieldKind[key]) {
             case FieldKind.BOOLEAN:
-                fields[key] = Fields.boolean;
+                fields[key] = Fields.BOOLEAN;
                 break;
             case FieldKind.ARRAY_OF_BOOLEAN:
-                fields[key] = Fields.arrayOfBoolean;
+                fields[key] = Fields.ARRAY_OF_BOOLEAN;
                 break;
             case FieldKind.INT8:
-                fields[key] = Fields.int8;
+                fields[key] = Fields.INT8;
                 break;
             case FieldKind.ARRAY_OF_INT8:
-                fields[key] = Fields.arrayOfInt8;
+                fields[key] = Fields.ARRAY_OF_INT8;
                 break;
             case FieldKind.INT16:
-                fields[key] = Fields.int16;
+                fields[key] = Fields.INT16;
                 break;
             case FieldKind.ARRAY_OF_INT16:
-                fields[key] = Fields.arrayOfInt16;
+                fields[key] = Fields.ARRAY_OF_INT16;
                 break;
             case FieldKind.INT32:
-                fields[key] = Fields.int32;
+                fields[key] = Fields.INT32;
                 break;
             case FieldKind.ARRAY_OF_INT32:
-                fields[key] = Fields.arrayOfInt32;
+                fields[key] = Fields.ARRAY_OF_INT32;
                 break;
             case FieldKind.INT64:
-                fields[key] = Fields.int64;
+                fields[key] = Fields.INT64;
                 break;
             case FieldKind.ARRAY_OF_INT64:
-                fields[key] = Fields.arrayOfInt64;
+                fields[key] = Fields.ARRAY_OF_INT64;
                 break;
             case FieldKind.FLOAT32:
-                fields[key] = Fields.float32;
+                fields[key] = Fields.FLOAT32;
                 break;
             case FieldKind.ARRAY_OF_FLOAT32:
-                fields[key] = Fields.arrayOfFloat32;
+                fields[key] = Fields.ARRAY_OF_FLOAT32;
                 break;
             case FieldKind.FLOAT64:
-                fields[key] = Fields.float64;
+                fields[key] = Fields.FLOAT64;
                 break;
             case FieldKind.ARRAY_OF_FLOAT64:
-                fields[key] = Fields.arrayOfFloat64;
+                fields[key] = Fields.ARRAY_OF_FLOAT64;
                 break;
             case FieldKind.STRING:
-                fields[key] = Fields.string;
+                fields[key] = Fields.STRING;
                 break;
             case FieldKind.ARRAY_OF_STRING:
-                fields[key] = Fields.arrayOfString;
+                fields[key] = Fields.ARRAY_OF_STRING;
                 break;
             case FieldKind.DECIMAL:
-                fields[key] = Fields.decimal;
+                fields[key] = Fields.DECIMAL;
                 break;
             case FieldKind.ARRAY_OF_DECIMAL:
-                fields[key] = Fields.arrayOfDecimal;
+                fields[key] = Fields.ARRAY_OF_DECIMAL;
                 break;
             case FieldKind.TIME:
-                fields[key] = Fields.time;
+                fields[key] = Fields.TIME;
                 break;
             case FieldKind.ARRAY_OF_TIME:
-                fields[key] = Fields.arrayOfTime;
+                fields[key] = Fields.ARRAY_OF_TIME;
                 break;
             case FieldKind.DATE:
-                fields[key] = Fields.date;
+                fields[key] = Fields.DATE;
                 break;
             case FieldKind.ARRAY_OF_DATE:
-                fields[key] = Fields.arrayOfDate;
+                fields[key] = Fields.ARRAY_OF_DATE;
                 break;
             case FieldKind.TIMESTAMP:
-                fields[key] = Fields.timestamp;
+                fields[key] = Fields.TIMESTAMP;
                 break;
             case FieldKind.ARRAY_OF_TIMESTAMP:
-                fields[key] = Fields.arrayOfTimestamp;
+                fields[key] = Fields.ARRAY_OF_TIMESTAMP;
                 break;
             case FieldKind.TIMESTAMP_WITH_TIMEZONE:
-                fields[key] = Fields.timestampWithTimezone;
+                fields[key] = Fields.TIMESTAMP_WITH_TIMEZONE;
                 break;
             case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
-                fields[key] = Fields.arrayOfTimestampWithTimezone;
+                fields[key] = Fields.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE;
                 break;
             case FieldKind.COMPACT:
-                fields[key] = Fields.genericRecord;
+                fields[key] = Fields.GENERIC_RECORD;
                 break;
             case FieldKind.ARRAY_OF_COMPACT:
-                fields[key] = Fields.arrayOfGenericRecord;
+                fields[key] = Fields.ARRAY_OF_GENERIC_RECORD;
                 break;
             case FieldKind.NULLABLE_BOOLEAN:
-                fields[key] = Fields.nullableBoolean;
+                fields[key] = Fields.NULLABLE_BOOLEAN;
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
-                fields[key] = Fields.arrayOfNullableBoolean;
+                fields[key] = Fields.ARRAY_OF_NULLABLE_BOOLEAN;
                 break;
             case FieldKind.NULLABLE_INT8:
-                fields[key] = Fields.nullableInt8;
+                fields[key] = Fields.NULLABLE_INT8;
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT8:
-                fields[key] = Fields.arrayOfNullableInt8;
+                fields[key] = Fields.ARRAY_OF_NULLABLE_INT8;
                 break;
             case FieldKind.NULLABLE_INT16:
-                fields[key] = Fields.nullableInt16;
+                fields[key] = Fields.NULLABLE_INT16;
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT16:
-                fields[key] = Fields.arrayOfNullableInt16;
+                fields[key] = Fields.ARRAY_OF_NULLABLE_INT16;
                 break;
             case FieldKind.NULLABLE_INT32:
-                fields[key] = Fields.nullableInt32;
+                fields[key] = Fields.NULLABLE_INT32;
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT32:
-                fields[key] = Fields.arrayOfNullableInt32;
+                fields[key] = Fields.ARRAY_OF_NULLABLE_INT32;
                 break;
             case FieldKind.NULLABLE_INT64:
-                fields[key] = Fields.nullableInt64;
+                fields[key] = Fields.NULLABLE_INT64;
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_INT64:
-                fields[key] = Fields.arrayOfNullableInt64;
+                fields[key] = Fields.ARRAY_OF_NULLABLE_INT64;
                 break;
             case FieldKind.NULLABLE_FLOAT32:
-                fields[key] = Fields.float32;
+                fields[key] = Fields.FLOAT32;
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
-                fields[key] = Fields.arrayOfNullableFloat32;
+                fields[key] = Fields.ARRAY_OF_NULLABLE_FLOAT32;
                 break;
             case FieldKind.NULLABLE_FLOAT64:
-                fields[key] = Fields.nullableFloat64;
+                fields[key] = Fields.NULLABLE_FLOAT64;
                 break;
             case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
-                fields[key] = Fields.arrayOfNullableFloat64;
+                fields[key] = Fields.ARRAY_OF_NULLABLE_FLOAT64;
                 break;
         }
     }
@@ -240,8 +240,8 @@ describe('CompactGenericRecordTest', function () {
         };
 
         const record = GenericRecords.compact('fooBarTypeName', {
-            foo: Fields.int32,
-            bar: Fields.int64
+            foo: Fields.INT32,
+            bar: Fields.INT64
         }, values);
 
         const {serializationService, schemaService} = createSerializationService();
@@ -268,8 +268,8 @@ describe('CompactGenericRecordTest', function () {
         };
 
         const record = GenericRecords.compact('fooBarTypeName', {
-            foo: Fields.int32,
-            bar: Fields.int64
+            foo: Fields.INT32,
+            bar: Fields.INT64
         }, values);
 
         const cloneRecord = record.clone({
@@ -285,26 +285,26 @@ describe('CompactGenericRecordTest', function () {
     });
 
     it('should be able to read array of generic records', async function() {
-        const genericRecord = GenericRecords.compact('a', {foo: Fields.int32}, {foo: 1});
+        const genericRecord = GenericRecords.compact('a', {foo: Fields.INT32}, {foo: 1});
         const values = {
             bar: [genericRecord]
         };
 
         const record = GenericRecords.compact('b', {
-            bar: Fields.arrayOfGenericRecord
+            bar: Fields.ARRAY_OF_GENERIC_RECORD
         }, values);
 
         record.getArrayOfGenericRecord('bar').should.be.deep.equal([genericRecord]);
     });
 
     it('should be able to read generic record', async function() {
-        const genericRecord = GenericRecords.compact('a', {foo: Fields.int32}, {foo: 1});
+        const genericRecord = GenericRecords.compact('a', {foo: Fields.INT32}, {foo: 1});
         const values = {
             bar: genericRecord
         };
 
         const record = GenericRecords.compact('b', {
-            bar: Fields.genericRecord
+            bar: Fields.GENERIC_RECORD
         }, values);
 
         record.getGenericRecord('bar').should.be.deep.equal(genericRecord);
@@ -312,8 +312,8 @@ describe('CompactGenericRecordTest', function () {
 
     it('should be able to get field names', async function() {
         const record = GenericRecords.compact('b', {
-            foo: Fields.int16,
-            bar: Fields.string
+            foo: Fields.INT16,
+            bar: Fields.STRING
         }, {foo: 1, bar: 's'});
 
         record.getFieldNames().should.be.deep.equal(new Set(['foo', 'bar']));
@@ -462,12 +462,12 @@ describe('CompactGenericRecordTest', function () {
     });
 
     it('should be able to get kind of a field', async function() {
-        const genericRecord = GenericRecords.compact('a', {foo: Fields.int32}, {foo: 1});
+        const genericRecord = GenericRecords.compact('a', {foo: Fields.INT32}, {foo: 1});
         genericRecord.getFieldKind('foo').should.be.equal(FieldKind.INT32);
     });
 
     it('should throw RangeError in getFieldKind if field with that name does not exist', async function() {
-        const genericRecord = GenericRecords.compact('a', {foo: Fields.int32}, {foo: 1});
+        const genericRecord = GenericRecords.compact('a', {foo: Fields.INT32}, {foo: 1});
         (() => genericRecord.getFieldKind('nonexistant')).should.throw(RangeError);
     });
 
@@ -475,20 +475,20 @@ describe('CompactGenericRecordTest', function () {
         describe('construction', function () {
             it('should throw error if type name is not a string', function () {
                 (() => GenericRecords.compact(1, {
-                    foo: Fields.int32
+                    foo: Fields.INT32
                 }, {foo: 1})).should.throw(TypeError, /Type name/);
             });
 
             it('should throw error if values does not have some fields', function () {
                 (() => GenericRecords.compact('foo', {
-                    foo: Fields.int32,
-                    bar: Fields.int64
+                    foo: Fields.INT32,
+                    bar: Fields.INT64
                 }, {foo: 12})).should.throw(TypeError, 'bar');
             });
 
             it('should not throw error if values have extra fields', function () {
                 (() => GenericRecords.compact('foo', {
-                    foo: Fields.int32
+                    foo: Fields.INT32
                 }, {foo: 12, bar: 122})).should.not.throw();
             });
 

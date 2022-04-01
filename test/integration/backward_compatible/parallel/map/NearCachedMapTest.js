@@ -37,7 +37,7 @@ describe('NearCachedMapTest', function () {
 
             before(async function () {
                 TestUtil.markClientVersionAtLeast(this, '5.1');
-                TestUtil.markServerVersionAtLeast(this, client1, '5.0');
+                TestUtil.markServerVersionAtLeast(this, client1, '5.1');
                 cluster = await testFactory.createClusterForParallelTests();
                 member = await RC.startMember(cluster.id);
             });

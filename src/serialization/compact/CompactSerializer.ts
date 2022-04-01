@@ -31,7 +31,7 @@ export type Class = new (...args: any[]) => any;
  *
  * {@link write} and {@link read} methods must be consistent with each other.
  *
- * This API is currently in BETA and can change at any time.
+ * This API is currently in Beta and can change at any time.
  */
  export interface CompactSerializer<C> {
     /**

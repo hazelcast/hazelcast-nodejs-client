@@ -168,8 +168,8 @@ describe('CompactTest', function () {
     it('should work with evolved schema with generic records', async function () {
         const {serializationService, schemaService: schemaService1} = createSerializationService();
         const record = GenericRecords.compact('fooBarTypeName', {
-            foo: Fields.int32,
-            bar: Fields.int64
+            foo: Fields.INT32,
+            bar: Fields.INT64
         }, {
             foo: 10,
             bar: Long.ONE
@@ -180,9 +180,9 @@ describe('CompactTest', function () {
         const {serializationService: serializationService2, schemaService: schemaService2} = createSerializationService();
 
         const record2 = GenericRecords.compact('fooBarTypeName', {
-            foo: Fields.int32,
-            bar: Fields.int64,
-            foobar: Fields.string
+            foo: Fields.INT32,
+            bar: Fields.INT64,
+            foobar: Fields.STRING
         }, {
             foo: 10,
             bar: Long.ONE,

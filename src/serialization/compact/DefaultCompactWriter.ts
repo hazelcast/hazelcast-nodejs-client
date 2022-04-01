@@ -175,33 +175,33 @@ export class DefaultCompactWriter implements CompactWriter {
         });
     }
 
-    writeArrayOfString(fieldName: string, value: string[] | null): void {
+    writeArrayOfString(fieldName: string, value: (string | null)[] | null): void {
         this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_STRING, value, (out, value) => {
             out.writeString(value);
         });
     }
 
-    writeArrayOfDecimal(fieldName: string, value: BigDecimal[] | null): void {
+    writeArrayOfDecimal(fieldName: string, value: (BigDecimal | null)[] | null): void {
         this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DECIMAL, value, IOUtil.writeDecimal);
     }
 
-    writeArrayOfTime(fieldName: string, value: LocalTime[] | null): void {
+    writeArrayOfTime(fieldName: string, value: (LocalTime | null)[] | null): void {
         this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIME, value, IOUtil.writeLocalTime);
     }
 
-    writeArrayOfDate(fieldName: string, value: LocalDate[] | null): void {
+    writeArrayOfDate(fieldName: string, value: (LocalDate | null)[] | null): void {
         this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_DATE, value, IOUtil.writeLocalDate);
     }
 
-    writeArrayOfTimestamp(fieldName: string, value: LocalDateTime[] | null): void {
+    writeArrayOfTimestamp(fieldName: string, value: (LocalDateTime | null)[] | null): void {
         this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMESTAMP, value, IOUtil.writeLocalDateTime);
     }
 
-    writeArrayOfTimestampWithTimezone(fieldName: string, value: OffsetDateTime[] | null): void {
+    writeArrayOfTimestampWithTimezone(fieldName: string, value: (OffsetDateTime | null)[] | null): void {
         this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE, value, IOUtil.writeOffsetDateTime);
     }
 
-    writeArrayOfCompact<T>(fieldName: string, value: T[] | null): void {
+    writeArrayOfCompact<T>(fieldName: string, value: (T | null)[] | null): void {
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
             return this.serializer.writeObject(out, value);
         });
@@ -295,10 +295,9 @@ export class DefaultCompactWriter implements CompactWriter {
         return this.writeVariableSizeField(fieldName, FieldKind.COMPACT, value, (out, value) => {
             return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl);
         });
-
     }
 
-    writeArrayOfGenericRecords(fieldName: string, value: GenericRecord[]) : void {
+    writeArrayOfGenericRecord(fieldName: string, value: GenericRecord[]) : void {
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
             return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl);
         });

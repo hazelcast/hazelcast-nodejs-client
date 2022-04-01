@@ -289,7 +289,7 @@ export class SqlServiceImpl implements SqlService {
                             return this.invocationService.registerSchema(e.schema, e.clazz)
                                 .then(() => this.executeStatement(sqlStatement));
                         }
-                        return Promise.reject(e);
+                        throw e;
                     }
                 }
             } else {
@@ -392,8 +392,7 @@ export class SqlServiceImpl implements SqlService {
             if (e instanceof SchemaNotFoundError) {
                 message = 'You tried to deserialize an SQL row which includes a compact serializable object, however '
                         + 'the schema for that object is not known by the client. The client won\'t fetch the schema of '
-                        + 'the field because of lazy deserialization support. In order not to get this error, you can change '
-                        + 'your mapping to use the fields of the compact object. SQL\'s lazy deserialization support may '
+                        + 'the field because of lazy deserialization support. SQL\'s lazy deserialization support may '
                         + 'be removed in the future, after that you will no longer get this error.'
             } else {
                 message = 'Failed to deserialize query result value.';

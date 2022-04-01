@@ -23,7 +23,6 @@ import {
     LocalDateTime,
     LocalTime,
     OffsetDateTime,
-    UnsupportedOperationError
 } from '../../core';
 import {FieldKind} from './FieldKind';
 import {Field} from './Fields';
@@ -31,6 +30,7 @@ import {Schema} from '../compact/Schema';
 import {SchemaWriter} from '../compact/SchemaWriter';
 import {FieldDescriptor} from './FieldDescriptor';
 import {CompactExceptions} from '../compact/CompactUtil';
+import {FieldValidator} from './FieldValidator';
 import * as Long from 'long';
 
 /**
@@ -44,284 +44,27 @@ export class CompactGenericRecordImpl implements GenericRecord {
     constructor(
         typeName: string,
         private readonly fields: {[name: string]: Field<any>},
-        readonly values: {[name: string]: any}
+        readonly values: {[name: string]: any},
+        // When building from DefaultCompactReader, we can reuse the schema
+        schema?: Schema
     ) {
         if (typeof typeName !== 'string') {
             throw new TypeError('Type name must be a string');
         }
-        const schemaWriter = new SchemaWriter(typeName);
-        for (const [fieldName, field] of Object.entries(fields)) {
-            this.validateField(fieldName, field.kind, this.values[fieldName]);
-            schemaWriter.addField(new FieldDescriptor(fieldName, field.kind));
-        }
-        this.schema = schemaWriter.build();
-    }
 
-    validateField(fieldName: string, fieldKind: FieldKind, value: any, checkingElement = false): void {
-        const getErrorStringElement =
-            (typeName: string) => 'Generic record field validation error: ' +
-                `Expected a ${typeName} element in field ${fieldName}, but got: ${value}`;
-        const getErrorStringForField =
-            (typeName: string) => 'Generic record field validation error: ' +
-                `Expected ${typeName} for field ${fieldName}, but got: ${value}`;
-        const checkFn = checkingElement ? getErrorStringElement : getErrorStringForField;
-        const throwTypeErrorWithMessage = (typeName: string) => {
-            throw new TypeError(checkFn(typeName));
-        };
-        const checkArrayOrNull = () => {
-            if (!Array.isArray(value) && value !== null) {
-                throw new TypeError(`Expected an array or null for field ${fieldName}, but got: ${value}`);
+        if (schema !== undefined) {
+            this.schema = schema;
+            for (const [fieldName, field] of Object.entries(fields)) {
+                FieldValidator.validateField(fieldName, field.kind, this.values[fieldName]);
             }
-        };
-
-        const validateArray = (elementKind: FieldKind) => {
-            checkArrayOrNull();
-            if (value !== null) {
-                for (const element of value) {
-                    this.validateField(fieldName, elementKind, element, true);
-                }
+        } else {
+            const schemaWriter = new SchemaWriter(typeName);
+            for (const [fieldName, field] of Object.entries(fields)) {
+                FieldValidator.validateField(fieldName, field.kind, this.values[fieldName]);
+                schemaWriter.addField(new FieldDescriptor(fieldName, field.kind));
             }
+            this.schema = schemaWriter.build();
         }
-
-        const validateType = (jsTypeName: string) => {
-            if (typeof value !== jsTypeName) {
-                throwTypeErrorWithMessage(jsTypeName);
-            }
-        }
-
-        const validateNullableType = (jsTypeName: string) => {
-            if (typeof value !== jsTypeName && value !== null) {
-                throwTypeErrorWithMessage(jsTypeName);
-            }
-        }
-
-        const validateNumberRange = (min: number, max: number) => {
-            if (value < min || value > max) {
-                throw new RangeError(
-                    'Generic record field validation error: ' +
-                    `Expected a number in range [${min}, ${max}] for field ${fieldName}, but got: ${value}`
-                );
-            }
-        }
-
-        const validateInt8Range = () => validateNumberRange(-128, 127);
-        const validateInt16Range = () => validateNumberRange(-32768, 32767);
-        const validateInt32Range = () => validateNumberRange(-2147483648, 2147483647);
-
-        switch (fieldKind) {
-            case FieldKind.BOOLEAN:
-                validateType('boolean');
-                break;
-            case FieldKind.ARRAY_OF_BOOLEAN:
-                validateArray(FieldKind.BOOLEAN);
-                break;
-            case FieldKind.INT8:
-                validateType('number');
-                validateInt8Range();
-                break;
-            case FieldKind.ARRAY_OF_INT8:
-                if (!Buffer.isBuffer(value) && value !== null) {
-                    throw new TypeError(getErrorStringForField('Buffer or null'));
-                }
-                break;
-            case FieldKind.INT16:
-                validateType('number');
-                validateInt16Range();
-                break;
-            case FieldKind.ARRAY_OF_INT16:
-                validateArray(FieldKind.INT16);
-                break;
-            case FieldKind.INT32:
-                validateType('number');
-                validateInt32Range();
-                break;
-            case FieldKind.ARRAY_OF_INT32:
-                validateArray(FieldKind.INT32);
-                break;
-            case FieldKind.INT64:
-                if (!Long.isLong(value)) {
-                    throwTypeErrorWithMessage('Long');
-                }
-                break;
-            case FieldKind.ARRAY_OF_INT64:
-                validateArray(FieldKind.INT64);
-                break;
-            case FieldKind.FLOAT32:
-                validateType('number');
-                break;
-            case FieldKind.ARRAY_OF_FLOAT32:
-                validateArray(FieldKind.FLOAT32);
-                break;
-            case FieldKind.FLOAT64:
-                validateType('number');
-                break;
-            case FieldKind.ARRAY_OF_FLOAT64:
-                validateArray(FieldKind.FLOAT64);
-                break;
-            case FieldKind.STRING:
-                if (typeof value !== 'string' && value !== null) {
-                    throwTypeErrorWithMessage('String or null');
-                }
-                break;
-            case FieldKind.ARRAY_OF_STRING:
-                validateArray(FieldKind.STRING);
-                break;
-            case FieldKind.DECIMAL:
-                if (!(value instanceof BigDecimal) && value !== null) {
-                    throwTypeErrorWithMessage('BigDecimal or null');
-                }
-                break;
-            case FieldKind.ARRAY_OF_DECIMAL:
-                validateArray(FieldKind.DECIMAL);
-                break;
-            case FieldKind.TIME:
-                if (!(value instanceof LocalTime) && value !== null) {
-                    throwTypeErrorWithMessage('LocalTime or null');
-                }
-                break;
-            case FieldKind.ARRAY_OF_TIME:
-                validateArray(FieldKind.TIME);
-                break;
-            case FieldKind.DATE:
-                if (!(value instanceof LocalDate) && value !== null) {
-                    throwTypeErrorWithMessage('LocalDate or null');
-                }
-                break;
-            case FieldKind.ARRAY_OF_DATE:
-                validateArray(FieldKind.DATE);
-                break;
-            case FieldKind.TIMESTAMP:
-                if (!(value instanceof LocalDateTime) && value !== null) {
-                    throwTypeErrorWithMessage('LocalDateTime or null');
-                }
-                break;
-            case FieldKind.ARRAY_OF_TIMESTAMP:
-                validateArray(FieldKind.TIMESTAMP);
-                break;
-            case FieldKind.TIMESTAMP_WITH_TIMEZONE:
-                if (!(value instanceof OffsetDateTime) && value !== null) {
-                    throwTypeErrorWithMessage('OffsetDateTime or null');
-                }
-                break;
-            case FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
-                validateArray(FieldKind.TIMESTAMP_WITH_TIMEZONE);
-                break;
-            case FieldKind.COMPACT:
-                if (value !== null && !(value instanceof CompactGenericRecordImpl)) {
-                    throwTypeErrorWithMessage('Compact');
-                }
-                break;
-            case FieldKind.ARRAY_OF_COMPACT:
-                validateArray(FieldKind.COMPACT);
-                break;
-            case FieldKind.NULLABLE_BOOLEAN:
-                validateNullableType('boolean');
-                break;
-            case FieldKind.ARRAY_OF_NULLABLE_BOOLEAN:
-                validateArray(FieldKind.NULLABLE_BOOLEAN);
-                break;
-            case FieldKind.NULLABLE_INT8:
-                validateNullableType('number');
-                validateInt8Range();
-                break;
-            case FieldKind.ARRAY_OF_NULLABLE_INT8:
-                validateArray(FieldKind.NULLABLE_INT8);
-                break;
-            case FieldKind.NULLABLE_INT16:
-                validateNullableType('number');
-                validateInt16Range();
-                break;
-            case FieldKind.ARRAY_OF_NULLABLE_INT16:
-                validateArray(FieldKind.NULLABLE_INT16);
-                break;
-            case FieldKind.NULLABLE_INT32:
-                validateNullableType('number');
-                validateInt32Range();
-                break;
-            case FieldKind.ARRAY_OF_NULLABLE_INT32:
-                validateArray(FieldKind.NULLABLE_INT32);
-                break;
-            case FieldKind.NULLABLE_INT64:
-                if (!Long.isLong(value) && value !== null) {
-                    throwTypeErrorWithMessage('Long or null');
-                }
-                break;
-            case FieldKind.ARRAY_OF_NULLABLE_INT64:
-                validateArray(FieldKind.NULLABLE_INT64);
-                break;
-            case FieldKind.NULLABLE_FLOAT32:
-                validateNullableType('number');
-                break;
-            case FieldKind.ARRAY_OF_NULLABLE_FLOAT32:
-                validateArray(FieldKind.NULLABLE_FLOAT32);
-                break;
-            case FieldKind.NULLABLE_FLOAT64:
-                validateNullableType('number');
-                break;
-            case FieldKind.ARRAY_OF_NULLABLE_FLOAT64:
-                validateArray(FieldKind.NULLABLE_FLOAT64);
-                break;
-        }
-    }
-
-    /**
-     * Deep clones an object. Based on: https://stackoverflow.com/a/34624648/9483495
-     * @param obj
-     */
-    private static deepCloneCompactGenericRecordValues(obj: any) {
-        // Prevent undefined objects
-        if (!obj) {
-            return obj;
-        }
-
-        if (obj instanceof CompactGenericRecordImpl) {
-            return obj.clone();
-        }
-
-        if (obj instanceof Long) {
-            return new Long(obj.low, obj.high, obj.unsigned);
-        }
-
-        if (Buffer.isBuffer(obj)) {
-            return Buffer.from(obj);
-        }
-
-        if (obj instanceof LocalDate) {
-            return new LocalDate(obj.year, obj.month, obj.date);
-        }
-
-        if (obj instanceof LocalTime) {
-            return new LocalTime(obj.hour, obj.minute, obj.second, obj.nano);
-        }
-
-        if (obj instanceof LocalDateTime) {
-            return new LocalDateTime(obj.localDate, obj.localTime);
-        }
-
-        if (obj instanceof OffsetDateTime) {
-            return new OffsetDateTime(obj.localDateTime, obj.offsetSeconds);
-        }
-
-        if (obj instanceof BigDecimal) {
-            return new BigDecimal(obj.unscaledValue, obj.scale);
-        }
-
-        if (obj instanceof BigDecimal) {
-            return new BigDecimal(obj.unscaledValue, obj.scale);
-        }
-
-        let v: any;
-        const cloned: any = Array.isArray(obj) ? [] : {};
-        for (const k in obj) {
-
-            // Prevent self-references to parent object
-            // if (Object.is(obj[k], obj)) continue;
-
-            v = obj[k];
-            cloned[k] = (typeof v === 'object') ? CompactGenericRecordImpl.deepCloneCompactGenericRecordValues(v) : v;
-        }
-
-        return cloned;
     }
 
     clone(fieldsToUpdate?: { [fieldName: string]: any }): GenericRecord {
@@ -337,66 +80,75 @@ export class CompactGenericRecordImpl implements GenericRecord {
         return new CompactGenericRecordImpl(this.schema.typeName, this.fields, clonedValues);
     }
 
-    private check(fieldName: string, ...kinds: FieldKind[]) : FieldKind {
-        const fd = this.schema.fieldDefinitionMap.get(fieldName);
-        if (fd === undefined) {
-            throw new HazelcastSerializationError(`Invalid field name: '${fieldName}' for schema ${this.schema}`);
-        }
-        let valid = false;
-        const fieldKind = fd.kind;
-        for (const kind of kinds) {
-            valid = valid || (fieldKind === kind);
-        }
-        if (!valid) {
-            throw new HazelcastSerializationError(`Invalid field kind: '${fieldKind}' for schema '${this.schema}',`
-                + `valid field kinds: ${kinds}, found: ${fieldKind}`);
-        }
-        return fieldKind;
+    getFieldNames(): Set<string> {
+        return new Set(Object.keys(this.fields));
     }
 
-    private getNonNull(
-        fieldName: string, primitiveFieldKind: FieldKind, nullableFieldKind: FieldKind, methodSuffix: string
-    ): any {
-        this.check(fieldName, primitiveFieldKind, nullableFieldKind);
-        const value = this.values[fieldName];
-        if (value === null) {
-            throw CompactExceptions.toExceptionForUnexpectedNullValue(fieldName, methodSuffix);
+    getFieldKind(fieldName: string): FieldKind {
+        if (!this.schema.fieldDefinitionMap.has(fieldName)) {
+            throw RangeError('There is no field named as '+ fieldName);
         }
-        return value;
+        return this.schema.fieldDefinitionMap.get(fieldName).kind;
     }
 
-    private get(fieldName: string, ...fieldKind: FieldKind[]): any {
-        this.check(fieldName, ...fieldKind);
-        return this.values[fieldName];
+    hasField(fieldName: string): boolean {
+        return this.fields.hasOwnProperty(fieldName);
     }
 
-    getSchema(): Schema {
-        return this.schema;
+    getBoolean(fieldName: string): boolean {
+        return this.getNonNull(fieldName, FieldKind.BOOLEAN, FieldKind.NULLABLE_BOOLEAN, 'Boolean');
     }
 
-    getArrayOfPrimitives(
-        fieldName: string, methodSuffix: string, primitiveFieldKind: FieldKind, nullableFieldKind: FieldKind
-    ): any[] {
-        const fieldKind = this.check(fieldName, primitiveFieldKind, nullableFieldKind);
-        if (fieldKind === nullableFieldKind) {
-            const array = this.values[fieldName];
-            const result = new Array(array.length);
-            for (let i = 0; i < array.length; i++) {
-                if (array[i] === null) {
-                    throw CompactExceptions.toExceptionForUnexpectedNullValueInArray(fieldName, methodSuffix);
-                }
-                result[i] = array[i];
-            }
-            return result;
-        }
-        return this.values[fieldName];
+    getInt8(fieldName: string): number {
+        return this.getNonNull(fieldName, FieldKind.INT8, FieldKind.NULLABLE_INT8, 'Int8');
     }
 
-    getArrayOfNullables(
-        fieldName: string, primitiveFieldKind: FieldKind, nullableFieldKind: FieldKind
-    ): any[] {
-        this.check(fieldName, primitiveFieldKind, nullableFieldKind);
-        return this.values[fieldName];
+    getInt16(fieldName: string): number {
+        return this.getNonNull(fieldName, FieldKind.INT16, FieldKind.NULLABLE_INT16, 'Int16');
+    }
+
+    getInt32(fieldName: string): number {
+        return this.getNonNull(fieldName, FieldKind.INT32, FieldKind.NULLABLE_INT32, 'Int32');
+    }
+
+    getInt64(fieldName: string): Long {
+        return this.getNonNull(fieldName, FieldKind.INT64, FieldKind.NULLABLE_INT64, 'Int64');
+    }
+
+    getFloat32(fieldName: string): number {
+        return this.getNonNull(fieldName, FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32, 'Float32');
+    }
+
+    getFloat64(fieldName: string): number {
+        return this.getNonNull(fieldName, FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64, 'Float64');
+    }
+
+    getString(fieldName: string): string | null {
+        return this.get(fieldName, FieldKind.STRING);
+    }
+
+    getDecimal(fieldName: string): BigDecimal | null {
+        return this.get(fieldName, FieldKind.DECIMAL);
+    }
+
+    getTime(fieldName: string): LocalTime | null {
+        return this.get(fieldName, FieldKind.TIME);
+    }
+
+    getDate(fieldName: string): LocalDate | null {
+        return this.get(fieldName, FieldKind.DATE);
+    }
+
+    getTimestamp(fieldName: string): LocalDateTime | null {
+        return this.get(fieldName, FieldKind.TIMESTAMP);
+    }
+
+    getTimestampWithTimezone(fieldName: string): OffsetDateTime | null {
+        return this.get(fieldName, FieldKind.TIMESTAMP_WITH_TIMEZONE);
+    }
+
+    getGenericRecord(fieldName: string): GenericRecord {
+        return this.get(fieldName, FieldKind.COMPACT);
     }
 
     getArrayOfBoolean(fieldName: string): boolean[] {
@@ -411,32 +163,10 @@ export class CompactGenericRecordImpl implements GenericRecord {
         ));
     }
 
-    getArrayOfChar(fieldName: string): string[] {
-        throw new UnsupportedOperationError('Compact format does not support reading an array of chars field');
-    }
-
-    getArrayOfDate(fieldName: string): LocalDate[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_DATE);
-    }
-
-    getArrayOfDecimal(fieldName: string): BigDecimal[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_DECIMAL);
-    }
-
-    getArrayOfFloat64(fieldName: string): number[] {
+    getArrayOfInt16(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'ArrayOfFloat64', FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64
+            fieldName, 'ArrayOfInt16', FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16
         );
-    }
-
-    getArrayOfFloat32(fieldName: string): number[] {
-        return this.getArrayOfPrimitives(
-            fieldName, 'ArrayOfFloat32', FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32
-        );
-    }
-
-    getArrayOfGenericRecord(fieldName: string): GenericRecord[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_COMPACT);
     }
 
     getArrayOfInt32(fieldName: string): number[] {
@@ -451,101 +181,44 @@ export class CompactGenericRecordImpl implements GenericRecord {
         );
     }
 
-    getArrayOfNullableBoolean(fieldName: string): (boolean | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_BOOLEAN, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN);
-    }
-
-    getArrayOfNullableInt8(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT8, FieldKind.ARRAY_OF_NULLABLE_INT8);
-    }
-
-    getArrayOfNullableFloat64(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64);
-    }
-
-    getArrayOfNullableFloat32(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32);
-    }
-
-    getArrayOfNullableInt32(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT32, FieldKind.ARRAY_OF_NULLABLE_INT32);
-    }
-
-    getArrayOfNullableInt64(fieldName: string): (Long | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT64, FieldKind.ARRAY_OF_NULLABLE_INT64);
-    }
-
-    getArrayOfNullableInt16(fieldName: string): (number | null)[] {
-        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16);
-    }
-
-    getArrayOfInt16(fieldName: string): number[] {
+    getArrayOfFloat32(fieldName: string): number[] {
         return this.getArrayOfPrimitives(
-            fieldName, 'ArrayOfInt16', FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16
+            fieldName, 'ArrayOfFloat32', FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32
         );
     }
 
-    getArrayOfString(fieldName: string): string[] {
+    getArrayOfFloat64(fieldName: string): number[] {
+        return this.getArrayOfPrimitives(
+            fieldName, 'ArrayOfFloat64', FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64
+        );
+    }
+
+    getArrayOfString(fieldName: string): (string | null)[] {
         return this.get(fieldName, FieldKind.ARRAY_OF_STRING);
     }
 
-    getArrayOfTime(fieldName: string): LocalTime[] {
+    getArrayOfDecimal(fieldName: string): (BigDecimal | null)[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_DECIMAL);
+    }
+
+    getArrayOfTime(fieldName: string): (LocalTime | null)[] {
         return this.get(fieldName, FieldKind.ARRAY_OF_TIME);
     }
 
-    getArrayOfTimestampWithTimezone(fieldName: string): OffsetDateTime[] {
-        return this.get(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
+    getArrayOfDate(fieldName: string): (LocalDate | null)[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_DATE);
     }
 
-    getArrayOfTimestamp(fieldName: string): LocalDateTime[] {
+    getArrayOfTimestamp(fieldName: string): (LocalDateTime | null)[] {
         return this.get(fieldName, FieldKind.ARRAY_OF_TIMESTAMP);
     }
 
-    getBoolean(fieldName: string): boolean {
-        return this.getNonNull(fieldName, FieldKind.BOOLEAN, FieldKind.NULLABLE_BOOLEAN, 'Boolean');
+    getArrayOfTimestampWithTimezone(fieldName: string): (OffsetDateTime | null)[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
     }
 
-    getInt8(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.INT8, FieldKind.NULLABLE_INT8, 'Int8');
-    }
-
-    getDate(fieldName: string): LocalDate {
-        return this.get(fieldName, FieldKind.DATE);
-    }
-
-    getDecimal(fieldName: string): BigDecimal {
-        return this.get(fieldName, FieldKind.DECIMAL);
-    }
-
-    getFloat32(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32, 'Float32');
-    }
-
-    getFieldKind(fieldName: string): FieldKind {
-        if (!this.schema.fieldDefinitionMap.has(fieldName)) {
-            throw RangeError('There is no field named as '+ fieldName);
-        }
-        return this.schema.fieldDefinitionMap.get(fieldName).kind;
-    }
-
-    getFieldNames(): Set<string> {
-        return new Set(Object.keys(this.fields));
-    }
-
-    getFloat64(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64, 'Float64');
-    }
-
-    getGenericRecord(fieldName: string): GenericRecord {
-        return this.get(fieldName, FieldKind.COMPACT);
-    }
-
-    getInt32(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.INT32, FieldKind.NULLABLE_INT32, 'Int32');
-    }
-
-    getInt64(fieldName: string): Long {
-        return this.getNonNull(fieldName, FieldKind.INT64, FieldKind.NULLABLE_INT64, 'Int64');
+    getArrayOfGenericRecord(fieldName: string): (GenericRecord | null)[] {
+        return this.get(fieldName, FieldKind.ARRAY_OF_COMPACT);
     }
 
     getNullableBoolean(fieldName: string): boolean | null {
@@ -556,12 +229,8 @@ export class CompactGenericRecordImpl implements GenericRecord {
         return this.get(fieldName, FieldKind.INT8, FieldKind.NULLABLE_INT8);
     }
 
-    getNullableFloat64(fieldName: string): number | null {
-        return this.get(fieldName, FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64);
-    }
-
-    getNullableFloat32(fieldName: string): number | null {
-        return this.get(fieldName, FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32);
+    getNullableInt16(fieldName: string): number | null {
+        return this.get(fieldName, FieldKind.INT16, FieldKind.NULLABLE_INT16);
     }
 
     getNullableInt32(fieldName: string): number | null {
@@ -572,33 +241,42 @@ export class CompactGenericRecordImpl implements GenericRecord {
         return this.get(fieldName, FieldKind.INT64, FieldKind.NULLABLE_INT64);
     }
 
-    getNullableInt16(fieldName: string): number | null {
-        return this.get(fieldName, FieldKind.INT16, FieldKind.NULLABLE_INT16);
+    getNullableFloat32(fieldName: string): number | null {
+        return this.get(fieldName, FieldKind.FLOAT32, FieldKind.NULLABLE_FLOAT32);
     }
 
-    getInt16(fieldName: string): number {
-        return this.getNonNull(fieldName, FieldKind.INT16, FieldKind.NULLABLE_INT16, 'Int16');
+    getNullableFloat64(fieldName: string): number | null {
+        return this.get(fieldName, FieldKind.FLOAT64, FieldKind.NULLABLE_FLOAT64);
     }
 
-    getString(fieldName: string): string {
-        return this.get(fieldName, FieldKind.STRING);
+    getArrayOfNullableBoolean(fieldName: string): (boolean | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_BOOLEAN, FieldKind.ARRAY_OF_NULLABLE_BOOLEAN);
     }
 
-    getTime(fieldName: string): LocalTime {
-        return this.get(fieldName, FieldKind.TIME);
+    getArrayOfNullableInt8(fieldName: string): (number | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT8, FieldKind.ARRAY_OF_NULLABLE_INT8);
     }
 
-    getTimestamp(fieldName: string): LocalDateTime {
-        return this.get(fieldName, FieldKind.TIMESTAMP);
+    getArrayOfNullableInt16(fieldName: string): (number | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT16, FieldKind.ARRAY_OF_NULLABLE_INT16);
     }
 
-    getTimestampWithTimezone(fieldName: string): OffsetDateTime {
-        return this.get(fieldName, FieldKind.TIMESTAMP_WITH_TIMEZONE);
+    getArrayOfNullableInt32(fieldName: string): (number | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT32, FieldKind.ARRAY_OF_NULLABLE_INT32);
     }
 
-    hasField(fieldName: string): boolean {
-        return this.fields.hasOwnProperty(fieldName);
+    getArrayOfNullableInt64(fieldName: string): (Long | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_INT64, FieldKind.ARRAY_OF_NULLABLE_INT64);
     }
+
+    getArrayOfNullableFloat32(fieldName: string): (number | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_FLOAT32, FieldKind.ARRAY_OF_NULLABLE_FLOAT32);
+    }
+
+    getArrayOfNullableFloat64(fieldName: string): (number | null)[] {
+        return this.getArrayOfNullables(fieldName, FieldKind.ARRAY_OF_FLOAT64, FieldKind.ARRAY_OF_NULLABLE_FLOAT64);
+    }
+
     toString(): string {
         // replaces BigDecimals with strings to avoid BigInt error of JSON.stringify.
         // Also replaces some data types to make them more readable.
@@ -647,6 +325,128 @@ export class CompactGenericRecordImpl implements GenericRecord {
             return value;
         });
     }
+
+    getSchema(): Schema {
+        return this.schema;
+    }
+
+    /**
+     * Deep clones an object. Based on: https://stackoverflow.com/a/34624648/9483495
+     * @param obj
+     */
+     private static deepCloneCompactGenericRecordValues(obj: any) {
+        // Prevent undefined objects
+        if (!obj) {
+            return obj;
+        }
+
+        if (obj instanceof CompactGenericRecordImpl) {
+            return obj.clone();
+        }
+
+        if (obj instanceof Long) {
+            return new Long(obj.low, obj.high, obj.unsigned);
+        }
+
+        if (Buffer.isBuffer(obj)) {
+            return Buffer.from(obj);
+        }
+
+        if (obj instanceof LocalDate) {
+            return new LocalDate(obj.year, obj.month, obj.date);
+        }
+
+        if (obj instanceof LocalTime) {
+            return new LocalTime(obj.hour, obj.minute, obj.second, obj.nano);
+        }
+
+        if (obj instanceof LocalDateTime) {
+            return new LocalDateTime(obj.localDate, obj.localTime);
+        }
+
+        if (obj instanceof OffsetDateTime) {
+            return new OffsetDateTime(obj.localDateTime, obj.offsetSeconds);
+        }
+
+        if (obj instanceof BigDecimal) {
+            return new BigDecimal(obj.unscaledValue, obj.scale);
+        }
+
+        if (obj instanceof BigDecimal) {
+            return new BigDecimal(obj.unscaledValue, obj.scale);
+        }
+
+        let v: any;
+        const cloned: any = Array.isArray(obj) ? [] : {};
+        for (const k in obj) {
+            v = obj[k];
+            cloned[k] = (typeof v === 'object') ? CompactGenericRecordImpl.deepCloneCompactGenericRecordValues(v) : v;
+        }
+
+        return cloned;
+    }
+
+    private check(fieldName: string, firstKind: FieldKind, secondKind?: FieldKind) : FieldKind {
+        const fd = this.schema.fieldDefinitionMap.get(fieldName);
+        if (fd === undefined) {
+            throw new HazelcastSerializationError(`Invalid field name: '${fieldName}' for schema ${this.schema}`);
+        }
+        const fieldKind = fd.kind;
+        let fieldKindsString = FieldKind[firstKind];
+        let valid = false;
+
+        valid = valid || (fieldKind === firstKind);
+
+        if (secondKind !== undefined) {
+            valid = valid || (fieldKind === secondKind);
+            fieldKindsString += ` or ${FieldKind[secondKind]}`;
+        }
+
+        if (!valid) {
+            throw new HazelcastSerializationError(`Invalid field kind: '${fieldKind}' for schema '${this.schema}',`
+                + `valid field kinds: ${fieldKindsString}, found: ${fieldKind}`);
+        }
+        return fieldKind;
+    }
+
+    private getNonNull(
+        fieldName: string, primitiveFieldKind: FieldKind, nullableFieldKind: FieldKind, methodSuffix: string
+    ): any {
+        this.check(fieldName, primitiveFieldKind, nullableFieldKind);
+        const value = this.values[fieldName];
+        if (value === null) {
+            throw CompactExceptions.toExceptionForUnexpectedNullValue(fieldName, methodSuffix);
+        }
+        return value;
+    }
+
+    private get(fieldName: string, firstKind: FieldKind, secondKind?: FieldKind): any {
+        this.check(fieldName, firstKind, secondKind);
+        return this.values[fieldName];
+    }
+
+    private getArrayOfPrimitives(
+        fieldName: string, methodSuffix: string, primitiveFieldKind: FieldKind, nullableFieldKind: FieldKind
+    ): any[] {
+        const fieldKind = this.check(fieldName, primitiveFieldKind, nullableFieldKind);
+        if (fieldKind === nullableFieldKind) {
+            const array = this.values[fieldName];
+            const result = new Array(array.length);
+            for (let i = 0; i < array.length; i++) {
+                if (array[i] === null) {
+                    throw CompactExceptions.toExceptionForUnexpectedNullValueInArray(fieldName, methodSuffix);
+                }
+                result[i] = array[i];
+            }
+            return result;
+        }
+        return this.values[fieldName];
+    }
+
+    private getArrayOfNullables(
+        fieldName: string, primitiveFieldKind: FieldKind, nullableFieldKind: FieldKind
+    ): any[] {
+        this.check(fieldName, primitiveFieldKind, nullableFieldKind);
+        return this.values[fieldName];
+    }
 }
-
-

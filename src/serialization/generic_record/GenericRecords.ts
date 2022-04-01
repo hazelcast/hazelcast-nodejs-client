@@ -20,6 +20,8 @@ import {Field} from './Fields';
 /**
  * The class for creating generic records. This class should not be instantiated directly.
  * Its {@link compact} method creates new compact generic records.
+ *
+ * This API is currently in Beta and can change at any time.
  */
 export class GenericRecords {
     /**

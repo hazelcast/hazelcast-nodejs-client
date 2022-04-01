@@ -26,7 +26,7 @@ import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '.
  * of the failure scenarios described above. Providing default values might be especially
  * useful, if the class might evolve in future, either by adding or removing fields.
  *
- * This API is currently in BETA and can change at any time.
+ * This API is currently in Beta and can change at any time.
  */
 export interface CompactReader {
     /**

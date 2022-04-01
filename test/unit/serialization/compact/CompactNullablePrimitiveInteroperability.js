@@ -107,20 +107,20 @@ describe('CompactNullablePrimitiveInteroperability', function () {
 
     it('should write primitive read nullable', async function () {
         const schema = {
-            boolean: Fields.boolean,
-            byte: Fields.int8,
-            short: Fields.int16,
-            int: Fields.int32,
-            long: Fields.int64,
-            float: Fields.float32,
-            double: Fields.float64,
-            booleans: Fields.arrayOfBoolean,
-            bytes: Fields.arrayOfInt8,
-            shorts: Fields.arrayOfInt16,
-            ints: Fields.arrayOfInt32,
-            longs: Fields.arrayOfInt64,
-            floats: Fields.arrayOfFloat32,
-            doubles: Fields.arrayOfFloat64
+            boolean: Fields.BOOLEAN,
+            byte: Fields.INT8,
+            short: Fields.INT16,
+            int: Fields.INT32,
+            long: Fields.INT64,
+            float: Fields.FLOAT32,
+            double: Fields.FLOAT64,
+            booleans: Fields.ARRAY_OF_BOOLEAN,
+            bytes: Fields.ARRAY_OF_INT8,
+            shorts: Fields.ARRAY_OF_INT16,
+            ints: Fields.ARRAY_OF_INT32,
+            longs: Fields.ARRAY_OF_INT64,
+            floats: Fields.ARRAY_OF_FLOAT32,
+            doubles: Fields.ARRAY_OF_FLOAT64
         };
 
         const record = GenericRecords.compact('test', schema, {
@@ -153,20 +153,20 @@ describe('CompactNullablePrimitiveInteroperability', function () {
 
     it('should write nullable read primitive', async function () {
         const schema = {
-            boolean: Fields.nullableBoolean,
-            byte: Fields.nullableInt8,
-            short: Fields.nullableInt16,
-            int: Fields.nullableInt32,
-            long: Fields.nullableInt64,
-            float: Fields.nullableFloat32,
-            double: Fields.nullableFloat64,
-            booleans: Fields.arrayOfNullableBoolean,
-            bytes: Fields.arrayOfNullableInt8,
-            shorts: Fields.arrayOfNullableInt16,
-            ints: Fields.arrayOfNullableInt32,
-            longs: Fields.arrayOfNullableInt64,
-            floats: Fields.arrayOfNullableFloat32,
-            doubles: Fields.arrayOfNullableFloat64
+            boolean: Fields.NULLABLE_BOOLEAN,
+            byte: Fields.NULLABLE_INT8,
+            short: Fields.NULLABLE_INT16,
+            int: Fields.NULLABLE_INT32,
+            long: Fields.NULLABLE_INT64,
+            float: Fields.NULLABLE_FLOAT32,
+            double: Fields.NULLABLE_FLOAT64,
+            booleans: Fields.ARRAY_OF_NULLABLE_BOOLEAN,
+            bytes: Fields.ARRAY_OF_NULLABLE_INT8,
+            shorts: Fields.ARRAY_OF_NULLABLE_INT16,
+            ints: Fields.ARRAY_OF_NULLABLE_INT32,
+            longs: Fields.ARRAY_OF_NULLABLE_INT64,
+            floats: Fields.ARRAY_OF_NULLABLE_FLOAT32,
+            doubles: Fields.ARRAY_OF_NULLABLE_FLOAT64
         };
 
         const record = GenericRecords.compact('test', schema, {
@@ -199,20 +199,20 @@ describe('CompactNullablePrimitiveInteroperability', function () {
 
     it('should raise error if write null and read primitive', async function () {
         const schema = {
-            boolean: Fields.nullableBoolean,
-            byte: Fields.nullableInt8,
-            short: Fields.nullableInt16,
-            int: Fields.nullableInt32,
-            long: Fields.nullableInt64,
-            float: Fields.nullableFloat32,
-            double: Fields.nullableFloat64,
-            booleans: Fields.arrayOfNullableBoolean,
-            bytes: Fields.arrayOfNullableInt8,
-            shorts: Fields.arrayOfNullableInt16,
-            ints: Fields.arrayOfNullableInt32,
-            longs: Fields.arrayOfNullableInt64,
-            floats: Fields.arrayOfNullableFloat32,
-            doubles: Fields.arrayOfNullableFloat64
+            boolean: Fields.NULLABLE_BOOLEAN,
+            byte: Fields.NULLABLE_INT8,
+            short: Fields.NULLABLE_INT16,
+            int: Fields.NULLABLE_INT32,
+            long: Fields.NULLABLE_INT64,
+            float: Fields.NULLABLE_FLOAT32,
+            double: Fields.NULLABLE_FLOAT64,
+            booleans: Fields.ARRAY_OF_NULLABLE_BOOLEAN,
+            bytes: Fields.ARRAY_OF_NULLABLE_INT8,
+            shorts: Fields.ARRAY_OF_NULLABLE_INT16,
+            ints: Fields.ARRAY_OF_NULLABLE_INT32,
+            longs: Fields.ARRAY_OF_NULLABLE_INT64,
+            floats: Fields.ARRAY_OF_NULLABLE_FLOAT32,
+            doubles: Fields.ARRAY_OF_NULLABLE_FLOAT64
         };
 
         const record = GenericRecords.compact('test', schema, {

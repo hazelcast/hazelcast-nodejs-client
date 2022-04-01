@@ -38,4 +38,14 @@ export interface FieldKindBasedOperations {
      * Reads a field from reader.
      */
     readFromReader(reader: CompactReader, fieldName: string): any;
+
+    /**
+     * Validates a field
+     * @param value field value
+     */
+     validateField(
+        fieldName: string,
+        value: any,
+        getErrorStringFn: (fieldName: string, typeName: string, value: any) => string,
+    ): void;
 }

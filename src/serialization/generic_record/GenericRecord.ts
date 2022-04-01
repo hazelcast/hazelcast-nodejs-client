@@ -18,21 +18,23 @@ import * as Long from 'long';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 
 /**
- * **GenericRecords is only supported for Compact.**
- *
  * A generic object interface that is returned to the user when the domain class can not be created from any of the distributed
- * hazelcast data structures like {@link IMap}, {@link IQueue} etc.
+ * Hazelcast data structures like {@link IMap}, {@link IQueue} etc.
  *
  * GenericRecord also allows reading from a cluster without having the classes on the client side.
  * This way, the clients can read and write objects back to the cluster without the need to have
- * the domain classes on the classpath.
+ * the domain classes.
+ *
+ * GenericRecords is only supported for Compact serializable objects.
+ *
+ * This API is currently in Beta and can change at any time.
  */
 export interface GenericRecord {
     /**
      * Clones this generic record and returns a new one.
-     * @param fieldsToUpdate If provided, the returned generic records some fields will be updated. Keys of this object
+     * @param fieldsToUpdate If provided, some fields of the returned generic record will be updated. Keys of this object
      * are fieldNames and values are field values.
-     * @throws TypeError if any value provided is of wrong type.
+     * @throws TypeError if the type of any value does not match with its field type.
      * @throws RangeError if any provided fieldName does not exist in the record or a field value provided is out of range.
      */
     clone(fieldsToUpdate?: {[fieldName: string] : any}): GenericRecord;
@@ -78,15 +80,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getFloat64(fieldName: string): number;
-
-    /**
-     * Returns value of the field.
-     * @param fieldName the name of the field
-     * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
-     * the type of the field does not match the one in the generic record.
-     */
-    getFloat32(fieldName: string): number;
+    getInt16(fieldName: string): number;
 
     /**
      * Returns value of the field.
@@ -110,7 +104,15 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getInt16(fieldName: string): number;
+    getFloat32(fieldName: string): number;
+
+    /**
+     * Returns value of the field.
+     * @param fieldName the name of the field
+     * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
+     * the type of the field does not match the one in the generic record.
+     */
+    getFloat64(fieldName: string): number;
 
     /**
      * Returns value of the field.
@@ -190,15 +192,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfFloat64(fieldName: string): number[] | null;
-
-    /**
-     * Returns value of the field.
-     * @param fieldName the name of the field
-     * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
-     * the type of the field does not match the one in the generic record.
-     */
-    getArrayOfFloat32(fieldName: string): number[] | null;
+    getArrayOfInt16(fieldName: string): number[] | null;
 
     /**
      * Returns value of the field.
@@ -222,7 +216,15 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfInt16(fieldName: string): number[] | null;
+    getArrayOfFloat32(fieldName: string): number[] | null;
+
+    /**
+     * Returns value of the field.
+     * @param fieldName the name of the field
+     * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
+     * the type of the field does not match the one in the generic record.
+     */
+    getArrayOfFloat64(fieldName: string): number[] | null;
 
     /**
      * Returns value of the field.
@@ -302,15 +304,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getNullableFloat64(fieldName: string): number | null;
-
-    /**
-     * Returns value of the field.
-     * @param fieldName the name of the field
-     * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
-     * the type of the field does not match the one in the generic record.
-     */
-    getNullableFloat32(fieldName: string): number | null;
+    getNullableInt16(fieldName: string): number | null;
 
     /**
      * Returns value of the field.
@@ -334,7 +328,15 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getNullableInt16(fieldName: string): number | null;
+    getNullableFloat32(fieldName: string): number | null;
+
+    /**
+     * Returns value of the field.
+     * @param fieldName the name of the field
+     * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
+     * the type of the field does not match the one in the generic record.
+     */
+    getNullableFloat64(fieldName: string): number | null;
 
     /**
      * Returns value of the field.
@@ -358,15 +360,7 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfNullableFloat64(fieldName: string): (number | null)[];
-
-    /**
-     * Returns value of the field.
-     * @param fieldName the name of the field
-     * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
-     * the type of the field does not match the one in the generic record.
-     */
-    getArrayOfNullableFloat32(fieldName: string): (number | null)[];
+    getArrayOfNullableInt16(fieldName: string): (number | null)[];
 
     /**
      * Returns value of the field.
@@ -390,7 +384,15 @@ export interface GenericRecord {
      * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
      * the type of the field does not match the one in the generic record.
      */
-    getArrayOfNullableInt16(fieldName: string): (number | null)[];
+    getArrayOfNullableFloat32(fieldName: string): (number | null)[];
+
+    /**
+     * Returns value of the field.
+     * @param fieldName the name of the field
+     * @throws {@link HazelcastSerializationError} if the field name does not exist in the generic record or
+     * the type of the field does not match the one in the generic record.
+     */
+    getArrayOfNullableFloat64(fieldName: string): (number | null)[];
 
     /**
      * Returns string representation of this generic record. The string representation

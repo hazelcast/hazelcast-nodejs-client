@@ -20,7 +20,7 @@ import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '.
 /**
  * Provides means of writing compact serialized fields to the binary data.
  *
- * This API is currently in BETA and can change at any time.
+ * This API is currently in Beta and can change at any time.
  */
 export interface CompactWriter {
     /**

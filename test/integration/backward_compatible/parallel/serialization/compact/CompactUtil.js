@@ -125,7 +125,7 @@ const arrayOfOffsetDateTimes = [[], [
 ], null];
 
 const genericRecords = [
-    GenericRecords.compact('a', {foo: Fields.int8}, {foo: 1}), null, GenericRecords.compact('b', {bar: Fields.int16}, {bar: 2})
+    GenericRecords.compact('a', {foo: Fields.INT8}, {foo: 1}), null, GenericRecords.compact('b', {bar: Fields.INT16}, {bar: 2})
 ];
 const arrayOfGenericRecords = [[...genericRecords], [], null, [GenericRecords.compact('c', {}, {})]];
 const all = [...objects, ...numbers, ...strings, ...arrayOfStrings, ...longs, ...nullableLongs, ...arrayOfLongs,
@@ -151,147 +151,147 @@ const isAllNullArray = (value) => {
 
 const validationTestParams= {
     // The first array in value holds valid values, the second holds invalid values.
-    'Fields.boolean': {values: [
+    'Fields.BOOLEAN': {values: [
         all.filter(value => booleans.includes(value)),
-        all.filter(value => !booleans.includes(value))], field: Fields.boolean},
-    'Fields.arrayOfBoolean': {values: [
+        all.filter(value => !booleans.includes(value))], field: Fields.BOOLEAN},
+    'Fields.ARRAY_OF_BOOLEAN': {values: [
         all.filter(value => arrayOfBooleans.includes(value)),
-        all.filter(value => !arrayOfBooleans.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfBoolean},
-    'Fields.int8': {values: [
+        all.filter(value => !arrayOfBooleans.includes(value) && !isEmptyArray(value))], field: Fields.ARRAY_OF_BOOLEAN},
+    'Fields.INT8': {values: [
         all.filter(value => numbers.includes(value)),
-        all.filter(value => !numbers.includes(value))], field: Fields.int8},
-    'Fields.arrayOfInt8': {values: [
+        all.filter(value => !numbers.includes(value))], field: Fields.INT8},
+    'Fields.ARRAY_OF_INT8': {values: [
         all.filter(value => buffers.includes(value)),
-        all.filter(value => !buffers.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfInt8},
-    'Fields.int16': {values: [
+        all.filter(value => !buffers.includes(value) && !isEmptyArray(value))], field: Fields.ARRAY_OF_INT8},
+    'Fields.INT16': {values: [
         all.filter(value => numbers.includes(value)),
-        all.filter(value => !numbers.includes(value))], field: Fields.int16},
-    'Fields.arrayOfInt16': {values: [
+        all.filter(value => !numbers.includes(value))], field: Fields.INT16},
+    'Fields.ARRAY_OF_INT16': {values: [
         all.filter(value => arrayOfNumbers.includes(value)),
-        all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfInt16},
-    'Fields.int32': {values: [
+        all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))], field: Fields.ARRAY_OF_INT16},
+    'Fields.INT32': {values: [
         all.filter(value => numbers.includes(value)),
-        all.filter(value => !numbers.includes(value))], field: Fields.int32},
-    'Fields.arrayOfInt32': {values: [
+        all.filter(value => !numbers.includes(value))], field: Fields.INT32},
+    'Fields.ARRAY_OF_INT32': {values: [
         all.filter(value => arrayOfNumbers.includes(value)),
         all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))
-    ], field: Fields.arrayOfInt32},
-    'Fields.int64': {values: [
+    ], field: Fields.ARRAY_OF_INT32},
+    'Fields.INT64': {values: [
         all.filter(value => longs.includes(value)),
-        all.filter(value => !longs.includes(value))], field: Fields.int64},
-    'Fields.arrayOfInt64': {values: [
+        all.filter(value => !longs.includes(value))], field: Fields.INT64},
+    'Fields.ARRAY_OF_INT64': {values: [
         all.filter(value => arrayOfLongs.includes(value)),
-        all.filter(value => !arrayOfLongs.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfInt64},
-    'Fields.float32': {values: [
+        all.filter(value => !arrayOfLongs.includes(value) && !isEmptyArray(value))], field: Fields.ARRAY_OF_INT64},
+    'Fields.FLOAT32': {values: [
         all.filter(value => numbers.includes(value)),
-        all.filter(value => !numbers.includes(value))], field: Fields.float32},
-    'Fields.arrayOfFloat32': {values: [
+        all.filter(value => !numbers.includes(value))], field: Fields.FLOAT32},
+    'Fields.ARRAY_OF_FLOAT32': {values: [
         all.filter(value => arrayOfNumbers.includes(value)),
-        all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfFloat32},
-    'Fields.float64': {values: [
+        all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))], field: Fields.ARRAY_OF_FLOAT32},
+    'Fields.FLOAT64': {values: [
         all.filter(value => numbers.includes(value)),
-        all.filter(value => !numbers.includes(value))], field: Fields.float64},
-    'Fields.arrayOfFloat64': {values: [
+        all.filter(value => !numbers.includes(value))], field: Fields.FLOAT64},
+    'Fields.ARRAY_OF_FLOAT64': {values: [
         all.filter(value => arrayOfNumbers.includes(value)),
-        all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))], field: Fields.arrayOfFloat64},
-    'Fields.string': {values: [
+        all.filter(value => !arrayOfNumbers.includes(value) && !isEmptyArray(value))], field: Fields.ARRAY_OF_FLOAT64},
+    'Fields.STRING': {values: [
         all.filter(value => strings.includes(value)),
-        all.filter(value => !strings.includes(value))], field: Fields.string},
-    'Fields.arrayOfString': {values: [
+        all.filter(value => !strings.includes(value))], field: Fields.STRING},
+    'Fields.ARRAY_OF_STRING': {values: [
         all.filter(value => arrayOfStrings.includes(value)),
         all.filter(value => !arrayOfStrings.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfString},
-    'Fields.decimal': {values: [
+    ], field: Fields.ARRAY_OF_STRING},
+    'Fields.DECIMAL': {values: [
         all.filter(value => bigDecimals.includes(value)),
-        all.filter(value => !bigDecimals.includes(value))], field: Fields.decimal},
-    'Fields.arrayOfDecimal': {values: [
+        all.filter(value => !bigDecimals.includes(value))], field: Fields.DECIMAL},
+    'Fields.ARRAY_OF_DECIMAL': {values: [
         all.filter(value => arrayOfBigDecimals.includes(value)),
         all.filter(value => !arrayOfBigDecimals.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfDecimal},
-    'Fields.time': {values: [
+    ], field: Fields.ARRAY_OF_DECIMAL},
+    'Fields.TIME': {values: [
         all.filter(value => localTimes.includes(value)),
-        all.filter(value => !localTimes.includes(value))], field: Fields.time},
-    'Fields.arrayOfTime': {values: [
+        all.filter(value => !localTimes.includes(value))], field: Fields.TIME},
+    'Fields.ARRAY_OF_TIME': {values: [
         all.filter(value => arrayOfLocalTimes.includes(value)),
         all.filter(value => !arrayOfLocalTimes.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfTime},
-    'Fields.date': {values: [
+    ], field: Fields.ARRAY_OF_TIME},
+    'Fields.DATE': {values: [
         all.filter(value => localDates.includes(value)),
-        all.filter(value => !localDates.includes(value))], field: Fields.date},
-    'Fields.arrayOfDate': {values: [
+        all.filter(value => !localDates.includes(value))], field: Fields.DATE},
+    'Fields.ARRAY_OF_DATE': {values: [
         all.filter(value => arrayOfLocalDates.includes(value)),
         all.filter(value => !arrayOfLocalDates.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfDate},
-    'Fields.timestamp': {values: [
+    ], field: Fields.ARRAY_OF_DATE},
+    'Fields.TIMESTAMP': {values: [
         all.filter(value => localDateTimes.includes(value)),
-        all.filter(value => !localDateTimes.includes(value))], field: Fields.timestamp},
-    'Fields.arrayOfTimestamp': {values: [
+        all.filter(value => !localDateTimes.includes(value))], field: Fields.TIMESTAMP},
+    'Fields.ARRAY_OF_TIMESTAMP': {values: [
         all.filter(value => arrayOfLocalDateTimes.includes(value)),
         all.filter(value => !arrayOfLocalDateTimes.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfTimestamp},
-    'Fields.timestampWithTimezone': {values: [
+    ], field: Fields.ARRAY_OF_TIMESTAMP},
+    'Fields.TIMESTAMP_WITH_TIMEZONE': {values: [
         all.filter(value => offsetDateTimes.includes(value)),
-        all.filter(value => !offsetDateTimes.includes(value))], field: Fields.timestampWithTimezone},
-    'Fields.arrayOfTimestampWithTimezone': {values: [
+        all.filter(value => !offsetDateTimes.includes(value))], field: Fields.TIMESTAMP_WITH_TIMEZONE},
+    'Fields.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE': {values: [
         all.filter(value => arrayOfOffsetDateTimes.includes(value)),
         all.filter(value => !arrayOfOffsetDateTimes.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfTimestampWithTimezone},
-    'Fields.nullableBoolean': {values: [
+    ], field: Fields.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE},
+    'Fields.NULLABLE_BOOLEAN': {values: [
         all.filter(value => nullableBooleans.includes(value)),
-        all.filter(value => !nullableBooleans.includes(value))], field: Fields.nullableBoolean},
-    'Fields.arrayOfNullableBoolean': {values: [
+        all.filter(value => !nullableBooleans.includes(value))], field: Fields.NULLABLE_BOOLEAN},
+    'Fields.ARRAY_OF_NULLABLE_BOOLEAN': {values: [
         all.filter(value => arrayOfNullableBooleans.includes(value)),
         all.filter(value => !arrayOfNullableBooleans.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfNullableBoolean},
-    'Fields.nullableInt8': {values: [
+    ], field: Fields.ARRAY_OF_NULLABLE_BOOLEAN},
+    'Fields.NULLABLE_INT8': {values: [
         all.filter(value => nullableNumbers.includes(value)),
-        all.filter(value => !nullableNumbers.includes(value))], field: Fields.nullableInt8},
-    'Fields.arrayOfNullableInt8': {values: [
+        all.filter(value => !nullableNumbers.includes(value))], field: Fields.NULLABLE_INT8},
+    'Fields.ARRAY_OF_NULLABLE_INT8': {values: [
         all.filter(value => arrayOfNullableNumbers.includes(value)),
         all.filter(value => !arrayOfNullableNumbers.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfNullableInt8},
-    'Fields.nullableInt16': {values: [
+    ], field: Fields.ARRAY_OF_NULLABLE_INT8},
+    'Fields.NULLABLE_INT16': {values: [
         all.filter(value => nullableNumbers.includes(value)),
-        all.filter(value => !nullableNumbers.includes(value))], field: Fields.nullableInt16},
-    'Fields.arrayOfNullableInt16': {values: [
+        all.filter(value => !nullableNumbers.includes(value))], field: Fields.NULLABLE_INT16},
+    'Fields.ARRAY_OF_NULLABLE_INT16': {values: [
         all.filter(value => arrayOfNullableNumbers.includes(value)),
         all.filter(value => !arrayOfNullableNumbers.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfNullableInt16},
-    'Fields.nullableInt32': {values: [
+    ], field: Fields.ARRAY_OF_NULLABLE_INT16},
+    'Fields.NULLABLE_INT32': {values: [
         all.filter(value => nullableNumbers.includes(value)),
-        all.filter(value => !nullableNumbers.includes(value))], field: Fields.nullableInt32},
-    'Fields.arrayOfNullableInt32': {values: [
+        all.filter(value => !nullableNumbers.includes(value))], field: Fields.NULLABLE_INT32},
+    'Fields.ARRAY_OF_NULLABLE_INT32': {values: [
         all.filter(value => arrayOfNullableNumbers.includes(value)),
         all.filter(value => !arrayOfNullableNumbers.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfNullableInt32},
-    'Fields.nullableInt64': {values: [
+    ], field: Fields.ARRAY_OF_NULLABLE_INT32},
+    'Fields.NULLABLE_INT64': {values: [
         all.filter(value => nullableLongs.includes(value)),
-        all.filter(value => !nullableLongs.includes(value))], field: Fields.nullableInt64},
-    'Fields.arrayOfNullableInt64': {values: [
+        all.filter(value => !nullableLongs.includes(value))], field: Fields.NULLABLE_INT64},
+    'Fields.ARRAY_OF_NULLABLE_INT64': {values: [
         all.filter(value => arrayOfNullableLongs.includes(value)),
         all.filter(value => !arrayOfNullableLongs.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfNullableInt64},
-    'Fields.nullableFloat32': {values: [
+    ], field: Fields.ARRAY_OF_NULLABLE_INT64},
+    'Fields.NULLABLE_FLOAT32': {values: [
         all.filter(value => nullableNumbers.includes(value)),
-        all.filter(value => !nullableNumbers.includes(value))], field: Fields.nullableFloat32},
-    'Fields.arrayOfNullableFloat32': {values: [
+        all.filter(value => !nullableNumbers.includes(value))], field: Fields.NULLABLE_FLOAT32},
+    'Fields.ARRAY_OF_NULLABLE_FLOAT32': {values: [
         all.filter(value => arrayOfNullableNumbers.includes(value)),
         all.filter(value => !arrayOfNullableNumbers.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfNullableFloat32},
-    'Fields.nullableFloat64': {values: [
+    ], field: Fields.ARRAY_OF_NULLABLE_FLOAT32},
+    'Fields.NULLABLE_FLOAT64': {values: [
         all.filter(value => nullableNumbers.includes(value)),
-        all.filter(value => !nullableNumbers.includes(value))], field: Fields.nullableFloat64},
-    'Fields.arrayOfNullableFloat64': {values: [
+        all.filter(value => !nullableNumbers.includes(value))], field: Fields.NULLABLE_FLOAT64},
+    'Fields.ARRAY_OF_NULLABLE_FLOAT64': {values: [
         all.filter(value => arrayOfNullableNumbers.includes(value)),
         all.filter(value => !arrayOfNullableNumbers.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfNullableFloat64},
-    'Fields.genericRecord': {values: [
+    ], field: Fields.ARRAY_OF_NULLABLE_FLOAT64},
+    'Fields.GENERIC_RECORD': {values: [
         all.filter(value => genericRecords.includes(value)),
-        all.filter(value => !genericRecords.includes(value))], field: Fields.genericRecord},
-    'Fields.arrayOfGenericRecord': {values: [
+        all.filter(value => !genericRecords.includes(value))], field: Fields.GENERIC_RECORD},
+    'Fields.ARRAY_OF_GENERIC_RECORD': {values: [
         all.filter(value => arrayOfGenericRecords.includes(value)),
         all.filter(value => !arrayOfGenericRecords.includes(value) && !isEmptyArray(value) && !isAllNullArray(value))
-    ], field: Fields.arrayOfGenericRecord},
+    ], field: Fields.ARRAY_OF_GENERIC_RECORD},
 };
 
 class EmployeeDTO {
@@ -1252,8 +1252,8 @@ const createCompactGenericRecord = (mainDTO) => {
     let i = 0;
     for (const named of innerDTO.nn) {
         namedRecords[i] = GenericRecords.compact('named', {
-            name: Fields.string,
-            myint: Fields.int32
+            name: Fields.STRING,
+            myint: Fields.INT32
         },
         {
             name: named.name,
@@ -1262,21 +1262,24 @@ const createCompactGenericRecord = (mainDTO) => {
         i++;
     }
     const innerRecord = GenericRecords.compact('inner', {
-            bb: Fields.arrayOfInt8,
-            ss: Fields.arrayOfInt16,
-            ii: Fields.arrayOfInt32,
-            ll: Fields.arrayOfInt64,
-            ff: Fields.arrayOfFloat32,
-            dd: Fields.arrayOfFloat64,
-            nn: Fields.arrayOfGenericRecord,
-            strstr: Fields.arrayOfString,
-            bigDecimals: Fields.arrayOfDecimal,
-            localTimes: Fields.arrayOfTime,
-            localDates: Fields.arrayOfDate,
-            localDateTimes: Fields.arrayOfTimestamp,
-            offsetDateTimes: Fields.arrayOfTimestampWithTimezone
+            // Nested field inside nested field
+            a: Fields.GENERIC_RECORD,
+            bb: Fields.ARRAY_OF_INT8,
+            ss: Fields.ARRAY_OF_INT16,
+            ii: Fields.ARRAY_OF_INT32,
+            ll: Fields.ARRAY_OF_INT64,
+            ff: Fields.ARRAY_OF_FLOAT32,
+            dd: Fields.ARRAY_OF_FLOAT64,
+            nn: Fields.ARRAY_OF_GENERIC_RECORD,
+            strstr: Fields.ARRAY_OF_STRING,
+            bigDecimals: Fields.ARRAY_OF_DECIMAL,
+            localTimes: Fields.ARRAY_OF_TIME,
+            localDates: Fields.ARRAY_OF_DATE,
+            localDateTimes: Fields.ARRAY_OF_TIMESTAMP,
+            offsetDateTimes: Fields.ARRAY_OF_TIMESTAMP_WITH_TIMEZONE
     },
     {
+        a: GenericRecords.compact('aa', {b: Fields.STRING}, {b: 'aa'}),
         bb: innerDTO.bb,
         ss: innerDTO.ss,
         ii: innerDTO.ii,
@@ -1293,27 +1296,27 @@ const createCompactGenericRecord = (mainDTO) => {
     });
 
     return GenericRecords.compact('main', {
-            b: Fields.int8,
-            bool: Fields.boolean,
-            s: Fields.int16,
-            i: Fields.int32,
-            l: Fields.int64,
-            f: Fields.float32,
-            d: Fields.float64,
-            str: Fields.string,
-            bigDecimal: Fields.decimal,
-            inner: Fields.genericRecord,
-            localTime: Fields.time,
-            localDate: Fields.date,
-            localDateTime: Fields.timestamp,
-            offsetDateTime: Fields.timestampWithTimezone,
-            nullable_b: Fields.nullableInt8,
-            nullable_bool: Fields.nullableBoolean,
-            nullable_s: Fields.nullableInt16,
-            nullable_i: Fields.nullableInt32,
-            nullable_l: Fields.nullableInt64,
-            nullable_f: Fields.nullableFloat32,
-            nullable_d: Fields.nullableFloat64
+            b: Fields.INT8,
+            bool: Fields.BOOLEAN,
+            s: Fields.INT16,
+            i: Fields.INT32,
+            l: Fields.INT64,
+            f: Fields.FLOAT32,
+            d: Fields.FLOAT64,
+            str: Fields.STRING,
+            bigDecimal: Fields.DECIMAL,
+            inner: Fields.GENERIC_RECORD,
+            localTime: Fields.TIME,
+            localDate: Fields.DATE,
+            localDateTime: Fields.TIMESTAMP,
+            offsetDateTime: Fields.TIMESTAMP_WITH_TIMEZONE,
+            nullable_b: Fields.NULLABLE_INT8,
+            nullable_bool: Fields.NULLABLE_BOOLEAN,
+            nullable_s: Fields.NULLABLE_INT16,
+            nullable_i: Fields.NULLABLE_INT32,
+            nullable_l: Fields.NULLABLE_INT64,
+            nullable_f: Fields.NULLABLE_FLOAT32,
+            nullable_d: Fields.NULLABLE_FLOAT64
     },
     {
             b: mainDTO.b,

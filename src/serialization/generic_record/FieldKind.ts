@@ -21,6 +21,8 @@
  * Note that actual ids in {@link FieldType} and {@link FieldKind} are not matching.
  * {@link FieldType} is the old API for Portable only and only meant to be used with
  * {@link PortableReader.getFieldType} API.
+ *
+ * This API is currently in Beta and can change at any time.
  */
 export enum FieldKind {
     BOOLEAN,
