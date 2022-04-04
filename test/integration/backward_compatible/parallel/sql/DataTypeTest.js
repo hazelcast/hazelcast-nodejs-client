@@ -828,7 +828,7 @@ describe('SQLDataTypeTest', function () {
                 }
             }
         }, member);
-        TestUtil.markServerVersionAtLeast(this, client, '5.0');
+        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
 
@@ -868,7 +868,7 @@ describe('SQLDataTypeTest', function () {
                 }
             }
         }, member);
-        TestUtil.markServerVersionAtLeast(this, client, '5.0');
+        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
         mapName = TestUtil.randomString(10);
         someMap = await client.getMap(mapName);
         await someMap.addIndex({

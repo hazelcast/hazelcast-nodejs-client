@@ -17,6 +17,7 @@
 
 const { SqlServiceImpl } = require('../../../lib/sql/SqlService');
 const { SqlResultImpl } = require('../../../lib/sql/SqlResult');
+const { SqlRowMetadataImpl } = require('../../../lib/sql/SqlRowMetadata');
 const { SqlExpectedResultType } = require('../../../lib/sql/SqlStatement');
 const { SqlQueryId } = require('../../../lib/sql/SqlQueryId');
 const { SqlErrorCode } = require('../../../lib/sql/SqlErrorCode');
@@ -214,13 +215,13 @@ describe('SqlServiceTest', function () {
 
         it('should invoke on connection returned from getConnectionForSql', async function () {
             await sqlService.execute('s', [], {});
-            fakeInvocationService.invokeOnConnection.calledOnceWithMatch(
-                fakeConnection, fakeClientMessage, sandbox.match.any
+            fakeInvocationService.invokeOnConnection.calledOnceWithExactly(
+                fakeConnection, fakeClientMessage, sandbox.match.func
             ).should.be.true;
         });
 
         it('should call handleExecuteResponse if invoke is successful', async function () {
-            const fakeResult = {isRawResult: sandbox.fake.returns(false), isRowSet: sandbox.fake.returns(false)};
+            const fakeResult = {};
             sandbox.replace(SqlResultImpl, 'newResult', sandbox.fake.returns(fakeResult));
             await sqlService.execute('s', [], {});
             return assertTrueEventually(async () => {
@@ -397,10 +398,10 @@ describe('SqlServiceTest', function () {
             const fakeQueryId = {};
             sqlService.close(fakeConnection, fakeQueryId);
 
-            fakeInvocationService.invokeOnConnection.calledOnceWithMatch(
+            fakeInvocationService.invokeOnConnection.calledOnceWithExactly(
                 sandbox.match.same(fakeConnection),
                 sandbox.match.same(fakeClientMessage),
-                sandbox.match.any
+                sandbox.match.func
             ).should.be.true;
         });
 
@@ -412,6 +413,56 @@ describe('SqlServiceTest', function () {
             fakeCloseCodec.calledOnceWithExactly(
                 sandbox.match.same(fakeQueryId)
             ).should.be.true;
+        });
+    });
+    describe('handleExecuteResponse', function () {
+        let fakeResult;
+
+        beforeEach(function () {
+            fakeResult = {
+                onExecuteError: sandbox.fake(),
+                onExecuteResponse: sandbox.fake()
+            };
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('should call onExecuteError method of result if response error is not null', function () {
+            const fakeResponse = {
+                error: {
+                    originatingMemberId: 1,
+                    code: 1,
+                    message: 'Execute error response',
+                    suggestion: null
+                },
+                rowMetadata: [],
+                rowPage: {},
+                updateCount: 1
+            };
+
+            (() => SqlServiceImpl.handleExecuteResponse(fakeResponse, fakeResult)).should.throw(HazelcastSqlException);
+
+            fakeResult.onExecuteResponse.called.should.be.false;
+        });
+
+        it('should call onExecuteResponse method of result if response error is null', function () {
+            const fakeResponse = {
+                error: null,
+                rowMetadata: [1],
+                rowPage: {},
+                updateCount: 1
+            };
+            SqlServiceImpl.handleExecuteResponse(fakeResponse, fakeResult);
+
+            fakeResult.onExecuteResponse.calledOnceWithExactly(
+                sandbox.match(new SqlRowMetadataImpl(fakeResponse.rowMetadata)),
+                sandbox.match.same(fakeResponse.rowPage),
+                fakeResponse.updateCount
+            ).should.be.true;
+
+            fakeResult.onExecuteError.called.should.be.false;
         });
     });
     describe('fetch', function () {
@@ -456,10 +507,10 @@ describe('SqlServiceTest', function () {
             const fakeConnection = {};
             sqlService.fetch(fakeConnection, {}, 1);
 
-            fakeInvokeOnConnection.calledOnceWithMatch(
+            fakeInvokeOnConnection.calledOnceWithExactly(
                 sandbox.match.same(fakeConnection),
                 sandbox.match.same(fakeRequestMessage),
-                sandbox.match.any
+                sandbox.match.func
             ).should.be.true;
         });
 

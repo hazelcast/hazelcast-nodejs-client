@@ -86,6 +86,7 @@ describe('CompactSerializersLiveTest', function () {
                         }
                     }
                 }, member);
+                TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
                 mapName = TestUtil.randomString(10);
             });
 

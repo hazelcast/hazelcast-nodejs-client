@@ -37,7 +37,6 @@ describe('NearCachedMapTest', function () {
 
             before(async function () {
                 TestUtil.markClientVersionAtLeast(this, '5.1');
-                TestUtil.markServerVersionAtLeast(this, client1, '5.1');
                 cluster = await testFactory.createClusterForParallelTests();
                 member = await RC.startMember(cluster.id);
             });
@@ -57,6 +56,7 @@ describe('NearCachedMapTest', function () {
                     }
                 };
                 client1 = await testFactory.newHazelcastClientForParallelTests(cfg, member);
+                TestUtil.markServerVersionAtLeast(this, client1, '5.1');
                 client2 = await testFactory.newHazelcastClientForParallelTests(cfg, member);
 
                 map1 = await client1.getMap('ncc-map');

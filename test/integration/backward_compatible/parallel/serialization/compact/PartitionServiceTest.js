@@ -43,7 +43,7 @@ describe('PartitionServiceTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        TestUtil.markClientVersionAtLeast('5.1.0');
+        TestUtil.markClientVersionAtLeast(this, '5.1.0');
         cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForParallelTests({
@@ -54,6 +54,7 @@ describe('PartitionServiceTest', function () {
                 }
             }
         }, member);
+        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
     });
 
     after(async function () {

@@ -27,59 +27,7 @@ const TestUtil = require('../../../../../TestUtil');
 const CompactUtil = require('./CompactUtil');
 const { Predicates } = require('../../../../../../lib');
 
-class Car {
-    constructor(name, price) {
-        this.name = name;
-        this.price = price;
-    }
-}
-
 let compactSerializerUsed = false;
-
-class CarSerializer {
-    constructor() {
-        this.class = Car;
-        this.typeName = 'Car';
-    }
-
-    read(reader) {
-        compactSerializerUsed = true;
-        const name = reader.readString('name');
-        const price = reader.readInt32('price');
-
-        return new Car(name, price);
-    }
-
-    write(writer, instance) {
-        compactSerializerUsed = true;
-        writer.writeString('name', instance.name);
-        writer.writeInt32('price', instance.price);
-    }
-}
-
-class DummyEntryProcessor { }
-
-class DummyEntryProcessorSerializer {
-    constructor() {
-        this.class = DummyEntryProcessor;
-        this.typeName = 'DummyEntryProcessor';
-    }
-
-    read() {
-        compactSerializerUsed = true;
-        return new DummyEntryProcessor();
-    }
-
-    write() {
-        compactSerializerUsed = true;
-    }
-}
-
-const portableFactory = classId => {
-    if (classId === 2) {
-        return new DummyEntryProcessor();
-    }
-};
 
 class CompactReturningAggregator {
 }
@@ -217,10 +165,9 @@ describe('CompactPublicAPIsTest', function () {
         </hazelcast>
     `;
 
-    const car1 = new Car('ww', 123456);
-    const car2 = new Car('porsche', 21231);
     const INNER_INSTANCE = new InnerCompact('42');
     const OUTER_INSTANCE = new OuterCompact(42, INNER_INSTANCE);
+    const OUTER_INSTANCE2 = new OuterCompact(43, new InnerCompact('43'));
     const testFactory = new TestUtil.TestFactory();
     const pagingPredicate = Predicates.paging(new CompactPredicate(), 1);
 
@@ -240,19 +187,14 @@ describe('CompactPublicAPIsTest', function () {
             serialization: {
                 compact: {
                     serializers: [
-                        new CarSerializer(),
                         new CompactUtil.EmployeeSerializer(),
                         new CompactUtil.EmployeeDTOSerializer(),
-                        new DummyEntryProcessorSerializer(),
                         new CompactReturningAggregatorSerializer(),
                         new CompactPredicateSerializer(),
                         new InnerCompactSerializer(),
                         new OuterCompactSerializer(),
                         new CompactReturningEntryProcessorSerializer()
                     ]
-                },
-                portableFactories: {
-                    1: portableFactory
                 }
             },
             nearCaches: {
@@ -280,6 +222,7 @@ describe('CompactPublicAPIsTest', function () {
         };
 
         client = await testFactory.newHazelcastClientForParallelTests(clientConfig, member);
+        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
         map = await client.getMap(name);
         nearCachedMap1 = await client.getMap('nearCached1' + name);
         nearCachedMap2 = await client.getMap('nearCached2' + name);
@@ -355,80 +298,80 @@ describe('CompactPublicAPIsTest', function () {
 
         it('containsKey', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.containsKey(car1);
+                await obj.containsKey(OUTER_INSTANCE);
             }
         });
 
         it('containsValue', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.containsValue(car1);
+                await obj.containsValue(OUTER_INSTANCE);
             }
         });
 
         it('put', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.put(car1, employee);
+                await obj.put(OUTER_INSTANCE, employee);
             }
         });
 
         it('putAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.putAll([[car1, car1], [employee, employee]]);
+                await obj.putAll([[OUTER_INSTANCE, OUTER_INSTANCE], [employee, employee]]);
             }
         });
 
         it('setAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.setAll([[car1, car1], [employee, employee]]);
+                await obj.setAll([[OUTER_INSTANCE, OUTER_INSTANCE], [employee, employee]]);
             }
         });
 
         it('get', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.get(car1);
+                await obj.get(OUTER_INSTANCE);
             }
         });
 
         it('getAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.getAll([car1, employee]);
+                await obj.getAll([OUTER_INSTANCE, employee]);
             }
         });
 
         it('remove', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.remove(car1, employee);
+                await obj.remove(OUTER_INSTANCE, employee);
             }
         });
 
         it('delete', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.delete(car1);
+                await obj.delete(OUTER_INSTANCE);
             }
         });
 
         it('evict', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.evict(car1);
+                await obj.evict(OUTER_INSTANCE);
             }
         });
 
         it('forceUnlock', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.forceUnlock(car1);
+                await obj.forceUnlock(OUTER_INSTANCE);
             }
         });
 
         it('isLocked', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.isLocked(car1);
+                await obj.isLocked(OUTER_INSTANCE);
             }
         });
 
         it('loadAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 const error = await TestUtil.getRejectionReasonOrThrow(
-                    async () => await obj.loadAll([car1, employee])
+                    async () => await obj.loadAll([OUTER_INSTANCE, employee])
                 );
                 // MapStore configuration is needed for this to work, it throws NullPointerError.
                 // So we assert it does not throw SchemaNotReplicatedError
@@ -438,76 +381,80 @@ describe('CompactPublicAPIsTest', function () {
 
         it('putIfAbsent', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.putIfAbsent(car1, employee);
+                await obj.putIfAbsent(OUTER_INSTANCE, employee);
             }
         });
 
         it('putTransient', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.putTransient(car1, employee);
+                await obj.putTransient(OUTER_INSTANCE, employee);
             }
         });
 
         it('replaceIfSame', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.replaceIfSame(car1, employee, car2);
+                await obj.replaceIfSame(OUTER_INSTANCE, employee, OUTER_INSTANCE2);
             }
         });
 
         it('replace', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.replace(car1, employee);
+                await obj.replace(OUTER_INSTANCE, employee);
             }
         });
 
         it('set', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.set(car1, employee);
+                await obj.set(OUTER_INSTANCE, employee);
             }
         });
 
-        it('lock/unlock', async function () {
+        it('lock', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.lock(car1);
-                // Clear schema retrieved via lock()
-                client.schemaService.schemas.clear();
-                await obj.unlock(car1);
+                await obj.lock(OUTER_INSTANCE);
+            }
+        });
+
+        it('unlock', async function () {
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                const error = await TestUtil.getRejectionReasonOrThrow(async () => await obj.unlock(OUTER_INSTANCE));
+                error.should.not.be.instanceOf(SchemaNotReplicatedError);
             }
         });
 
         it('getEntryView', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.getEntryView(car1);
+                await obj.getEntryView(OUTER_INSTANCE);
             }
         });
 
         it('tryLock', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.tryLock(car1);
+                await obj.tryLock(OUTER_INSTANCE);
             }
         });
 
         it('tryPut', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.tryPut(car1, employee, 0);
+                await obj.tryPut(OUTER_INSTANCE, employee, 0);
             }
         });
 
         it('tryRemove', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.tryRemove(car1, 0);
+                await obj.tryRemove(OUTER_INSTANCE, 0);
             }
         });
 
         it('addEntryListener', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.addEntryListener({}, car1);
+                await obj.addEntryListener({}, OUTER_INSTANCE);
             }
         });
 
         it('addEntryListenerWithPredicate (key argument serialization)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.addEntryListenerWithPredicate({}, Predicates.alwaysTrue(), car1);
+                await obj.addEntryListenerWithPredicate({}, Predicates.alwaysTrue(), OUTER_INSTANCE);
             }
         });
 
@@ -558,7 +505,7 @@ describe('CompactPublicAPIsTest', function () {
 
         it('setTtl', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.setTtl(car1, 1000);
+                await obj.setTtl(OUTER_INSTANCE, 1000);
             }
         });
 
@@ -613,92 +560,96 @@ describe('CompactPublicAPIsTest', function () {
 
     describe('MultiMap', function () {
         it('put', async function () {
-            await multimap.put(car1, employee);
+            await multimap.put(OUTER_INSTANCE, employee);
         });
 
         it('get', async function () {
-            await multimap.get(car1);
+            await multimap.get(OUTER_INSTANCE);
         });
 
         it('remove', async function () {
-            await multimap.remove(car1, employee);
+            await multimap.remove(OUTER_INSTANCE, employee);
         });
 
         it('removeAll', async function () {
-            await multimap.removeAll(car1);
+            await multimap.removeAll(OUTER_INSTANCE);
         });
 
         it('containsKey', async function () {
-            await multimap.containsKey(car1);
+            await multimap.containsKey(OUTER_INSTANCE);
         });
 
         it('containsValue', async function () {
-            await multimap.containsValue(car1);
+            await multimap.containsValue(OUTER_INSTANCE);
         });
 
         it('containsEntry', async function () {
-            await multimap.containsEntry(car1, employee);
+            await multimap.containsEntry(OUTER_INSTANCE, employee);
         });
 
         it('valueCount', async function () {
-            await multimap.valueCount(car1);
+            await multimap.valueCount(OUTER_INSTANCE);
         });
 
         it('addEntryListener', async function () {
-            await multimap.addEntryListener({}, car1);
+            await multimap.addEntryListener({}, OUTER_INSTANCE);
         });
 
         it('isLocked', async function () {
-            await multimap.isLocked(car1);
+            await multimap.isLocked(OUTER_INSTANCE);
         });
 
         it('tryLock', async function () {
-            await multimap.tryLock(car1);
+            await multimap.tryLock(OUTER_INSTANCE);
         });
 
-        it('lock/unlock', async function () {
-            await multimap.lock(car1);
-            // Clear schema retrieved via lock()
-            client.schemaService.schemas.clear();
-            await multimap.unlock(car1);
+        it('lock', async function () {
+            await multimap.lock(OUTER_INSTANCE);
+        });
+
+        it('unlock', async function () {
+            const error = await TestUtil.getRejectionReasonOrThrow(async () => await multimap.unlock(OUTER_INSTANCE));
+            error.should.not.be.instanceOf(SchemaNotReplicatedError);
         });
 
         it('forceUnlock', async function () {
-            await multimap.forceUnlock(car1);
+            await multimap.forceUnlock(OUTER_INSTANCE);
         });
 
         it('putAll', async function () {
-            await multimap.putAll([[car1, [employee]], [employee, [car2]], [car1, [car2]]]);
+            await multimap.putAll(
+                [[OUTER_INSTANCE, [employee]], [employee, [OUTER_INSTANCE2]], [OUTER_INSTANCE, [OUTER_INSTANCE2]]]
+            );
         });
     });
 
     describe('ReplicatedMap', function () {
         it('put', async function () {
-            await replicatedMap.put(car1, employee);
+            await replicatedMap.put(OUTER_INSTANCE, employee);
         });
 
         it('get', async function () {
-            await replicatedMap.get(car1);
+            await replicatedMap.get(OUTER_INSTANCE);
         });
 
         it('containsKey', async function () {
-            await replicatedMap.containsKey(car1);
+            await replicatedMap.containsKey(OUTER_INSTANCE);
         });
 
         it('containsValue', async function () {
-            await replicatedMap.containsValue(car1);
+            await replicatedMap.containsValue(OUTER_INSTANCE);
         });
 
         it('remove', async function () {
-            await replicatedMap.remove(car1);
+            await replicatedMap.remove(OUTER_INSTANCE);
         });
 
         it('putAll', async function () {
-            await replicatedMap.putAll([[car1, employee], [employee, car2]]);
+            await replicatedMap.putAll([[OUTER_INSTANCE, employee], [employee, OUTER_INSTANCE2]]);
         });
 
         it('addEntryListenerToKeyWithPredicate (key argument serialization)', async function () {
-            await replicatedMap.addEntryListenerToKeyWithPredicate({}, car1, Predicates.alwaysTrue());
+            await replicatedMap.addEntryListenerToKeyWithPredicate({}, OUTER_INSTANCE, Predicates.alwaysTrue());
         });
 
         it('addEntryListenerToKeyWithPredicate (compact predicate)', async function () {
@@ -713,162 +664,162 @@ describe('CompactPublicAPIsTest', function () {
         });
 
         it('addEntryListenerToKey', async function () {
-            await replicatedMap.addEntryListenerToKey({}, car1);
+            await replicatedMap.addEntryListenerToKey({}, OUTER_INSTANCE);
         });
     });
 
     describe('List', function () {
         it('add', async function () {
-            await list.add(car1);
+            await list.add(OUTER_INSTANCE);
         });
 
         it('addAt', async function () {
-            await list.addAt(0, car1);
+            await list.addAt(0, OUTER_INSTANCE);
         });
 
         it('addAll', async function () {
-            await list.addAll([car1, employee]);
+            await list.addAll([OUTER_INSTANCE, employee]);
         });
 
         it('addAllAt', async function () {
-            await list.addAllAt(0, [car1, employee]);
+            await list.addAllAt(0, [OUTER_INSTANCE, employee]);
         });
 
         it('contains', async function () {
-            await list.contains(car1);
+            await list.contains(OUTER_INSTANCE);
         });
 
         it('containsAll', async function () {
-            await list.containsAll([car1, employee]);
+            await list.containsAll([OUTER_INSTANCE, employee]);
         });
 
         it('indexOf', async function () {
-            await list.indexOf(car1);
+            await list.indexOf(OUTER_INSTANCE);
         });
 
         it('lastIndexOf', async function () {
-            await list.lastIndexOf(car1);
+            await list.lastIndexOf(OUTER_INSTANCE);
         });
 
         it('remove', async function () {
-            await list.remove(car1);
+            await list.remove(OUTER_INSTANCE);
         });
 
         it('removeAll', async function () {
-            await list.removeAll([car1, employee]);
+            await list.removeAll([OUTER_INSTANCE, employee]);
         });
 
         it('retainAll', async function () {
-            await list.retainAll([car1, employee]);
+            await list.retainAll([OUTER_INSTANCE, employee]);
         });
 
         it('set', async function () {
-            await list.add(car1);
+            await list.add(OUTER_INSTANCE);
             // Clear schema retrieved via add()
             client.schemaService.schemas.clear();
-            await list.set(0, car1);
+            await list.set(0, OUTER_INSTANCE);
         });
     });
 
     describe('AtomicReference', function () {
         it('compareAndSet', async function () {
-            await atomicReference.compareAndSet(car1, employee);
+            await atomicReference.compareAndSet(OUTER_INSTANCE, employee);
         });
 
         it('set', async function () {
-            await atomicReference.set(car1);
+            await atomicReference.set(OUTER_INSTANCE);
         });
 
         it('getAndSet', async function () {
-            await atomicReference.getAndSet(car1);
+            await atomicReference.getAndSet(OUTER_INSTANCE);
         });
 
         it('contains', async function () {
-            await atomicReference.contains(car1);
+            await atomicReference.contains(OUTER_INSTANCE);
         });
     });
 
     describe('Queue', function () {
         it('add', async function () {
-            await queue.add(car1);
+            await queue.add(OUTER_INSTANCE);
         });
 
         it('addAll', async function () {
-            await queue.addAll([car1, employee]);
+            await queue.addAll([OUTER_INSTANCE, employee]);
         });
 
         it('contains', async function () {
-            await queue.contains(car1);
+            await queue.contains(OUTER_INSTANCE);
         });
 
         it('containsAll', async function () {
-            await queue.containsAll([car1, employee]);
+            await queue.containsAll([OUTER_INSTANCE, employee]);
         });
 
         it('offer', async function () {
-            await queue.offer(car1);
+            await queue.offer(OUTER_INSTANCE);
         });
 
         it('put', async function () {
-            await queue.put(car1);
+            await queue.put(OUTER_INSTANCE);
         });
 
         it('remove', async function () {
-            await queue.remove(car1);
+            await queue.remove(OUTER_INSTANCE);
         });
 
         it('removeAll', async function () {
-            await queue.removeAll([car1, employee]);
+            await queue.removeAll([OUTER_INSTANCE, employee]);
         });
 
         it('retainAll', async function () {
-            await queue.retainAll([car1, employee]);
+            await queue.retainAll([OUTER_INSTANCE, employee]);
         });
     });
 
     describe('Set', function () {
         it('add', async function () {
-            await set.add(car1);
+            await set.add(OUTER_INSTANCE);
         });
 
         it('addAll', async function () {
-            await set.addAll([car1, employee]);
+            await set.addAll([OUTER_INSTANCE, employee]);
         });
 
         it('contains', async function () {
-            await set.contains(car1);
+            await set.contains(OUTER_INSTANCE);
         });
 
         it('containsAll', async function () {
-            await set.containsAll([car1, employee]);
+            await set.containsAll([OUTER_INSTANCE, employee]);
         });
 
         it('remove', async function () {
-            await set.remove(car1);
+            await set.remove(OUTER_INSTANCE);
         });
 
         it('removeAll', async function () {
-            await set.removeAll([car1, employee]);
+            await set.removeAll([OUTER_INSTANCE, employee]);
         });
 
         it('retainAll', async function () {
-            await set.retainAll([car1, employee]);
+            await set.retainAll([OUTER_INSTANCE, employee]);
         });
     });
 
     describe('ReliableTopic', function () {
         it('publish', async function () {
-            await topic.publish(car1);
+            await topic.publish(OUTER_INSTANCE);
         });
     });
 
     describe('RingBuffer', function () {
         it('add', async function () {
-            await ringBuffer.add(car1);
+            await ringBuffer.add(OUTER_INSTANCE);
         });
 
         it('addAll', async function () {
-            await ringBuffer.addAll([car1, employee]);
+            await ringBuffer.addAll([OUTER_INSTANCE, employee]);
         });
     });
 });

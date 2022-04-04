@@ -72,6 +72,7 @@ describe('CompactRestartTest', function() {
                 }
             }
         });
+        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
         const map = await client.getMap(mapName);
         await map.put(1, new CompactUtil.Flexible({INT32: {value: 42}}));
 
