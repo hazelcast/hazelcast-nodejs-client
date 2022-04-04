@@ -21,9 +21,9 @@ const Long = require('long');
 const {
     BigDecimal, LocalTime, LocalDate, LocalDateTime, OffsetDateTime, FieldKind, GenericRecords
 } = require('../../../../../../lib');
-const { FieldOperations } = require('../../../../../../lib/serialization/generic_record/FieldOperations');
 const Fields = require('../../../../../../lib/serialization/generic_record/Fields');
 const { SchemaNotReplicatedError } = require('../../../../../../lib/core/HazelcastError');
+const TestUtil = require('../../../../../TestUtil');
 
 const mimicSchemaReplication = (schemaService1, schemaService2) => {
     schemaService1.schemas = {...schemaService1.schemas, ...schemaService2.schemas};
@@ -613,12 +613,15 @@ const nullableFixedSizeFields = [];
 const fixedSizeFields = [];
 const varSizeFields = [];
 
-for (const fieldKind of supportedFields) {
-    if (FieldOperations.ALL[fieldKind].kindSizeInBytes() === FieldOperations.VARIABLE_SIZE) {
-        varSizeFields.push(fieldKind);
-    } else {
-        nullableFixedSizeFields.push(fixedFieldToNullableFixedField[fieldKind]);
-        fixedSizeFields.push(fieldKind);
+if (TestUtil.isClientVersionAtLeast('5.1.0')) {
+    const { FieldOperations } = require('../../../../../../lib/serialization/generic_record/FieldOperations');
+    for (const fieldKind of supportedFields) {
+        if (FieldOperations.ALL[fieldKind].kindSizeInBytes() === FieldOperations.VARIABLE_SIZE) {
+            varSizeFields.push(fieldKind);
+        } else {
+            nullableFixedSizeFields.push(fixedFieldToNullableFixedField[fieldKind]);
+            fixedSizeFields.push(fieldKind);
+        }
     }
 }
 
