@@ -172,8 +172,8 @@ describe('CompactPublicAPIsTest', function () {
     const pagingPredicate = Predicates.paging(new CompactPredicate(), 1);
 
     before(async function () {
-        employee = new CompactUtil.Employee(1, Long.ONE);
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        employee = new CompactUtil.Employee(1, Long.ONE);
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG_XML);
         member = await RC.startMember(cluster.id);
         SchemaNotReplicatedError = require('../../../../../../lib').SchemaNotReplicatedError;
