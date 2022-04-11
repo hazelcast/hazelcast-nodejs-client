@@ -75,6 +75,7 @@ export class ReadOnlyLazyList<T> {
                 if (e instanceof SchemaNotFoundError) {
                     throw new HazelcastSerializationError(e.message, e.cause, e.serverStackTrace);
                 }
+                throw e;
             }
             this.internalArray[index] = obj;
             return obj;
@@ -122,6 +123,7 @@ export class ReadOnlyLazyList<T> {
             if (e instanceof SchemaNotFoundError) {
                 throw new HazelcastSerializationError(e.message, e.cause, e.serverStackTrace);
             }
+            throw e;
         }
 
         return arr;

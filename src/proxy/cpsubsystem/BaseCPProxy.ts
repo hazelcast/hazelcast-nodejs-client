@@ -79,7 +79,7 @@ export abstract class BaseCPProxy {
      * @param codec
      * @param handler
      * @param codecArguments
-     * @returns response message
+     * @returns Promise that resolves to the return value of `handler`
      */
     protected encodeInvokeOnRandomTarget<V>(
         codec: any, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]

@@ -390,7 +390,7 @@ export class InvocationService {
      * @param connection
      * @param request
      * @param handler Handler is responsible for handling the client message and returning the object user expects.
-     * @returns a promise that resolves to {@link ClientMessage}
+     * @returns a promise that resolves to `handler`'s return value.
      */
     invokeOnConnection<V>(
         connection: Connection,
