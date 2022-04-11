@@ -26,11 +26,11 @@ export interface CompactSerializationConfig {
     /**
      * Defines Compact serializers.
      */
-    serializers?: Array<CompactSerializer<new() => any>>;
+    serializers?: Array<CompactSerializer<any>>;
 
 }
 
 /** @internal */
 export class CompactSerializationConfigImpl implements CompactSerializationConfig {
-    serializers: Array<CompactSerializer<new () => any>> = [];
+    serializers: Array<CompactSerializer<any>> = [];
 }
