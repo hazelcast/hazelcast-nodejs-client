@@ -112,7 +112,7 @@ const startRC = async () => {
 
     console.log('Please wait for Hazelcast Remote Controller to start ...');
 
-    const retryCount = 10;
+    const retryCount = 100;
 
     for (let i = 0; i < retryCount; i++) {
         console.log('Trying to connect to Hazelcast Remote Controller (127.0.0.1:9701)...');
@@ -177,11 +177,11 @@ if (process.argv.length === 3 || process.argv.length === 4) {
         if (process.argv.length === 4) {
             testCommand = `node node_modules/mocha/bin/mocha -g "${process.argv[3]}" ` +
                           '"test/integration/**/serial/**/*.js" && ';
-            testCommand += `node node_modules/mocha/bin/mocha -j 8 --parallel -g  "${process.argv[3]}" ` +
+            testCommand += `node node_modules/mocha/bin/mocha -j 2 --parallel -g  "${process.argv[3]}" ` +
                 '"test/integration/**/parallel/**/*.js"';
         } else {
             testCommand = 'node node_modules/mocha/bin/mocha "test/integration/**/serial/**/*.js" && node'
-                        + ' node_modules/mocha/bin/mocha -j 8 --parallel "test/integration/**/parallel/**/*.js"';
+                        + ' node_modules/mocha/bin/mocha -j 2 --parallel "test/integration/**/parallel/**/*.js"';
         }
         testType = 'integration';
     } else if (process.argv[2] === 'all') {
@@ -189,12 +189,12 @@ if (process.argv.length === 3 || process.argv.length === 4) {
             testCommand = `node node_modules/mocha/bin/mocha -g "${process.argv[3]}" "test/unit/**/*.js" && `;
             testCommand += `node node_modules/mocha/bin/mocha -g "${process.argv[3]}" ` +
                 '"test/integration/**/serial/**/*.js" && ';
-            testCommand += `node node_modules/mocha/bin/mocha -j 8 --parallel -g  "${process.argv[3]}" ` +
+            testCommand += `node node_modules/mocha/bin/mocha -j 2 --parallel -g  "${process.argv[3]}" ` +
                 '"test/**/parallel/**/*.js"';
         } else {
             testCommand = 'node node_modules/mocha/bin/mocha "test/unit/**/*.js" && ';
             testCommand += 'node node_modules/mocha/bin/mocha "test/**/serial/**/*.js" && ';
-            testCommand += 'node node_modules/mocha/bin/mocha -j 8 --parallel "test/**/parallel/**/*.js"';
+            testCommand += 'node node_modules/mocha/bin/mocha -j 2 --parallel "test/**/parallel/**/*.js"';
         }
         testType = 'all';
     } else if (process.argv[2] === 'startrc') {

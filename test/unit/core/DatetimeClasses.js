@@ -502,4 +502,253 @@ describe('DateTimeClassesTest', function () {
             (() => OffsetDateTime.fromString()).should.throw(TypeError, 'String expected');
         });
     });
+
+    describe('BoundaryTests', function() {
+        describe('LocalTimeTest', function () {
+            it('hour', function() {
+                // [0-23]
+                (() => new LocalTime(-1, 1, 1, 1)).should.throw(RangeError, 'Hour');
+                (() => new LocalTime(0, 1, 1, 1)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 1)).should.not.throw();
+
+                (() => new LocalTime(22, 1, 1, 1)).should.not.throw();
+                (() => new LocalTime(23, 1, 1, 1)).should.not.throw();
+                (() => new LocalTime(24, 1, 1, 1)).should.throw(RangeError, 'Hour');
+            });
+
+            it('minute', function() {
+                // [0-59]
+                (() => new LocalTime(1, -1, 1, 1)).should.throw(RangeError, 'Minute');
+                (() => new LocalTime(1, 0, 1, 1)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 1)).should.not.throw();
+
+                (() => new LocalTime(1, 58, 1, 1)).should.not.throw();
+                (() => new LocalTime(1, 59, 1, 1)).should.not.throw();
+                (() => new LocalTime(1, 60, 1, 1)).should.throw(RangeError, 'Minute');
+            });
+
+            it('second', function() {
+                // [0-59]
+                (() => new LocalTime(1, 1, -1, 1)).should.throw(RangeError, 'Second');
+                (() => new LocalTime(1, 1, 0, 1)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 1)).should.not.throw();
+
+                (() => new LocalTime(1, 1, 58, 1)).should.not.throw();
+                (() => new LocalTime(1, 1, 59, 1)).should.not.throw();
+                (() => new LocalTime(1, 1, 60, 1)).should.throw(RangeError, 'Second');
+            });
+
+            it('nanosecond', function() {
+                // [0-999999999]
+                (() => new LocalTime(1, 1, 1, -1)).should.throw(RangeError, 'Nano');
+                (() => new LocalTime(1, 1, 1, 0)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 1)).should.not.throw();
+
+                (() => new LocalTime(1, 1, 1, 999999998)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 999999999)).should.not.throw();
+                (() => new LocalTime(1, 1, 1, 999999999 + 1)).should.throw(RangeError, 'Nano');
+            });
+        });
+        describe('LocalDateTest', function () {
+            it('year', function() {
+                // [-999999999-999999999]
+                (() => new LocalDate(-(999999999+1), 1, 1)).should.throw(RangeError, 'Year');
+                (() => new LocalDate(-999999999, 1, 1)).should.not.throw();
+                (() => new LocalDate(-999999998, 1, 1)).should.not.throw();
+
+                (() => new LocalDate(999999998, 1, 1)).should.not.throw();
+                (() => new LocalDate(999999999, 1, 1)).should.not.throw();
+                (() => new LocalDate(999999999 + 1, 1, 1)).should.throw(RangeError, 'Year');
+            });
+
+            it('month', function() {
+                // [1-12]
+                (() => new LocalDate(1, 0, 1)).should.throw(RangeError, 'Month');
+                (() => new LocalDate(1, 1, 1)).should.not.throw();
+                (() => new LocalDate(1, 2, 1)).should.not.throw();
+
+                (() => new LocalDate(1, 11, 1)).should.not.throw();
+                (() => new LocalDate(1, 12, 1)).should.not.throw();
+                (() => new LocalDate(1, 13, 1)).should.throw(RangeError, 'Month');
+            });
+
+            it('day', function() {
+                // [1-31]
+                (() => new LocalDate(1, 1, 0)).should.throw(RangeError, 'Date');
+                (() => new LocalDate(1, 1, 1)).should.not.throw();
+                (() => new LocalDate(1, 1, 2)).should.not.throw();
+
+                (() => new LocalDate(1, 1, 30)).should.not.throw();
+                (() => new LocalDate(1, 1, 31)).should.not.throw();
+                (() => new LocalDate(1, 1, 32)).should.throw(RangeError, 'Date');
+            });
+        });
+        describe('LocalDateTimeTest', function () {
+            it('year', function() {
+                // [-999999999-999999999]
+                (() => LocalDateTime.from(-(999999999+1), 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Year');
+                (() => LocalDateTime.from(-999999999, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(-999999998, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(999999998, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(999999999, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(999999999 + 1, 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Year');
+            });
+
+            it('month', function() {
+                // [1-12]
+                (() => LocalDateTime.from(1, 0, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Month');
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 2, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(1, 11, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 12, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 13, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Month');
+            });
+
+            it('day', function() {
+                // [1-31]
+                (() => LocalDateTime.from(1, 1, 0, 1, 1, 1, 1)).should.throw(RangeError, 'Date');
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 2, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(1, 1, 30, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 31, 1, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 32, 1, 1, 1, 1)).should.throw(RangeError, 'Date');
+            });
+
+            it('hour', function() {
+                // [0-23]
+                (() => LocalDateTime.from(1, 1, 1, -1, 1, 1, 1)).should.throw(RangeError, 'Hour');
+                (() => LocalDateTime.from(1, 1, 1, 0, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(1, 1, 1, 22, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 23, 1, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 24, 1, 1, 1)).should.throw(RangeError, 'Hour');
+            });
+
+            it('minute', function() {
+                // [0-59]
+                (() => LocalDateTime.from(1, 1, 1, 1, -1, 1, 1)).should.throw(RangeError, 'Minute');
+                (() => LocalDateTime.from(1, 1, 1, 1, 0, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(1, 1, 1, 1, 58, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 59, 1, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 60, 1, 1)).should.throw(RangeError, 'Minute');
+            });
+
+            it('second', function() {
+                // [0-59]
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, -1, 1)).should.throw(RangeError, 'Second');
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 0, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 58, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 59, 1)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 60, 1)).should.throw(RangeError, 'Second');
+            });
+
+            it('nanosecond', function() {
+                // [0-999999999]
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, -1)).should.throw(RangeError, 'Nano');
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 0)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 999999998)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 999999999)).should.not.throw();
+                (() => LocalDateTime.from(1, 1, 1, 1, 1, 1, 999999999 + 1)).should.throw(RangeError, 'Nano');
+            });
+        });
+        describe('OffsetDateTimeTest', function () {
+            it('year', function() {
+                // [-999999999-999999999]
+                (() => OffsetDateTime.from(-(999999999+1), 1, 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Year');
+                (() => OffsetDateTime.from(-999999999, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(-999999998, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(999999998, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(999999999, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(999999999 + 1, 1, 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Year');
+            });
+
+            it('month', function() {
+                // [1-12]
+                (() => OffsetDateTime.from(1, 0, 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Month');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 2, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 11, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 12, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 13, 1, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Month');
+            });
+
+            it('day', function() {
+                // [1-31]
+                (() => OffsetDateTime.from(1, 1, 0, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Date');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 2, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 30, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 31, 1, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 32, 1, 1, 1, 1, 1)).should.throw(RangeError, 'Date');
+            });
+
+            it('hour', function() {
+                // [0-23]
+                (() => OffsetDateTime.from(1, 1, 1, -1, 1, 1, 1, 1)).should.throw(RangeError, 'Hour');
+                (() => OffsetDateTime.from(1, 1, 1, 0, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 1, 22, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 23, 1, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 24, 1, 1, 1, 1)).should.throw(RangeError, 'Hour');
+            });
+
+            it('minute', function() {
+                // [0-59]
+                (() => OffsetDateTime.from(1, 1, 1, 1, -1, 1, 1, 1)).should.throw(RangeError, 'Minute');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 0, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 1, 1, 58, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 59, 1, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 60, 1, 1, 1)).should.throw(RangeError, 'Minute');
+            });
+
+            it('second', function() {
+                // [0-59]
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, -1, 1, 1)).should.throw(RangeError, 'Second');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 0, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 58, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 59, 1, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 60, 1, 1)).should.throw(RangeError, 'Second');
+            });
+
+            it('nanosecond', function() {
+                // [0-999999999]
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, -1, 1)).should.throw(RangeError, 'Nano');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 0, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 1)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 999999998, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 999999999, 1)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 999999999 + 1, 1)).should.throw(RangeError, 'Nano');
+            });
+
+            it('offset seconds', function() {
+                // [-64800-64800]
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, -64801)).should.throw(RangeError, 'Offset seconds');
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, -64800)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, -64799)).should.not.throw();
+
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 64799)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 64800)).should.not.throw();
+                (() => OffsetDateTime.from(1, 1, 1, 1, 1, 1, 1, 64801)).should.throw(RangeError, 'Offset seconds');
+            });
+        });
+    });
 });
