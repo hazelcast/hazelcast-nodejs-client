@@ -35,19 +35,22 @@ export type Class = new (...args: any[]) => any;
  */
  export interface CompactSerializer<C> {
     /**
-     * The class which the serializer is written for. You need to give the class
-     * constructor to this property. For example, if a class is instantiated with `new Employee()`,
-     * class constructor is `Employee`. `class` is used to check a class instance is compact
-     * serializable.
+     * You need to return the class constructor from this function. For example, if a class is
+     * instantiated with `new Employee()` class constructor is `Employee`. `class` is used to
+     * check if a class instance is compact serializable.
+     *
+     * @return The class which the serializer is written for.
      */
-    class: Class;
+    getClass(): Class;
 
     /**
-     * The type name of the registered class. Type name is written into the serialized data and used while deserialization.
+     * Type name is written into the serialized data and used while deserialization.
      * This should have the same value with what other members of the cluster have. While deserializing there should be
      * a matching serializer otherwise a {@link GenericRecord} will be returned.
+     *
+     * @return The type name of the registered class.
      */
-    typeName: string;
+    getTypeName(): string;
 
     /**
      * This method should construct a class instance and return it.

@@ -245,9 +245,15 @@ describe('CompactTest', function () {
 
             class Serializer {
                 constructor(fieldNames) {
-                    this.class = CompactUtil.Flexible;
-                    this.typeName = 'Flexible';
                     this.fieldNames = fieldNames;
+                }
+
+                getClass() {
+                    return CompactUtil.Flexible;
+                }
+
+                getTypeName() {
+                    return 'Flexible';
                 }
 
                 read(reader) {

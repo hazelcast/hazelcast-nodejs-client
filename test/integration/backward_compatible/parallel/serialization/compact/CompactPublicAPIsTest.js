@@ -33,9 +33,12 @@ class CompactReturningAggregator {
 }
 
 class CompactReturningAggregatorSerializer {
-    constructor() {
-        this.class = CompactReturningAggregator;
-        this.typeName = 'com.hazelcast.serialization.compact.CompactReturningAggregator';
+    getClass() {
+        return CompactReturningAggregator;
+    }
+
+    getTypeName() {
+        return 'com.hazelcast.serialization.compact.CompactReturningAggregator';
     }
 
     read() {
@@ -52,9 +55,12 @@ class CompactPredicate {
 }
 
 class CompactPredicateSerializer {
-    constructor() {
-        this.class = CompactPredicate;
-        this.typeName = 'com.hazelcast.serialization.compact.CompactPredicate';
+    getClass() {
+        return CompactPredicate;
+    }
+
+    getTypeName() {
+        return 'com.hazelcast.serialization.compact.CompactPredicate';
     }
 
     read() {
@@ -74,9 +80,12 @@ class InnerCompact {
 }
 
 class InnerCompactSerializer {
-    constructor() {
-        this.class = InnerCompact;
-        this.typeName = 'com.hazelcast.serialization.compact.InnerCompact';
+    getClass() {
+        return InnerCompact;
+    }
+
+    getTypeName() {
+        return 'com.hazelcast.serialization.compact.InnerCompact';
     }
 
     read(reader) {
@@ -99,9 +108,12 @@ class OuterCompact {
 }
 
 class OuterCompactSerializer {
-    constructor() {
-        this.class = OuterCompact;
-        this.typeName = 'com.hazelcast.serialization.compact.OuterCompact';
+    getClass() {
+        return OuterCompact;
+    }
+
+    getTypeName() {
+        return 'com.hazelcast.serialization.compact.OuterCompact';
     }
 
     read(reader) {
@@ -122,9 +134,12 @@ class CompactReturningEntryProcessor {
 }
 
 class CompactReturningEntryProcessorSerializer {
-    constructor() {
-        this.class = CompactReturningEntryProcessor;
-        this.typeName = 'com.hazelcast.serialization.compact.CompactReturningEntryProcessor';
+    getClass() {
+        return CompactReturningEntryProcessor;
+    }
+
+    getTypeName() {
+        return 'com.hazelcast.serialization.compact.CompactReturningEntryProcessor';
     }
 
     read() {

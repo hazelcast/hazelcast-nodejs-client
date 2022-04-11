@@ -105,8 +105,8 @@ export class CompactStreamSerializer {
     }
 
     registerSerializer(serializer: CompactSerializer<Class>) {
-        this.classToSerializerMap.set(serializer.class, serializer);
-        this.typeNameToSerializersMap.set(serializer.typeName, serializer);
+        this.classToSerializerMap.set(serializer.getClass(), serializer);
+        this.typeNameToSerializersMap.set(serializer.getTypeName(), serializer);
     }
 
     writeSchema(output: PositionalObjectDataOutput, schema: Schema) {
@@ -138,10 +138,10 @@ export class CompactStreamSerializer {
 
     writeObject(output: PositionalObjectDataOutput, obj: any) : void {
         const compactSerializer = this.classToSerializerMap.get(obj.constructor);
-        const clazz = compactSerializer.class;
+        const clazz = compactSerializer.getClass();
         let schema = this.classToSchemaMap.get(clazz);
         if (schema === undefined) {
-            const writer = new SchemaWriter(compactSerializer.typeName);
+            const writer = new SchemaWriter(compactSerializer.getTypeName());
             compactSerializer.write(writer, obj);
             schema = writer.build();
             this.throwIfSchemaNotReplicatedToCluster(schema, clazz);

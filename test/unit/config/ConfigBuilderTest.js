@@ -707,7 +707,16 @@ describe('ConfigBuilderValidationTest', function () {
 
         it('should validate compact serializers', function () {
             const invalidCompactSerializersArray = [
-                () => {}, 1, undefined, '1', { read: () => {}, write: () => {}, class: class {}}, [{
+                () => {},
+                1,
+                undefined,
+                '1',
+                {
+                    read: () => {},
+                    write: () => {},
+                    getClass: () => class {}
+                },
+                [{
                     read: () => {},
                     write: () => {}
                 }],
@@ -718,12 +727,23 @@ describe('ConfigBuilderValidationTest', function () {
                     read: () => {}
                 }],
                 [{
-                    class: class A {},
+                    getClass: () => class A {},
                     read: () => {},
                     write: () => {}
                 }],
                 [{
-                    class: class A {},
+                    getClass: () => class A {},
+                    prop: 1,
+                    read: () => {},
+                    write: () => {}
+                }],
+                [{
+                    getTypeName: () => 'A',
+                    read: () => {},
+                    write: () => {}
+                }],
+                [{
+                    getTypeName: () => 'A',
                     prop: 1,
                     read: () => {},
                     write: () => {}
@@ -742,15 +762,15 @@ describe('ConfigBuilderValidationTest', function () {
 
             const validCompactSerializers = [
                 {
-                    typeName: 's',
-                    class: class A {},
+                    getTypeName: () => 's',
+                    getClass: () => class A {},
                     read: () => {},
                     write: () => {}
                 },
                 {
                     prop: 1,
-                    typeName: 's',
-                    class: class A {},
+                    getTypeName: () => 's',
+                    getClass: () => class A {},
                     read: () => {},
                     write: () => {}
                 }

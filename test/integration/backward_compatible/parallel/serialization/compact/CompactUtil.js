@@ -76,9 +76,12 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     NestedSerializer = class NestedSerializer {
-        constructor() {
-            this.class = Nested;
-            this.typeName = 'Nested';
+        getClass() {
+            return Nested;
+        }
+
+        getTypeName() {
+            return 'Nested';
         }
 
         read(reader) {
@@ -104,9 +107,12 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     EmployeeSerializer = class EmployeeSerializer {
-        constructor() {
-            this.class = Employee;
-            this.typeName = 'Employee';
+        getClass() {
+            return Employee;
+        }
+
+        getTypeName() {
+            return 'Employee';
         }
 
         read(reader) {
@@ -345,9 +351,12 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     EmployeeDTOSerializer = class EmployeeDTOSerializer {
-        constructor() {
-            this.class = EmployeeDTO; // used to match a js object to serialize with this serializer
-            this.typeName = 'example.serialization.EmployeeDTO'; // used to match schema's typeName with serializer
+        getClass() {
+            return EmployeeDTO; // used to match a js object to serialize with this serializer
+        }
+
+        getTypeName() {
+            return 'example.serialization.EmployeeDTO'; // used to match schema's typeName with serializer
         }
 
         read(reader) {
@@ -405,9 +414,12 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     BitsSerializer = class BitsSerializer {
-        constructor() {
-            this.class = Bits;
-            this.typeName = 'Bits';
+        getClass() {
+            return Bits;
+        }
+
+        getTypeName() {
+            return 'Bits';
         }
 
         read(reader) {
@@ -456,9 +468,12 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     EmployerSerializer = class EmployerSerializer {
-        constructor() {
-            this.class = Employer;
-            this.typeName = 'Employer';
+        getClass() {
+            return Employer;
+        }
+
+        getTypeName() {
+            return 'Employer';
         }
 
         read(reader) {
@@ -679,8 +694,14 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
             this.readerFieldNameMap = readerFieldNameMap;
             this.writerFieldNameMap = writerFieldNameMap;
             this.fieldKinds = fieldKinds;
-            this.class = Flexible;
-            this.typeName = 'Flexible';
+        }
+
+        getClass() {
+            return Flexible;
+        }
+
+        getTypeName() {
+            return 'Flexible';
         }
 
         read(reader) {
@@ -1039,9 +1060,12 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     InnerDTOSerializer = class InnerDTOSerializer {
-        constructor() {
-            this.class = InnerDTO;
-            this.typeName = 'InnerDTO';
+        getClass() {
+            return InnerDTO;
+        }
+
+        getTypeName() {
+            return 'InnerDTO';
         }
 
         read(reader) {
@@ -1130,9 +1154,12 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     NamedDTOSerializer = class NamedDTOSerializer {
-        constructor() {
-            this.class = NamedDTO;
-            this.typeName = 'NamedDTO';
+        getClass() {
+            return NamedDTO;
+        }
+
+        getTypeName() {
+            return 'NamedDTO';
         }
 
         read(reader) {
@@ -1156,9 +1183,12 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     NodeDTOSerializer = class NodeDTOSerializer {
-        constructor() {
-            this.class = NodeDTO;
-            this.typeName = 'NodeDTO';
+        getClass() {
+            return NodeDTO;
+        }
+
+        getTypeName() {
+            return 'NodeDTO';
         }
 
         read(reader) {
@@ -1175,9 +1205,12 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     MainDTOSerializer = class MainDTOSerializer {
-        constructor() {
-            this.class = MainDTO;
-            this.typeName = 'MainDTO';
+        getClass() {
+            return MainDTO;
+        }
+
+        getTypeName() {
+            return 'MainDTO';
         }
 
         read(reader) {
@@ -1234,9 +1267,12 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     MainDTOSerializerWithDefaults = class MainDTOSerializerWithDefaults {
-        constructor() {
-            this.class = MainDTO;
-            this.typeName = 'MainDTO';
+        getClass() {
+            return MainDTO;
+        }
+
+        getTypeName() {
+            return 'MainDTO';
         }
 
         read(reader) {

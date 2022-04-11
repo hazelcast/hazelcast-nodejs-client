@@ -509,14 +509,14 @@ export class ConfigBuilder {
         const serializersArray = tryGetArray(compactSerializers);
 
         for (const serializer of serializersArray) {
-            if (typeof serializer.class !== 'function') {
+            if (typeof serializer.getClass !== 'function' || typeof serializer.getClass() !== 'function') {
                 throw new RangeError(
-                    `Invalid compact serializer is given: ${serializer}. Expected a 'class' property that is a function.`
+                    `Invalid compact serializer is given: ${serializer}. Expected a 'getClass' function that returns a function.`
                 );
             }
-            if (typeof serializer.typeName !== 'string') {
+            if (typeof serializer.getTypeName !== 'function' || typeof serializer.getTypeName() !== 'string') {
                 throw new RangeError(
-                    `Invalid compact serializer is given: ${serializer}. Expected a 'typeName' property that is a string.`
+                    `Invalid compact serializer is given: ${serializer}. Expected a 'getTypeName' function that returns a string.`
                 );
             }
             if (typeof serializer.read !== 'function') {
