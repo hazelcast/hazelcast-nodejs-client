@@ -28,7 +28,6 @@ import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
 import {SchemaService} from '../serialization/compact/SchemaService';
 import {Schema} from '../serialization/compact/Schema';
-import {Class} from '../serialization/compact/CompactSerializer';
 
 /**
  * Common super class for any proxy.
@@ -78,7 +77,8 @@ export abstract class BaseProxy {
         return this.postDestroy();
     }
 
-    protected registerSchema(schema: Schema, clazz: Class | undefined): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    protected registerSchema(schema: Schema, clazz: Function | undefined): Promise<void> {
         return this.invocationService.registerSchema(schema, clazz);
     }
 

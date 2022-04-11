@@ -72,7 +72,6 @@ import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
 import {Schema} from './compact/Schema';
-import {Class} from './compact/CompactSerializer';
 
 /**
  * Serializes objects and deserializes data.
@@ -88,7 +87,8 @@ export interface SerializationService {
 
     readObject(inp: DataInput): any;
 
-    registerSchemaToClass(schema: Schema, clazz: Class): void;
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    registerSchemaToClass(schema: Schema, clazz: Function): void;
 }
 
 type PartitionStrategy = (obj: any) => number;
@@ -397,7 +397,8 @@ export class SerializationServiceV1 implements SerializationService {
         return strategy(object);
     }
 
-    registerSchemaToClass(schema: Schema, clazz: Class): void {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    registerSchemaToClass(schema: Schema, clazz: Function): void {
         this.compactStreamSerializer.registerSchemaToClass(schema, clazz);
     }
 }

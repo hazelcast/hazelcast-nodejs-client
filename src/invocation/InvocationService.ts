@@ -50,7 +50,6 @@ import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import * as Long from 'long';
 import {SchemaService} from '../serialization/compact/SchemaService';
 import {Schema} from '../serialization/compact/Schema';
-import {Class} from '../serialization/compact/CompactSerializer';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -461,7 +460,8 @@ export class InvocationService {
         return this.schemaService.fetchSchema(schemaId);
     }
 
-    registerSchema(schema: Schema, clazz: Class | undefined): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    registerSchema(schema: Schema, clazz: Function | undefined): Promise<void> {
         return this.schemaService.put(schema).then(() => {
             this.serializationService.registerSchemaToClass(schema, clazz);
         })

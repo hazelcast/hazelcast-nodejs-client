@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
@@ -15,7 +16,7 @@
  */
 /** @ignore *//** */
 
-import {Class, CompactSerializer} from './CompactSerializer';
+import {CompactSerializer} from './CompactSerializer';
 import {Schema} from './Schema';
 import {DefaultCompactReader} from './DefaultCompactReader';
 import {SchemaService} from './SchemaService';
@@ -25,7 +26,6 @@ import {SchemaNotFoundError, SchemaNotReplicatedError} from '../../core';
 import {ObjectDataInput, ObjectDataOutput, PositionalObjectDataOutput} from '../ObjectData';
 import {CompactGenericRecordImpl} from '../generic_record/CompactGenericRecord';
 import {SchemaWriter} from './SchemaWriter';
-
 /**
  * Serializer for compact serializable objects.
  *
@@ -41,24 +41,24 @@ export class CompactStreamSerializer {
      * Users' serializer config for classes are stored here. Used to determine if a class is compact serializable.
      * Also used to get serializer of an object while serializing.
      */
-    private readonly classToSerializerMap: Map<Class, CompactSerializer<Class>>;
+    private readonly classToSerializerMap: Map<Function, CompactSerializer<any>>;
     /**
      * Used to cache created schema of an object after initial serialization. If an object has schema,
      * no need to create schema again and put to schema service.
      */
-    private readonly classToSchemaMap : Map<Class, Schema>;
+    private readonly classToSchemaMap : Map<Function, Schema>;
     /**
      * A table from typeName to serializer map. Serialized compact data include a type name. Deserializer of compact data is
      * determined using this table.
      */
-    private readonly typeNameToSerializersMap: Map<string, CompactSerializer<Class>>;
+    private readonly typeNameToSerializersMap: Map<string, CompactSerializer<any>>;
 
     constructor(
         private readonly schemaService: SchemaService
     ) {
-        this.classToSerializerMap = new Map<Class, CompactSerializer<Class>>();
-        this.classToSchemaMap = new Map<Class, Schema>();
-        this.typeNameToSerializersMap = new Map<string, CompactSerializer<Class>>();
+        this.classToSerializerMap = new Map<Function, CompactSerializer<any>>();
+        this.classToSchemaMap = new Map<Function, Schema>();
+        this.typeNameToSerializersMap = new Map<string, CompactSerializer<any>>();
     }
 
     getOrReadSchema(input: ObjectDataInput): Schema {
@@ -71,7 +71,7 @@ export class CompactStreamSerializer {
         throw new SchemaNotFoundError(`The schema can not be found with id ${schemaId}`, schemaId);
     }
 
-    registerSchemaToClass(schema: Schema, clazz: Class): void {
+    registerSchemaToClass(schema: Schema, clazz: Function): void {
         this.classToSchemaMap.set(clazz, schema);
     }
 
@@ -100,11 +100,11 @@ export class CompactStreamSerializer {
      * Used by serialization service to check if an object is compact serializable
      * @param clazz A class
      */
-    isRegisteredAsCompact(clazz: new() => any) : boolean {
+    isRegisteredAsCompact(clazz: Function) : boolean {
         return this.classToSerializerMap.has(clazz);
     }
 
-    registerSerializer(serializer: CompactSerializer<Class>) {
+    registerSerializer(serializer: CompactSerializer<any>) {
         this.classToSerializerMap.set(serializer.getClass(), serializer);
         this.typeNameToSerializersMap.set(serializer.getTypeName(), serializer);
     }
@@ -125,7 +125,7 @@ export class CompactStreamSerializer {
     }
 
     writeSchemaAndObject(
-        compactSerializer: CompactSerializer<Class>,
+        compactSerializer: CompactSerializer<any>,
         output: PositionalObjectDataOutput,
         schema: Schema,
         o: any
@@ -149,7 +149,7 @@ export class CompactStreamSerializer {
         this.writeSchemaAndObject(compactSerializer, output, schema, obj);
     }
 
-    private throwIfSchemaNotReplicatedToCluster(schema: Schema, clazz: Class | undefined): void {
+    private throwIfSchemaNotReplicatedToCluster(schema: Schema, clazz: Function | undefined): void {
         // We guarantee that if Schema is not in the schemaService, it is not replicated to the cluster.
         if (this.schemaService.get(schema.schemaId) === undefined) {
             throw new SchemaNotReplicatedError(`The schema ${schema.schemaId} is not replicated yet.`, schema, clazz);

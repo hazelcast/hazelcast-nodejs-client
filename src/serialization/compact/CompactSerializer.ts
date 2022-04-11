@@ -18,11 +18,6 @@ import {CompactReader} from './CompactReader';
 import {CompactWriter} from './CompactWriter';
 
 /**
- * A type for any class.
- */
-export type Class = new (...args: any[]) => any;
-
-/**
  * Defines the contract of the serializers used for Compact
  * serialization.
  *
@@ -36,12 +31,14 @@ export type Class = new (...args: any[]) => any;
  export interface CompactSerializer<C> {
     /**
      * You need to return the class constructor from this function. For example, if a class is
-     * instantiated with `new Employee()` class constructor is `Employee`. `class` is used to
-     * check if a class instance is compact serializable.
+     * instantiated with `new Employee()` class constructor is `Employee`. Alternatively, you can
+     * return a constructor function from this class. The function you provided will be used to check
+     * if an object is compact serializable.
      *
-     * @return The class which the serializer is written for.
+     * @return The class or the constructor function which the serializer is written for.
      */
-    getClass(): Class;
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    getClass(): Function;
 
     /**
      * Type name is written into the serialized data and used while deserialization.

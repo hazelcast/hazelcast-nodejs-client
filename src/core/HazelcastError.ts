@@ -93,8 +93,9 @@ export class SchemaNotReplicatedError extends HazelcastError {
     constructor(
         msg: string,
         public readonly schema: Schema,
-        // Class is undefined when generic record schema is not replicated
-        public readonly clazz: new () => any | undefined,
+        // clazz is undefined when generic record schema is not replicated
+        /* eslint-disable-next-line @typescript-eslint/ban-types */
+        public readonly clazz: Function | undefined,
         cause?: Error,
         serverStackTrace?: ServerErrorStackElement[]
     ) {
