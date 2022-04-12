@@ -674,7 +674,12 @@ describe('ConfigBuilderValidationTest', function () {
                     id: 1,
                     read: () => {},
                     write: null
-                }]
+                }],
+                [{
+                    id: '1',
+                    read: () => {},
+                    write: () => {}
+                }],
             ];
 
             for (const invalidCustomSerializers of invalidCustomSerializersArray) {
@@ -705,90 +710,15 @@ describe('ConfigBuilderValidationTest', function () {
             }).build()).not.to.throw();
         });
 
-        it('should validate compact serializers', function () {
-            const invalidCompactSerializersArray = [
-                () => {},
-                1,
-                undefined,
-                '1',
-                {
-                    read: () => {},
-                    write: () => {},
-                    getClass: () => class {}
-                },
-                [{
-                    read: () => {},
-                    write: () => {}
-                }],
-                [{
-                    write: () => {}
-                }],
-                [{
-                    read: () => {}
-                }],
-                [{
-                    getClass: () => class A {},
-                    read: () => {},
-                    write: () => {}
-                }],
-                [{
-                    getClass: () => class A {},
-                    prop: 1,
-                    read: () => {},
-                    write: () => {}
-                }],
-                [{
-                    getTypeName: () => 'A',
-                    read: () => {},
-                    write: () => {}
-                }],
-                [{
-                    getTypeName: () => 'A',
-                    prop: 1,
-                    read: () => {},
-                    write: () => {}
-                }],
-            ];
-
-            for (const invalidCompactSerializers of invalidCompactSerializersArray) {
-                expect(() => new ConfigBuilder({
-                    serialization: {
-                        compact:{
-                            serializers: invalidCompactSerializers
-                        }
-                    }
-                }).build()).to.throw(InvalidConfigurationError, /(not an array|Invalid compact serializer)/);
-            }
-
-            const validCompactSerializers = [
-                {
-                    getTypeName: () => 's',
-                    getClass: () => class A {},
-                    read: () => {},
-                    write: () => {}
-                },
-                {
-                    prop: 1,
-                    getTypeName: () => 's',
-                    getClass: () => class A {},
-                    read: () => {},
-                    write: () => {}
-                }
-            ];
-
-            expect(() => new ConfigBuilder({
-                serialization: {
-                    compact: {
-                        serializers: validCompactSerializers
-                    }
-                }
-            }).build()).not.to.throw();
-        });
-
         it('should validate the global serializer', function () {
             const invalidGlobalSerializers = [
                 () => {}, 1, undefined, '1', { initLoadBalancer: () => {}}, { read: () => {}, write: () => {} },
-                { id: 1, write: () => {} }, {}
+                { id: 1, write: () => {} }, {},
+                {
+                    id: '1',
+                    read: () => {},
+                    write: () => {}
+                }
             ];
 
             for (const invalidGlobalSerializer of invalidGlobalSerializers) {
@@ -810,6 +740,110 @@ describe('ConfigBuilderValidationTest', function () {
                     globalSerializer: validGlobalSerializer
                 }
             }).build()).not.to.throw();
+        });
+
+        describe('compact', function() {
+            it('should validate compact serializers', function () {
+                const invalidCompactSerializersArray = [
+                    () => {},
+                    1,
+                    undefined,
+                    '1',
+                    {
+                        read: () => {},
+                        write: () => {},
+                        getClass: () => class {}
+                    },
+                    {
+                        read: 1,
+                        write: () => {},
+                        getClass: () => class {},
+                        getTypeName: () => ''
+                    },
+                    {
+                        read: () => {},
+                        write: 1,
+                        getClass: () => class {},
+                        getTypeName: () => ''
+                    },
+                    [{
+                        read: () => {},
+                        write: () => {}
+                    }],
+                    [{
+                        write: () => {}
+                    }],
+                    [{
+                        read: () => {}
+                    }],
+                    [{
+                        getClass: () => class A {},
+                        read: () => {},
+                        write: () => {}
+                    }],
+                    [{
+                        getClass: () => class A {},
+                        prop: 1,
+                        read: () => {},
+                        write: () => {}
+                    }],
+                    [{
+                        getTypeName: () => 'A',
+                        read: () => {},
+                        write: () => {}
+                    }],
+                    [{
+                        getTypeName: () => 'A',
+                        prop: 1,
+                        read: () => {},
+                        write: () => {}
+                    }],
+                ];
+
+                for (const invalidCompactSerializers of invalidCompactSerializersArray) {
+                    expect(() => new ConfigBuilder({
+                        serialization: {
+                            compact:{
+                                serializers: invalidCompactSerializers
+                            }
+                        }
+                    }).build()).to.throw(InvalidConfigurationError, /(not an array|Invalid compact serializer)/);
+                }
+
+                const validCompactSerializers = [
+                    {
+                        getTypeName: () => 's',
+                        getClass: () => class A {},
+                        read: () => {},
+                        write: () => {}
+                    },
+                    {
+                        prop: 1,
+                        getTypeName: () => 's',
+                        getClass: () => class A {},
+                        read: () => {},
+                        write: () => {}
+                    }
+                ];
+
+                expect(() => new ConfigBuilder({
+                    serialization: {
+                        compact: {
+                            serializers: validCompactSerializers
+                        }
+                    }
+                }).build()).not.to.throw();
+            });
+
+            it('should throw if a non-existent key is passed', function() {
+                expect(() => new ConfigBuilder({
+                    serialization: {
+                        compact: {
+                            asd: {},
+                        }
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'Unexpected compact serialization config');
+            });
         });
     });
 

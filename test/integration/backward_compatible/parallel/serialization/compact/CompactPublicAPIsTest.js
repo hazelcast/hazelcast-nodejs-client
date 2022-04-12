@@ -153,7 +153,7 @@ class CompactReturningEntryProcessorSerializer {
 }
 
 /**
- * Tests all Public APIs if they can support compact objects.
+ * Tests all Public APIs if they can serialize compact objects.
  */
 describe('CompactPublicAPIsTest', function () {
     let cluster;

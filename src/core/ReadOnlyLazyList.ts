@@ -73,7 +73,7 @@ export class ReadOnlyLazyList<T> {
                 obj = this.serializationService.toObject(dataOrObject);
             } catch (e) {
                 if (e instanceof SchemaNotFoundError) {
-                    throw new HazelcastSerializationError(e.message, e.cause, e.serverStackTrace);
+                    throw new HazelcastSerializationError(e.message, e, e.serverStackTrace);
                 }
                 throw e;
             }

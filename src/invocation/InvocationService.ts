@@ -467,22 +467,36 @@ export class InvocationService {
         })
     }
 
+    private callEventHandlerWithMessage(invocation: Invocation, clientMessage: ClientMessage): void {
+        // We need to retry calling the event handler after fetching the schema if it is not found for the compact case.
+        try {
+            invocation.eventHandler(clientMessage);
+        } catch (e) {
+            if (e instanceof SchemaNotFoundError) {
+                this.fetchSchemaAndTryAgain(e.schemaId, clientMessage, invocation);
+            } else {
+                throw e;
+            }
+        }
+    }
+
     private fetchSchemaAndTryAgain(schemaId: Long, clientMessage: ClientMessage, invocation: Invocation): void {
         // We need to fetch the schema to deserialize compact.
         this.logger.trace(
-            'SchemaService', `Could not find schema id ${schemaId} locally, will search on the cluster`
+            'InvocationService', `Could not find schema id ${schemaId} locally, will search on the cluster`
         );
 
         this.fetchSchema(schemaId).then(() => {
             // Reset nextFrame since we tried to parse the message once.
             clientMessage.resetNextFrame();
-            invocation.eventHandler(clientMessage);
-        }, (err: Error) => {
-            if (err instanceof SchemaNotFoundError) {
-                this.fetchSchemaAndTryAgain(schemaId, clientMessage, invocation);
-            } else {
-                throw err;
-            }
+            process.nextTick(() => {
+                this.callEventHandlerWithMessage(invocation, clientMessage);
+            });
+        }).catch(err => {
+            // TODO: Rethink how to handle this. Maybe we want to call fetchSchemaAndTryAgain again.
+            this.logger.error(
+                'InvocationService', `Could not fetch schema with id ${schemaId} required for an event handler. Error: ${err}`
+            );
         });
     }
 
@@ -493,20 +507,12 @@ export class InvocationService {
         const correlationId = clientMessage.getCorrelationId();
 
         if (clientMessage.startFrame.hasEventFlag() || clientMessage.startFrame.hasBackupEventFlag()) {
-            process.nextTick(() => {
-                const invocation = this.invocationsWithEventHandlers.get(correlationId);
-                if (invocation !== undefined) {
-                    try {
-                        invocation.eventHandler(clientMessage);
-                    } catch (e) {
-                        if (e instanceof SchemaNotFoundError) {
-                            this.fetchSchemaAndTryAgain(e.schemaId, clientMessage, invocation);
-                        } else {
-                            throw e;
-                        }
-                    }
-                }
-            });
+            const invocation = this.invocationsWithEventHandlers.get(correlationId);
+            if (invocation !== undefined) {
+                process.nextTick(() => {
+                    this.callEventHandlerWithMessage(invocation, clientMessage);
+                });
+            }
             return;
         }
 
