@@ -23,6 +23,7 @@
     * [4.1.1. Schema Evolution](#411-schema-evolution)
     * [4.1.2. Generic Record Representation](#412-generic-record-representation)
     * [4.1.3. Compact Configuration and Usage](#413-compact-configuration-and-usage)
+    * [4.1.4. Limitations](#413-compact-configuration-and-usage)
   * [4.2. IdentifiedDataSerializable Serialization](#42-identifieddataserializable-serialization)
   * [4.3. Portable Serialization](#43-portable-serialization)
     * [4.3.1. Versioning for Portable Serialization](#431-versioning-for-portable-serialization)
@@ -718,20 +719,20 @@ Or, if you want to use your own serialization method, you can use [Custom Serial
 
 ## 4.1. Compact Serialization
 
-> **WARNING: Supported in client version 5.1+ and server version 5.0+.**
+> **WARNING: This serialization method is in Beta, and API can be changed in a breaking way.**
 
-> **WARNING: This serialization method is in Beta, API can be changed in a breaking way.**
+> **WARNING: Supported in client version 5.1+ and server version 5.0+. However, it is recommended to use 5.1+ client with a 5.1+
+server because compatiblity is not guaranteed as compact is in Beta.**
 
 As an enhancement to existing serialization methods, Hazelcast offers a beta version of the compact serialization, with the
 following main features.
 
 * Separates the schema from the data and stores it per type, not per object which results in less memory and bandwidth usage
-compared to other formats
-* Does not require a class to implement an interface or change the source code of the class in any way
-* Supports schema evolution which permits adding or removing fields, or changing the types of fields
-* Platform and language independent
-* Supports partial deserialization of fields, without deserializing the whole objects during queries or indexing
-
+compared to other formats.
+* Does not require a class to implement an interface or change the source code of the class in any way.
+* Supports schema evolution which permits adding or removing fields, or changing the types of fields.
+* Platform and language independent.
+* Supports partial deserialization of fields, without deserializing the whole objects during queries or indexing.
 
 Hazelcast achieves these features by having a well-known schema of objects and replicating them across the cluster which enables
 members and clients to fetch schemas they don’t have in their local registries. Each serialized object carries just a schema
@@ -743,20 +744,20 @@ Schemas help Hazelcast to identify the locations of the fields on the serialized
 can deserialize individual fields of the data, without reading the whole binary. This results in a better query and indexing
 performance.
 
-Schemas can evolve freely by adding or removing fields. Even, the types of the fields can be changed. Multiple versions of the
+Schemas can evolve freely by adding or removing fields. Even the types of the fields can be changed. Multiple versions of the
 schema may live in the same cluster and both the old and new readers may read the compatible parts of the data. This feature
 is especially useful in rolling upgrade scenarios.
 
 The Compact serialization does not require any changes in the user classes as it doesn’t need a class to implement a particular
 interface. Serializers might be implemented and registered separately from the classes.
 
-Zero config option is not supported in Node.js client due to technical limitations. You need to register serializers in
-serialization config.
+Zero config option is not supported in Node.js client due to technical limitations. You need to register compact serializers
+in the compact serialization config.
 
 The underlying format of the compact serialized objects is platform and language independent. All clients will have this feature
 in the future.
 
-### 4.1.1 Schema Evolution
+### 4.1.1. Schema Evolution
 
 Compact serialization permits schemas and classes to evolve by adding or removing fields, or by changing the types of fields.
 More than one version of a class may live in the same cluster and different clients or members might use different versions
@@ -819,28 +820,52 @@ read(reader) {
     // Read the "age" if it exists, or the default value 0.
     // reader.readInt32("age") would throw if the "age" field
     // does not exist in data.
-    int age = reader.readInt32("age", 0);
+    int age = reader.readInt32OrDefault("age", 0);
     return new Employee(id, name, age);
 }
 ```
 
-Note that, when an old reader reads data written by an old writer, or a new reader reads a data written by a new writer,
+Note that, when an old reader reads a data written by an old writer, or a new reader reads a data written by a new writer,
 they will be able to read all fields.
 
-### 4.1.2 Generic Record Representation
+### 4.1.2. Generic Record Representation
 
-Compact serialized objects can also be represented by a GenericRecord. GenericRecord is the representation of some object
+Compact serialized objects can also be represented by a GenericRecord. A GenericRecord is the representation of some object
 when the client does not have the serializer/configuration to construct it. For example, if you read a compact object and
 there is no CompactSerializer registered for that class, you will receive a GenericRecord. CompactSerializers are responsible
 for both serializing and deserializing class instances.
 
 To create a GenericRecord object in compact serialization format, use the `GenericRecords.compact()` method:
 
+```ts
+/**
+ * Static constructor method for compact generic records.
+ *
+ * @param typeName Represents the type of the compact object, included in serialized form
+ * @param fields Represents the field schema of the compact
+ * @param values Values to use in the generic record. This should be in sync with {@link fields}
+ * @throws TypeError if a value is of wrong type according to {@link fields}
+ * @throws RangeError if a value is out of range of its type
+ * @returns A compact generic record
+ */
+static compact<F extends {[name: string]: Field<any>}>(
+    typeName: string,
+    fields: F,
+    values: {[property in keyof F]: F[property] extends Field<infer T> ? T : any}
+): GenericRecord
+```
+
+Every compact object has a type name, we need to pass it first. Then, `fields` is the schema for the generic record and can be
+reused across multiple calls to `GenericRecords.compact()`. Finally, `values` object is the corresponding values for each field.
+
+Example:
+
+
 ```js
 const fields = {
-    name: Fields.string,
-    age: Fields.int32,
-    id: Fields.int64
+    name: Fields.STRING,
+    age: Fields.INT32,
+    id: Fields.INT64
 };
 
 const record = GenericRecords.compact('employee', fields, {
@@ -856,17 +881,14 @@ const anotherRecord = GenericRecords.compact('employee', fields, {
 });
 ```
 
-Fields is the schema for the generic record and can be reused across multiple calls to `GenericRecords.compact()`.
-Values object is the corresponding values for each field.
+### 4.1.3. Compact Configuration and Usage
 
-### 4.1.3 Compact Configuration and Usage
-
-The only configuration you need to make is to register compact serializers. You can do that via
+The only thing you need to configure is to register compact serializers. You can do that via
 `serialization.compact.serializers` configuration option. The following is an example of compact configuration:
 
 ```js
 'use strict';
-const {Client} = require('hazelcast-client');
+const { Client } = require('hazelcast-client');
 const Long = require('long');
 
 class Employee {
@@ -877,9 +899,12 @@ class Employee {
 }
 
 class EmployeeSerializer {
-    constructor() {
-        this.class = Employee;
-        this.typeName = 'Employee';
+    getTypeName() {
+        return 'Employee';
+    }
+
+    getClass() {
+        return Employee;
     }
 
     read(reader) {
@@ -903,7 +928,7 @@ async function main() {
         }
     });
     const map = await client.getMap('mapName');
-    await map.put(20, new Employee(1, Long.fromNumber(1)));
+    await map.put(20, new Employee(23, Long.fromNumber(1)));
 
     const employee = await map.get(20);
     console.log(employee);
@@ -912,6 +937,10 @@ async function main() {
 
 Here, `employee` is an instance of Employee class.
 
+### 4.1.4. Limitations
+
+* Compact serialization does not work with lazy deserialization if the schema needs to be fetched. This is due to technical
+limitations. In the future, lazy deserialization **may** be removed to make compact work with such APIs.
 
 ## 4.2. IdentifiedDataSerializable Serialization
 
