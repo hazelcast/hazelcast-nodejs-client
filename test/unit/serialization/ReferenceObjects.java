@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.UUID;
+
+import static java.util.Arrays.asList;
 
 class ReferenceObjects {
 
@@ -146,12 +150,24 @@ class ReferenceObjects {
     static BigDecimal aBigDecimal = new BigDecimal(31231);
     static Class aClass = BigDecimal.class;
 
+    static Object[] objects = {anInnerPortable, aNullObject, aBigDecimal, aShort};
+
+    static ArrayList nonNullList = new ArrayList(asList(
+            aBoolean, aByte, aChar, aDouble, aShort, aFloat, anInt, aLong, aSmallString, anInnerPortable,
+            booleans, bytes, chars, doubles, shorts, floats, ints, longs, strings,
+            aCustomStreamSerializable, aCustomByteArraySerializable,
+            anIdentifiedDataSerializable, aPortable,
+            aDate, aLocalDate, aLocalTime, aLocalDateTime, aOffsetDateTime, aBigInteger, aBigDecimal, aClass));
+
+    static ArrayList arrayList = new ArrayList(asList(aNullObject, nonNullList));
+    static LinkedList linkedList = new LinkedList(arrayList);
 
     static Object[] allTestObjects = {
             aNullObject, aBoolean, aByte, aChar, aDouble, aShort, aFloat, anInt, aLong, aString, aUUID, anInnerPortable,
             booleans, bytes, chars, doubles, shorts, floats, ints, longs, strings,
             aCustomStreamSerializable, aCustomByteArraySerializable,
             anIdentifiedDataSerializable, aPortable,
-            aDate, aLocalDate, aLocalTime, aLocalDateTime, aOffsetDateTime, aBigInteger, aBigDecimal, aClass
+            aDate, aLocalDate, aLocalTime, aLocalDateTime, aOffsetDateTime, aBigInteger, aBigDecimal, aClass, objects,
+            linkedList, arrayList
     };
 }

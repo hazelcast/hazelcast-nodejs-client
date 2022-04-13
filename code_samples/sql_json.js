@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,10 @@ const { Client, SqlColumnType } = require('hazelcast-client');
             )
         `;
     await client.getSql().execute(createMappingQuery);
+
+    // Clear the map for a fresh start.
+    const map = await client.getMap(mapName);
+    await map.clear();
 
     // You need to use HazelcastJsonValue as parameter if you configured a global serializer
     await client.getSql().execute(`INSERT INTO ${mapName} VALUES (1, ?)`,

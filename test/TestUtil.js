@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,6 +149,37 @@ exports.getRandomConnection = function(client) {
         return client.connectionRegistry.getRandomConnection();
     } else {
         return client.getConnectionManager().getRandomConnection();
+    }
+};
+
+exports.getConnections = function(client) {
+    if (Object.prototype.hasOwnProperty.call(client, 'connectionRegistry')) {
+        return client.connectionRegistry.getConnections();
+    } else {
+        return client.getConnectionManager().getActiveConnections();
+    }
+};
+
+/**
+ * @param client Client instance
+ * @param registrationId Registration id of the listener as a string
+ * @returns a Map<Connection, ConnectionRegistration> in 5.1 and above,
+ * a Map<ClientConnection, ClientEventRegistration> before 5.1
+ */
+exports.getActiveRegistrations = function(client, registrationId) {
+    const listenerService = client.getListenerService();
+    if (exports.isClientVersionAtLeast('5.1')) {
+        const registration = listenerService.registrations.get(registrationId);
+        if (registration === undefined) {
+            return new Map();
+        }
+        return registration.connectionRegistrations;
+    } else {
+        const registrationMap = listenerService.activeRegistrations.get(registrationId);
+        if (registrationMap === undefined) {
+            return new Map();
+        }
+        return registrationMap;
     }
 };
 
