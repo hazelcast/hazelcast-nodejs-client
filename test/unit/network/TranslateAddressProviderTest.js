@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@ const { UuidUtil } = require('../../../lib/util/UuidUtil');
 describe('TranslateAddressProviderTest', function () {
     const PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED = 'hazelcast.discovery.public.ip.enabled';
     const REACHABLE_HOST = '127.0.0.1';
-    const UNREACHABLE_HOST = '192.168.0.1';
+    // 198.51.100.0/24 is assigned as TEST-NET-2 and should be unreachable: https://en.wikipedia.org/wiki/Reserved_IP_addresses
+    const UNREACHABLE_HOST = '198.51.100.1';
 
     let loggerStub;
     let fakeMemberServer;
