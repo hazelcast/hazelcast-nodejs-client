@@ -25,9 +25,12 @@ class Employee {
 }
 
 class EmployeeSerializer {
-    constructor() {
-        this.class = Employee;
-        this.typeName = 'Employee';
+    getClass() {
+        return Employee;
+    }
+
+    getTypeName() {
+        return 'Employee';
     }
 
     read(reader) {
@@ -50,7 +53,7 @@ async function main() {
             }
         }
     });
-    const map = await client.getMap('mapName');
+    const map = await client.getMap('compactSerializationSampleMap');
     await map.put(20, new Employee(1, Long.fromNumber(1)));
 
     const employee = await map.get(20);

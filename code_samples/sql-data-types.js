@@ -46,9 +46,12 @@ class Employee {
 }
 
 class EmployeeSerializer {
-    constructor() {
-        this.class = Employee;
-        this.typeName = 'Employee';
+    getClass() {
+        return Employee;
+    }
+
+    getTypeName() {
+        return 'Employee';
     }
 
     read(reader) {
@@ -156,9 +159,8 @@ const bigintExample = async (client) => {
     }
 };
 
-// Portable example
-const objectExample = async (client, classId, factoryId) => {
-    console.log('----------OBJECT Example(Portable)----------');
+const portableExample = async (client, classId, factoryId) => {
+    console.log('\n----------OBJECT Example(Portable)----------');
     const mapName = 'studentMap';
     const someMap = await client.getMap(mapName);
     // In order to use the map in SQL a mapping should be created.
@@ -201,12 +203,11 @@ const objectExample = async (client, classId, factoryId) => {
     }
 };
 
-// Compact example
-const objectExample2 = async (client, typeName) => {
-    console.log('----------OBJECT Example(Compact)----------');
+const compactExample = async (client, typeName) => {
+    console.log('\n----------OBJECT Example(Compact)----------');
     const mapName = 'employeeMap';
     const someMap = await client.getMap(mapName);
-    // To be able to use our map in SQL we need to create mapping for it.
+    // To be able to use our map in SQL, we need to create mapping for it.
     const createMappingQuery = `
             CREATE OR REPLACE MAPPING ${mapName} (
                 __key DOUBLE,
@@ -269,8 +270,8 @@ const objectExample2 = async (client, typeName) => {
 
     await varcharExample(client);
     await bigintExample(client);
-    await objectExample(client, 1, 23);
-    await objectExample2(client, employeeSerializer.typeName);
+    await portableExample(client, 1, 23);
+    await compactExample(client, employeeSerializer.getTypeName());
 
     await client.shutdown();
 })().catch(err => {

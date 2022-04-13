@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 'use strict';
-const {Client, Fields, GenericRecords} = require('hazelcast-client');
+const { Client, Fields, GenericRecords } = require('hazelcast-client');
 const Long = require('long');
 
 async function main() {
     const fields = {
-        name: Fields.string,
-        age: Fields.int32,
-        id: Fields.int64
+        name: Fields.STRING,
+        age: Fields.INT32,
+        id: Fields.INT64
     };
 
     const record = GenericRecords.compact('employee', fields, {
@@ -41,7 +41,7 @@ async function main() {
     const updatedClonedRecord = record.clone({age: 22});
 
     const client = await Client.newHazelcastClient();
-    const map = await client.getMap('mapName');
+    const map = await client.getMap('genericRecordSampleMap');
     await map.put(1, record);
     await map.put(2, anotherRecord);
     await map.put(3, clonedRecord);
