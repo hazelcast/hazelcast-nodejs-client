@@ -172,13 +172,13 @@ describe('SessionAwareSemaphoreProxyTest', function () {
     });
 
     it('tryAcquire: should return false on expired session error and no timeout', async function () {
-        sandbox.useFakeTimers(0);
+        const clock = sandbox.useFakeTimers();
         prepareAcquireSession(1);
         stubRequestAcquire(true, new SessionExpiredError());
 
         const promise = proxy.tryAcquire(1);
         // advance time as if requests were real
-        sandbox.useFakeTimers(100);
+        clock.tick(100);
         const result = await promise;
 
         expect(result).to.be.false;
@@ -186,13 +186,13 @@ describe('SessionAwareSemaphoreProxyTest', function () {
     });
 
     it('tryAcquire: should keep trying on expired session error and specified timeout', async function () {
-        sandbox.useFakeTimers(0);
+        const clock = sandbox.useFakeTimers();
         prepareAcquireSession(1);
         stubRequestAcquire(true, new SessionExpiredError());
 
         const promise = proxy.tryAcquire(1, 1000);
         // advance time as if requests were real
-        sandbox.useFakeTimers(100);
+        clock.tick(100);
         const result = await promise;
 
         expect(result).to.be.true;
