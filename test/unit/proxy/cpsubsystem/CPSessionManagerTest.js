@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,11 +71,11 @@ describe('CPSessionManagerTest', function () {
         });
 
         it('isValid: should consider current acquire count', function () {
-            sandbox.useFakeTimers(0);
+            const clock = sandbox.useFakeTimers();
             const state = new SessionState(Long.fromNumber(42), null, 1000);
 
             // session should be expired now
-            sandbox.useFakeTimers(2000);
+            clock.tick(2000);
             expect(state.isValid()).to.be.false;
 
             state.acquire(1);
@@ -83,13 +83,13 @@ describe('CPSessionManagerTest', function () {
         });
 
         it('isValid: should consider current time', function () {
-            sandbox.useFakeTimers(0);
+            const clock = sandbox.useFakeTimers();
             const state = new SessionState(Long.fromNumber(42), null, 1000);
 
             expect(state.isValid()).to.be.true;
 
             // session should be expired now
-            sandbox.useFakeTimers(2000);
+            clock.tick(2000);
             expect(state.isValid()).to.be.false;
         });
     });

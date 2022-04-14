@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,8 @@ import {
     ShortSerializer,
     StringArraySerializer,
     StringSerializer,
-    UuidSerializer
+    UuidSerializer,
+    JavaArraySerializer
 } from './DefaultSerializers';
 import {DATA_OFFSET, HeapData} from './HeapData';
 import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
@@ -293,6 +294,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('uuid', new UuidSerializer());
         this.registerSerializer('bigDecimal', new BigDecimalSerializer());
         this.registerSerializer('bigint', new BigIntSerializer());
+        this.registerSerializer('javaArray', new JavaArraySerializer());
         this.registerIdentifiedFactories();
         this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {

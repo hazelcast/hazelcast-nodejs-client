@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
-import {BitsUtil} from '../util/BitsUtil';
 import {DataInput, DataOutput} from './Data';
 import {
     Serializer,
@@ -33,7 +32,6 @@ import {
     UUID
 } from '../core';
 import * as BigDecimalUtil from '../util/BigDecimalUtil';
-import {Buffer} from 'buffer';
 
 /** @internal */
 export class StringSerializer implements Serializer<string> {
@@ -286,7 +284,7 @@ export class CharSerializer implements Serializer<string> {
     }
 
     write(output: DataOutput, object: string): void {
-        output.writeChar(object);
+        // no-op
     }
 }
 
@@ -300,7 +298,7 @@ export class CharArraySerializer implements Serializer<string[]> {
     }
 
     write(output: DataOutput, object: string[]): void {
-        output.writeCharArray(object);
+        // no-op
     }
 }
 
@@ -328,23 +326,20 @@ export class JavaClassSerializer implements Serializer {
     }
 
     write(output: DataOutput, object: any): void {
-        output.writeString(object);
+        // no-op
     }
 }
 
 /** @internal */
-export class LinkedListSerializer implements Serializer<any[]> {
+export class JavaArraySerializer implements Serializer<any[]> {
 
-    id = -30;
+    id = -28;
 
     read(input: DataInput): any[] {
         const size = input.readInt();
-        let result: any = null;
-        if (size > BitsUtil.NULL_ARRAY_LENGTH) {
-            result = [];
-            for (let i = 0; i < size; i++) {
-                result.push(input.readObject());
-            }
+        const result = new Array<any>(size);
+        for (let i = 0; i < size; i++) {
+            result[i] = input.readObject();
         }
         return result;
     }
@@ -354,10 +349,17 @@ export class LinkedListSerializer implements Serializer<any[]> {
     }
 }
 
+
 /** @internal */
-export class ArrayListSerializer extends LinkedListSerializer {
+export class ArrayListSerializer extends JavaArraySerializer {
 
     id = -29;
+}
+
+/** @internal */
+export class LinkedListSerializer extends JavaArraySerializer {
+
+    id = -30;
 }
 
 /** @internal */
@@ -574,4 +576,3 @@ export class BigIntSerializer implements Serializer<BigInt> {
         output.writeByteArray(BigDecimalUtil.bigIntToBuffer(bigint));
     }
 }
-
