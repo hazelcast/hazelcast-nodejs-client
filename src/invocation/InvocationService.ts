@@ -472,11 +472,10 @@ export class InvocationService {
         try {
             invocation.eventHandler(clientMessage);
         } catch (e) {
-            if (e instanceof SchemaNotFoundError) {
-                this.fetchSchemaAndTryAgain(e.schemaId, clientMessage, invocation);
-            } else {
+            if (!(e instanceof SchemaNotFoundError)) {
                 throw e;
             }
+            this.fetchSchemaAndTryAgain(e.schemaId, clientMessage, invocation);
         }
     }
 

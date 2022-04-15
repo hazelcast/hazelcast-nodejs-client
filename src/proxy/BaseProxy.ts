@@ -99,11 +99,9 @@ export abstract class BaseProxy {
     }
 
     protected deserializeEntryList<K, V>(entrySet: Array<[Data, Data]>): Array<[K, V]> {
-        const deserializedList: Array<[K, V]> = new Array(entrySet.length);
-        for (let i = 0; i < entrySet.length; i++) {
-            deserializedList[i] = [this.toObject(entrySet[i][0]), this.toObject(entrySet[i][1])];
-        }
-        return deserializedList;
+        return entrySet.map((entry: [Data, Data]) => {
+            return [this.toObject(entry[0]), this.toObject(entry[1])]
+        });
     }
 
     /**
