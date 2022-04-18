@@ -28,7 +28,7 @@ import {CompactWriter} from './CompactWriter';
  *
  * This API is currently in Beta and can change at any time.
  */
- export interface CompactSerializer<C> {
+export interface CompactSerializer<C> {
     /**
      * You need to return the class constructor from this function. For example, if a class is
      * instantiated with `new Employee()` class constructor is `Employee`. Alternatively, you can
