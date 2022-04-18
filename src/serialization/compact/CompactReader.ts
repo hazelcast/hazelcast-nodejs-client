@@ -16,19 +16,27 @@
 
 import * as Long from 'long';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
+import {FieldKind} from '../generic_record';
 
 /**
  * Provides means of reading compact serialized fields from the binary data.
  *
  * Read operations might throw {@link HazelcastSerializationError}
  * when a field with the given name is not found or there is a type mismatch. On such
- * occasions, one might provide default values to the read methods to return it in case
- * of the failure scenarios described above. Providing default values might be especially
- * useful, if the class might evolve in future, either by adding or removing fields.
+ * occasions, one might handle this case via the {@link getFieldKind} method. Handling this situation
+ * might be especially useful if the class might evolve in future, either by adding or
+ * removing fields.
  *
  * This API is currently in Beta and can change at any time.
  */
 export interface CompactReader {
+    /**
+     * Returns field type for the given field name. Returns {@link FieldKind.NOT_AVAILABLE} if such field does not exist.
+     *
+     * @param fieldName the name of the field
+     */
+    getFieldKind(fieldName: string): FieldKind;
+
     /**
      * Reads a boolean.
      *
@@ -38,17 +46,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readBoolean(fieldName: string): boolean;
-
-    /**
-     * Reads a boolean or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readBooleanOrDefault(fieldName: string, defaultValue: boolean): boolean;
 
     /**
      * Reads an 8-bit two's complement signed integer.
@@ -61,17 +58,6 @@ export interface CompactReader {
     readInt8(fieldName: string): number;
 
     /**
-     * Reads an 8-bit two's complement signed integer or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readInt8OrDefault(fieldName: string, defaultValue: number): number;
-
-    /**
      * Reads a 16-bit two's complement signed integer.
      *
      * @param fieldName name of the field.
@@ -80,17 +66,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readInt16(fieldName: string): number;
-
-    /**
-     * Reads a 16-bit two's complement signed integer or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readInt16OrDefault(fieldName: string, defaultValue: number): number;
 
     /**
      * Reads a 32-bit two's complement signed integer.
@@ -103,17 +78,6 @@ export interface CompactReader {
     readInt32(fieldName: string): number;
 
     /**
-     * Reads a 32-bit two's complement signed integer or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readInt32OrDefault(fieldName: string, defaultValue: number): number;
-
-    /**
      * Reads a 64-bit two's complement signed integer.
      *
      * @param fieldName name of the field.
@@ -122,17 +86,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readInt64(fieldName: string): Long;
-
-    /**
-     * Reads a 64-bit two's complement signed integer or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readInt64OrDefault(fieldName: string, defaultValue: Long): Long;
 
     /**
      * Reads a 32-bit IEEE 754 floating point number.
@@ -145,17 +98,6 @@ export interface CompactReader {
     readFloat32(fieldName: string): number;
 
     /**
-     * Reads a 32-bit IEEE 754 floating point number or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readFloat32OrDefault(fieldName: string, defaultValue: number): number;
-
-    /**
      * Reads a 64-bit IEEE 754 floating point number.
      *
      * @param fieldName name of the field.
@@ -164,17 +106,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readFloat64(fieldName: string): number;
-
-    /**
-     * Reads a 64-bit IEEE 754 floating point number or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readFloat64OrDefault(fieldName: string, defaultValue: number): number;
 
     /**
      * Reads a UTF-8 encoded string.
@@ -187,17 +118,6 @@ export interface CompactReader {
     readString(fieldName: string): string | null;
 
     /**
-     * Reads a UTF-8 encoded string or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readStringOrDefault(fieldName: string, defaultValue: string | null): string | null;
-
-    /**
      * Reads an arbitrary precision and scale floating point number.
      *
      * @param fieldName name of the field.
@@ -206,17 +126,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readDecimal(fieldName: string): BigDecimal | null;
-
-    /**
-     * Reads an arbitrary precision and scale floating point number or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readDecimalOrDefault(fieldName: string, defaultValue: BigDecimal | null): BigDecimal | null;
 
     /**
      * Reads a {@link LocalTime} consisting of hour, minute, second, and nano seconds.
@@ -229,18 +138,6 @@ export interface CompactReader {
     readTime(fieldName: string): LocalTime | null;
 
     /**
-     * Reads a {@link LocalTime} consisting of hour, minute, second, and nano seconds
-     * or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readTimeOrDefault(fieldName: string, defaultValue: LocalTime | null): LocalTime | null;
-
-    /**
      * Reads a {@link LocalDate} consisting of year, month, and day.
      *
      * @param fieldName name of the field.
@@ -249,17 +146,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readDate(fieldName: string): LocalDate | null;
-
-    /**
-     * Reads a {@link LocalDate} consisting of year, month, and day or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readDateOrDefault(fieldName: string, defaultValue: LocalDate | null): LocalDate | null;
 
     /**
      * Reads a {@link LocalDateTime} consisting of date and time.
@@ -272,17 +158,6 @@ export interface CompactReader {
     readTimestamp(fieldName: string): LocalDateTime | null;
 
     /**
-     * Reads a {@link LocalDateTime} consisting of date and time or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readTimestampOrDefault(fieldName: string, defaultValue: LocalDateTime | null): LocalDateTime | null;
-
-    /**
      * Reads a {@link OffsetDateTime} consisting of date, time and timezone offset.
      *
      * @param fieldName name of the field.
@@ -291,18 +166,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readTimestampWithTimezone(fieldName: string): OffsetDateTime | null;
-
-    /**
-     * Reads a {@link OffsetDateTime} consisting of date, time and timezone offset
-     * or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readTimestampWithTimezoneOrDefault(fieldName: string, defaultValue: OffsetDateTime | null): OffsetDateTime | null;
 
     /**
      * Reads a compact object.
@@ -315,17 +178,6 @@ export interface CompactReader {
     readCompact<T>(fieldName: string): T | null;
 
     /**
-     * Reads a compact object or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readCompactOrDefault<T>(fieldName: string, defaultValue: T | null): T | null;
-
-    /**
      * Reads an array of booleans.
      *
      * @param fieldName name of the field.
@@ -334,17 +186,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readArrayOfBoolean(fieldName: string): boolean[] | null;
-
-    /**
-     * Reads an array of booleans or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfBooleanOrDefault(fieldName: string, defaultValue: boolean[] | null): boolean[] | null;
 
     /**
      * Reads an array of 8-bit two's complement signed integers.
@@ -357,17 +198,6 @@ export interface CompactReader {
     readArrayOfInt8(fieldName: string): Buffer | null;
 
     /**
-     * Reads an array of 8-bit two's complement signed integers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfInt8OrDefault(fieldName: string, defaultValue: Buffer | null): Buffer | null;
-
-    /**
      * Reads an array of 16-bit two's complement signed integers.
      *
      * @param fieldName name of the field.
@@ -376,17 +206,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readArrayOfInt16(fieldName: string): number[] | null;
-
-    /**
-     * Reads an array of 16-bit two's complement signed integers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfInt16OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null;
 
     /**
      * Reads an array of 32-bit two's complement signed integers.
@@ -399,17 +218,6 @@ export interface CompactReader {
     readArrayOfInt32(fieldName: string): number[] | null;
 
     /**
-     * Reads an array of 32-bit two's complement signed integers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfInt32OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null;
-
-    /**
      * Reads an array of 64-bit two's complement signed integers.
      *
      * @param fieldName name of the field.
@@ -418,17 +226,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readArrayOfInt64(fieldName: string): Long[] | null;
-
-    /**
-     * Reads an array of 64-bit two's complement signed integers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfInt64OrDefault(fieldName: string, defaultValue: Long[] | null): Long[] | null;
 
     /**
      * Reads an array of 32-bit IEEE 754 floating point numbers.
@@ -441,17 +238,6 @@ export interface CompactReader {
     readArrayOfFloat32(fieldName: string): number[] | null;
 
     /**
-     * Reads an array of 32-bit IEEE 754 floating point numbers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfFloat32OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null;
-
-    /**
      * Reads an array of 64-bit IEEE 754 floating point numbers.
      *
      * @param fieldName name of the field.
@@ -460,17 +246,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readArrayOfFloat64(fieldName: string): number[] | null;
-
-    /**
-     * Reads an array of 64-bit IEEE 754 floating point numbers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfFloat64OrDefault(fieldName: string, defaultValue: number[] | null): number[] | null;
 
     /**
      * Reads an array of UTF-8 encoded strings.
@@ -483,17 +258,6 @@ export interface CompactReader {
     readArrayOfString(fieldName: string): (string | null)[] | null;
 
     /**
-     * Reads an array of UTF-8 encoded strings or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfStringOrDefault(fieldName: string, defaultValue: (string | null)[] | null): (string | null)[] | null;
-
-    /**
      * Reads an array of {@link BigDecimal} objects.
      *
      * @param fieldName name of the field.
@@ -502,17 +266,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readArrayOfDecimal(fieldName: string): (BigDecimal | null)[] | null;
-
-    /**
-     * Reads an array of {@link BigDecimal} objects or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfDecimalOrDefault(fieldName: string, defaultValue: (BigDecimal | null)[] | null): (BigDecimal | null)[] | null;
 
     /**
      * Reads an array of {@link LocalTime} objects consisting of hour, minute, second,
@@ -526,18 +279,6 @@ export interface CompactReader {
     readArrayOfTime(fieldName: string): (LocalTime | null)[] | null;
 
     /**
-     * Reads an array of {@link LocalTime} objects consisting of hour, minute, second,
-     * and nanoseconds or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfTimeOrDefault(fieldName: string, defaultValue: (LocalTime | null)[] | null): (LocalTime | null)[] | null;
-
-    /**
      * Reads an array of {@link LocalDate} objects consisting of year, month, and day.
      *
      * @param fieldName name of the field.
@@ -546,18 +287,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readArrayOfDate(fieldName: string): (LocalDate | null)[] | null;
-
-    /**
-     * Reads an array of {@link LocalDate} objects consisting of year, month, and day
-     * or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfDateOrDefault(fieldName: string, defaultValue: (LocalDate | null)[] | null): (LocalDate | null)[] | null;
 
     /**
      * Reads an array of {@link LocalDateTime} objects consisting of date and time.
@@ -570,20 +299,6 @@ export interface CompactReader {
     readArrayOfTimestamp(fieldName: string): (LocalDateTime | null)[] | null;
 
     /**
-     * Reads an array of {@link LocalDateTime} objects consisting of date and time
-     * or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfTimestampOrDefault(
-        fieldName: string, defaultValue: (LocalDateTime | null)[] | null
-    ): (LocalDateTime | null)[] | null;
-
-    /**
      * Reads an array of {@link OffsetDateTime} objects consisting of date, time and timezone offset.
      *
      * @param fieldName name of the field.
@@ -592,20 +307,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readArrayOfTimestampWithTimezone(fieldName: string): (OffsetDateTime | null)[] | null;
-
-    /**
-     * Reads an array of {@link OffsetDateTime} objects consisting of date, time and timezone offset
-     * or returns the default value.
-     *
-     * @param fieldName name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfTimestampWithTimezoneOrDefault(
-        fieldName: string, defaultValue: (OffsetDateTime | null)[] | null
-    ): (OffsetDateTime | null)[] | null;
 
     /**
      * Reads an array of compact objects.
@@ -618,17 +319,6 @@ export interface CompactReader {
     readArrayOfCompact<T>(fieldName: string): (T | null)[] | null;
 
     /**
-     * Reads an array of compact objects or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfCompactOrDefault<T>(fieldName: string, defaultValue: (T | null)[] | null): (T | null)[] | null;
-
-    /**
      * Reads a nullable boolean.
      *
      * @param fieldName name of the field.
@@ -637,17 +327,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readNullableBoolean(fieldName: string): boolean | null;
-
-    /**
-     * Reads a nullable boolean or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readNullableBooleanOrDefault(fieldName: string, defaultValue: boolean | null): boolean | null;
 
     /**
      * Reads a nullable 8-bit two's complement signed integer.
@@ -660,17 +339,6 @@ export interface CompactReader {
     readNullableInt8(fieldName: string): number | null;
 
     /**
-     * Reads a nullable 8-bit two's complement signed integer or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readNullableInt8OrDefault(fieldName: string, defaultValue: number | null): number | null;
-
-    /**
      * Reads a nullable 16-bit two's complement signed integer.
      *
      * @param fieldName name of the field.
@@ -679,17 +347,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readNullableInt16(fieldName: string): number | null;
-
-    /**
-     * Reads a nullable 16-bit two's complement signed integer or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readNullableInt16OrDefault(fieldName: string, defaultValue: number | null): number | null;
 
     /**
      * Reads a nullable 32-bit two's complement signed integer.
@@ -702,17 +359,6 @@ export interface CompactReader {
     readNullableInt32(fieldName: string): number | null;
 
     /**
-     * Reads a nullable 32-bit two's complement signed integer or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readNullableInt32OrDefault(fieldName: string, defaultValue: number | null): number | null;
-
-    /**
      * Reads a nullable 64-bit two's complement signed integer.
      *
      * @param fieldName name of the field.
@@ -721,17 +367,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readNullableInt64(fieldName: string): Long | null;
-
-    /**
-     * Reads a nullable 64-bit two's complement signed integer or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readNullableInt64OrDefault(fieldName: string, defaultValue: Long | null): Long | null;
 
     /**
      * Reads a nullable 32-bit IEEE 754 floating point number.
@@ -744,17 +379,6 @@ export interface CompactReader {
     readNullableFloat32(fieldName: string): number | null;
 
     /**
-     * Reads a nullable 32-bit IEEE 754 floating point number or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readNullableFloat32OrDefault(fieldName: string, defaultValue: number | null): number | null;
-
-    /**
      * Reads a nullable 64-bit IEEE 754 floating point number.
      *
      * @param fieldName name of the field.
@@ -763,17 +387,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readNullableFloat64(fieldName: string): number | null;
-
-    /**
-     * Reads a nullable 64-bit IEEE 754 floating point number or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readNullableFloat64OrDefault(fieldName: string, defaultValue: number | null): number | null;
 
     /**
      * Reads a nullable array of nullable booleans.
@@ -786,17 +399,6 @@ export interface CompactReader {
     readArrayOfNullableBoolean(fieldName: string): (boolean | null)[] | null;
 
     /**
-     * Reads a nullable array of nullable booleans or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfNullableBooleanOrDefault(fieldName: string, defaultValue: (boolean | null)[] | null): (boolean | null)[] | null;
-
-    /**
      * Reads a nullable array of nullable 8-bit two's complement signed integers.
      *
      * @param fieldName name of the field.
@@ -805,17 +407,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readArrayOfNullableInt8(fieldName: string): (number | null)[] | null;
-
-    /**
-     * Reads a nullable array of nullable 8-bit two's complement signed integers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfNullableInt8OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null;
 
     /**
      * Reads a nullable array of nullable 16-bit two's complement signed integers.
@@ -828,17 +419,6 @@ export interface CompactReader {
     readArrayOfNullableInt16(fieldName: string): (number | null)[] | null;
 
     /**
-     * Reads a nullable array of nullable 16-bit two's complement signed integers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfNullableInt16OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null;
-
-    /**
      * Reads a nullable array of nullable 32-bit two's complement signed integers.
      *
      * @param fieldName name of the field.
@@ -847,17 +427,6 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readArrayOfNullableInt32(fieldName: string): (number | null)[] | null;
-
-    /**
-     * Reads a nullable array of nullable 32-bit two's complement signed integers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfNullableInt32OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null;
 
     /**
      * Reads a nullable array of nullable 64-bit two's complement signed integers.
@@ -870,17 +439,6 @@ export interface CompactReader {
     readArrayOfNullableInt64(fieldName: string): (Long | null)[] | null;
 
     /**
-     * Reads a nullable array of nullable 64-bit two's complement signed integers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfNullableInt64OrDefault(fieldName: string, defaultValue: (Long | null)[] | null): (Long | null)[] | null;
-
-    /**
      * Reads a nullable array of nullable 32-bit IEEE 754 floating point numbers.
      *
      * @param fieldName name of the field.
@@ -891,17 +449,6 @@ export interface CompactReader {
     readArrayOfNullableFloat32(fieldName: string): (number | null)[] | null;
 
     /**
-     * Reads a nullable array of nullable 32-bit IEEE 754 floating point numbers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfNullableFloat32OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null;
-
-    /**
      * Reads a nullable array of nullable 64-bit IEEE 754 floating point numbers.
      *
      * @param fieldName name of the field.
@@ -910,15 +457,4 @@ export interface CompactReader {
      * @return the value of the field.
      */
     readArrayOfNullableFloat64(fieldName: string): (number | null)[] | null;
-
-    /**
-     * Reads a nullable array of nullable 64-bit IEEE 754 floating point numbers or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given name
-     *                     does not exist in the schema or the type of the field does
-     *                     not match with the one defined in the schema.
-     * @return the value of the field or the default value.
-     */
-    readArrayOfNullableFloat64OrDefault(fieldName: string, defaultValue: (number | null)[] | null): (number | null)[] | null;
 }
