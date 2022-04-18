@@ -168,13 +168,13 @@ describe('FencedLockProxyTest', function () {
     });
 
     it('tryLock: should return undefined on expired session error and no timeout', async function () {
-        sandbox.useFakeTimers(0);
+        const clock = sandbox.useFakeTimers();
         prepareAcquireSession(1);
         stubRequestTryLock(2, new SessionExpiredError());
 
         const promise = proxy.tryLock();
         // advance time as if requests were real
-        sandbox.useFakeTimers(100);
+        clock.tick(100);
         const fence = await promise;
 
         expect(fence).to.be.undefined;
@@ -182,13 +182,13 @@ describe('FencedLockProxyTest', function () {
     });
 
     it('tryLock: should keep trying on expired session error and specified timeout', async function () {
-        sandbox.useFakeTimers(0);
+        const clock = sandbox.useFakeTimers();
         prepareAcquireSession(1);
         stubRequestTryLock(2, new SessionExpiredError());
 
         const promise = proxy.tryLock(1000);
         // advance time as if requests were real
-        sandbox.useFakeTimers(100);
+        clock.tick(100);
         const fence = await promise;
 
         expect(fence.toNumber()).to.be.equal(2);
