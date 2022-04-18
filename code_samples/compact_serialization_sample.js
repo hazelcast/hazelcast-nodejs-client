@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 'use strict';
-const {Client} = require('hazelcast-client');
+const {Client, FieldKind} = require('hazelcast-client');
 const Long = require('long');
 
 class Employee {
@@ -34,7 +34,8 @@ class EmployeeSerializer {
     }
 
     read(reader) {
-        const age = reader.readInt32('age');
+        // Using getFieldKind method, you can use a default value if such a field does not exist.
+        const age = reader.getFieldKind('age') !== FieldKind.INT32 ? 0 : reader.readInt32('name');
         const id = reader.readInt64('id');
         return new Employee(age, id);
     }
