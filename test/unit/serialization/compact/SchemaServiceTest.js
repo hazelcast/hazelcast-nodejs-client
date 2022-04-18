@@ -51,7 +51,7 @@ describe('SchemaServiceTest', function () {
         for (const f in FieldKind) {
             const fieldKind = +f;
             // enums are reverse mapped.
-            if (!isNaN(+fieldKind)) {
+            if (!isNaN(+fieldKind) && fieldKind !== FieldKind.NOT_AVAILABLE) {
                 fields.push(new FieldDescriptor(FieldKind[fieldKind], fieldKind));
             }
         }

@@ -380,7 +380,7 @@ describe('CompactTest', function () {
             }
         });
 
-        it('should read default value when field name exist but with a different field kind.' +
+        it('should read default value when field name exist but with a different field kind. ' +
             `Field: ${FieldKind[fieldKind]}`, async function () {
                 const fieldName = FieldKind[fieldKind];
                 const wrongFieldKind = supportedFields[
