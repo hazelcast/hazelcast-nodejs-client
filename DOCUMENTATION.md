@@ -810,17 +810,17 @@ read(reader) {
 ```
 
 When faced with binary data serialized by the old writer, new readers will be able to read the following fields.
-Also, reader methods can take an optional default value to read when there is no such field in the data.
+Also, you can use the `getFieldKind` method to handle the case where such field does not exist.
 
 ```js
 // CompactSerializer's read method
 read(reader) {
     const id = reader.readInt64("id");
     const name = reader.readString("name");
-    // Read the "age" if it exists, or the default value 0.
+    // Read the "age" if it exists or set it to the default value, 0.
     // reader.readInt32("age") would throw if the "age" field
     // does not exist in data.
-    int age = reader.readInt32OrDefault("age", 0);
+    const age = reader.getFieldKind("age") === FieldKind.INT32 ? reader.readInt32("age") : 0;
     return new Employee(id, name, age);
 }
 ```
