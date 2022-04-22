@@ -62,10 +62,9 @@ export interface Data {
     equals(other: Data): boolean;
 
     /**
-     * Returns true if the object is a portable object
+     * Returns true if this Data is serialized in CompactFormat
      */
-    isPortable(): boolean;
-
+    isCompact(): boolean;
 }
 
 /**
@@ -148,6 +147,8 @@ export interface PositionalDataOutput extends DataOutput {
     pwrite(position: number, byte: number | Buffer): void;
 
     pwriteBoolean(position: number, val: boolean): void;
+
+    pwriteBooleanBit(position: number, bitIndex: number, val: boolean): void;
 
     pwriteByte(position: number, byte: number): void;
 

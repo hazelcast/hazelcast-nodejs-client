@@ -18,6 +18,7 @@ import {IdentifiedDataSerializableFactory, CustomSerializable} from '../serializ
 import {PortableFactory} from '../serialization/Portable';
 import {Serializer} from '../serialization/Serializable';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
+import {CompactSerializationConfig, CompactSerializationConfigImpl} from './CompactSerializationConfig';
 
 /**
  * User-defined serialization config for the client.
@@ -76,6 +77,11 @@ export interface SerializationConfig {
      */
     jsonStringDeserializationPolicy?: JsonStringDeserializationPolicy;
 
+    /**
+     * Compact serialization config.
+     */
+    compact?: CompactSerializationConfig;
+
 }
 
 /** @internal */
@@ -87,7 +93,7 @@ export class SerializationConfigImpl implements SerializationConfig {
     portableFactories: { [id: number]: PortableFactory } = {};
     portableVersion = 0;
     customSerializers: Array<Serializer<CustomSerializable>> = [];
+    compact = new CompactSerializationConfigImpl();
     globalSerializer: Serializer = null;
     jsonStringDeserializationPolicy: JsonStringDeserializationPolicy = JsonStringDeserializationPolicy.EAGER;
-
 }

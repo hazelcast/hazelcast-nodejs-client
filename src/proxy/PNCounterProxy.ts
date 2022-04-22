@@ -91,7 +91,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
                         'because the cluster does not contain any data members');
                 }
             }
-            return this.encodeInvokeInternal<any>(target, codec, ...codecArgs).then((result) => {
+            return this.encodeInvokeInternal<any>(target, codec, ...codecArgs).then((result: any) => {
                 this.updateObservedReplicaTimestamps(result.replicaTimestamps);
                 return result.value;
             }).catch((err) => {
@@ -104,12 +104,12 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         });
     }
 
-    private encodeInvokeInternal<T>(target: MemberImpl, codec: any, ...codecArguments: any[]): Promise<T> {
-        return this.encodeInvokeOnTarget(codec, target.uuid, ...codecArguments,
-            this.lastObservedVectorClock.entrySet(), target.uuid)
-            .then((clientMessage) => {
-                return codec.decodeResponse(clientMessage);
-            });
+    private encodeInvokeInternal<V>(
+        target: MemberImpl, codec: any, ...codecArguments: any[]
+    ): Promise<V> {
+        return this.encodeInvokeOnTarget(codec, target.uuid, (clientMessage) => {
+            return codec.decodeResponse(clientMessage);
+        }, ...codecArguments, this.lastObservedVectorClock.entrySet(), target.uuid)
     }
 
     private getCRDTOperationTarget(excludedAddresses: MemberImpl[]): Promise<MemberImpl> {
@@ -152,11 +152,10 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         if (this.maximumReplicaCount > 0) {
             return Promise.resolve(this.maximumReplicaCount);
         } else {
-            return this.encodeInvokeOnRandomTarget(PNCounterGetConfiguredReplicaCountCodec)
-                .then((clientMessage) => {
-                    this.maximumReplicaCount = PNCounterGetConfiguredReplicaCountCodec.decodeResponse(clientMessage);
-                    return this.maximumReplicaCount;
-                });
+            return this.encodeInvokeOnRandomTarget(PNCounterGetConfiguredReplicaCountCodec, (clientMessage) => {
+                this.maximumReplicaCount = PNCounterGetConfiguredReplicaCountCodec.decodeResponse(clientMessage);
+                return this.maximumReplicaCount;
+            });
         }
     }
 

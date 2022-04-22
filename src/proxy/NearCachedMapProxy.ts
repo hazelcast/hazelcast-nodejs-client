@@ -18,6 +18,7 @@
 import * as Long from 'long';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
+import {MapGetAllCodec} from './../codec/MapGetAllCodec';
 import {EventType} from './EventType';
 import {UUID} from '../core/UUID';
 import {PartitionService, PartitionServiceImpl} from '../PartitionService';
@@ -36,6 +37,8 @@ import {InvocationService} from '../invocation/InvocationService';
 import {SerializationService} from '../serialization/SerializationService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ClusterService} from '../invocation/ClusterService';
+import {SchemaService} from '../serialization/compact/SchemaService';
+import {SchemaNotFoundError} from '../core';
 
 /** @internal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
@@ -57,7 +60,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         getRepairingTask: () => RepairingTask,
         listenerService: ListenerService,
         clusterService: ClusterService,
-        connectionRegistry: ConnectionRegistry
+        connectionRegistry: ConnectionRegistry,
+        schemaService: SchemaService
     ) {
         super(
             servicename,
@@ -68,7 +72,8 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             serializationService,
             listenerService,
             clusterService,
-            connectionRegistry
+            connectionRegistry,
+            schemaService
         );
         this.nearCacheManager = nearCacheManager;
         this.getRepairingTask = getRepairingTask;
@@ -183,13 +188,59 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
             .then<boolean>(removed => this.invalidateCacheEntryAndReturn(keyData, removed));
     }
 
-    protected removeInternal(keyData: Data, value: V): Promise<V | boolean> {
-        return super.removeInternal(keyData, value)
+    protected removeInternal(keyData: Data, valueData: Data | undefined): Promise<V | boolean> {
+        return super.removeInternal(keyData, valueData)
             .then<V | boolean>(oldValue => this.invalidateCacheEntryAndReturn(keyData, oldValue));
     }
 
+    private getAllInternalHelper(
+        partitionsToKeys: { [id: string]: Data[] },
+        result: Array<[any, any]> = []
+    ): Promise<Array<[Data, Data]>> {
+        const partitionPromises: Array<Promise<Array<[Data, Data]>>> = [];
+        for (const partition in partitionsToKeys) {
+            partitionPromises.push(
+                this.encodeInvokeOnPartition(MapGetAllCodec, Number(partition), (clientMessage: ClientMessage) : any => {
+                const getAllResponse = MapGetAllCodec.decodeResponse(clientMessage);
+                return getAllResponse;
+            }, partitionsToKeys[partition]));
+        }
+        const deserializeEntry = (entry: [Data, Data]) : [any, any] => {
+            return [this.toObject(entry[0]), this.toObject(entry[1])];
+        };
+
+        const deserializeEntries = (
+            serializedEntryArray: Array<[Data, Data]>
+        ): Promise<Array<[any, any]>> => {
+            try {
+                return Promise.resolve(serializedEntryArray.map(deserializeEntry));
+            } catch (e) {
+                if (e instanceof SchemaNotFoundError) {
+                    return this.invocationService.fetchSchema(e.schemaId).then(() => {
+                        return serializedEntryArray.map(deserializeEntry);
+                    }).catch(e => {
+                        if (e instanceof SchemaNotFoundError) {
+                            return deserializeEntries(serializedEntryArray);
+                        } else {
+                            throw e;
+                        }
+                    });
+                }
+                throw e;
+            }
+        };
+
+        return Promise.all(partitionPromises).then((serializedEntryArrayArray: Array<Array<[Data, Data]>>) => {
+            const serializedEntryArray: Array<[Data, Data]> = Array.prototype.concat.apply([], serializedEntryArrayArray);
+            return deserializeEntries(serializedEntryArray).then((deserializedEntries: Array<[any, any]>) => {
+                result.push(...deserializedEntries);
+                return serializedEntryArray;
+            })
+        });
+    }
+
     protected getAllInternal(partitionsToKeys: { [id: string]: Data[] },
-                             result: Array<[any, any]> = []): Promise<any[]> {
+                             result: Array<[any, any]> = []): Promise<Array<[any, any]>> {
         const promises = [];
         try {
             for (const partition in partitionsToKeys) {
@@ -215,10 +266,10 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
                     reservations.push(this.nearCache.tryReserveForUpdate(key));
                 }
             }
-            return super.getAllInternal(partitionsToKeys, result).then((serializedEntryArray) => {
-                serializedEntryArray.forEach((serializedEntry, index) => {
-                    const key = serializedEntry[0];
-                    const value = serializedEntry[1];
+            return this.getAllInternalHelper(partitionsToKeys, result).then((serializedEntryArray) => {
+                serializedEntryArray.forEach((entry, index) => {
+                    const key = entry[0];
+                    const value = entry[1];
                     this.nearCache.tryPublishReserved(key, value, reservations[index]);
                 });
                 return result;
