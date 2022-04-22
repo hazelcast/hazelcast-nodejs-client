@@ -35,7 +35,7 @@ class EmployeeSerializer {
 
     read(reader) {
         // Using getFieldKind method, you can use a default value if such a field does not exist.
-        const age = reader.getFieldKind('age') !== FieldKind.INT32 ? 0 : reader.readInt32('name');
+        const age = reader.getFieldKind('age') !== FieldKind.INT32 ? 0 : reader.readInt32('age');
         const id = reader.readInt64('id');
         return new Employee(age, id);
     }
