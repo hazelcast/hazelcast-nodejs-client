@@ -23,8 +23,6 @@ import {
     ReadOnlyLazyList,
     DistributedObject
 } from '../core';
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
-import {Portable} from '../serialization/Portable';
 import {IndexConfig} from '../config/IndexConfig';
 
 /**
@@ -610,7 +608,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws AssertionError if `entryProcessor` is `null`
      * @returns entries after EntryProcessor is applied
      */
-    executeOnEntries(entryProcessor: IdentifiedDataSerializable | Portable, predicate?: Predicate): Promise<Array<[K, V]>>;
+    executeOnEntries(entryProcessor: any, predicate?: Predicate): Promise<Array<[K, V]>>;
 
     /**
      * Applies the user defined EntryProcessor to the entry mapped by the key.
@@ -621,7 +619,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws AssertionError if `key` or `entryProcessor` is `null`
      * @returns result of entry process
      */
-    executeOnKey(key: K, entryProcessor: IdentifiedDataSerializable | Portable): Promise<V>;
+    executeOnKey(key: K, entryProcessor: any): Promise<V>;
 
     /**
      * Applies the user defined EntryProcessor to the entries mapped by the
@@ -632,7 +630,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @throws AssertionError if `keys` is not an array
      * @returns result of entry process
      */
-    executeOnKeys(keys: K[], entryProcessor: IdentifiedDataSerializable | Portable): Promise<Array<[K, V]>>;
+    executeOnKeys(keys: K[], entryProcessor: any): Promise<Array<[K, V]>>;
 
     /**
      * Updates the TTL (time to live) value of the entry specified by `key`

@@ -68,6 +68,10 @@ import {PortableSerializer} from './portable/PortableSerializer';
 import {PREDICATE_FACTORY_ID, predicateFactory} from './DefaultPredicates';
 import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
 import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
+import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
+import {SchemaService} from './compact/SchemaService';
+import {CompactGenericRecordImpl} from './generic_record';
+import {Schema} from './compact/Schema';
 
 /**
  * Serializes objects and deserializes data.
@@ -83,6 +87,8 @@ export interface SerializationService {
 
     readObject(inp: DataInput): any;
 
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    registerSchemaToClass(schema: Schema, clazz: Function): void;
 }
 
 type PartitionStrategy = (obj: any) => number;
@@ -100,14 +106,22 @@ export class SerializationServiceV1 implements SerializationService {
 
     private readonly registry: { [id: number]: Serializer };
     private readonly serializerNameToId: { [name: string]: number };
-    private readonly serializationConfig: SerializationConfigImpl;
+    private readonly compactStreamSerializer: CompactStreamSerializer;
+    private readonly portableSerializer: PortableSerializer;
+    private readonly identifiedSerializer: IdentifiedDataSerializableSerializer;
 
-    constructor(serializationConfig: SerializationConfigImpl) {
-        this.serializationConfig = serializationConfig;
+    constructor(
+        private readonly serializationConfig: SerializationConfigImpl,
+        schemaService: SchemaService
+    ) {
         this.registry = {};
         this.serializerNameToId = {};
+        this.compactStreamSerializer = new CompactStreamSerializer(schemaService);
+        this.portableSerializer = new PortableSerializer(this.serializationConfig);
+        this.identifiedSerializer = this.createIdentifiedSerializer();
         this.registerDefaultSerializers();
         this.registerCustomSerializers();
+        this.registerCompactSerializers();
         this.registerGlobalSerializer();
     }
 
@@ -182,15 +196,16 @@ export class SerializationServiceV1 implements SerializationService {
     /**
      * Serialization precedence
      *  1. NULL
-     *  2. DataSerializable
-     *  3. Portable
-     *  4. Default Types
+     *  2. Compact
+     *  3. DataSerializable
+     *  4. Portable
+     *  5. Default Types
      *      * Byte, Boolean, Character, Short, Integer, Long, Float, Double, String
      *      * Array of [Byte, Boolean, Character, Short, Integer, Long, Float, Double, String]
      *      * Java types [Date, BigInteger, BigDecimal, Class, Enum]
-     *  5. Custom serializers
-     *  6. Global Serializer
-     *  7. Fallback (JSON)
+     *  6. Custom serializers
+     *  7. Global Serializer
+     *  8. Fallback (JSON)
      * @param obj
      * @returns
      */
@@ -223,12 +238,16 @@ export class SerializationServiceV1 implements SerializationService {
 
     private lookupDefaultSerializer(obj: any): Serializer {
         let serializer: Serializer = null;
+        if (this.isCompactSerializable(obj)) {
+            return this.compactStreamSerializer;
+        }
         if (SerializationServiceV1.isIdentifiedDataSerializable(obj)) {
-            return this.findSerializerByName('identified', false);
+            return this.identifiedSerializer;
         }
         if (SerializationServiceV1.isPortableSerializable(obj)) {
-            return this.findSerializerByName('!portable', false);
+            return this.portableSerializer
         }
+
         const objectType = Util.getType(obj);
         if (objectType === 'array') {
             if (obj.length === 0) {
@@ -263,6 +282,14 @@ export class SerializationServiceV1 implements SerializationService {
             && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
     }
 
+    isCompactSerializable(obj: any): boolean {
+       if (obj instanceof CompactGenericRecordImpl) {
+            return true;
+        }
+
+        return this.compactStreamSerializer.isRegisteredAsCompact(obj.constructor);
+    }
+
     private registerDefaultSerializers(): void {
         this.registerSerializer('string', new StringSerializer());
         this.registerSerializer('double', new DoubleSerializer());
@@ -295,8 +322,9 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer('bigDecimal', new BigDecimalSerializer());
         this.registerSerializer('bigint', new BigIntSerializer());
         this.registerSerializer('javaArray', new JavaArraySerializer());
-        this.registerIdentifiedFactories();
-        this.registerSerializer('!portable', new PortableSerializer(this.serializationConfig));
+        this.registerSerializer('!compact', this.compactStreamSerializer);
+        this.registerSerializer('identified', this.identifiedSerializer);
+        this.registerSerializer('!portable', this.portableSerializer);
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
             this.registerSerializer('!json', new JsonSerializer());
         } else {
@@ -304,7 +332,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
     }
 
-    private registerIdentifiedFactories(): void {
+    private createIdentifiedSerializer(): IdentifiedDataSerializableSerializer {
         const factories: { [id: number]: IdentifiedDataSerializableFactory } = {};
         for (const id in this.serializationConfig.dataSerializableFactories) {
             factories[id] = this.serializationConfig.dataSerializableFactories[id];
@@ -314,13 +342,20 @@ export class SerializationServiceV1 implements SerializationService {
         factories[CLUSTER_DATA_FACTORY_ID] = clusterDataFactory;
         factories[AGGREGATOR_FACTORY_ID] = aggregatorFactory;
         factories[REST_VALUE_FACTORY_ID] = restValueFactory;
-        this.registerSerializer('identified', new IdentifiedDataSerializableSerializer(factories));
+        return new IdentifiedDataSerializableSerializer(factories);
     }
 
     private registerCustomSerializers(): void {
         const customSerializers = this.serializationConfig.customSerializers;
         for (const customSerializer of customSerializers) {
             this.registerSerializer('!custom' + customSerializer.id, customSerializer);
+        }
+    }
+
+    private registerCompactSerializers(): void {
+        const compactSerializers = this.serializationConfig.compact.serializers;
+        for (const compactSerializer of compactSerializers) {
+            this.compactStreamSerializer.registerSerializer(compactSerializer);
         }
     }
 
@@ -360,5 +395,10 @@ export class SerializationServiceV1 implements SerializationService {
 
     private static calculatePartitionHash(object: any, strategy: PartitionStrategy): number {
         return strategy(object);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    registerSchemaToClass(schema: Schema, clazz: Function): void {
+        this.compactStreamSerializer.registerSchemaToClass(schema, clazz);
     }
 }

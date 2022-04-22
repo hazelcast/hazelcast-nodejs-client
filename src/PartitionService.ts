@@ -16,7 +16,7 @@
 
 import {ILogger} from './logging/ILogger';
 import {Connection} from './network/Connection';
-import {ClientOfflineError, UUID} from './core';
+import {ClientOfflineError, HazelcastSerializationError, SchemaNotReplicatedError, UUID} from './core';
 import {SerializationService} from './serialization/SerializationService';
 
 /**
@@ -47,6 +47,7 @@ export interface PartitionService {
      * @param key
      * @returns the partition id.
      * @throws {@link ClientOfflineError} if the partition table has not arrived yet.
+     * @throws {@link HazelcastSerializationError} if key cannot be serialized
      */
     getPartitionId(key: any): number;
 
@@ -106,7 +107,18 @@ export class PartitionServiceImpl implements PartitionService {
         if (typeof key === 'object' && 'getPartitionHash' in key) {
             partitionHash = key.getPartitionHash();
         } else {
-            partitionHash = this.serializationService.toData(key).getPartitionHash();
+            try {
+                partitionHash = this.serializationService.toData(key).getPartitionHash();
+            } catch (e) {
+                if (e instanceof SchemaNotReplicatedError) {
+                    throw new HazelcastSerializationError(
+                        'Cannot compute partition id of compact objects whose schema is not replicated in the cluster. ' +
+                        'To replicate its schema to the cluster, you can use this object in any async operation where ' +
+                        'it is serialized.'
+                        , e
+                    );
+                }
+            }
         }
         return Math.abs(partitionHash) % this.partitionCount;
     }

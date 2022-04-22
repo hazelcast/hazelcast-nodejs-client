@@ -129,7 +129,7 @@ export class PipelinedWriter extends Writer {
         const writeBatch = this.queue.slice(0, queueIdx);
         this.queue = this.queue.slice(queueIdx);
 
-        let buf;
+        let buf: Buffer;
         if (writeBatch.length === 1 && totalLength > this.threshold) {
             // take the only large message
             buf = writeBatch[0].message.toBuffer();

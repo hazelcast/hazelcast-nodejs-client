@@ -48,7 +48,7 @@ exports.main = async (cluster) => {
     console.log(`Will run ${JSON.stringify(files)}`);
 
     const numberOfFiles = files.length;
-    let counter = 0;
+    let counter = 1;
     for (const file of files) {
         // start and terminate for each code sample to avoid map name clashes
         const member = await RC.startMember(cluster.id);
