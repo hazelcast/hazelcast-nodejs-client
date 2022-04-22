@@ -99,7 +99,7 @@ export class ListenerService {
         this.logger.trace('ListenerService', `Register attempt of ${listenerRegistration} to ${connection}`);
 
         const invocation = new Invocation(this.invocationService, registerRequest);
-        invocation.handler = handler as any;
+        invocation.eventHandler = handler;
         invocation.connection = connection;
 
         return this.invocationService.invokeUrgent(invocation)

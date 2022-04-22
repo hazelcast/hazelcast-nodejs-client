@@ -26,10 +26,19 @@ import {SerializationService} from '../serialization/SerializationService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
+import {SchemaService} from '../serialization/compact/SchemaService';
+import {Schema} from '../serialization/compact/Schema';
 
 /**
  * Common super class for any proxy.
  * @internal
+ *
+ * You will see a lot of try/catch blocks around {@link toData} in proxy methods. This is called controlled serialization
+ * and needed due to compact serialization. While serializing a compact object we need to be sure that its schema
+ * is replicated to cluster for data integrity. If not, we throw {@link SchemaNotReplicatedError}. Therefore, we
+ * check if toData calls throw the error and if so, we register the schema to the cluster and then retry the proxy api call.
+ * We need try/catch blocks everywhere to avoid performance penalty of returning Promise.resolve(data) instead
+ * of data.
  */
 export abstract class BaseProxy {
 
@@ -42,7 +51,8 @@ export abstract class BaseProxy {
         protected readonly serializationService: SerializationService,
         protected readonly listenerService: ListenerService,
         protected readonly clusterService: ClusterService,
-        protected readonly connectionRegistry: ConnectionRegistry
+        protected readonly connectionRegistry: ConnectionRegistry,
+        protected readonly schemaService: SchemaService
     ) {}
 
     getPartitionKey(): string {
@@ -67,68 +77,101 @@ export abstract class BaseProxy {
         return this.postDestroy();
     }
 
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    protected registerSchema(schema: Schema, clazz: Function | undefined): Promise<void> {
+        return this.invocationService.registerSchema(schema, clazz);
+    }
+
     protected postDestroy(): Promise<void> {
         return Promise.resolve();
+    }
+
+    protected serializeList(items: any[]): Data[] {
+        return items.map((item: any) => {
+            return this.toData(item);
+        });
+    }
+
+    protected deserializeList(items: Data[]): any[] {
+        return items.map((item: Data) => {
+            return this.toObject(item);
+        });
+    }
+
+    protected deserializeEntryList<K, V>(entrySet: Array<[Data, Data]>): Array<[K, V]> {
+        return entrySet.map((entry: [Data, Data]) => {
+            return [this.toObject(entry[0]), this.toObject(entry[1])]
+        });
     }
 
     /**
      * Encodes a request from a codec and invokes it on owner node of given key.
      */
-    protected encodeInvokeOnKey(codec: any, partitionKey: any, ...codecArguments: any[]): Promise<ClientMessage> {
+    protected encodeInvokeOnKey<V>(
+        codec: any, partitionKey: any, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]
+    ): Promise<V> {
         const partitionId: number = this.partitionService.getPartitionId(partitionKey);
-        return this.encodeInvokeOnPartition(codec, partitionId, ...codecArguments);
+        return this.encodeInvokeOnPartition(codec, partitionId, handler, ...codecArguments);
     }
 
     /**
      * Encodes a request from a codec and invokes it on owner node of given key.
      * This method also overrides invocation timeout.
      */
-    protected encodeInvokeOnKeyWithTimeout(timeoutMillis: number,
+    protected encodeInvokeOnKeyWithTimeout<V>(timeoutMillis: number,
                                            codec: any,
                                            partitionKey: any,
-                                           ...codecArguments: any[]): Promise<ClientMessage> {
+                                           handler: (clientMessage: ClientMessage) => V,
+                                           ...codecArguments: any[]): Promise<V> {
         const partitionId: number = this.partitionService.getPartitionId(partitionKey);
-        return this.encodeInvokeOnPartitionWithTimeout(timeoutMillis, codec, partitionId, ...codecArguments);
+        return this.encodeInvokeOnPartitionWithTimeout(timeoutMillis, codec, partitionId, handler, ...codecArguments);
     }
 
     /**
      * Encodes a request from a codec and invokes it on any node.
      */
-    protected encodeInvokeOnRandomTarget(codec: any, ...codecArguments: any[]): Promise<ClientMessage> {
+    protected encodeInvokeOnRandomTarget<V>(
+        codec: any, handler: (clientMessage: ClientMessage) => V,  ...codecArguments: any[]
+    ): Promise<V> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnRandomTarget(clientMessage);
+        return this.invocationService.invokeOnRandomTarget(clientMessage, handler);
     }
 
-    protected encodeInvokeOnTarget(codec: any, target: UUID, ...codecArguments: any[]): Promise<ClientMessage> {
+    protected encodeInvokeOnTarget<V>(
+        codec: any, target: UUID, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]
+    ): Promise<V> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnTarget(clientMessage, target);
+        return this.invocationService.invokeOnTarget(clientMessage, target, handler);
     }
 
     /**
      * Encodes a request from a codec and invokes it on owner node of given partition.
      */
-    protected encodeInvokeOnPartition(codec: any, partitionId: number, ...codecArguments: any[]): Promise<ClientMessage> {
+    protected encodeInvokeOnPartition<V>(
+        codec: any, partitionId: number, handler: (clientMessage: ClientMessage) => V, ...codecArguments: any[]
+    ): Promise<V> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnPartition(clientMessage, partitionId);
+        return this.invocationService.invokeOnPartition(clientMessage, partitionId, handler);
     }
 
     /**
      * Encodes a request from a codec and invokes it on owner node of given partition.
      * This method also overrides invocation timeout.
      */
-    protected encodeInvokeOnPartitionWithTimeout(timeoutMillis: number,
+    protected encodeInvokeOnPartitionWithTimeout<V>(timeoutMillis: number,
                                                  codec: any,
                                                  partitionId: number,
-                                                 ...codecArguments: any[]): Promise<ClientMessage> {
+                                                 handler: (clientMessage: ClientMessage) => V,
+                                                 ...codecArguments: any[]): Promise<V> {
         const clientMessage = codec.encodeRequest(this.name, ...codecArguments);
-        return this.invocationService.invokeOnPartition(clientMessage, partitionId, timeoutMillis);
+        return this.invocationService.invokeOnPartition(clientMessage, partitionId, handler, timeoutMillis);
     }
 
     /**
      * Serializes an object according to serialization settings of the client.
      */
-    protected toData(object: any): Data {
-        return this.serializationService.toData(object);
+    protected toData(object: any, partitioningStrategy?: any): Data {
+        return this.serializationService.toData(object, partitioningStrategy);
     }
 
     /**

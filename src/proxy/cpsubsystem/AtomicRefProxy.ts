@@ -25,6 +25,8 @@ import {AtomicRefSetCodec} from '../../codec/AtomicRefSetCodec';
 import {AtomicRefContainsCodec} from '../../codec/AtomicRefContainsCodec';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
+import {SchemaNotReplicatedError} from '../../core/HazelcastError';
+import {Data} from '../../serialization/Data';
 
 
 /** @internal */
@@ -48,51 +50,81 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
     }
 
     compareAndSet(expect: E, update: E): Promise<boolean> {
-        const expectedData = this.toData(expect);
-        const newData = this.toData(update);
+        let expectedData: Data, newData: Data;
+        try {
+            expectedData = this.toData(expect);
+            newData = this.toData(update);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.compareAndSet(expect, update));
+            }
+            throw e;
+        }
         return this.encodeInvokeOnRandomTarget(
             AtomicRefCompareAndSetCodec,
+            AtomicRefCompareAndSetCodec.decodeResponse,
             this.groupId,
             this.objectName,
             expectedData,
             newData
-        ).then(AtomicRefCompareAndSetCodec.decodeResponse);
+        );
     }
 
     get(): Promise<E> {
         return this.encodeInvokeOnRandomTarget(
             AtomicRefGetCodec,
+            (clientMessage) => {
+                const response = AtomicRefGetCodec.decodeResponse(clientMessage);
+                return this.toObject(response);
+            },
             this.groupId,
             this.objectName
-        ).then((clientMessage) => {
-            const response = AtomicRefGetCodec.decodeResponse(clientMessage);
-            return this.toObject(response);
-        });
+        );
     }
 
     set(newValue: E): Promise<void> {
-        const newData = this.toData(newValue);
+        let newData: Data;
+        try {
+            newData = this.toData(newValue);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.set(newValue));
+            }
+            throw e;
+        }
+
         return this.encodeInvokeOnRandomTarget(
             AtomicRefSetCodec,
+            () => {},
             this.groupId,
             this.objectName,
             newData,
             false
-        ).then(() => {});
+        );
     }
 
     getAndSet(newValue: E): Promise<E> {
-        const newData = this.toData(newValue);
+        let newData: Data;
+        try {
+            newData = this.toData(newValue);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.getAndSet(newValue));
+            }
+            throw e;
+        }
+
         return this.encodeInvokeOnRandomTarget(
             AtomicRefSetCodec,
+            (clientMessage) => {
+                const response = AtomicRefSetCodec.decodeResponse(clientMessage);
+                return this.toObject(response);
+            },
             this.groupId,
             this.objectName,
             newData,
             true
-        ).then((clientMessage) => {
-            const response = AtomicRefSetCodec.decodeResponse(clientMessage);
-            return this.toObject(response);
-        });
+        );
     }
 
     isNull(): Promise<boolean> {
@@ -104,12 +136,22 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
     }
 
     contains(value: E): Promise<boolean> {
-        const valueData = this.toData(value);
+        let valueData: Data;
+        try {
+            valueData = this.toData(value);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.contains(value));
+            }
+            throw e;
+        }
+
         return this.encodeInvokeOnRandomTarget(
             AtomicRefContainsCodec,
+            AtomicRefContainsCodec.decodeResponse,
             this.groupId,
             this.objectName,
             valueData
-        ).then(AtomicRefContainsCodec.decodeResponse);
+        );
     }
 }

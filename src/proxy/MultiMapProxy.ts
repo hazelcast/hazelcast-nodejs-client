@@ -47,9 +47,9 @@ import {MapEvent} from './MapListener';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {
     ReadOnlyLazyList,
+    SchemaNotReplicatedError,
     UUID
 } from '../core';
-import * as SerializationUtil from '../serialization/SerializationUtil';
 import {MultiMapPutAllCodec} from '../codec/MultiMapPutAllCodec';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 import {ProxyManager} from './ProxyManager';
@@ -59,6 +59,7 @@ import {SerializationService} from '../serialization/SerializationService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ListenerService} from '../listener/ListenerService';
 import {ClusterService} from '../invocation/ClusterService';
+import {SchemaService} from '../serialization/compact/SchemaService';
 
 /** @internal */
 export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
@@ -73,7 +74,8 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
         listenerService: ListenerService,
         clusterService: ClusterService,
         private lockReferenceIdGenerator: LockReferenceIdGenerator,
-        connectionRegistry: ConnectionRegistry
+        connectionRegistry: ConnectionRegistry,
+        schemaService: SchemaService
     ) {
         super(
             serviceName,
@@ -84,107 +86,158 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             serializationService,
             listenerService,
             clusterService,
-            connectionRegistry
+            connectionRegistry,
+            schemaService
         );
     }
 
-    private deserializeList = <X>(items: Data[]): X[] => {
-        return items.map<X>(this.toObject.bind(this));
-    };
-
     put(key: K, value: V): Promise<boolean> {
-        const keyData = this.toData(key);
-        const valueData = this.toData(value);
-        return this.encodeInvokeOnKey(MultiMapPutCodec, keyData, keyData, valueData, 1)
-            .then(MultiMapPutCodec.decodeResponse);
+        let keyData: Data, valueData: Data;
+        try {
+            keyData = this.toData(key);
+            valueData = this.toData(value);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.put(key, value));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnKey(MultiMapPutCodec, keyData, MultiMapPutCodec.decodeResponse, keyData, valueData, 1);
     }
 
     get(key: K): Promise<ReadOnlyLazyList<V>> {
-        const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MultiMapGetCodec, keyData, keyData, 1)
-            .then((clientMessage) => {
-                const response = MultiMapGetCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response, this.serializationService);
-            });
+        let keyData: Data;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.get(key));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnKey(MultiMapGetCodec, keyData, (clientMessage) => {
+            const response = MultiMapGetCodec.decodeResponse(clientMessage);
+            return new ReadOnlyLazyList<V>(response, this.serializationService);
+        }, keyData, 1);
     }
 
     remove(key: K, value: V): Promise<boolean> {
-        const keyData = this.toData(key);
-        const valueData = this.toData(value);
-        return this.encodeInvokeOnKey(MultiMapRemoveEntryCodec, keyData, keyData, valueData, 1)
-            .then(MultiMapRemoveEntryCodec.decodeResponse);
+        let keyData: Data, valueData: Data;
+        try {
+            keyData = this.toData(key);
+            valueData = this.toData(value);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.remove(key, value));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnKey(
+            MultiMapRemoveEntryCodec, keyData, MultiMapRemoveEntryCodec.decodeResponse, keyData, valueData, 1
+        );
     }
 
     removeAll(key: K): Promise<ReadOnlyLazyList<V>> {
-        const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MultiMapRemoveCodec, keyData, keyData, 1)
-            .then((clientMessage) => {
-                const response = MultiMapRemoveCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response, this.serializationService);
-            });
+        let keyData: Data;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.removeAll(key));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnKey(MultiMapRemoveCodec, keyData, (clientMessage) => {
+            const response = MultiMapRemoveCodec.decodeResponse(clientMessage);
+            return new ReadOnlyLazyList<V>(response, this.serializationService);
+        }, keyData, 1);
     }
 
     keySet(): Promise<K[]> {
-        return this.encodeInvokeOnRandomTarget(MultiMapKeySetCodec)
-            .then((clientMessage) => {
-                const response = MultiMapKeySetCodec.decodeResponse(clientMessage);
-                return this.deserializeList(response);
-            });
+        return this.encodeInvokeOnRandomTarget(MultiMapKeySetCodec, (clientMessage) => {
+            const response = MultiMapKeySetCodec.decodeResponse(clientMessage);
+            return this.deserializeList(response);
+        });
     }
 
     values(): Promise<ReadOnlyLazyList<V>> {
-        return this.encodeInvokeOnRandomTarget(MultiMapValuesCodec)
-            .then((clientMessage) => {
-                const response = MultiMapValuesCodec.decodeResponse(clientMessage);
-                return new ReadOnlyLazyList<V>(response, this.serializationService);
-            });
+        return this.encodeInvokeOnRandomTarget(MultiMapValuesCodec, (clientMessage) => {
+            const response = MultiMapValuesCodec.decodeResponse(clientMessage);
+            return new ReadOnlyLazyList<V>(response, this.serializationService);
+        });
     }
 
     entrySet(): Promise<Array<[K, V]>> {
-        return this.encodeInvokeOnRandomTarget(MultiMapEntrySetCodec)
-            .then((clientMessage) => {
-                const response = MultiMapEntrySetCodec.decodeResponse(clientMessage);
-                return SerializationUtil.deserializeEntryList(this.toObject.bind(this), response);
-            });
+        return this.encodeInvokeOnRandomTarget(MultiMapEntrySetCodec, (clientMessage) => {
+            const response = MultiMapEntrySetCodec.decodeResponse(clientMessage);
+            return this.deserializeEntryList(response);
+        });
     }
 
     containsKey(key: K): Promise<boolean> {
-        const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MultiMapContainsKeyCodec, keyData, keyData, 1)
-            .then(MultiMapContainsKeyCodec.decodeResponse);
+        let keyData: Data;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.containsKey(key));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnKey(MultiMapContainsKeyCodec, keyData, MultiMapContainsKeyCodec.decodeResponse, keyData, 1);
     }
 
     containsValue(value: V): Promise<boolean> {
-        const valueData = this.toData(value);
-        return this.encodeInvokeOnRandomTarget(MultiMapContainsValueCodec, valueData)
-            .then(MultiMapContainsValueCodec.decodeResponse);
+        let valueData: Data;
+        try {
+            valueData = this.toData(value);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.containsValue(value));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnRandomTarget(MultiMapContainsValueCodec, MultiMapContainsValueCodec.decodeResponse, valueData);
     }
 
     containsEntry(key: K, value: V): Promise<boolean> {
-        const keyData = this.toData(key);
-        const valueData = this.toData(value);
-        return this.encodeInvokeOnKey(MultiMapContainsEntryCodec, keyData, keyData, valueData, 1)
-            .then(MultiMapContainsEntryCodec.decodeResponse);
+        let keyData: Data, valueData: Data;
+        try {
+            keyData = this.toData(key);
+            valueData = this.toData(value);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.containsEntry(key, value));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnKey(
+            MultiMapContainsEntryCodec, keyData, MultiMapContainsEntryCodec.decodeResponse, keyData, valueData, 1
+        );
     }
 
     size(): Promise<number> {
-        return this.encodeInvokeOnRandomTarget(MultiMapSizeCodec)
-            .then(MultiMapSizeCodec.decodeResponse);
+        return this.encodeInvokeOnRandomTarget(MultiMapSizeCodec, MultiMapSizeCodec.decodeResponse);
     }
 
     clear(): Promise<void> {
-        return this.encodeInvokeOnRandomTarget(MultiMapClearCodec).then(() => {});
+        return this.encodeInvokeOnRandomTarget(MultiMapClearCodec, () => {});
     }
 
     valueCount(key: K): Promise<number> {
-        const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MultiMapValueCountCodec, keyData, keyData, 1)
-            .then(MultiMapValueCountCodec.decodeResponse);
+        let keyData: Data;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.valueCount(key));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnKey(MultiMapValueCountCodec, keyData, MultiMapValueCountCodec.decodeResponse, keyData, 1);
     }
 
     addEntryListener(listener: EntryListener<K, V>, key?: K, includeValue = true): Promise<string> {
-        const toObject = this.toObject.bind(this);
-
         const entryEventHandler = (keyData: Data,
                                    valueData: Data,
                                    oldValueData: Data,
@@ -195,10 +248,10 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             const member = this.clusterService.getMember(uuid.toString());
             const name = this.name;
 
-            key = toObject(keyData);
-            const value = toObject(valueData);
-            const oldValue = toObject(oldValueData);
-            const mergingValue = toObject(mergingValueData);
+            key = this.toObject(keyData);
+            const value = this.toObject(valueData);
+            const oldValue = this.toObject(oldValueData);
+            const mergingValue = this.toObject(mergingValueData);
 
             const entryEvent = new EntryEvent(name, key, value, oldValue, mergingValue, member);
 
@@ -224,8 +277,16 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             }
         };
 
-        if (key) {
-            const keyData = this.toData(key);
+        if (key !== undefined) {
+            let keyData: Data;
+            try {
+                keyData = this.toData(key);
+            } catch (e) {
+                if (e instanceof SchemaNotReplicatedError) {
+                    return this.registerSchema(e.schema, e.clazz).then(() => this.addEntryListener(listener, key, includeValue));
+                }
+                throw e;
+            }
             const handler = (m: ClientMessage): void => {
                 MultiMapAddEntryListenerToKeyCodec.handle(m, entryEventHandler);
             };
@@ -247,35 +308,78 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
     }
 
     lock(key: K, leaseMillis = -1): Promise<void> {
-        const keyData = this.toData(key);
+        let keyData: Data;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.lock(key, leaseMillis));
+            }
+            throw e;
+        }
         return this.encodeInvokeOnKey(
-            MultiMapLockCodec, keyData, keyData, 1, leaseMillis, this.nextSequence()
-        ).then(() => {});
+            MultiMapLockCodec, keyData, () => {}, keyData, 1, leaseMillis, this.nextSequence()
+        );
     }
 
     isLocked(key: K): Promise<boolean> {
-        const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MultiMapIsLockedCodec, keyData, keyData)
-            .then(MultiMapIsLockedCodec.decodeResponse);
+        let keyData: Data;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.isLocked(key));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnKey(MultiMapIsLockedCodec, keyData, MultiMapIsLockedCodec.decodeResponse, keyData);
     }
 
     tryLock(key: K, timeoutMillis = 0, leaseMillis = -1): Promise<boolean> {
-        const keyData = this.toData(key);
+        let keyData: Data;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.tryLock(key, timeoutMillis, leaseMillis));
+            }
+            throw e;
+        }
         return this.encodeInvokeOnKey(
-            MultiMapTryLockCodec, keyData, keyData, 1, leaseMillis,timeoutMillis, this.nextSequence()
-        ).then(MultiMapTryLockCodec.decodeResponse);
+            MultiMapTryLockCodec,
+            keyData,
+            MultiMapTryLockCodec.decodeResponse,
+            keyData,
+            1,
+            leaseMillis,timeoutMillis,
+            this.nextSequence()
+        );
     }
 
     unlock(key: K): Promise<void> {
-        const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MultiMapUnlockCodec, keyData, keyData, 1, this.nextSequence())
-            .then(() => {});
+        let keyData: Data;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.unlock(key));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnKey(MultiMapUnlockCodec, keyData, () => {}, keyData, 1, this.nextSequence());
     }
 
     forceUnlock(key: K): Promise<void> {
-        const keyData = this.toData(key);
-        return this.encodeInvokeOnKey(MultiMapForceUnlockCodec, keyData, keyData, this.nextSequence())
-            .then(() => {});
+        let keyData: Data;
+        try {
+            keyData = this.toData(key);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.forceUnlock(key));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnKey(MultiMapForceUnlockCodec, keyData, () => {}, keyData, this.nextSequence());
     }
 
     putAll(pairs: Array<[K, V[]]>): Promise<void> {
@@ -285,8 +389,15 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
 
         const dataPairs: Array<[Data, Data[]]> = [];
         for (const pair of pairs) {
-            const valuesData = SerializationUtil.serializeList(this.toData.bind(this), pair[1]);
-            dataPairs.push([this.toData(pair[0]), valuesData]);
+            try {
+                const valuesData = this.serializeList(pair[1]);
+                dataPairs.push([this.toData(pair[0]), valuesData]);
+            } catch (e) {
+                if (e instanceof SchemaNotReplicatedError) {
+                    return this.registerSchema(e.schema, e.clazz).then(() => this.putAll(pairs));
+                }
+                throw e;
+            }
         }
 
         const partitionService = this.partitionService;
@@ -303,9 +414,9 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             partitionedDataPairs.push(dataPair);
         }
 
-        const partitionPromises: Array<Promise<ClientMessage>> = [];
+        const partitionPromises: Array<Promise<void>> = [];
         partitionToDataPairs.forEach((pair, partitionId) => {
-           partitionPromises.push(this.encodeInvokeOnPartition(MultiMapPutAllCodec, partitionId, pair));
+           partitionPromises.push(this.encodeInvokeOnPartition(MultiMapPutAllCodec, partitionId, () => {}, pair));
         });
 
         return Promise.all(partitionPromises).then(() => {});

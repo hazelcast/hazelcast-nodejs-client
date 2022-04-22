@@ -17,12 +17,71 @@
 
 const { expect } = require('chai');
 const fs = require('fs');
+const Long = require('long');
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
+const CompactUtil = require('../../parallel/serialization/compact/CompactUtil');
 const { assertTrueEventually } = require('../../../../TestUtil');
 
 describe('NearCachedMapTest', function () {
     const testFactory = new TestUtil.TestFactory();
+
+    ['BINARY', 'OBJECT'].forEach((inMemoryFormat) => {
+        describe(`Compact serialization test, inMemoryFormat=${inMemoryFormat}`, function () {
+            let cluster;
+            let client1;
+            let client2;
+            let map1;
+            let map2;
+            let member;
+
+            before(async function () {
+                TestUtil.markClientVersionAtLeast(this, '5.1');
+                cluster = await testFactory.createClusterForParallelTests();
+                member = await RC.startMember(cluster.id);
+            });
+
+            beforeEach(async function () {
+                const cfg = {
+                    clusterName: cluster.id,
+                    nearCaches: {
+                        'ncc-map': {
+                            inMemoryFormat
+                        }
+                    },
+                    serialization: {
+                        compact: {
+                            serializers: [new CompactUtil.EmployeeSerializer()]
+                        }
+                    }
+                };
+                client1 = await testFactory.newHazelcastClientForParallelTests(cfg, member);
+                TestUtil.markServerVersionAtLeast(this, client1, '5.1');
+                client2 = await testFactory.newHazelcastClientForParallelTests(cfg, member);
+
+                map1 = await client1.getMap('ncc-map');
+                map2 = await client2.getMap('ncc-map');
+                await map1.put('key1', new CompactUtil.Employee(1, Long.ONE));
+                await map1.put('key2', new CompactUtil.Employee(2, Long.ONE));
+            });
+
+            afterEach(async function () {
+                await testFactory.shutdownAllClients();
+            });
+
+            after(async function () {
+                await testFactory.shutdownAll();
+            });
+
+            it('should be able to use get with compact', async function () {
+                await map2.get('key1');
+            });
+
+            it('should be able to use getAll with compact', async function () {
+                await map2.getAll(['key1', 'key2']);
+            });
+        });
+    });
 
     [true, false].forEach((invalidateOnChange) => {
         describe('invalidate on change=' + invalidateOnChange, function () {

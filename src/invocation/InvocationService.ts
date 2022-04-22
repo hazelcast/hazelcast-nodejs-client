@@ -24,7 +24,8 @@ import {
     RetryableHazelcastError,
     TargetDisconnectedError,
     TargetNotMemberError,
-    UUID
+    UUID,
+    SchemaNotFoundError
 } from '../core';
 import {Connection} from '../network/Connection';
 import {ILogger} from '../logging/ILogger';
@@ -33,6 +34,7 @@ import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {ClientLocalBackupListenerCodec} from '../codec/ClientLocalBackupListenerCodec';
 import {EXCEPTION_MESSAGE_TYPE} from '../codec/builtin/ErrorsCodec';
 import {PartitionServiceImpl} from '../PartitionService';
+import {SerializationService} from './../serialization/SerializationService';
 import {
     scheduleWithRepetition,
     cancelRepetitionTask,
@@ -45,6 +47,9 @@ import {ListenerService} from '../listener/ListenerService';
 import {ClientErrorFactory} from '../protocol/ErrorFactory';
 import {LifecycleService} from '../LifecycleService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
+import * as Long from 'long';
+import {SchemaService} from '../serialization/compact/SchemaService';
+import {Schema} from '../serialization/compact/Schema';
 
 const MAX_FAST_INVOCATION_COUNT = 5;
 const PROPERTY_INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -122,7 +127,13 @@ export class Invocation {
      * If this is an event listener registration, handler should be set to the function to be called on events.
      * Otherwise, should be set to null.
      */
-    handler: (...args: any[]) => any;
+    eventHandler: (clientMessage: ClientMessage) => any;
+
+    /**
+     * Handler is responsible for handling the client message and returning an object. The default value
+     * is the identity function which returns the clientMessage itself.
+     */
+    handler: (clientMessage: ClientMessage) => any = x => x;
 
     /**
      * True if this invocation is urgent (can be invoked even in the client is in the disconnected state), false otherwise.
@@ -213,8 +224,35 @@ export class Invocation {
     }
 
     complete(clientMessage: ClientMessage): void {
-        this.deferred.resolve(clientMessage);
-        this.invocationService.deregisterInvocation(this.request.getCorrelationId());
+        /**
+         * The following is a part of eager deserialization that is needed for compact serialization. In
+         * eager deserialization invocations have handlers that are called in {@link complete}.
+         * This invocation handler usually includes toObject calls and as seen below it is put
+         * into a try/catch block because {@link CompactStreamSerializer} might throw {@link SchemaNotFoundError}.
+         * If it throws, we fetch the required schema and try to call handler again. If the handler is successful,
+         * we complete the invocation. If another exception is thrown we complete the invocation with an error.
+         */
+        try {
+            const result = this.handler(clientMessage);
+            this.deferred.resolve(result);
+            this.invocationService.deregisterInvocation(this.request.getCorrelationId());
+        } catch (e) {
+            if (e instanceof SchemaNotFoundError) {
+                // We need to fetch the schema to deserialize compact.
+                this.invocationService.logger.trace(
+                    'SchemaService', `Could not find schema id ${e.schemaId} locally, will search on the cluster`
+                );
+                this.invocationService.fetchSchema(e.schemaId).then(() => {
+                    // Reset nextFrame since we tried to parse the message once.
+                    clientMessage.resetNextFrame();
+                    this.complete(clientMessage);
+                }).catch(err => {
+                    this.completeWithError(err);
+                });
+            } else {
+                this.completeWithError(e);
+            }
+        }
     }
 
     completeWithError(err: Error): void {
@@ -244,7 +282,7 @@ const backupListenerCodec: ListenerMessageCodec = {
 export class InvocationService {
 
     private readonly doInvoke: (invocation: Invocation) => void;
-    private readonly eventHandlers: Map<number, Invocation> = new Map();
+    private readonly invocationsWithEventHandlers: Map<number, Invocation> = new Map();
     private readonly pending: Map<number, Invocation> = new Map();
     readonly invocationRetryPauseMillis: number;
     readonly invocationTimeoutMillis: number;
@@ -259,11 +297,14 @@ export class InvocationService {
 
     constructor(
         clientConfig: ClientConfig,
-        private readonly logger: ILogger,
+        // not private since invocations needs access to this
+        readonly logger: ILogger,
         private readonly partitionService: PartitionServiceImpl,
         private readonly errorFactory: ClientErrorFactory,
         private readonly lifecycleService: LifecycleService,
-        private readonly connectionRegistry: ConnectionRegistry
+        private readonly connectionRegistry: ConnectionRegistry,
+        private readonly schemaService: SchemaService,
+        private readonly serializationService: SerializationService
     ) {
         if (clientConfig.network.smartRouting) {
             this.doInvoke = this.invokeSmart;
@@ -331,7 +372,7 @@ export class InvocationService {
         return this.redoOperation;
     }
 
-    invoke(invocation: Invocation): Promise<ClientMessage> {
+    invoke(invocation: Invocation): Promise<any> {
         invocation.deferred = deferredPromise<ClientMessage>();
         const newCorrelationId = this.correlationCounter++;
         invocation.request.setCorrelationId(newCorrelationId);
@@ -348,19 +389,17 @@ export class InvocationService {
      * Invokes given invocation on specified connection.
      * @param connection
      * @param request
-     * @param handler called with values returned from server for this invocation.
-     * @returns a promise that resolves to {@link ClientMessage}
+     * @param handler Handler is responsible for handling the client message and returning the object user expects.
+     * @returns a promise that resolves to `handler`'s return value.
      */
-    invokeOnConnection(
+    invokeOnConnection<V>(
         connection: Connection,
         request: ClientMessage,
-        handler?: (...args: any[]) => any
-    ): Promise<ClientMessage> {
+        handler: (clientMessage: ClientMessage) => V
+    ): Promise<V> {
         const invocation = new Invocation(this, request);
         invocation.connection = connection;
-        if (handler) {
-            invocation.handler = handler;
-        }
+        invocation.handler = handler;
         return this.invoke(invocation);
     }
 
@@ -368,20 +407,23 @@ export class InvocationService {
      * Invokes given invocation on the node that owns given partition.
      * Optionally overrides invocation timeout.
      */
-    invokeOnPartition(request: ClientMessage,
+    invokeOnPartition<V>(request: ClientMessage,
                       partitionId: number,
-                      timeoutMillis?: number): Promise<ClientMessage> {
+                      handler: (clientMessage: ClientMessage) => V,
+                      timeoutMillis?: number): Promise<V> {
         const invocation = new Invocation(this, request, timeoutMillis);
         invocation.partitionId = partitionId;
+        invocation.handler = handler;
         return this.invoke(invocation);
     }
 
     /**
      * Invokes given invocation on the host with given UUID.
      */
-    invokeOnTarget(request: ClientMessage, target: UUID): Promise<ClientMessage> {
+    invokeOnTarget<V>(request: ClientMessage, target: UUID, handler: (clientMessage: ClientMessage) => V): Promise<V> {
         const invocation = new Invocation(this, request);
         invocation.uuid = target;
+        invocation.handler = handler;
         return this.invoke(invocation);
     }
 
@@ -389,15 +431,17 @@ export class InvocationService {
      * Invokes given invocation on any host.
      * Useful when an operation is not bound to any host but a generic operation.
      */
-    invokeOnRandomTarget(request: ClientMessage): Promise<ClientMessage> {
-        return this.invoke(new Invocation(this, request));
+    invokeOnRandomTarget<V>(request: ClientMessage, handler: (clientMessage: ClientMessage) => V): Promise<V> {
+        const invocation = new Invocation(this, request);
+        invocation.handler = handler;
+        return this.invoke(invocation);
     }
 
     /**
      * Removes the handler for all event handlers with a specific correlation id.
      */
     removeEventHandler(correlationId: number): void {
-        this.eventHandlers.delete(correlationId);
+        this.invocationsWithEventHandlers.delete(correlationId);
     }
 
     backupEventHandler(clientMessage: ClientMessage): void {
@@ -412,6 +456,49 @@ export class InvocationService {
         });
     }
 
+    fetchSchema(schemaId: Long): Promise<void> {
+        return this.schemaService.fetchSchema(schemaId);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    registerSchema(schema: Schema, clazz: Function | undefined): Promise<void> {
+        return this.schemaService.put(schema).then(() => {
+            this.serializationService.registerSchemaToClass(schema, clazz);
+        })
+    }
+
+    private callEventHandlerWithMessage(invocation: Invocation, clientMessage: ClientMessage): void {
+        // We need to retry calling the event handler after fetching the schema if it is not found for the compact case.
+        try {
+            invocation.eventHandler(clientMessage);
+        } catch (e) {
+            if (!(e instanceof SchemaNotFoundError)) {
+                throw e;
+            }
+            this.fetchSchemaAndTryAgain(e.schemaId, clientMessage, invocation);
+        }
+    }
+
+    private fetchSchemaAndTryAgain(schemaId: Long, clientMessage: ClientMessage, invocation: Invocation): void {
+        // We need to fetch the schema to deserialize compact.
+        this.logger.trace(
+            'InvocationService', `Could not find schema id ${schemaId} locally, will search on the cluster`
+        );
+
+        this.fetchSchema(schemaId).then(() => {
+            // Reset nextFrame since we tried to parse the message once.
+            clientMessage.resetNextFrame();
+            process.nextTick(() => {
+                this.callEventHandlerWithMessage(invocation, clientMessage);
+            });
+        }).catch(err => {
+            // TODO: Rethink how to handle this. Maybe we want to call fetchSchemaAndTryAgain again.
+            this.logger.error(
+                'InvocationService', `Could not fetch schema with id ${schemaId} required for an event handler. Error: ${err}`
+            );
+        });
+    }
+
     /**
      * Extracts codec specific properties in a protocol message and resolves waiting promise.
      */
@@ -419,12 +506,12 @@ export class InvocationService {
         const correlationId = clientMessage.getCorrelationId();
 
         if (clientMessage.startFrame.hasEventFlag() || clientMessage.startFrame.hasBackupEventFlag()) {
-            process.nextTick(() => {
-                const eventHandler = this.eventHandlers.get(correlationId);
-                if (eventHandler !== undefined) {
-                    eventHandler.handler(clientMessage);
-                }
-            });
+            const invocation = this.invocationsWithEventHandlers.get(correlationId);
+            if (invocation !== undefined) {
+                process.nextTick(() => {
+                    this.callEventHandlerWithMessage(invocation, clientMessage);
+                });
+            }
             return;
         }
 
@@ -590,8 +677,8 @@ export class InvocationService {
         } else {
             message.setPartitionId(-1);
         }
-        if (invocation.hasOwnProperty('handler')) {
-            this.eventHandlers.set(correlationId, invocation);
+        if (invocation.hasOwnProperty('eventHandler')) {
+            this.invocationsWithEventHandlers.set(correlationId, invocation);
         }
         this.pending.set(correlationId, invocation);
     }
