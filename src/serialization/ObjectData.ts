@@ -85,6 +85,12 @@ export class ObjectDataOutput implements DataOutput {
         this.write(byte);
     }
 
+    writeInt8(byte: number): void {
+        this.ensureAvailable(BitsUtil.BYTE_SIZE_IN_BYTES);
+        BitsUtil.writeInt8(this.buffer, this.pos, byte);
+        this.pos += BitsUtil.BYTE_SIZE_IN_BYTES;
+    }
+
     writeByteArray(bytes: Buffer): void {
         const len = (bytes != null) ? bytes.length : BitsUtil.NULL_ARRAY_LENGTH;
         this.writeInt(len);
@@ -262,6 +268,10 @@ export class PositionalObjectDataOutput extends ObjectDataOutput implements Posi
         this.pwrite(position, byte);
     }
 
+    pwriteInt8(position: number, byte: number): void {
+        BitsUtil.writeInt8(this.buffer, position, byte);
+    }
+
     pwriteChar(position: number, char: string): void {
         BitsUtil.writeUInt16(this.buffer, position, char.charCodeAt(0), this.isBigEndian());
     }
@@ -294,6 +304,16 @@ export class PositionalObjectDataOutput extends ObjectDataOutput implements Posi
 
     pwriteShort(position: number, short: number): void {
         BitsUtil.writeInt16(this.buffer, position, short, this.isBigEndian());
+    }
+
+    pwriteBooleanBit(position: number, bitIndex: number, val: boolean): void {
+        let b = this.buffer[position];
+        if (val) {
+            b = b | (1 << bitIndex);
+        } else {
+            b = b & ~(1 << bitIndex);
+        }
+        this.buffer[position] = b;
     }
 }
 
@@ -348,6 +368,15 @@ export class ObjectDataInput implements DataInput {
 
     readByte(pos?: number): number {
         return this.read(pos);
+    }
+
+    readInt8(pos?: number): number {
+        this.assertAvailable(BitsUtil.BYTE_SIZE_IN_BYTES, pos);
+        if (pos === undefined) {
+            return BitsUtil.readInt8(this.buffer, this.pos++);
+        } else {
+            return BitsUtil.readInt8(this.buffer, pos);
+        }
     }
 
     readByteArray(pos?: number): Buffer | null {

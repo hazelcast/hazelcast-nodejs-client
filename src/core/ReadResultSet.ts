@@ -40,6 +40,7 @@ export interface ReadResultSet<T> {
      * Gets the item at the given index.
      *
      * @param index
+     * @throws {@link HazelcastSerializationError} if the object to be returned is a compact object whose schema is not known
      * @returns the found item or `undefined` if the index is out of bounds
      */
     get(index: number): T;

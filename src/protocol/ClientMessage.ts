@@ -175,6 +175,10 @@ export class ClientMessage {
         return this._nextFrame;
     }
 
+    resetNextFrame(): void {
+        this._nextFrame = this.startFrame;
+    }
+
     addFrame(frame: Frame): void {
         this.cachedTotalLength = undefined;
         frame.next = null;

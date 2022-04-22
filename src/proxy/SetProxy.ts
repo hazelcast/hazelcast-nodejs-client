@@ -34,66 +34,123 @@ import {Data} from '../serialization/Data';
 import {ISet} from './ISet';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ClientMessage} from '../protocol/ClientMessage';
-import {UUID} from '../core';
+import {SchemaNotReplicatedError, UUID} from '../core';
 
 /** @internal */
 export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
     add(entry: E): Promise<boolean> {
-        return this.encodeInvoke(SetAddCodec, this.toData(entry))
-            .then(SetAddCodec.decodeResponse);
+        let entryData: Data;
+        try {
+            entryData = this.toData(entry);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.add(entry));
+            }
+            throw e;
+        }
+        return this.encodeInvoke(SetAddCodec, SetAddCodec.decodeResponse, entryData);
     }
 
     addAll(items: E[]): Promise<boolean> {
-        return this.encodeInvoke(SetAddAllCodec, this.serializeList(items))
-            .then(SetAddAllCodec.decodeResponse);
+        let itemsData: Data[];
+        try {
+            itemsData = this.serializeList(items);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.addAll(items));
+            }
+            throw e;
+        }
+        return this.encodeInvoke(SetAddAllCodec, SetAddAllCodec.decodeResponse, itemsData);
     }
 
     toArray(): Promise<E[]> {
-        return this.encodeInvoke(SetGetAllCodec)
-            .then((clientMessage) => {
-                const response = SetGetAllCodec.decodeResponse(clientMessage);
-                return response.map(this.toObject.bind(this));
-            });
+        return this.encodeInvoke(SetGetAllCodec, (clientMessage) => {
+            const response = SetGetAllCodec.decodeResponse(clientMessage);
+            return this.deserializeList(response);
+        });
     }
 
     clear(): Promise<void> {
-        return this.encodeInvoke(SetClearCodec).then(() => {});
+        return this.encodeInvoke(SetClearCodec, () => {});
     }
 
     contains(entry: E): Promise<boolean> {
-        return this.encodeInvoke(SetContainsCodec, this.toData(entry))
-            .then(SetContainsCodec.decodeResponse);
+        let entryData: Data;
+        try {
+            entryData = this.toData(entry);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.contains(entry));
+            }
+            throw e;
+        }
+        return this.encodeInvoke(SetContainsCodec, SetContainsCodec.decodeResponse, entryData);
     }
 
     containsAll(items: E[]): Promise<boolean> {
-        return this.encodeInvoke(SetContainsAllCodec, this.serializeList(items))
-            .then(SetContainsAllCodec.decodeResponse);
+        let itemsData: Data[];
+        try {
+            itemsData = this.serializeList(items);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.containsAll(items));
+            }
+            throw e;
+        }
+        return this.encodeInvoke(SetContainsAllCodec, SetContainsAllCodec.decodeResponse, itemsData);
     }
 
     isEmpty(): Promise<boolean> {
-        return this.encodeInvoke(SetIsEmptyCodec)
-            .then(SetIsEmptyCodec.decodeResponse);
+        return this.encodeInvoke(SetIsEmptyCodec, SetIsEmptyCodec.decodeResponse);
     }
 
     remove(entry: E): Promise<boolean> {
-        return this.encodeInvoke(SetRemoveCodec, this.toData(entry))
-            .then(SetRemoveCodec.decodeResponse);
+        let entryData: Data;
+        try {
+            entryData = this.toData(entry);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.remove(entry));
+            }
+            throw e;
+        }
+        return this.encodeInvoke(SetRemoveCodec, SetRemoveCodec.decodeResponse, entryData);
     }
 
     removeAll(items: E[]): Promise<boolean> {
-        return this.encodeInvoke(SetCompareAndRemoveAllCodec, this.serializeList(items))
-            .then(SetCompareAndRemoveAllCodec.decodeResponse);
+        let itemsData: Data[];
+        try {
+            itemsData = this.serializeList(items);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.removeAll(items));
+            }
+            throw e;
+        }
+        return this.encodeInvoke(
+            SetCompareAndRemoveAllCodec, SetCompareAndRemoveAllCodec.decodeResponse, itemsData
+        );
     }
 
     retainAll(items: E[]): Promise<boolean> {
-        return this.encodeInvoke(SetCompareAndRetainAllCodec, this.serializeList(items))
-            .then(SetCompareAndRetainAllCodec.decodeResponse);
+        let itemsData: Data[];
+        try {
+            itemsData = this.serializeList(items);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.retainAll(items));
+            }
+            throw e;
+        }
+        return this.encodeInvoke(
+            SetCompareAndRetainAllCodec, SetCompareAndRetainAllCodec.decodeResponse, itemsData
+        );
     }
 
     size(): Promise<number> {
-        return this.encodeInvoke(SetSizeCodec)
-            .then(SetSizeCodec.decodeResponse);
+        return this.encodeInvoke(SetSizeCodec, SetSizeCodec.decodeResponse);
     }
 
     addItemListener(listener: ItemListener<E>, includeValue = true): Promise<string> {
@@ -119,11 +176,7 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
         return this.listenerService.deregisterListener(registrationId);
     }
 
-    private serializeList(input: any[]): Data[] {
-        return input.map((each) => {
-            return this.toData(each);
-        });
-    }
+
 
     private createEntryListener(name: string, includeValue: boolean): ListenerMessageCodec {
         return {

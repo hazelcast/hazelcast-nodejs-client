@@ -66,6 +66,7 @@ import {ClientMessage} from './protocol/ClientMessage';
 import {Connection} from './network/Connection';
 import {ConnectionRegistryImpl} from './network/ConnectionRegistry';
 import {SqlService, SqlServiceImpl} from './sql/SqlService';
+import {SchemaService} from './serialization/compact/SchemaService';
 
 /**
  * Hazelcast client instance. When you want to use Hazelcast's distributed
@@ -129,6 +130,8 @@ export class HazelcastClient {
     private readonly sqlService: SqlService;
     /** @internal */
     private shutdownPromise: Promise<void> | undefined;
+    /** @internal */
+    private readonly schemaService: SchemaService;
 
     /** @internal */
     constructor(config?: ClientConfigImpl, failoverConfig?: ClientFailoverConfigImpl) {
@@ -140,26 +143,28 @@ export class HazelcastClient {
         this.loadBalancer = this.initLoadBalancer();
         this.failoverConfig = failoverConfig;
         this.errorFactory = new ClientErrorFactory();
-        this.serializationService = new SerializationServiceV1(this.config.serialization);
-        this.instanceName = this.config.instanceName || 'hz.client_' + this.id;
         this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as string);
+        const logger = this.loggingService.getLogger();
+        this.schemaService = new SchemaService(() => this.invocationService, logger);
+        this.serializationService = new SerializationServiceV1(this.config.serialization, this.schemaService);
+        this.instanceName = this.config.instanceName || 'hz.client_' + this.id;
         this.nearCacheManager = new NearCacheManager(
             this.config,
             this.serializationService
         );
         this.partitionService = new PartitionServiceImpl(
-            this.loggingService.getLogger(),
+            logger,
             this.serializationService
         );
         this.lifecycleService = new LifecycleServiceImpl(
             this.config.lifecycleListeners,
-            this.loggingService.getLogger()
+            logger
         );
         this.clusterFailoverService = this.initClusterFailoverService();
         this.clusterService = new ClusterService(
             this.config,
-            this.loggingService.getLogger(),
+            logger,
             this.clusterFailoverService
         );
         this.connectionRegistry = new ConnectionRegistryImpl(
@@ -171,17 +176,19 @@ export class HazelcastClient {
         );
         this.invocationService = new InvocationService(
             this.config,
-            this.loggingService.getLogger(),
+            logger,
             this.partitionService as PartitionServiceImpl,
             this.errorFactory,
             this.lifecycleService,
-            this.connectionRegistry
+            this.connectionRegistry,
+            this.schemaService,
+            this.serializationService
         );
         this.connectionManager = new ConnectionManager(
             this,
             this.instanceName,
             this.config,
-            this.loggingService.getLogger(),
+            logger,
             this.partitionService,
             this.serializationService,
             this.lifecycleService,
@@ -192,7 +199,7 @@ export class HazelcastClient {
             this.connectionRegistry
         );
         this.listenerService = new ListenerService(
-            this.loggingService.getLogger(),
+            logger,
             this.config.network.smartRouting,
             this.connectionManager,
             this.invocationService
@@ -200,7 +207,7 @@ export class HazelcastClient {
         this.lockReferenceIdGenerator = new LockReferenceIdGenerator();
         this.proxyManager = new ProxyManager(
             this.config,
-            this.loggingService.getLogger(),
+            logger,
             this.invocationService,
             this.listenerService,
             this.partitionService,
@@ -209,7 +216,8 @@ export class HazelcastClient {
             () => this.getRepairingTask(),
             this.clusterService,
             this.lockReferenceIdGenerator,
-            this.connectionRegistry
+            this.connectionRegistry,
+            this.schemaService
         );
         this.statistics = new Statistics(
             this.loggingService.getLogger(),
@@ -220,14 +228,14 @@ export class HazelcastClient {
             this.connectionManager
         );
         this.clusterViewListenerService = new ClusterViewListenerService(
-            this.loggingService.getLogger(),
+            logger,
             this.connectionManager,
             this.partitionService as PartitionServiceImpl,
             this.clusterService,
             this.invocationService
         );
         this.cpSubsystem = new CPSubsystemImpl(
-            this.loggingService.getLogger(),
+            logger,
             this.instanceName,
             this.invocationService,
             this.serializationService
@@ -304,12 +312,11 @@ export class HazelcastClient {
         const clientMessage = ClientGetDistributedObjectsCodec.encodeRequest();
         let localDistributedObjects: Set<string>;
         let responseMessage: ClientMessage;
-        return this.invocationService.invokeOnRandomTarget(clientMessage)
+        return this.invocationService.invokeOnRandomTarget(clientMessage, x => x)
             .then((resp) => {
                 responseMessage = resp;
                 return this.proxyManager.getDistributedObjects();
-            })
-            .then((distributedObjects) => {
+            }).then((distributedObjects) => {
                 localDistributedObjects = new Set<string>();
                 distributedObjects.forEach((obj) => {
                     localDistributedObjects.add(obj.getServiceName() + NAMESPACE_SEPARATOR + obj.getName());
@@ -491,7 +498,6 @@ export class HazelcastClient {
 
     /**
      * Returns a service to execute distributed SQL queries.
-     * The service is in beta state. Behavior and API might be changed in future releases.
      *
      * @returns SQL service
      *
@@ -562,7 +568,9 @@ export class HazelcastClient {
 
     /** @internal */
     sendStateToCluster(): Promise<void> {
-        return this.proxyManager.createDistributedObjectsOnCluster();
+        return this.schemaService.sendAllSchemas().then(() => {
+            return this.proxyManager.createDistributedObjectsOnCluster();
+        });
     }
 
     /** @internal */

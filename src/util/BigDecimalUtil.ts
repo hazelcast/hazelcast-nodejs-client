@@ -22,13 +22,16 @@ import {Buffer} from 'buffer';
  * @param buffer
  */
 export function bufferToBigInt(buffer: Buffer): BigInt {
-    const isNegative = (buffer[0] & 0x80) > 0;
+    // We need to copy the buffer here since in compact serialization there can be several trials of serialization. We don't want
+    // our buffer to be modified in the second try.
+    const bufferCopy = Buffer.from(buffer);
+    const isNegative = (bufferCopy[0] & 0x80) > 0;
     if (isNegative) { // negative, convert two's complement to positive
-        for (let i = 0; i < buffer.length; i++) {
-            buffer[i] = ~buffer[i];
+        for (let i = 0; i < bufferCopy.length; i++) {
+            bufferCopy[i] = ~bufferCopy[i];
         }
     }
-    const hexString = '0x' + buffer.toString('hex');
+    const hexString = '0x' + bufferCopy.toString('hex');
 
     let bigint = BigInt(hexString);
     if (isNegative) {
@@ -49,7 +52,7 @@ export function bigIntToBuffer(big: BigInt): Buffer {
     // Using toString(16) is problematic since it does not return two's complement
 
     const isNegative = big < BigInt(0);
-    let hex;
+    let hex: string;
 
     // for getting two's complement of it
     if (isNegative) {

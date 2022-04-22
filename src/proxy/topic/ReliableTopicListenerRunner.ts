@@ -19,7 +19,7 @@ import {ReadResultSet} from '../../';
 import {
     OperationTimeoutError,
     ClientNotActiveError,
-    ClientOfflineError
+    ClientOfflineError,
 } from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {Ringbuffer} from '../Ringbuffer';

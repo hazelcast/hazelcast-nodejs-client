@@ -17,7 +17,7 @@
 
 import * as Long from 'long';
 import {OverflowPolicy} from '../OverflowPolicy';
-import {AddressImpl, TopicOverloadError} from '../../core';
+import {AddressImpl, SchemaNotReplicatedError, TopicOverloadError} from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
 import {
@@ -40,6 +40,7 @@ import {InvocationService} from '../../invocation/InvocationService';
 import {ConnectionRegistry} from '../../network/ConnectionRegistry';
 import {ListenerService} from '../../listener/ListenerService';
 import {Connection} from '../../network/Connection';
+import {SchemaService} from '../../serialization/compact/SchemaService';
 
 /** @internal */
 export const TOPIC_INITIAL_BACKOFF = 100;
@@ -65,7 +66,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         serializationService: SerializationService,
         listenerService: ListenerService,
         clusterService: ClusterService,
-        connectionRegistry: ConnectionRegistry
+        connectionRegistry: ConnectionRegistry,
+        schemaService: SchemaService
     ) {
         super(
             serviceName,
@@ -76,7 +78,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             serializationService,
             listenerService,
             clusterService,
-            connectionRegistry
+            connectionRegistry,
+            schemaService
         );
         const connection: Connection = this.connectionRegistry.getRandomConnection();
         this.localAddress = connection != null ? connection.getLocalAddress() : null;
@@ -120,7 +123,16 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     publish(message: E): Promise<void> {
         const reliableTopicMessage = new ReliableTopicMessage();
-        reliableTopicMessage.payload = this.serializationService.toData(message);
+
+        try {
+            reliableTopicMessage.payload = this.serializationService.toData(message);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.publish(message));
+            }
+            throw e;
+        }
+
         reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
         reliableTopicMessage.publisherAddress = this.localAddress;
 
