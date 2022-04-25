@@ -25,8 +25,11 @@ const { Lang } = require('../../../../remote_controller/remote_controller_types'
 const CompactUtil = require('./CompactUtil');
 
 describe('CompactSerializersLiveTest', function () {
-    before(function () {
+    before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+            this.skip();
+        }
     });
 
     const testFactory = new TestUtil.TestFactory();
@@ -86,7 +89,6 @@ describe('CompactSerializersLiveTest', function () {
                         }
                     }
                 }, member);
-                TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
                 mapName = TestUtil.randomString(10);
             });
 

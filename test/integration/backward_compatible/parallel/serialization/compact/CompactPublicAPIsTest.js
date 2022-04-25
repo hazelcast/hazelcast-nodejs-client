@@ -189,6 +189,9 @@ describe('CompactPublicAPIsTest', function () {
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
         employee = new CompactUtil.Employee(1, Long.ONE);
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+            this.skip();
+        }
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG_XML);
         member = await RC.startMember(cluster.id);
         SchemaNotReplicatedError = require('../../../../../../lib').SchemaNotReplicatedError;
@@ -237,7 +240,6 @@ describe('CompactPublicAPIsTest', function () {
         };
 
         client = await testFactory.newHazelcastClientForParallelTests(clientConfig, member);
-        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
         map = await client.getMap(name);
         nearCachedMap1 = await client.getMap('nearCached1' + name);
         nearCachedMap2 = await client.getMap('nearCached2' + name);

@@ -46,6 +46,13 @@ describe('LazyDeserializationCompactTest', function() {
         // no-op
     }
 
+    before(async function() {
+        TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+            this.skip();
+        }
+    });
+
     describe('ReadOnlyLazyList', function () {
         let cluster;
         let member;
@@ -56,7 +63,6 @@ describe('LazyDeserializationCompactTest', function() {
         const testFactory = new TestUtil.TestFactory();
 
         before(async function () {
-            TestUtil.markClientVersionAtLeast(this, '5.1.0');
             cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
             member = await RC.startMember(cluster.id);
         });
@@ -66,7 +72,6 @@ describe('LazyDeserializationCompactTest', function() {
                 clusterName: cluster.id,
             }, member);
             mapName = TestUtil.randomString(10);
-            TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
             await putSingleCompactEntryToMapByMember();
         });
 
@@ -137,7 +142,6 @@ describe('LazyDeserializationCompactTest', function() {
         const testFactory = new TestUtil.TestFactory();
 
         before(async function () {
-            TestUtil.markClientVersionAtLeast(this, '5.1.0');
             cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
             member = await RC.startMember(cluster.id);
         });
@@ -147,7 +151,6 @@ describe('LazyDeserializationCompactTest', function() {
                 clusterName: cluster.id,
             }, member);
             ringbufferName = TestUtil.randomString(10);
-            TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
             await putSingleCompactItemToRingbufferByMember();
         });
 
