@@ -729,7 +729,7 @@ following main features.
 
 * Separates the schema from the data and stores it per type, not per object which results in less memory and bandwidth usage
 compared to other formats.
-* Does not require a class to implement an interface or change the source code of the class in any way.
+* Does not require to change the source code of the class in any way.
 * Supports schema evolution which permits adding or removing fields, or changing the types of fields.
 * Platform and language independent.
 * Supports partial deserialization of fields, without deserializing the whole objects during queries or indexing.
