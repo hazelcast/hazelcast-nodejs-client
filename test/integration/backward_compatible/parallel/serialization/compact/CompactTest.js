@@ -180,7 +180,6 @@ describe('CompactTest', function () {
             fields[fieldName] = CompactUtil.referenceObjects[fieldName];
         }
         await shouldReadAndWrite(
-            this,
             new CompactUtil.Flexible(fields),
             [new CompactUtil.FlexibleSerializer(CompactUtil.fixedSizeFields), new CompactUtil.EmployeeSerializer()]
         );
@@ -199,7 +198,6 @@ describe('CompactTest', function () {
 
             referenceObjects[FieldKind[FieldKind.ARRAY_OF_STRING]].value.push(null);
             await shouldReadAndWrite(
-                this,
                 new CompactUtil.Flexible(referenceObjects),
                 [new CompactUtil.FlexibleSerializer([FieldKind.ARRAY_OF_STRING, FieldKind.INT32, FieldKind.STRING])]
             );
