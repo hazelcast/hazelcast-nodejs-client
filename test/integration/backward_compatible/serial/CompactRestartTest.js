@@ -47,6 +47,9 @@ describe('CompactRestartTest', function() {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+            this.skip();
+        }
         cluster = await testFactory.createClusterForSerialTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
         member = await RC.startMember(cluster.id);
     });
@@ -72,7 +75,6 @@ describe('CompactRestartTest', function() {
                 }
             }
         });
-        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
         const map = await client.getMap(mapName);
         await map.put(1, new CompactUtil.Flexible({INT32: {value: 42}}));
 
