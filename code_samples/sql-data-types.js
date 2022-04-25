@@ -93,7 +93,7 @@ const varcharExample = async (client) => {
         const rowMetadata = result.rowMetadata;
         const columnIndex = rowMetadata.findColumn('this');
         const columnMetadata = rowMetadata.getColumn(columnIndex);
-        console.log(SqlColumnType[columnMetadata.type]); // VARCHAR
+        console.log(`Column type: ${SqlColumnType[columnMetadata.type]}`); // Column type: VARCHAR
         for await (const row of result) {
             console.log(row);
         }
@@ -142,7 +142,7 @@ const bigintExample = async (client) => {
     const rowMetadata = result.rowMetadata;
     const columnIndex = rowMetadata.findColumn('this');
     const columnMetadata = rowMetadata.getColumn(columnIndex);
-    console.log(SqlColumnType[columnMetadata.type]); // BIGINT
+    console.log(`Column type: ${SqlColumnType[columnMetadata.type]}`); // Column type: BIGINT
 
     for await (const row of result) {
         console.log(row);
@@ -195,7 +195,7 @@ const portableExample = async (client, classId, factoryId) => {
     const rowMetadata = result.rowMetadata;
     const columnIndex = rowMetadata.findColumn('this');
     const columnMetadata = rowMetadata.getColumn(columnIndex);
-    console.log(SqlColumnType[columnMetadata.type]); // OBJECT
+    console.log(`Column type: ${SqlColumnType[columnMetadata.type]}`); // Column type: OBJECT
 
     for await (const row of result) {
         const student = row['this'];
@@ -235,11 +235,11 @@ const compactExample = async (client, typeName) => {
     const rowMetadata = result.rowMetadata;
     const columnIndex = rowMetadata.findColumn('age');
     const columnMetadata = rowMetadata.getColumn(columnIndex);
-    console.log(SqlColumnType[columnMetadata.type]); // INTEGER
+    console.log(`1st column type: ${SqlColumnType[columnMetadata.type]}`); // 1st column type: INTEGER
 
     const columnIndex2 = rowMetadata.findColumn('id');
     const columnMetadata2 = rowMetadata.getColumn(columnIndex2);
-    console.log(SqlColumnType[columnMetadata2.type]); // BIGINT
+    console.log(`2nd column type: ${SqlColumnType[columnMetadata2.type]}`); // 2nd column type: BIGINT
 
     for await (const row of result) {
         console.log(`Id: ${row['id']} Age: ${row['age']}`);
