@@ -69,6 +69,7 @@ describe('SQLDataTypeTest', function () {
     let serverVersionNewerThanFive;
 
     const clientVersionNewerThanFive = TestUtil.isClientVersionAtLeast('5.0');
+    const JET_ENABLED_WITH_COMPACT_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled_with_compact.xml'), 'utf8');
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     const validateResults = (rows, expectedKeys, expectedValues) => {
@@ -82,7 +83,16 @@ describe('SQLDataTypeTest', function () {
 
     before(async function () {
         serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
-        const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
+        const serverVersionNewerThanFivePointOne = await TestUtil.compareServerVersionWithRC(RC, '5.1') >= 0;
+
+        let CLUSTER_CONFIG;
+        if (serverVersionNewerThanFivePointOne) {
+            CLUSTER_CONFIG = JET_ENABLED_WITH_COMPACT_CONFIG;
+        } else if (serverVersionNewerThanFive) {
+            CLUSTER_CONFIG = JET_ENABLED_CONFIG;
+        } else {
+            CLUSTER_CONFIG = null;
+        }
 
         TestUtil.markClientVersionAtLeast(this, '4.2');
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
@@ -101,6 +111,11 @@ describe('SQLDataTypeTest', function () {
             attributes: ['__key']
         });
     };
+
+    beforeEach(function() {
+        // needed to prevent tests to clear other tests' maps in afterEach. That would lead to an error.
+        someMap = undefined;
+    });
 
     afterEach(async function () {
         if (someMap) {
