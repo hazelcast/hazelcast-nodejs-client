@@ -23,7 +23,7 @@
     * [4.1.1. Schema Evolution](#411-schema-evolution)
     * [4.1.2. Generic Record Representation](#412-generic-record-representation)
     * [4.1.3. Compact Configuration and Usage](#413-compact-configuration-and-usage)
-    * [4.1.4. Limitations](#413-compact-configuration-and-usage)
+    * [4.1.4. Limitations](#414-limitations)
   * [4.2. IdentifiedDataSerializable Serialization](#42-identifieddataserializable-serialization)
   * [4.3. Portable Serialization](#43-portable-serialization)
     * [4.3.1. Versioning for Portable Serialization](#431-versioning-for-portable-serialization)
