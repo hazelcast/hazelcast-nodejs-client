@@ -38,6 +38,34 @@ class Student {
     }
 }
 
+class Employee {
+    constructor(age, id) {
+        this.age = age;
+        this.id = id;
+    }
+}
+
+class EmployeeSerializer {
+    getClass() {
+        return Employee;
+    }
+
+    getTypeName() {
+        return 'Employee';
+    }
+
+    read(reader) {
+        const age = reader.readInt32('age');
+        const id = reader.readInt64('id');
+        return new Employee(age, id);
+    }
+
+    write(writer, value) {
+        writer.writeInt32('age', value.age);
+        writer.writeInt64('id', value.id);
+    }
+}
+
 const varcharExample = async (client) => {
     console.log('----------VARCHAR Example----------');
     const mapName = 'varcharMap';
@@ -65,7 +93,7 @@ const varcharExample = async (client) => {
         const rowMetadata = result.rowMetadata;
         const columnIndex = rowMetadata.findColumn('this');
         const columnMetadata = rowMetadata.getColumn(columnIndex);
-        console.log(SqlColumnType[columnMetadata.type]); // VARCHAR
+        console.log(`Column type: ${SqlColumnType[columnMetadata.type]}`); // Column type: VARCHAR
         for await (const row of result) {
             console.log(row);
         }
@@ -114,7 +142,7 @@ const bigintExample = async (client) => {
     const rowMetadata = result.rowMetadata;
     const columnIndex = rowMetadata.findColumn('this');
     const columnMetadata = rowMetadata.getColumn(columnIndex);
-    console.log(SqlColumnType[columnMetadata.type]); // BIGINT
+    console.log(`Column type: ${SqlColumnType[columnMetadata.type]}`); // Column type: BIGINT
 
     for await (const row of result) {
         console.log(row);
@@ -131,9 +159,8 @@ const bigintExample = async (client) => {
     }
 };
 
-// Portable example
-const objectExample = async (client, classId, factoryId) => {
-    console.log('\n----------OBJECT Example----------');
+const portableExample = async (client, classId, factoryId) => {
+    console.log('\n----------OBJECT Example(Portable)----------');
     const mapName = 'studentMap';
     const someMap = await client.getMap(mapName);
     // In order to use the map in SQL a mapping should be created.
@@ -168,11 +195,54 @@ const objectExample = async (client, classId, factoryId) => {
     const rowMetadata = result.rowMetadata;
     const columnIndex = rowMetadata.findColumn('this');
     const columnMetadata = rowMetadata.getColumn(columnIndex);
-    console.log(SqlColumnType[columnMetadata.type]); // OBJECT
+    console.log(`Column type: ${SqlColumnType[columnMetadata.type]}`); // Column type: OBJECT
 
     for await (const row of result) {
         const student = row['this'];
         console.log(student);
+    }
+};
+
+const compactExample = async (client, typeName) => {
+    console.log('\n----------OBJECT Example(Compact)----------');
+    const mapName = 'employeeMap';
+    const someMap = await client.getMap(mapName);
+    // To be able to use our map in SQL, we need to create mapping for it.
+    const createMappingQuery = `
+            CREATE OR REPLACE MAPPING ${mapName} (
+                __key DOUBLE,
+                age INTEGER,
+                id BIGINT
+            )
+            TYPE IMap
+            OPTIONS (
+                'keyFormat' = 'double',
+                'valueFormat' = 'compact',
+                'valueCompactTypeName' = '${typeName}'
+            )
+        `;
+    await client.getSql().execute(createMappingQuery);
+
+    for (let key = 0; key < 10; key++) {
+        await someMap.set(key, new Employee(key, long.fromNumber(key)));
+    }
+
+    const result = await client.getSql().execute(
+        'SELECT * FROM employeeMap WHERE id > ? AND id < ?',
+        [long.fromNumber(3), long.fromNumber(8)]
+    );
+
+    const rowMetadata = result.rowMetadata;
+    const columnIndex = rowMetadata.findColumn('age');
+    const columnMetadata = rowMetadata.getColumn(columnIndex);
+    console.log(`1st column type: ${SqlColumnType[columnMetadata.type]}`); // 1st column type: INTEGER
+
+    const columnIndex2 = rowMetadata.findColumn('id');
+    const columnMetadata2 = rowMetadata.getColumn(columnIndex2);
+    console.log(`2nd column type: ${SqlColumnType[columnMetadata2.type]}`); // 2nd column type: BIGINT
+
+    for await (const row of result) {
+        console.log(`Id: ${row['id']} Age: ${row['age']}`);
     }
 };
 
@@ -185,17 +255,23 @@ const objectExample = async (client, classId, factoryId) => {
         return null;
     };
 
+    const employeeSerializer = new EmployeeSerializer();
+
     const client = await Client.newHazelcastClient({
         serialization: {
             portableFactories: {
                 23: portableFactory
+            },
+            compact: {
+                serializers: [employeeSerializer]
             }
         }
     });
 
     await varcharExample(client);
     await bigintExample(client);
-    await objectExample(client, 1, 23);
+    await portableExample(client, 1, 23);
+    await compactExample(client, employeeSerializer.getTypeName());
 
     await client.shutdown();
 })().catch(err => {
