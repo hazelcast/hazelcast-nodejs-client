@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @ignore *//** */
 
 /**
- * Public API re-exports.
+ * Username and password based credentials for custom authentication.
  */
+export interface UsernamePasswordCredentials {
+    username: string | null,
+    password: string | null,
+}
 
-export * from './aggregation';
-export * from './config';
-export * from './connection';
-export * from './core';
-export * from './logging';
-export * from './proxy';
-export * from './serialization';
-export {HazelcastClient as Client} from './HazelcastClient';
-export * from './LifecycleService';
-export * from './PartitionService';
-export * from './CPSubsystem';
-export * from './sql';
-export * from './security';
+/** @internal */
+export class UsernamePasswordCredentialsImpl implements UsernamePasswordCredentials {
+    username: string | null;
+    password: string | null;
+
+    constructor(username: string | null, password: string | null) {
+        this.username = username;
+        this.password = password;
+    }
+}

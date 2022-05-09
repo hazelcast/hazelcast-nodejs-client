@@ -118,7 +118,10 @@
     * [9.1.1. TLS/SSL for Hazelcast Members](#911-tlsssl-for-hazelcast-members)
     * [9.1.2. TLS/SSL for Hazelcast Node.js Clients](#912-tlsssl-for-hazelcast-nodejs-clients)
     * [9.1.3. Mutual Authentication](#913-mutual-authentication)
-  * [9.2. Credentials](#92-credentials)
+  * [9.2. Authentication](#92-authentication)
+    * [9.2.1. Username Password Authentication](#921-username-password-authentication)
+    * [9.2.2. Token Authentication](#922-token-authentication)
+    * [9.2.3. Custom Authentication](#923-custom-authentication)
 * [10. Development and Testing](#10-development-and-testing)
   * [10.1. Building and Using Client From Sources](#101-building-and-using-client-from-sources)
   * [10.2. Testing](#102-testing)
@@ -494,7 +497,7 @@ That is because our map lives in the cluster and no matter which client we use, 
 
 See the Hazelcast Node.js [code samples](https://github.com/hazelcast/hazelcast-nodejs-client/tree/master/code_samples) for more examples.
 
-You can also see the Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/).
+You can also see the Hazelcast Node.js [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/).
 
 
 # 2. Features
@@ -589,7 +592,7 @@ Hazelcast serializes all your objects before sending them to the server. Certain
 
 > **NOTE: The `Long` type means the type provided by [long.js library](https://github.com/dcodeIO/long.js).**
 
-> **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `defaultNumberType` serialization config option. See [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) for more information.**
+> **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `defaultNumberType` serialization config option. See [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/) for more information.**
 
 Arrays of the `boolean`, `number`, `string`, and `Long` types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
 
@@ -615,7 +618,7 @@ However, `JSON Serialization` may be not the best way of serialization in terms 
 
 Or, if you want to use your own serialization method, you can use [Custom Serialization](#43-custom-serialization).
 
-> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for a required interface.**
+> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as `an instance of the interface`. You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/) or GitHub repository for a required interface.**
 
 ## 4.1. IdentifiedDataSerializable Serialization
 
@@ -643,7 +646,7 @@ class Employee {
 }
 ```
 
-> **NOTE: Refer to `DataInput`/`DataOutput` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on the `input`/`output` objects.**
+> **NOTE: Refer to `DataInput`/`DataOutput` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/) to understand methods available on the `input`/`output` objects.**
 
 The `IdentifiedDataSerializable` interface uses `classId` and `factoryId` properties to reconstitute the object. To complete the implementation, `IdentifiedDataSerializableFactory` factory function should also be implemented and put into the `serialization.dataSerializableFactories` config option. The factory's responsibility is to return an instance of the right `IdentifiedDataSerializable` object, given the `classId`.
 
@@ -713,7 +716,7 @@ class Customer {
 }
 ```
 
-> **NOTE: Refer to `PortableReader`/`PortableWriter` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) to understand methods available on the `reader`/`writer` objects.**
+> **NOTE: Refer to `PortableReader`/`PortableWriter` interfaces in the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/) to understand methods available on the `reader`/`writer` objects.**
 
 Similar to `IdentifiedDataSerializable`, a `Portable` object must provide `classId` and `factoryId`. The factory function will be used to create the `Portable` object given the `classId`.
 
@@ -1189,6 +1192,7 @@ The following are configuration element descriptions:
 * `clientConfigs`: The list of client configs for alternative clusters to be used by the client. The client configurations must be exactly the same except the following configuration options:
   - `clusterName`
   - `customCredentials`
+  - `security`
   - `network.clusterMembers`
   - `network.ssl`
   - `network.hazelcastCloud`
@@ -1879,7 +1883,7 @@ Lifecycle Event >>> SHUTDOWN
 
 You can add event listeners to the distributed data structures.
 
-> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as "an instance of the interface". You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/api/current/docs/) or GitHub repository for the required interface.**
+> **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, some interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file. Also, this object is mentioned as "an instance of the interface". You can search the [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client/) or GitHub repository for the required interface.**
 
 #### 8.5.2.1. Map Listener
 
@@ -3336,17 +3340,171 @@ const cfg = {
 
 The client calls the `init()` method with the `properties` configuration option. Then the client calls the `getSSLOptions()` method of `SSLOptionsFactory` to create the `options` object.
 
-## 9.2. Credentials
+## 9.2 Authentication
 
-One of the key elements in Hazelcast security is the `Credentials` object, which can be used to carry all security attributes of the Hazelcast Node.js client to Hazelcast members. Then, Hazelcast members can authenticate the clients and perform access control checks on the client operations using this `Credentials` object.
+By default, the client does not use any authentication method and just uses the configured cluster name to connect to members.
 
-With Hazelcast's extensible, `JAAS` based security features you can do much more than just authentication.
-See the [JAAS code sample](code_samples/jaas_sample) to learn how to perform access control checks on the client operations based on user groups.
+Hazelcast Node.js client has more ways to authenticate the client against the members, using the ``security`` configuration.
+Please note that, the security configuration requires **Hazelcast Enterprise** edition.
 
-> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL encryption is highly recommended while using the custom credentials as described in [TLS/SSL section](#91-tlsssl).**
+The ``security`` configuration lets you specify different kinds of authentication mechanisms which are
+described in the following sub-sections.
+
+> **NOTE: It is almost always a bad idea to write the credentials to wire in a clear-text format. Therefore, using TLS/SSL
+> encryption is highly recommended while using the security configuration as described in [TLS/SSL section](#91-tlsssl).**
 
 Also, see the [Security section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#security) of Hazelcast IMDG Reference Manual for more information.
 
+### 9.2.1. Username Password Authentication
+
+The client can authenticate with username and password against the members with the following configuration.
+The properties are ``username`` and ``password`` strings.
+
+```js
+const config = {
+    security: {
+        usernamePassword: {
+            username: 'admin',
+            password: 'some-strong-password'
+        }
+    }
+}
+```
+
+One can use the following default authentication configuration on the member-side.
+
+```xml
+<hazelcast>
+    <security enabled="true">
+        <realms>
+            <realm name="username-password">
+                <identity>
+                    <username-password username="admin" password="some-strong-password" />
+                </identity>
+            </realm>
+        </realms>
+        <member-authentication realm="username-password"/>
+        <!--
+        This is not `client-authentication` to use default authentication.
+        See https://docs.hazelcast.com/hazelcast/latest/security/default-authentication
+         -->
+    </security>
+</hazelcast>
+```
+
+Alternatively, you could provide your custom login module in the member configuration and use that.
+
+```xml
+<hazelcast>
+    <security enabled="true">
+        <realms>
+            <realm name="username-password-with-login-module">
+                <authentication>
+                    <jaas>
+                        <login-module class-name="org.example.CustomLoginModule"/>
+                    </jaas>
+                </authentication>
+            </realm>
+        </realms>
+        <client-authentication realm="username-password-with-login-module"/>
+    </security>
+</hazelcast>
+```
+
+See [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest/security/jaas-authentication)
+for details of custom login modules.
+
+### 9.2.2. Token Authentication
+
+The client can authenticate with a token against the members with the following configuration.
+The properties are ``token`` and ``encoding`` strings. The ``token`` must be the string representation of the token
+encoded with the given ``encoding``. The possible values for ``encoding`` are case-insensitive values of ``ascii``
+and ``base64``, and when not provided, defaults to ``ascii``. Supported encodings are provided in the
+``TokenEncoding`` enum.
+
+```js
+const config = {
+    security: {
+        token: {
+            token: 'bXktdG9rZW4=',
+            encoding: TokenEncoding.BASE64 // Or, 'base64' string.
+        }
+    }
+}
+```
+
+There is no out-of-the-box support token-based authentication on the member side, so you have to provide
+your login module to use in the member configuration. The login module will be responsible for performing
+the authentication against the decoded version of the token sent by the client.
+
+```xml
+<hazelcast>
+    <security enabled="true">
+        <realms>
+            <realm name="token">
+                <authentication>
+                    <jaas>
+                        <login-module class-name="org.example.CustomTokenLoginModule"/>
+                    </jaas>
+                </authentication>
+            </realm>
+        </realms>
+        <client-authentication realm="token"/>
+    </security>
+</hazelcast>
+```
+
+See [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest/security/jaas-authentication)
+for details of custom login modules.
+
+### 9.2.3. Custom Authentication
+
+The client can use a custom object during the authentication against the members with the following configuration.
+
+The properties of the object depends entirely on the serialization mechanism that will be used. The example below
+uses Portable serialization to demonstrate the concept.
+
+```js
+const config = {
+    security: {
+        custom: {
+            someField: 'someValue',
+            factoryId: 1,
+            classId: 1,
+            readPortable: function (reader) {
+                this.someField = reader.readString('someField');
+            },
+            writePortable: function (writer) {
+                writer.writeString('someField', this.someField);
+            }
+        }
+    }
+}
+```
+
+You have to write your login module and provide that in the member configuration to use custom authentication.
+The login module will be responsible for performing the authentication against the deserialized version of the
+credentials sent by the client.
+
+```xml
+<hazelcast>
+    <security enabled="true">
+        <realms>
+            <realm name="custom-credentials">
+                <authentication>
+                    <jaas>
+                        <login-module class-name="org.example.CustomCredentialsLoginModule"/>
+                    </jaas>
+                </authentication>
+            </realm>
+        </realms>
+        <client-authentication realm="custom-credentials"/>
+    </security>
+</hazelcast>
+```
+
+See [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest/security/jaas-authentication)
+for details of custom login modules.
 
 # 10. Development and Testing
 
