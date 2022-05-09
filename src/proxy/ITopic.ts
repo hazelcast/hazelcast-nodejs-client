@@ -27,7 +27,8 @@ import {MessageListener} from './MessageListener';
  * lost when a node goes down.
  *
  * Methods that require serialization/deserialization may throw RangeError, e.g when there is no suitable
- * serializer for a certain type.
+ * serializer for a certain type. Also they may throw {@link HazelcastSerializationError} if a compact
+ * object is cannot be deserialized due to unknown schema.
  */
 export interface ITopic<E> extends DistributedObject {
 

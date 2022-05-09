@@ -30,6 +30,8 @@ import {Ringbuffer} from '../Ringbuffer';
 import {PartitionSpecificProxy} from '../PartitionSpecificProxy';
 import {LazyReadResultSet} from './LazyReadResultSet';
 import {ReadResultSet} from '../../core';
+import {SchemaNotReplicatedError} from './../../core/HazelcastError';
+import {Data} from '../../serialization/Data';
 
 /** @internal */
 export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbuffer<E> {
@@ -37,42 +39,52 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
     private static readonly MAX_BATCH_SIZE = 1000;
 
     capacity(): Promise<Long> {
-        return this.encodeInvoke(RingbufferCapacityCodec)
-            .then(RingbufferCapacityCodec.decodeResponse);
+        return this.encodeInvoke(RingbufferCapacityCodec, RingbufferCapacityCodec.decodeResponse);
     }
 
     size(): Promise<Long> {
-        return this.encodeInvoke(RingbufferSizeCodec)
-            .then(RingbufferSizeCodec.decodeResponse);
+        return this.encodeInvoke(RingbufferSizeCodec, RingbufferSizeCodec.decodeResponse);
     }
 
     tailSequence(): Promise<Long> {
-        return this.encodeInvoke(RingbufferTailSequenceCodec)
-            .then(RingbufferTailSequenceCodec.decodeResponse);
+        return this.encodeInvoke(RingbufferTailSequenceCodec, RingbufferTailSequenceCodec.decodeResponse);
     }
 
     headSequence(): Promise<Long> {
-        return this.encodeInvoke(RingbufferHeadSequenceCodec)
-            .then(RingbufferHeadSequenceCodec.decodeResponse);
+        return this.encodeInvoke(RingbufferHeadSequenceCodec, RingbufferHeadSequenceCodec.decodeResponse);
     }
 
     remainingCapacity(): Promise<Long> {
-        return this.encodeInvoke(RingbufferRemainingCapacityCodec)
-            .then(RingbufferRemainingCapacityCodec.decodeResponse);
+        return this.encodeInvoke(RingbufferRemainingCapacityCodec, RingbufferRemainingCapacityCodec.decodeResponse);
     }
 
     add(item: E, overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
+        let itemData: Data;
+        try {
+            itemData = this.toData(item);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.add(item, overflowPolicy));
+            }
+            throw e;
+        }
         const policyId = overflowPolicyToId(overflowPolicy);
-        return this.encodeInvoke(RingbufferAddCodec, policyId, this.toData(item))
-            .then(RingbufferAddCodec.decodeResponse);
+        return this.encodeInvoke(RingbufferAddCodec, RingbufferAddCodec.decodeResponse, policyId, itemData);
     }
 
     addAll(items: E[], overflowPolicy: OverflowPolicy = OverflowPolicy.OVERWRITE): Promise<Long> {
         const policyId = overflowPolicyToId(overflowPolicy);
-        const dataList = items.map(this.toData.bind(this));
+        let dataList: Data[];
+        try {
+            dataList = this.serializeList(items);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.addAll(items, overflowPolicy));
+            }
+            throw e;
+        }
 
-        return this.encodeInvoke(RingbufferAddAllCodec, dataList, policyId)
-            .then(RingbufferAddAllCodec.decodeResponse);
+        return this.encodeInvoke(RingbufferAddAllCodec, RingbufferAddAllCodec.decodeResponse, dataList, policyId);
     }
 
     readOne(sequence: number | Long): Promise<E> {
@@ -80,11 +92,10 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
             throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);
         }
 
-        return this.encodeInvoke(RingbufferReadOneCodec, sequence)
-            .then((clientMessage) => {
-                const response = RingbufferReadOneCodec.decodeResponse(clientMessage);
-                return this.toObject(response);
-            });
+        return this.encodeInvoke(RingbufferReadOneCodec, (clientMessage) => {
+            const response = RingbufferReadOneCodec.decodeResponse(clientMessage);
+            return this.toObject(response);
+        }, sequence);
     }
 
     readMany(startSequence: number | Long,
@@ -104,11 +115,15 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
             throw new RangeError('Max count can not be larger than ' + RingbufferProxy.MAX_BATCH_SIZE);
         }
 
-        return this.encodeInvoke(RingbufferReadManyCodec, startSequence, minCount, maxCount, this.toData(filter))
-            .then((clientMessage) => {
-                const response = RingbufferReadManyCodec.decodeResponse(clientMessage);
-                return new LazyReadResultSet(this.serializationService, response.readCount,
-                    response.items, response.itemSeqs, response.nextSeq);
-            });
+        return this.encodeInvoke(RingbufferReadManyCodec, (clientMessage) => {
+            const response = RingbufferReadManyCodec.decodeResponse(clientMessage);
+            return new LazyReadResultSet(
+                this.serializationService,
+                response.readCount,
+                response.items,
+                response.itemSeqs,
+                response.nextSeq
+            );
+        }, startSequence, minCount, maxCount, this.toData(filter));
     }
 }

@@ -16,11 +16,11 @@
 import {SqlResult, SqlResultImpl} from './SqlResult';
 import {ConnectionManager} from '../network/ConnectionManager';
 import {SqlExpectedResultType, SqlStatement, SqlStatementOptions} from './SqlStatement';
-import {HazelcastSqlException, IllegalArgumentError} from '../core';
+import {HazelcastSqlException, IllegalArgumentError, SchemaNotFoundError, SchemaNotReplicatedError, UUID} from '../core';
 import {SqlErrorCode} from './SqlErrorCode';
 import {SqlQueryId} from './SqlQueryId';
 import {SerializationService} from '../serialization/SerializationService';
-import {SqlExecuteCodec} from '../codec/SqlExecuteCodec';
+import {SqlExecuteCodec, SqlExecuteResponseParams} from '../codec/SqlExecuteCodec';
 import * as Long from 'long';
 import {InvocationService} from '../invocation/InvocationService';
 import {ClientMessage} from '../protocol/ClientMessage';
@@ -128,11 +128,10 @@ export class SqlServiceImpl implements SqlService {
 
     /**
      * Handles SQL execute response.
-     * @param clientMessage The response message
+     * @param response The response
      * @param res SQL result for this response
      */
-    private static handleExecuteResponse(clientMessage: ClientMessage, res: SqlResultImpl): void {
-        const response = SqlExecuteCodec.decodeResponse(clientMessage);
+    private static handleExecuteResponse(response: SqlExecuteResponseParams, res: SqlResultImpl): void {
         const sqlError = response.error;
         if (sqlError !== null) {
             throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code, sqlError.message, sqlError.suggestion);
@@ -225,7 +224,7 @@ export class SqlServiceImpl implements SqlService {
     }
 
     toHazelcastSqlException(err: Error, message: string = err.message): HazelcastSqlException {
-        let originatingMemberId;
+        let originatingMemberId: UUID;
         if (err instanceof SqlError) {
             originatingMemberId = err.originatingMemberId;
         } else {
@@ -279,12 +278,19 @@ export class SqlServiceImpl implements SqlService {
 
 
         try {
-            let serializedParams;
-
+            let serializedParams: Data[];
             if (Array.isArray(sqlStatement.params)) { // params can be undefined
                 serializedParams = new Array(sqlStatement.params.length);
                 for (let i = 0; i < sqlStatement.params.length; i++) {
-                    serializedParams[i] = this.serializationService.toData(sqlStatement.params[i]);
+                    try {
+                        serializedParams[i] = this.serializationService.toData(sqlStatement.params[i]);
+                    }  catch (e) {
+                        if (e instanceof SchemaNotReplicatedError) {
+                            return this.invocationService.registerSchema(e.schema, e.clazz)
+                                .then(() => this.executeStatement(sqlStatement));
+                        }
+                        throw e;
+                    }
                 }
             } else {
                 serializedParams = [];
@@ -301,7 +307,7 @@ export class SqlServiceImpl implements SqlService {
                 false // Used to skip updating statistics from MC client, should be false in other clients
             );
 
-            const res = SqlResultImpl.newResult(
+            const result = SqlResultImpl.newResult(
                 this,
                 this.deserializeRowValue.bind(this),
                 connection,
@@ -311,12 +317,14 @@ export class SqlServiceImpl implements SqlService {
                 this.connectionManager.getClientUuid()
             );
 
-            return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
-                SqlServiceImpl.handleExecuteResponse(clientMessage, res);
-                return res;
+            return this.invocationService.invokeOnConnection(
+                connection, requestMessage, SqlExecuteCodec.decodeResponse
+            ).then(response => {
+                SqlServiceImpl.handleExecuteResponse(response, result);
+                return result;
             }).catch(err => {
                 const error = this.rethrow(err, connection);
-                res.onExecuteError(error);
+                result.onExecuteError(error);
                 throw error;
             });
         } catch (error) {
@@ -346,7 +354,7 @@ export class SqlServiceImpl implements SqlService {
      */
     close(connection: Connection, queryId: SqlQueryId): Promise<ClientMessage> {
         const requestMessage = SqlCloseCodec.encodeRequest(queryId);
-        return this.invocationService.invokeOnConnection(connection, requestMessage);
+        return this.invocationService.invokeOnConnection(connection, requestMessage, x => x);
     }
 
     /**
@@ -357,7 +365,7 @@ export class SqlServiceImpl implements SqlService {
      */
     fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
         const requestMessage = SqlFetchCodec.encodeRequest(queryId, cursorBufferSize);
-        return this.invocationService.invokeOnConnection(connection, requestMessage).then(clientMessage => {
+        return this.invocationService.invokeOnConnection(connection, requestMessage, clientMessage => {
             const response = SqlFetchCodec.decodeResponse(clientMessage);
             if (response.error !== null) {
                 throw new HazelcastSqlException(
@@ -376,16 +384,24 @@ export class SqlServiceImpl implements SqlService {
      * @param isRaw `true` if the row is raw, i.e an {@link SqlRowImpl}; `false` otherwise, i.e a regular JSON object. Used to log
      * more information about lazy deserialization if row is a regular JSON object.
      */
-    private deserializeRowValue(data: Data, isRaw: boolean) : any {
+     private deserializeRowValue(data: Data, isRaw: boolean) : any {
         try {
             return this.serializationService.toObject(data);
         } catch (e) {
-            let message = 'Failed to deserialize query result value.';
-            if (!isRaw) {
-                message += ' In order to partially deserialize SQL rows you can set `returnRawResult` option to `true`. Check '
-                        + 'out the "Lazy SQL Row Deserialization" section in the client\'s reference manual.';
+            let message;
+            if (e instanceof SchemaNotFoundError) {
+                message = 'You tried to deserialize an SQL row which includes a compact serializable object, however '
+                        + 'the schema for that object is not known by the client. The client won\'t fetch the schema of '
+                        + 'the field because of lazy deserialization support. SQL\'s lazy deserialization support may '
+                        + 'be removed in the future, after that you will no longer get this error.'
+            } else {
+                message = 'Failed to deserialize query result value.';
+                if (!isRaw) {
+                    message += 'In order to partially deserialize SQL rows you can set `returnRawResult` option to `true`. Check '
+                            + 'out the "Lazy SQL Row Deserialization" section in the client\'s reference manual.';
+                }
+                message += ` Error: ${e.message}`;
             }
-            message += ` Error: ${e.message}`;
             throw this.toHazelcastSqlException(e, message);
         }
     }

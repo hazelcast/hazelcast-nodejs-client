@@ -160,6 +160,12 @@ export class NearCacheImpl implements NearCache {
             if (this.inMemoryFormat === InMemoryFormat.OBJECT) {
                 internalRecord.value = this.serializationService.toObject(value);
             } else {
+                /**
+                 * This will work with compact since MapProxy's getInternal and getAllInternal
+                 * fetches schemas into local schema service. Also since tryPublishReserved runs
+                 * after getting the value from server and we got a compact object, its schema
+                 * is guaranteed to be replicated.
+                 */
                 internalRecord.value = this.serializationService.toData(value);
             }
             internalRecord.setCreationTime();
@@ -180,8 +186,8 @@ export class NearCacheImpl implements NearCache {
     }
 
     /**
-     * Creates a new {DataRecord} for given key and value. Then, puts the record in near cache.
-     * If the number of records in near cache exceeds {evictionMaxSize}, it removes expired items first.
+     * Creates a new {@link DataRecord} for given key and value. Then, puts the record in near cache.
+     * If the number of records in near cache exceeds {@link evictionMaxSize}, it removes expired items first.
      * If there is no expired item, it triggers an invalidation process to create free space.
      * @param key
      * @param value

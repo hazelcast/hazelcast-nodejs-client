@@ -19,11 +19,15 @@
 const { Lang } = require('../../../remote_controller/remote_controller_types');
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
+const CompactUtil = require('../serialization/compact/CompactUtil');
+const { InvocationService } = require('../../../../../lib/invocation/InvocationService');
 
 const chai = require('chai');
-const long = require('long');
+const Long = require('long');
 const fs = require('fs');
 const path = require('path');
+const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
 const { HazelcastJsonValue } = require('../../../../../lib');
 
 chai.should();
@@ -56,7 +60,7 @@ const portableFactory = (classId) => {
 
 const testFactory = new TestUtil.TestFactory();
 
-describe('Data type test', function () {
+describe('SQLDataTypeTest', function () {
     let client;
     let cluster;
     let someMap;
@@ -65,6 +69,7 @@ describe('Data type test', function () {
     let serverVersionNewerThanFive;
 
     const clientVersionNewerThanFive = TestUtil.isClientVersionAtLeast('5.0');
+    const JET_ENABLED_WITH_COMPACT_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled_with_compact.xml'), 'utf8');
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     const validateResults = (rows, expectedKeys, expectedValues) => {
@@ -78,7 +83,16 @@ describe('Data type test', function () {
 
     before(async function () {
         serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
-        const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
+        const serverVersionNewerThanFivePointOne = await TestUtil.compareServerVersionWithRC(RC, '5.1') >= 0;
+
+        let CLUSTER_CONFIG;
+        if (serverVersionNewerThanFivePointOne) {
+            CLUSTER_CONFIG = JET_ENABLED_WITH_COMPACT_CONFIG;
+        } else if (serverVersionNewerThanFive) {
+            CLUSTER_CONFIG = JET_ENABLED_CONFIG;
+        } else {
+            CLUSTER_CONFIG = null;
+        }
 
         TestUtil.markClientVersionAtLeast(this, '4.2');
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG);
@@ -98,13 +112,17 @@ describe('Data type test', function () {
         });
     };
 
+    beforeEach(function() {
+        // needed to prevent tests to clear other tests' maps in afterEach. That would lead to an error.
+        someMap = undefined;
+    });
+
     afterEach(async function () {
         if (someMap) {
             await someMap.clear();
         }
-        if (client) {
-            await client.shutdown();
-        }
+        await testFactory.shutdownAllClients();
+        sandbox.restore();
     });
 
     after(async function () {
@@ -273,7 +291,7 @@ describe('Data type test', function () {
         await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE this > ? AND this < ? ORDER BY __key ASC`,
-            [long.fromNumber(10), long.fromNumber(18)]
+            [Long.fromNumber(10), Long.fromNumber(18)]
         );
         const rowMetadata = await TestUtil.getRowMetadata(result);
         rowMetadata.getColumn(rowMetadata.findColumn('this')).type.should.be.eq(SqlColumnType.BIGINT);
@@ -284,7 +302,7 @@ describe('Data type test', function () {
             rows.push(row);
         }
 
-        const expectedValues = [long.fromNumber(12), long.fromNumber(14), long.fromNumber(16)];
+        const expectedValues = [Long.fromNumber(12), Long.fromNumber(14), Long.fromNumber(16)];
         const expectedKeys = [6, 7, 8];
 
         rows.length.should.be.eq(expectedValues.length);
@@ -782,16 +800,16 @@ describe('Data type test', function () {
             serverVersionNewerThanFive
         );
 
-        const student1 = new Student(long.fromNumber(12), 123.23);
-        const student2 = new Student(long.fromNumber(15), null);
-        const student3 = new Student(long.fromNumber(17), null);
+        const student1 = new Student(Long.fromNumber(12), 123.23);
+        const student2 = new Student(Long.fromNumber(15), null);
+        const student3 = new Student(Long.fromNumber(17), null);
         await someMap.put(0, student1);
         await someMap.put(1, student2);
         await someMap.put(2, student3);
 
         const result = await TestUtil.getSql(client).execute(
             `SELECT * FROM ${mapName} WHERE age > ? AND age < ? ORDER BY age DESC`,
-            [long.fromNumber(13), long.fromNumber(18)]
+            [Long.fromNumber(13), Long.fromNumber(18)]
         );
 
         const rowMetadata = await TestUtil.getRowMetadata(result);
@@ -815,6 +833,106 @@ describe('Data type test', function () {
             rows[i]['__key'].should.be.eq(expectedKeys[i]);
         }
     });
+    it('should be able to serialize compact arguments', async function() {
+        TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            serialization: {
+                compact: {
+                    serializers: [new CompactUtil.EmployeeSerializer()]
+                }
+            }
+        }, member);
+        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+
+        await TestUtil.createMappingForCompact(
+            'double',
+            {age: 'integer', id: 'bigint'},
+            client,
+            mapName,
+            'Employee'
+        );
+
+        // Don't put to map not to replicate schema via map.put
+        const employee1 = new CompactUtil.Employee(12, Long.fromNumber(1));
+        const registerSchemaSpy = sandbox.replace(
+            InvocationService.prototype, 'registerSchema', sandbox.fake(InvocationService.prototype.registerSchema)
+        );
+        // Compact parameter serialization test:
+        // we assert that it throws because sending compact arguments is not possible right now. todo: change this
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => await TestUtil.getSql(client).execute(
+            `SELECT * FROM ${mapName} WHERE age > CAST(? AS OBJECT)`,
+            [employee1]
+        ));
+        // If the message has this message the parameter is successfully sent to server.
+        error.message.includes('explicit CAST').should.be.true;
+        // Check if schema is registered to
+        registerSchemaSpy.called.should.be.true;
+    });
+    // todo: add nested compact test when it is supported in the server side
+    it('should be able to decode/serialize OBJECT(compact)', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        const SqlColumnType = TestUtil.getSqlColumnType();
+        client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            serialization: {
+                compact: {
+                    serializers: [new CompactUtil.EmployeeSerializer()]
+                }
+            }
+        }, member);
+        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
+        mapName = TestUtil.randomString(10);
+        someMap = await client.getMap(mapName);
+        await someMap.addIndex({
+            type: 'SORTED',
+            attributes: ['age']
+        });
+
+        await TestUtil.createMappingForCompact(
+            'double',
+            {age: 'integer', id: 'bigint'},
+            client,
+            mapName,
+            'Employee'
+        );
+
+        const employee1 = new CompactUtil.Employee(12, Long.fromNumber(1));
+        const employee2 = new CompactUtil.Employee(15, Long.fromNumber(2));
+        const employee3 = new CompactUtil.Employee(17, Long.fromNumber(3));
+        await someMap.put(0, employee1);
+        await someMap.put(1, employee2);
+        await someMap.put(2, employee3);
+
+        const result = await TestUtil.getSql(client).execute(
+            `SELECT * FROM ${mapName} WHERE age > CAST(? AS INTEGER) AND age < CAST(? AS INTEGER) ORDER BY age DESC`,
+            [13, 18]
+        );
+
+        const rowMetadata = await TestUtil.getRowMetadata(result);
+        rowMetadata.getColumn(rowMetadata.findColumn('age')).type.should.be.eq(SqlColumnType.INTEGER);
+        rowMetadata.getColumn(rowMetadata.findColumn('id')).type.should.be.eq(SqlColumnType.BIGINT);
+
+        const rows = [];
+
+        for await (const row of result) {
+            rows.push(row);
+        }
+
+        const expectedKeys = [2, 1];
+        const expectedValues = [employee3, employee2];
+
+        rows.length.should.be.eq(expectedValues.length);
+
+        for (let i = 0; i < rows.length; i++) {
+            rows[i]['age'].should.be.eq(expectedValues[i].age);
+            (rows[i]['id'].eq(expectedValues[i].id)).should.be.true;
+            rows[i]['__key'].should.be.eq(expectedKeys[i]);
+        }
+    });
+
     it('should be able to decode/serialize JSON', async function () {
         const inputs = [new HazelcastJsonValue(JSON.stringify({age: 3})), {age: 3}];
         for (const input of inputs) {

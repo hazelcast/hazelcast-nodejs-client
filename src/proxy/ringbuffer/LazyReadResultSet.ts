@@ -19,6 +19,7 @@ import * as Long from 'long';
 import {Data} from '../../serialization/Data';
 import {SerializationService, SerializationServiceV1} from '../../serialization/SerializationService';
 import {ReadResultSet} from '../../core';
+import {HazelcastSerializationError, SchemaNotFoundError} from './../../core/HazelcastError';
 
 /** @internal */
 export class LazyReadResultSet<T> implements ReadResultSet<T> {
@@ -51,7 +52,15 @@ export class LazyReadResultSet<T> implements ReadResultSet<T> {
             return undefined;
         }
         if ((this.serializationService as SerializationServiceV1).isData(dataOrObject)) {
-            const obj = this.serializationService.toObject(dataOrObject);
+            let obj;
+            try {
+                obj = this.serializationService.toObject(dataOrObject);
+            } catch (e) {
+                if (e instanceof SchemaNotFoundError) {
+                    throw new HazelcastSerializationError(e.message, e, e.serverStackTrace);
+                }
+                throw e;
+            }
             this.items[index] = obj;
             return obj;
         } else {

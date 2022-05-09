@@ -15,22 +15,21 @@
  */
 /** @ignore *//** */
 
-import {Data} from './Data';
+import {FieldKind} from './FieldKind';
 
-/** @internal */
-export function deserializeEntryList<K, V>(toObject: (data: Data) => any,
-                                           entrySet: Array<[Data, Data]>): Array<[K, V]> {
-    const deserializedSet: Array<[K, V]> = [];
-    entrySet.forEach(function (entry): void {
-        deserializedSet.push([toObject(entry[0]), toObject(entry[1])]);
-    });
-    return deserializedSet;
-}
+/**
+ * Describes a field.
+ * @internal
+ */
+export class FieldDescriptor {
+    index = -1;
+    offset = -1;
+    bitOffset = -1;
 
-/** @internal */
-export function serializeList(toData: (obj: any) => Data,
-                              input: any[]): Data[] {
-    return input.map((each) => {
-        return toData(each);
-    });
+    constructor(public fieldName: string, public kind: FieldKind) {
+    }
+
+    equals(other: FieldDescriptor): boolean {
+        return this.fieldName === other.fieldName && this.kind === other.kind;
+    }
 }

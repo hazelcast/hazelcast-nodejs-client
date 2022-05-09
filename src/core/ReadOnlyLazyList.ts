@@ -15,6 +15,7 @@
  */
 
 import {SerializationService, SerializationServiceV1} from '../serialization/SerializationService';
+import { HazelcastSerializationError, SchemaNotFoundError } from './HazelcastError';
 
 class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 
@@ -25,6 +26,10 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
         this.list = list;
     }
 
+    /**
+     * Returns the next element in the iteration.
+     * @throws {@link HazelcastSerializationError} if the next item is a compact object whose schema is not known
+     */
     next(): IteratorResult<T> {
         if (this.index < this.list.size()) {
             return {done: false, value: this.list.get(this.index++)};
@@ -36,7 +41,8 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
 }
 
 /**
- * Represents a list of values with lazy deserialization.
+ * Represents a list of values with lazy deserialization. Iterating over this list and some of its methods will
+ * throw {@link HazelcastSerializationError} in case a compact object is read and its schema is not known by the client.
  */
 export class ReadOnlyLazyList<T> {
 
@@ -53,6 +59,7 @@ export class ReadOnlyLazyList<T> {
      * Returns list's element at the specified index.
      *
      * @param index element's index
+     * @throws {@link HazelcastSerializationError} if the object to be returned is a compact object whose schema is not known
      * @returns element
      */
     get(index: number): T {
@@ -61,7 +68,15 @@ export class ReadOnlyLazyList<T> {
             return undefined;
         }
         if ((this.serializationService as SerializationServiceV1).isData(dataOrObject)) {
-            const obj = this.serializationService.toObject(dataOrObject);
+            let obj;
+            try {
+                obj = this.serializationService.toObject(dataOrObject);
+            } catch (e) {
+                if (e instanceof SchemaNotFoundError) {
+                    throw new HazelcastSerializationError(e.message, e, e.serverStackTrace);
+                }
+                throw e;
+            }
             this.internalArray[index] = obj;
             return obj;
         } else {
@@ -95,13 +110,22 @@ export class ReadOnlyLazyList<T> {
 
     /**
      * Returns an array that contains all elements of this list in proper sequence.
+     * @throws {@link HazelcastSerializationError} if the list includes a compact object whose schema is not known
      */
     toArray(): T[] {
         const arr: T[] = [];
         const iterator = this.values();
-        for (let item = iterator.next(); !item.done; item = iterator.next()) {
-            arr.push(item.value);
+        try {
+            for (let item = iterator.next(); !item.done; item = iterator.next()) {
+                arr.push(item.value);
+            }
+        } catch (e) {
+            if (e instanceof SchemaNotFoundError) {
+                throw new HazelcastSerializationError(e.message, e.cause, e.serverStackTrace);
+            }
+            throw e;
         }
+
         return arr;
     }
 
