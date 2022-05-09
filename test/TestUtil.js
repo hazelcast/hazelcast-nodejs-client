@@ -92,11 +92,11 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
 
             let errorString = '';
             for (const error in errorsToCount) {
-                errorString += `\tThe following error happened ${errorsToCount[error]} times:\n\n\t${error} \n\n`;
+                errorString += `\tThe following error occurred ${errorsToCount[error]} times:\n\n\t${error} \n\n`;
             }
 
-            reject(new Error('Rejected due to timeout of ' + timeoutMs
-                + 'ms. The following are the errors occurred and their counts: \n\n' + errorString));
+            reject(new Error(`Rejected due to timeout of ${timeoutMs}ms. `
+            + `The following are the errors that occurred and their counts: \n\n${errorString}`));
         }, timeoutMs);
     }));
 };
