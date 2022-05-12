@@ -1,0 +1,98 @@
+name: Run tests, measure coverage and upload results to codecov
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Enter PR number coming from community to run coverage on it. Do not run for PR coming from hazelcast organization, they will be run automatically.
+        required: true
+  push:
+    branches:
+      - master
+      - '[45].*.x'
+  pull_request_target:
+    branches:
+      - master
+      - '[45].*.x'
+
+jobs:
+  check_for_membership:
+    runs-on: ubuntu-latest
+    name: Check membership of given user  
+    outputs:
+      check-result: ${{ steps.composite.outputs.check-result }}
+    steps: 
+      - name: Action for membership check
+        id: composite
+        uses: hazelcast/hazelcast-tpm/membership@main
+        with:
+          organization-name: 'hazelcast'
+          member-name: ${{ github.event.pull_request.head.repo.owner.login }}
+          token: ${{ secrets.PAT }}
+
+  run-tests:
+      name: Run Tests on (${{ matrix.os }})
+      needs: [check_for_membership]
+      if: github.event_name == 'push' || needs.check_for_membership.outputs.check-result == 'true' || github.event_name == 'workflow_dispatch'
+      runs-on: ${{ matrix.os }}
+
+      strategy:
+          matrix:
+              os: [ ubuntu-latest, windows-latest ]
+
+      steps:
+          - name: Setup Java
+            uses: actions/setup-java@v1
+            with:
+                java-version: 8
+          - name: Setup Node.js
+            uses: actions/setup-node@v2
+            with:
+                node-version: 10
+
+          - name: Checkout code for PR
+            if: github.event_name == 'pull_request_target'
+            uses: actions/checkout@v2
+            with:
+              ref: refs/pull/${{ github.event.pull_request.number }}/merge
+              
+          - name: Checkout repository for push event
+            if: github.event_name == 'push'
+            uses: actions/checkout@v2
+                  
+          - name: Checkout PR coming from community.
+            if: github.event_name == 'workflow_dispatch'
+            uses: actions/checkout@v2
+            with:
+              ref: refs/pull/${{ github.event.inputs.pr_number }}/merge
+
+          - name: Install dependencies and compile client
+            run: |
+                npm install
+                npm run compile
+
+          - name: Run all tests
+            env:
+                HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+            run: |
+                npm run coverage
+
+          - name: Publish results to Codecov for PR coming from hazelcast organization
+            if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'pull_request_target' }}
+            uses: codecov/codecov-action@v1
+            with:
+              files: coverage/lcov.info
+              override_pr: ${{ github.event.pull_request.number }}
+              
+          - name: Publish results to Codecov for Push
+            if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'push' }}
+            uses: codecov/codecov-action@v1
+            with:
+              files: coverage/lcov.info
+              
+          - name: Publish result to Codecov for PR coming from community
+            if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'workflow_dispatch' }}
+            uses: codecov/codecov-action@v1
+            with:
+              files: coverage/lcov.info
+              override_pr: ${{ github.event.inputs.pr_number }}
