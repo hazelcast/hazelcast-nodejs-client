@@ -97,3 +97,12 @@ jobs:
             with:
               files: coverage/lcov.info
               override_pr: ${{ github.event.inputs.pr_number }}
+              
+          - name: Upload remote controller logs if test run fails
+            uses: actions/upload-artifact@v2
+            if: failure()
+            with:
+              name: rc-logs-${{ matrix.os }}
+              path: |
+                rc_stderr.log
+                rc_stdout.log
