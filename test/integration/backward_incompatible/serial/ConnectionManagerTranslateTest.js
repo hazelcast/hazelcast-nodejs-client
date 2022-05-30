@@ -32,7 +32,7 @@ const TestUtil = require('../../../TestUtil');
 describe('ConnectionManagerTranslateTest', function () {
     const PROPERTY_DISCOVERY_PUBLIC_IP_ENABLED = 'hazelcast.discovery.public.ip.enabled';
     const REACHABLE_HOST = '127.0.0.1';
-    const UNREACHABLE_HOST = '192.168.0.1';
+    const UNREACHABLE_HOST = '198.51.100.1';
     const testFactory = new TestUtil.TestFactory();
 
     let cluster;
