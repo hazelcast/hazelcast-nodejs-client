@@ -563,16 +563,16 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
 }
 
 /** @internal */
-export class BigIntSerializer implements Serializer<BigInt> {
+export class BigIntSerializer implements Serializer<bigint> {
 
     id = -26;
 
-    read(input: DataInput): BigInt {
+    read(input: DataInput): bigint {
         const body = input.readByteArray();
         return BigDecimalUtil.bufferToBigInt(body);
     }
 
-    write(output: DataOutput, bigint: BigInt): void {
+    write(output: DataOutput, bigint: bigint): void {
         output.writeByteArray(BigDecimalUtil.bigIntToBuffer(bigint));
     }
 }
