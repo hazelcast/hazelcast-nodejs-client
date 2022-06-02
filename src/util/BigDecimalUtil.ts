@@ -21,7 +21,7 @@ import {Buffer} from 'buffer';
  * Converts Buffer to BigInt
  * @param buffer
  */
-export function bufferToBigInt(buffer: Buffer): BigInt {
+export function bufferToBigInt(buffer: Buffer): bigint {
     // We need to copy the buffer here since in compact serialization there can be several trials of serialization. We don't want
     // our buffer to be modified in the second try.
     const bufferCopy = Buffer.from(buffer);
@@ -48,7 +48,7 @@ export function bufferToBigInt(buffer: Buffer): BigInt {
  * Converts BigInt to Buffer
  * @param big
  */
-export function bigIntToBuffer(big: BigInt): Buffer {
+export function bigIntToBuffer(big: bigint): Buffer {
     // Using toString(16) is problematic since it does not return two's complement
 
     const isNegative = big < BigInt(0);
