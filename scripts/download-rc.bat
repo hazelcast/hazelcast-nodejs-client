@@ -94,4 +94,4 @@ if defined HAZELCAST_ENTERPRISE_KEY (
 start /min "hazelcast-remote-controller" cmd /c "java -Dhazelcast.enterprise.license.key=%HAZELCAST_ENTERPRISE_KEY% -cp %CLASSPATH% com.hazelcast.remotecontroller.Main --use-simple-server> rc_stdout.txt 2>rc_stderr.txt"
 
 echo wait for Hazelcast to start ...
-timeout /t 100
+ping -n 150 127.0.0.1 > nul
