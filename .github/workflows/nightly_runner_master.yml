@@ -10,7 +10,7 @@ jobs:
         strategy:
             matrix:
                 os: [ ubuntu-latest, windows-latest ]
-                nodejs_version: [ 10, 11, 12, 13, 14, 15, 16, 17 ]
+                nodejs_version: [ 10, 18 ]
             fail-fast: false
         steps:
             - name: Setup Java
