@@ -11,7 +11,7 @@ jobs:
             matrix:
                 branch: [ 5.0.x, 4.2.x, 4.1.x, 4.0.x ]
                 os: [ ubuntu-latest, windows-latest ]
-                nodejs_version: [ 10, 11, 12, 13, 14, 15, 16, 17 ]
+                nodejs_version: [ 10, 18 ]
             fail-fast: false
         steps:
             - name: Setup Java
