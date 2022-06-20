@@ -95,5 +95,5 @@ fi
 
 nohup java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH}  com.hazelcast.remotecontroller.Main --use-simple-server>rc_stdout.log 2>rc_stderr.log &
 
-sleep 10
+sleep 100
 
