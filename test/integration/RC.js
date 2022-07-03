@@ -125,7 +125,7 @@ function executeOnController(clusterId, script, lang) {
 function loginToHazelcastCloudUsingEnvironment() {
     const deferred = deferredPromise();
     controller.loginToHazelcastCloudUsingEnvironment((err, res) => {
-        if(err) {
+        if (err) {
             return deferred.reject(err);
         }
         return deferred.resolve(res);
