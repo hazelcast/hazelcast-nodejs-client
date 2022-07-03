@@ -122,6 +122,99 @@ function executeOnController(clusterId, script, lang) {
     return deferred.promise;
 }
 
+function loginToHazelcastCloudUsingEnvironment() {
+    const deferred = deferredPromise();
+    controller.loginToHazelcastCloudUsingEnvironment((err, res) => {
+        if(err) {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(res);
+    });
+    return deferred.promise;
+}
+
+function loginToHazelcastCloud(uri, apiKey, apiSecret) {
+    const deferred = deferredPromise();
+    controller.loginToHazelcastCloud(uri, apiKey, apiSecret, (err, res) => {
+        if (err) {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(res);
+    });
+    return deferred.promise;
+}
+
+function getHazelcastCloudCluster(clusterId) {
+    const deferred = deferredPromise();
+    controller.getHazelcastCloudCluster(clusterId, (err, res) => {
+        if (err) {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(res);
+    });
+    return deferred.promise;
+}
+
+function createHazelcastCloudStandardCluster(hzVersion, isTlsEnabled) {
+    const deferred = deferredPromise();
+    controller.createHazelcastCloudStandardCluster(hzVersion, isTlsEnabled, (err, res) =>{
+        if (err)
+        {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(res);
+    });
+    return deferred.promise;
+}
+
+function setHazelcastCloudClusterMemberCount(clusterId, totalMemberCount) {
+    const deferred = deferredPromise();
+    controller.setHazelcastCloudClusterMemberCount(clusterId, totalMemberCount, (err, res) =>{
+        if (err)
+        {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(res);
+    });
+    return deferred.promise;
+}
+
+function stopHazelcastCloudCluster(clusterId) {
+    const deferred = deferredPromise();
+    controller.stopHazelcastCloudCluster(clusterId, (err, res) =>{
+        if (err)
+        {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(res);
+    });
+    return deferred.promise;
+}
+
+function resumeHazelcastCloudCluster(clusterId) {
+    const deferred = deferredPromise();
+    controller.resumeHazelcastCloudCluster(clusterId, (err, res) =>{
+        if (err)
+        {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(res);
+    });
+    return deferred.promise;
+}
+
+function deleteHazelcastCloudCluster(clusterId) {
+    const deferred = deferredPromise();
+    controller.deleteHazelcastCloudCluster(clusterId, (err, res) =>{
+        if (err)
+        {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(res);
+    });
+    return deferred.promise;
+}
+
 exports.exit = exit;
 exports.createCluster = createCluster;
 exports.createClusterKeepClusterName = createClusterKeepClusterName;
@@ -131,3 +224,11 @@ exports.shutdownCluster = shutdownCluster;
 exports.executeOnController = executeOnController;
 exports.terminateMember = terminateMember;
 exports.terminateCluster = terminateCluster;
+exports.loginToHazelcastCloudUsingEnvironment = loginToHazelcastCloudUsingEnvironment;
+exports.loginToHazelcastCloud = loginToHazelcastCloud;
+exports.getHazelcastCloudCluster = getHazelcastCloudCluster;
+exports.createHazelcastCloudStandardCluster = createHazelcastCloudStandardCluster;
+exports.setHazelcastCloudClusterMemberCount = setHazelcastCloudClusterMemberCount;
+exports.stopHazelcastCloudCluster = stopHazelcastCloudCluster;
+exports.resumeHazelcastCloudCluster = resumeHazelcastCloudCluster;
+exports.deleteHazelcastCloudCluster = deleteHazelcastCloudCluster;
