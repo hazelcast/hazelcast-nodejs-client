@@ -157,7 +157,7 @@ function getHazelcastCloudCluster(clusterId) {
 
 function createHazelcastCloudStandardCluster(hzVersion, isTlsEnabled) {
     const deferred = deferredPromise();
-    controller.createHazelcastCloudStandardCluster(hzVersion, isTlsEnabled, (err, res) =>{
+    controller.createHazelcastCloudStandardCluster(hzVersion, isTlsEnabled, (err, res) => {
         if (err)
         {
             return deferred.reject(err);
@@ -169,7 +169,7 @@ function createHazelcastCloudStandardCluster(hzVersion, isTlsEnabled) {
 
 function setHazelcastCloudClusterMemberCount(clusterId, totalMemberCount) {
     const deferred = deferredPromise();
-    controller.setHazelcastCloudClusterMemberCount(clusterId, totalMemberCount, (err, res) =>{
+    controller.setHazelcastCloudClusterMemberCount(clusterId, totalMemberCount, (err, res) => {
         if (err)
         {
             return deferred.reject(err);
@@ -181,7 +181,7 @@ function setHazelcastCloudClusterMemberCount(clusterId, totalMemberCount) {
 
 function stopHazelcastCloudCluster(clusterId) {
     const deferred = deferredPromise();
-    controller.stopHazelcastCloudCluster(clusterId, (err, res) =>{
+    controller.stopHazelcastCloudCluster(clusterId, (err, res) => {
         if (err)
         {
             return deferred.reject(err);
@@ -193,7 +193,7 @@ function stopHazelcastCloudCluster(clusterId) {
 
 function resumeHazelcastCloudCluster(clusterId) {
     const deferred = deferredPromise();
-    controller.resumeHazelcastCloudCluster(clusterId, (err, res) =>{
+    controller.resumeHazelcastCloudCluster(clusterId, (err, res) => {
         if (err)
         {
             return deferred.reject(err);
@@ -205,7 +205,7 @@ function resumeHazelcastCloudCluster(clusterId) {
 
 function deleteHazelcastCloudCluster(clusterId) {
     const deferred = deferredPromise();
-    controller.deleteHazelcastCloudCluster(clusterId, (err, res) =>{
+    controller.deleteHazelcastCloudCluster(clusterId, (err, res) => {
         if (err)
         {
             return deferred.reject(err);
