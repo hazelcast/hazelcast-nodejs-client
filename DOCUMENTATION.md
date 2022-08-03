@@ -1441,8 +1441,8 @@ the client can use public addresses for communication if it cannot access member
 Hazelcast Node.js client has a built-in mechanism to detect such situation. When the client starts, it executes the following
 steps:
 
-1. Check if private addresses reported by members are the same as defined in the client configuration. If they are the same, there is no
-need to use public addresses. If not, then
+1. Check if private addresses reported by members are the same as defined in the client configuration. If they are the same,
+there is no need to use public addresses. If not, then
 2. Check if every member is reachable via public address but not reachable via private address (for the performance reason, only
 three members are checked). If the check succeeds, the client uses public addresses for further communication.
 
