@@ -1382,7 +1382,7 @@ Its default value is `5000` milliseconds.
 
 ## 5.5. Enabling Client TLS/SSL
 
-You can use TLS/SSL to secure client and member connections. You should set an SSL configuration if you want to enable TLS/SSL for
+You can use TLS/SSL to secure client-member connections. You should set an SSL configuration if you want to enable TLS/SSL for
 the client-cluster connection. Please see [TLS/SSL section](#91-tlsssl).
 
 As explained in the TLS/SSL section, Hazelcast members have key stores used to identify themselves (to other members), and
@@ -1435,13 +1435,13 @@ You can also fine-tune this feature using `hazelcast.client.operation.backup.tim
 
 When you set up a Hazelcast cluster in the Cloud (AWS, Azure, GCP, Kubernetes) and would like to use it from outside the Cloud
 network, the client needs to communicate with all cluster members via their public IP addresses. Whenever Hazelcast cluster
-members can resolve their public external IP addresses, they pass this information to the client. As a result,
+members are able to resolve their public external IP addresses, they pass this information to the client. As a result,
 the client can use public addresses for communication if it cannot access members via private IPs.
 
 Hazelcast Node.js client has a built-in mechanism to detect such situation. When the client starts, it executes the following
 steps:
 
-1. Check if private addresses reported by members are the same as defined in the client configuration. If they are the same,
+1. Check if the private addresses reported by members are the same as defined in the client configuration. If they are the same,
 there is no need to use public addresses. If not, then
 2. Check if every member is reachable via public address but not reachable via private address (for the performance reason, only
 three members are checked). If the check succeeds, the client uses public addresses for further communication.
@@ -1550,7 +1550,9 @@ a Node.js client is automatically diverted to another cluster on demand or when 
 These features require **Hazelcast Enterprise** edition.
 
 Using the blue-green system, the clients can connect to another cluster automatically when they are blacklisted from their
-currently connected cluster. See the [Blue-Green Mechanism section](https://docs.hazelcast.com/hazelcast/latest/clients/java.html#blue-green-deployment-and-disaster-recovery)
+currently connected cluster.
+<!-- markdownlint-disable-next-line MD013 -->
+See the [Blue-Green Mechanism section](https://docs.hazelcast.com/hazelcast/latest/clients/java.html#blue-green-deployment-and-disaster-recovery)
 in the Hazelcast Reference Manual for information on the blue-green deployment support.
 
 With the disaster recovery, the clients try to connect to alternative clusters described in the failover config when one of
@@ -2060,7 +2062,7 @@ Data structures in CP Subsystem run in CP groups. Each CP group elects its own R
 independently. The CP data structures differ from the other Hazelcast data structures in two aspects. First, an internal commit
 is performed on the METADATA CP group every time you fetch a proxy from this interface. Hence, callers should cache returned
 proxy objects. Second, if you call `DistributedObject.destroy()` on a CP data structure proxy, that data structure is terminated
-on the underlying CP group. It cannot be reinitialized until the CP group is force-destroyed. For this reason, please make sure
+on the underlying CP group, and cannot be reinitialized until the CP group is force-destroyed. For this reason, please make sure
 that you are completely done with a CP data structure before destroying its proxy.
 
 #### 8.4.11.1. Using Atomic Long
@@ -2171,7 +2173,7 @@ if (fence !== undefined) {
 Hazelcast `ISemaphore` is the distributed implementation of a linearizable and distributed semaphore. It offers multiple
 operations for acquiring the permits. This data structure is a part of CP Subsystem.
 
-Semaphore is a cluster-wide counting semaphore. Conceptually, it maintains a set of permits. Each `acquire()` waits, if necessary
+Semaphore is a cluster-wide counting semaphore. Conceptually, it maintains a set of permits. Each `acquire()` waits if necessary
 until a permit is available and then takes it. Dually, each `release()` adds a permit, potentially releasing a waiting acquirer.
 However, no actual permit objects are used; the semaphore just keeps a count of the number available and acts accordingly.
 
@@ -2200,7 +2202,7 @@ Correct usage of a semaphore is established by programming convention in the app
 
 As an alternative, potentially safer approach to the multiple-permit acquire, you can use the `tryAcquire()` method of Semaphore.
 It tries to acquire the permits in optimistic manner and immediately returns with a `boolean` operation result. It also accepts
-an optional `timeout` argument that specifies the timeout in milliseconds to acquire the permits before giving up.
+an optional `timeout` argument which specifies the timeout in milliseconds to acquire the permits before giving up.
 
 ```javascript
 // Try to acquire 2 permits
@@ -2453,7 +2455,7 @@ Lifecycle Event >>> SHUTDOWN
 You can add event listeners to the distributed data structures.
 
 > **NOTE: Hazelcast Node.js client is a TypeScript-based project, but JavaScript does not have interfaces. Therefore, some
-> interfaces are given to the user using the TypeScript files with `.ts` extension. In this guide, implementing an
+> interfaces are given to the user with TypeScript definition files which have `.d.ts` extension. In this guide, implementing an
 > interface means creating an object to have the necessary functions that are listed in the interface inside the `.ts` file.
 > Also, this object is mentioned as "an instance of the interface". You can search the
 > [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client) or GitHub repository for the
@@ -2517,7 +2519,7 @@ await map.clear();
 
 The Entry Listener is used by the Hazelcast `MultiMap` and `ReplicatedMap`.
 
-You can listen to map-wide or entry-based events using the `EntryListener` interface functions. Every function type
+You can listen to map-wide or entry-based events using the functions in the `EntryListener` interface. Every function type
 in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to
 implement the relevant `EntryEventListener` and `MapEventListener` functions in the `EntryListener` interface.
 
@@ -2649,7 +2651,7 @@ If you are doing the process described above, you should consider using entry pr
 updates upon the member where the data resides. This eliminates the costly network hops described above.
 
 > **NOTE: Entry processor is meant to process a single entry per call. Processing multiple entries and data structures in an
-> entry processor are not supported as it may result in deadlocks on the server side.**
+> entry processor is not supported as it may result in deadlocks on the server side.**
 
 Hazelcast sends the entry processor to each cluster member, and these members apply it to the map entries. Therefore, if you add
 more members, your processing completes faster.
@@ -2686,7 +2688,7 @@ class IdentifiedEntryProcessor {
 ```
 
 Now, you need to ensure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java
-equivalent of your entry processor and its factory and create your own compiled class or JAR files. For adding your own compiled
+equivalent of your entry processor, and its factory and create your own compiled class or JAR files. For adding your own compiled
 class or JAR files to the server's `CLASSPATH`, see the
 [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
@@ -2782,7 +2784,7 @@ used to specify which entry processor should be called. For more details about t
 see the [Entry Processor section](https://docs.hazelcast.com/hazelcast/latest/computing/entry-processor) in the Hazelcast
 Reference Manual.
 
-After the above implementations and configuration are done, and you start the server where your library is added to its
+After the above implementations and configuration are done and you start the server where your library is added to its
 `CLASSPATH`, you can use the entry processor in the `IMap` functions. See the following example.
 
 ```javascript
@@ -2805,7 +2807,7 @@ The SQL service provided by Hazelcast Node.js client allows you to run SQL queri
 You can use SQL to query data in maps, Kafka topics, or various file systems. Results can be sent directly to the client
 or inserted into maps or Kafka topics. For streaming queries, you can submit them to a cluster as jobs to run in the background.
 
-> **WARNING: The SQL feature have become stable in 5.0 versions of the client and the server.For a client and a server to be
+> **WARNING: The SQL feature have become stable in 5.0 versions of the client and the server.In order a client and a server to be
 > fully compatible, their major versions must be the same.**
 
 > **WARNING: To use the SQL feature, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the
@@ -3011,7 +3013,7 @@ Query parameters have the following benefits:
 
 * Faster execution of similar queries. If you submit more than one query where only a value changes, the SQL service uses the
 cached query plan from the first query rather than optimizing each query again.
-* Protection against SQL injection. Using query parameters, you don’t need to escape special characters in user-provided
+* Protection against SQL injection. If you use query parameters, you don’t need to escape special characters in user-provided
 strings.
 
 ### 8.7.6. Querying JSON Objects
@@ -3215,7 +3217,7 @@ sample.
 
 ## 8.8. Distributed Query
 
-Hazelcast partitions your data and spreads it across the cluster of members. You can iterate over the map entries and look for
+Hazelcast partitions your data and spreads it across a cluster of members. You can iterate over the map entries and look for
 certain entries (specified by predicates) you are interested in. However, this is not very efficient because you will have to
 bring the entire entry set and iterate locally. Instead, Hazelcast allows you to run distributed queries on your distributed map.
 
@@ -3452,7 +3454,7 @@ for (const person of personsUnder21) {
 ```
 
 When running the queries, Hazelcast treats values extracted from the JSON documents as Java types so they can be compared with
-the query attribute. JSON specification defines five primitive types used in the JSON documents: `number`, `string`,
+the query attribute. JSON specification defines five primitive types that can be used in the JSON documents: `number`, `string`,
 `true`, `false` and `null`. The `string`, `true`/`false` and `null` types are treated as `String`, `boolean` and `null`,
 respectively. `Number` values treated as `long`s if they can be represented by a `long`. Otherwise, `number`s are treated as
 `double`s.
@@ -3809,7 +3811,7 @@ The entry with the highest score is evicted. Its default value is `16`.
 #### 8.9.2.2. Near Cache Example for Map
 
 The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration,
-the entries are stored as `OBJECT`'s in this Near Cache. Eviction starts when the count of entries reaches `5000`; entries are
+the entries are stored as `OBJECT`'s in this Near Cache, and eviction starts when the count of entries reaches `5000`; entries are
 evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it
 is eventually evicted on the client side.
 
@@ -4001,7 +4003,7 @@ const cfg = {
 
 ## 8.13. Configuring Load Balancer
 
-Load Balancer configuration allows you to specify which cluster member to send the following operation when queried.
+Load Balancer allows you to send operations to one of a number of endpoints (members).
 
 If it is a [smart client](#821-smart-client), only the operations that are not key-based are routed to the member
 that is returned by the `LoadBalancer`. If it is not a smart client, `LoadBalancer` is ignored.
