@@ -2519,7 +2519,7 @@ await map.clear();
 
 The Entry Listener is used by the Hazelcast `MultiMap` and `ReplicatedMap`.
 
-You can listen to map-wide or entry-based events using the functions in the `EntryListener` interface. Every function type
+You can listen to map-wide or entry-based events by using the functions in the `EntryListener` interface. Every function type
 in this interface is one of the `EntryEventListener` and `MapEventListener` types. To listen to these events, you need to
 implement the relevant `EntryEventListener` and `MapEventListener` functions in the `EntryListener` interface.
 
@@ -2688,7 +2688,7 @@ class IdentifiedEntryProcessor {
 ```
 
 Now, you need to ensure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java
-equivalent of your entry processor, and its factory and create your own compiled class or JAR files. For adding your own compiled
+equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled
 class or JAR files to the server's `CLASSPATH`, see the
 [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
