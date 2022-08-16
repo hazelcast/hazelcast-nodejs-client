@@ -24,18 +24,18 @@ class AddressSerializer{
     }
 
     getTypeName(){
-        return "Address";
+        return 'Address';
     }
 
     read(reader){
-        const city = reader.readString("city");
-        const street = reader.readString("street");
+        const city = reader.readString('city');
+        const street = reader.readString('street');
         return new Address(city, street);
     }
 
     write(writer, obj){
-        writer.writeString("city", obj.city);
-        writer.writeString("street", obj.street);
+        writer.writeString('city', obj.city);
+        writer.writeString('street', obj.street);
     }
 }
 
@@ -46,21 +46,21 @@ class EmployeeSerializer{
     }
 
     getTypeName(){
-        return "Employee";
+        return 'Employee';
     }
 
     read(reader){
-        const name = reader.readString("name");
-        const age = reader.readInt32("age");
-        const address = reader.readCompact("address");
+        const name = reader.readString('name');
+        const age = reader.readInt32('age');
+        const address = reader.readCompact('address');
         return new Employee(name, age, address);
 
     }
 
     write(writer, obj) {
-        writer.writeString("name", obj.name);
-        writer.writeInt32("age", obj.age);
-        writer.writeCompact("address", obj.address);
+        writer.writeString('name', obj.name);
+        writer.writeInt32('age', obj.age);
+        writer.writeCompact('address', obj.address);
     }
 }
 
@@ -74,16 +74,16 @@ class EmployeeSerializer{
             }
         });
 
-        const map = await client.getMap("employees");
+        const map = await client.getMap('employees');
 
         await map.put(
             0,
             new Employee(
-                "John Doe",
+                'John Doe',
                 42,
                 new Address(
-                    "Cambridge",
-                    "3487 Cedar Lane"
+                    'Cambridge',
+                    '3487 Cedar Lane'
                 )
             )
         );
