@@ -74,7 +74,7 @@ export class HazelcastCloudDiscovery {
         let dataAsAString = '';
         const req = get(endpointUrlOptions, (res: IncomingMessage) => {
             if (res.statusCode != 200) {
-                deferred.reject(new HazelcastError("Your cluster discovery token is invalid."));
+                deferred.reject(new HazelcastError('Your cluster discovery token is invalid.'));
                 return;
             }
             res.setEncoding('utf8');
