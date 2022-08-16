@@ -31,7 +31,7 @@ export interface EntryListener<K, V> {
     mapEvicted?: MapEventListener<K, V>;
     mapCleared?: MapEventListener<K, V>;
 
-    [event: string]: EntryEventListener<K, V> | MapEventListener<K, V>;
+    [event: string]: EntryEventListener<K, V> | MapEventListener<K, V> | undefined;
 }
 
 /**
