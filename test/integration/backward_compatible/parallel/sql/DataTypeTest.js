@@ -92,7 +92,7 @@ describe('SQLDataTypeTest', function () {
 
         let CLUSTER_CONFIG;
         // Don't use compact enabled config if not compatible, we will skip the compact test anyway.
-        if (serverVersionNewerThanFivePointOne && !isCompactCompatible) {
+        if (serverVersionNewerThanFivePointOne || !isCompactCompatible) {
             CLUSTER_CONFIG = JET_ENABLED_WITH_COMPACT_CONFIG;
         } else if (serverVersionNewerThanFive) {
             CLUSTER_CONFIG = JET_ENABLED_CONFIG;
