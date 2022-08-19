@@ -77,6 +77,10 @@ describe('CompactTest', function () {
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
             this.skip();
         }
+        // Compact serialization 5.2 server is not compatible with clients older than 5.2
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
+            this.skip();
+        }
         cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
         member = await RC.startMember(cluster.id);
     });
