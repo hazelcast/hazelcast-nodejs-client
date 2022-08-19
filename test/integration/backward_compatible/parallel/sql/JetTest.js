@@ -36,10 +36,6 @@ describe('Jet Test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
-        // Compact serialization 5.2 server is not compatible with clients older than 5.2
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
-            this.skip();
-        }
         const serverOlderThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') < 0;
         if (serverOlderThanFive) {
             this.skip();
