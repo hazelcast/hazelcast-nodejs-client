@@ -36,6 +36,11 @@ describe('Jet Test', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.0');
+        // In 5.2 xml has a breaking change, skip the test
+        // TODO: add new working xml and remove this check
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0) {
+            this.skip();
+        }
         const serverOlderThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') < 0;
         if (serverOlderThanFive) {
             this.skip();

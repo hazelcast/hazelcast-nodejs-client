@@ -30,6 +30,11 @@ describe('CompactSerializersLiveTest', function () {
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
             this.skip();
         }
+        // In 5.2 xml has a breaking change, skip the test
+        // TODO: add new working xml and remove this check
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0) {
+            this.skip();
+        }
     });
 
     const testFactory = new TestUtil.TestFactory();

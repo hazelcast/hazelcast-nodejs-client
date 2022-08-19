@@ -85,6 +85,12 @@ describe('SQLDataTypeTest', function () {
         serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
         const serverVersionNewerThanFivePointOne = await TestUtil.compareServerVersionWithRC(RC, '5.1') >= 0;
 
+        // In 5.2 xml has a breaking change, skip the test
+        // TODO: add new working xml and remove this check
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0) {
+            this.skip();
+        }
+
         let CLUSTER_CONFIG;
         if (serverVersionNewerThanFivePointOne) {
             CLUSTER_CONFIG = JET_ENABLED_WITH_COMPACT_CONFIG;

@@ -51,6 +51,12 @@ describe('SqlResultTest', function () {
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     before(async function () {
+        // In 5.2 xml has a breaking change, skip the test
+        // TODO: add new working xml and remove this check
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0) {
+            this.skip();
+        }
+
         serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
         const CLUSTER_CONFIG = serverVersionNewerThanFive ? JET_ENABLED_CONFIG : null;
 
