@@ -67,6 +67,7 @@ describe('SQLDataTypeTest', function () {
     let mapName;
     let member;
     let serverVersionNewerThanFive;
+    let isCompactCompatible;
 
     const clientVersionNewerThanFive = TestUtil.isClientVersionAtLeast('5.0');
     const JET_ENABLED_WITH_COMPACT_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled_with_compact.xml'), 'utf8');
@@ -85,14 +86,13 @@ describe('SQLDataTypeTest', function () {
         serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
         const serverVersionNewerThanFivePointOne = await TestUtil.compareServerVersionWithRC(RC, '5.1') >= 0;
 
-        // In 5.2 xml has a breaking change, skip the test
-        // TODO: add new working xml and remove this check
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0) {
-            this.skip();
-        }
+        // If client is not newer than 5.2 and server is newer than 5.2, compact serialization is not compatible
+        isCompactCompatible = !((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0
+            && !TestUtil.isClientVersionAtLeast('5.2.0'));
 
         let CLUSTER_CONFIG;
-        if (serverVersionNewerThanFivePointOne) {
+        // Don't use compact enabled config if not compatible, we will skip the compact test anyway.
+        if (serverVersionNewerThanFivePointOne && !isCompactCompatible) {
             CLUSTER_CONFIG = JET_ENABLED_WITH_COMPACT_CONFIG;
         } else if (serverVersionNewerThanFive) {
             CLUSTER_CONFIG = JET_ENABLED_CONFIG;
@@ -841,6 +841,9 @@ describe('SQLDataTypeTest', function () {
     });
     it('should be able to serialize compact arguments', async function() {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        if (!isCompactCompatible) {
+            this.skip();
+        }
         client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
@@ -880,6 +883,9 @@ describe('SQLDataTypeTest', function () {
     // todo: add nested compact test when it is supported in the server side
     it('should be able to decode/serialize OBJECT(compact)', async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        if (!isCompactCompatible) {
+            this.skip();
+        }
         const SqlColumnType = TestUtil.getSqlColumnType();
         client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,

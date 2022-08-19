@@ -77,9 +77,8 @@ describe('CompactTest', function () {
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
             this.skip();
         }
-        // In 5.2 xml has a breaking change, skip the test
-        // TODO: add new working xml and remove this check
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0) {
+        // Compact serialization 5.2 server is not compatible with clients older than 5.2
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
             this.skip();
         }
         cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);

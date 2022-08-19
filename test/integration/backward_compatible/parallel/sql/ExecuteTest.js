@@ -122,9 +122,8 @@ describe('SqlExecuteTest', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '4.2');
-        // In 5.2 xml has a breaking change, skip the test
-        // TODO: add new working xml and remove this check
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0) {
+        // Compact serialization 5.2 server is not compatible with clients older than 5.2
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
             this.skip();
         }
 
