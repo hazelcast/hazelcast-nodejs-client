@@ -17,44 +17,43 @@ class Employee {
     }
 }
 
-class AddressSerializer{
+class AddressSerializer {
 
-    getClass(){
+    getClass() {
         return Address;
     }
 
-    getTypeName(){
+    getTypeName() {
         return 'Address';
     }
 
-    read(reader){
+    read(reader) {
         const city = reader.readString('city');
         const street = reader.readString('street');
         return new Address(city, street);
     }
 
-    write(writer, obj){
+    write(writer, obj) {
         writer.writeString('city', obj.city);
         writer.writeString('street', obj.street);
     }
 }
 
-class EmployeeSerializer{
+class EmployeeSerializer {
 
-    getClass(){
+    getClass() {
         return Employee;
     }
 
-    getTypeName(){
+    getTypeName() {
         return 'Employee';
     }
 
-    read(reader){
+    read(reader) {
         const name = reader.readString('name');
         const age = reader.readInt32('age');
         const address = reader.readCompact('address');
         return new Employee(name, age, address);
-
     }
 
     write(writer, obj) {
@@ -94,5 +93,6 @@ class EmployeeSerializer{
         await client.shutdown();
     } catch (err) {
         console.error('Error occurred:', err);
+        process.exit(1);
     }
 })();
