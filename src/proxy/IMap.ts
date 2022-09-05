@@ -269,6 +269,8 @@ export interface IMap<K, V> extends DistributedObject {
      */
     remove(key: K, value?: V): Promise<V | boolean>;
 
+    removeAll(predicate: Predicate): Promise<void>;
+
     /**
      * Removes specified key from the map. Unlike {@link remove} this method does not
      * return the deleted value. Therefore, it eliminates deserialization cost

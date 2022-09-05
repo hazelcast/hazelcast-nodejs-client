@@ -91,6 +91,7 @@ import {PagingPredicateHolder} from '../protocol/PagingPredicateHolder';
 import {MapEntriesWithPagingPredicateCodec} from '../codec/MapEntriesWithPagingPredicateCodec';
 import * as Long from 'long';
 import {SchemaNotReplicatedError} from '../core';
+import {MapRemoveAllCodec} from "../codec/MapRemoveAllCodec";
 
 type EntryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number,
                           uuid: UUID, numberOfAffectedEntries: number) => void;
@@ -413,6 +414,20 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             throw e;
         }
         return this.removeInternal(keyData, valueData);
+    }
+
+    removeAll(predicate: Predicate): Promise<void> {
+        assertNotNull(predicate);
+        let predicateData: Data;
+        try {
+            predicateData = this.toData(predicate);
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.removeAll(predicate));
+            }
+            throw e;
+        }
+        return this.encodeInvokeOnRandomTarget(MapRemoveAllCodec, () => {}, predicateData);
     }
 
     size(): Promise<number> {
@@ -820,6 +835,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 MapRemoveIfSameCodec, keyData, MapRemoveIfSameCodec.decodeResponse, keyData, valueData, 0
             );
         }
+    }
+
+    protected removeAllInternal(predicate: Predicate): Promise<void> {
+        const request = MapRemoveAllCodec.encodeRequest(this.name, this.toData(predicate));
+        return this.encodeInvokeOnRandomTarget(MapRemoveAllCodec, () => {}, request);
     }
 
     protected getAllInternal(

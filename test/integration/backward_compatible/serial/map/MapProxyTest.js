@@ -153,6 +153,13 @@ describe('MapProxyTest', function () {
                 expect(val).to.be.true;
             });
 
+            it('basic_remove_all', async function () {
+                const predicate = await Predicates.between('this', 'val2', 'val5');
+                await map.removeAll(predicate);
+                const size = await map.size();
+                expect(size).to.equal(6);
+            });
+
             it('containsKey_true', async function () {
                 const val = await map.containsKey('key1');
                 expect(val).to.be.true;
