@@ -21,6 +21,7 @@ const fs = require('fs');
 const RC = require('../../../RC');
 const { Predicates } = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');
+const { AssertionError } = require('assert');
 
 describe('MapProxyTest', function () {
     const testFactory = new TestUtil.TestFactory();
@@ -153,27 +154,25 @@ describe('MapProxyTest', function () {
                 expect(val).to.be.true;
             });
 
-            it('basic_remove_all', async function () {
+            it('basic_removeAll', async function () {
                 const predicate = await Predicates.between('this', 'val2', 'val5');
                 await map.removeAll(predicate);
                 const size = await map.size();
                 expect(size).to.equal(6);
             });
 
-            // it('remove_all_with_null_predicate', async function () {
-            //     const predicate = await Predicates.equal('this', null);
-            //     const respond = await map.removeAll(predicate);
-            //     expect(respond).throws(AssertionError);
-            // });
+            it('removeAll_throws_exception_whenPredicateNull', async function () {
+                const rejectionReason = await TestUtil.getRejectionReasonOrThrow(async () => await map.removeAll(null));
+                expect(rejectionReason).to.be.instanceOf(AssertionError);
+            });
 
-            it('removes_all_entries_whenPredicateTrue', async function () {
-                const predicate = await Predicates.alwaysTrue();
-                await map.removeAll(predicate);
+            it('removeAll_removes_all_entries_whenPredicateTrue', async function () {
+                await map.removeAll(Predicates.alwaysTrue());
                 const size = await map.size();
                 expect(size).to.equal(0);
             });
 
-            it('removes_no_entries_whenPredicateFalse', async function () {
+            it('removeAll_removes_no_entries_whenPredicateFalse', async function () {
                 const sizeBefore = await map.size();
                 const predicate = Predicates.alwaysFalse();
                 await map.removeAll(predicate);
@@ -181,13 +180,16 @@ describe('MapProxyTest', function () {
                 expect(sizeAfter).to.be.equal(sizeBefore);
             });
 
-            // it('removes_odd_values_whenPredicateOdd', async function () {
-            //     const predicate = (value) => value % 2 === 1;
-            //     const sizeBefore = await map.size();
-            //     await map.removeAll(predicate);
-            //     const sizeAfter = await map.size();
-            //     expect(sizeAfter).to.be.equal(sizeBefore / 2);
-            // });
+            it('removeAll_with_predicate', async function () {
+                const map = await client.getMap('test2');
+                for (let i = 1; i <= 10; i++) {
+                    await map.put(i, i);
+                }
+                const sizeBefore = await map.size();
+                await map.removeAll(Predicates.greaterThan('__key', 5));
+                const sizeAfter = await map.size();
+                expect(sizeAfter).to.be.equal(sizeBefore / 2);
+            });
 
             it('containsKey_true', async function () {
                 const val = await map.containsKey('key1');

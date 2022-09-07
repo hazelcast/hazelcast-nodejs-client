@@ -272,6 +272,8 @@ export interface IMap<K, V> extends DistributedObject {
     /**
      * Removes all entries which match with the supplied predicate.
      * Note that calling this method also removes all entries from caller's Near Cache.
+     * If this map has index, matching entries will be found via index search,
+     * otherwise they will be found by full-scan.
      *
      * @param predicate matching entries with this predicate will be removed from the map
      * @throws AssertionError if `predicate` is `null`

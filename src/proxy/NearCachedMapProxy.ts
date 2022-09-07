@@ -195,14 +195,11 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     protected removeAllInternal(predicate: Predicate): Promise<void> {
         try {
+            super.removeAllInternal(predicate);
+        } finally {
             this.nearCache.clear();
-        } catch (e) {
-            if (e instanceof SchemaNotReplicatedError) {
-                return this.registerSchema(e.schema, e.clazz).then(() => this.removeAllInternal(predicate));
-            }
-            throw e;
         }
-        return super.removeAllInternal(predicate);
+        return Promise.resolve();
     }
 
     private getAllInternalHelper(
