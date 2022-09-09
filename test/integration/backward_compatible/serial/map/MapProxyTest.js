@@ -156,9 +156,10 @@ describe('MapProxyTest', function () {
 
             it('basic_removeAll', async function () {
                 const predicate = await Predicates.between('this', 'val2', 'val5');
+                const sizeBefore = await map.size();
                 await map.removeAll(predicate);
-                const size = await map.size();
-                expect(size).to.equal(6);
+                const sizeAfter = await map.size();
+                expect(sizeAfter).to.equal(sizeBefore- 4);
             });
 
             it('removeAll_throws_exception_whenPredicateNull', async function () {
