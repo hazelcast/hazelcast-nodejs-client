@@ -17,6 +17,8 @@
 
 const chai = require('chai');
 chai.should();
+chai.use(require('chai-as-promised'));
+const expect = chai.expect;
 const {
     serialize,
     createSerializationService,
@@ -38,7 +40,7 @@ const {
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const Long = require('long');
 const { CompactGenericRecordImpl } = require('../../../../lib/serialization/generic_record/CompactGenericRecord');
-const { GenericRecords } = require('../../../../lib');
+const { GenericRecords, HazelcastSerializationError} = require('../../../../lib');
 const { Fields } = require('../../../../lib/serialization/generic_record');
 
 describe('CompactTest', function () {
@@ -243,5 +245,19 @@ describe('CompactTest', function () {
         const data = await serialize(serializationService, schemaService, employer);
         const object = await serializationService.toObject(data);
         object.should.be.deep.equal(employer);
+    });
+
+    it('should not serialize without nested fields serializer', async function() {
+        const bundle = createSerializationService(
+            [new MainDTOSerializer(), new InnerDTOSerializer()]
+        );
+
+        serializationService = bundle.serializationService;
+
+        const mainDTO = createMainDTO();
+        await expect(serialize(
+            serializationService,
+            bundle.schemaService,
+            mainDTO)).to.be.rejectedWith(HazelcastSerializationError);
     });
 });

@@ -15,6 +15,7 @@
  */
 'use strict';
 const TestUtil = require('../../../../../TestUtil');
+const {HazelcastSerializationError} = require('../../../../../../lib');
 
 let serialize;
 let createCompactGenericRecord;
@@ -1486,6 +1487,8 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 await schemaService.put(e.schema);
+            } else if (e instanceof HazelcastSerializationError) {
+                throw new HazelcastSerializationError(e.message, e.cause, e.serverStackTrace);
             }
             return await serialize(serializationService, schemaService, obj);
         }
