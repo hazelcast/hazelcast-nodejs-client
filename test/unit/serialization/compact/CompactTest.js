@@ -247,7 +247,7 @@ describe('CompactTest', function () {
         object.should.be.deep.equal(employer);
     });
 
-    it('should not serialize without nested fields serializer', async function() {
+    it('should throw proper error when nested field serializer is missing', async function() {
         const bundle = createSerializationService(
             [new MainDTOSerializer(), new InnerDTOSerializer()]
         );
@@ -258,6 +258,7 @@ describe('CompactTest', function () {
         await expect(serialize(
             serializationService,
             bundle.schemaService,
-            mainDTO)).to.be.rejectedWith(HazelcastSerializationError);
+            mainDTO)).to.be.eventually.rejectedWith(HazelcastSerializationError).and.have.property('message',
+            'No serializer is registered for class/constructor NamedDTO.');
     });
 });

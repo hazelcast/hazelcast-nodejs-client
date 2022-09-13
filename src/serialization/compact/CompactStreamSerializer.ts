@@ -140,7 +140,7 @@ export class CompactStreamSerializer {
     writeObject(output: PositionalObjectDataOutput, obj: any) : void {
         const compactSerializer = this.classToSerializerMap.get(obj.constructor);
         if (compactSerializer == undefined) {
-            throw new HazelcastSerializationError(`No serializer is registered for class ${obj.constructor.name}.`)
+            throw new HazelcastSerializationError(`No serializer is registered for class/constructor ${obj.constructor.name}.`)
         }
         const clazz = compactSerializer.getClass();
         let schema = this.classToSchemaMap.get(clazz);
