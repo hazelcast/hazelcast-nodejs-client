@@ -403,6 +403,14 @@ describe('CompactPublicAPIsTest', function () {
             }
         });
 
+        it('removeAll', async function () {
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                const fn = obj.removeAll.bind(obj, new CompactPredicate());
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
+            }
+        });
+
         it('delete', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 const fn = obj.delete.bind(obj, OUTER_INSTANCE);
