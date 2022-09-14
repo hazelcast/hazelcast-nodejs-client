@@ -270,6 +270,17 @@ export interface IMap<K, V> extends DistributedObject {
     remove(key: K, value?: V): Promise<V | boolean>;
 
     /**
+     * Removes all entries which match with the supplied predicate.
+     * Note that calling this method also removes all entries from caller's Near Cache.
+     * If this map has index, matching entries will be found via index search,
+     * otherwise they will be found by full-scan.
+     *
+     * @param predicate matching entries with this predicate will be removed from the map
+     * @throws AssertionError if `predicate` is `null`
+     */
+    removeAll(predicate: Predicate): Promise<void>;
+
+    /**
      * Removes specified key from the map. Unlike {@link remove} this method does not
      * return the deleted value. Therefore, it eliminates deserialization cost
      * of the returned value.

@@ -22,6 +22,7 @@ const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
 const CompactUtil = require('../../parallel/serialization/compact/CompactUtil');
 const { assertTrueEventually } = require('../../../../TestUtil');
+const {Predicates} = require('../../../../../lib/core');
 
 describe('NearCachedMapTest', function () {
     const testFactory = new TestUtil.TestFactory();
@@ -176,6 +177,12 @@ describe('NearCachedMapTest', function () {
             it('clear clears nearcache', async function () {
                 await map1.get('key1');
                 await map1.clear();
+                expectStats(map1, 0, 1, 0);
+            });
+
+            it('removeAll clears nearcache', async function () {
+                await map1.get('key1');
+                await map1.removeAll(Predicates.alwaysTrue());
                 expectStats(map1, 0, 1, 0);
             });
 
