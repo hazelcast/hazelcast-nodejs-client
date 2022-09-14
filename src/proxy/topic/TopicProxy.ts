@@ -6,7 +6,7 @@ import {TopicAddMessageListenerCodec} from "../../codec/TopicAddMessageListenerC
 import {TopicRemoveMessageListenerCodec} from "../../codec/TopicRemoveMessageListenerCodec";
 import {TopicPublishCodec} from "../../codec/TopicPublishCodec";
 import { ListenerMessageCodec} from "../../listener/ListenerMessageCodec";
-import {ClientMessage} from "../../protocol/ClientMessage";
+import {ClientMessage, ClientMessageHandler} from "../../protocol/ClientMessage";
 import {assertNotNull} from "../../util/Util";
 
 export class TopicProxy<E> extends BaseProxy implements ITopic<E> {
@@ -22,9 +22,12 @@ export class TopicProxy<E> extends BaseProxy implements ITopic<E> {
     addMessageListener(listener: MessageListener<E>): string {
         assertNotNull(listener);
         const message = TopicAddMessageListenerCodec.encodeRequest(this.name, false);
-
-        const handler = TopicAddMessageListenerCodec.handle(message, () => {});
-        return this.listenerService.registerListener(new Codec(),  handler);
+        const codec = this.createItemListener(this.name, false)
+        TopicAddMessageListenerCodec.handle(message, () => {});
+        //I am unable to fix this part. Will be trying tomorrow
+        return this.listenerService.registerListener(codec,  (message => {
+            TopicAddMessageListenerCodec.handle(message, ()=> {})
+        }));
     }
 
     removeMessageListener(listenerId: string): boolean {
@@ -33,21 +36,18 @@ export class TopicProxy<E> extends BaseProxy implements ITopic<E> {
         }
         return false;
     }
-}
 
-//What is the 'name' we have here?
-class Codec implements ListenerMessageCodec {
-
-    encodeAddRequest(localOnly: boolean): ClientMessage {
-        return TopicAddMessageListenerCodec.encodeRequest(this.name, localOnly);
-    }
-
-    decodeAddResponse(msg: ClientMessage): UUID {
-        return TopicAddMessageListenerCodec.decodeResponse(msg);
-    }
-
-    //it returns UUID on Java but according to our codec it should return a string.
-    encodeRemoveRequest(listenerId: string): UUID {
-        return TopicRemoveMessageListenerCodec.encodeRequest(this.name, listenerId);
+    private createItemListener(name: string, includeValue: boolean): ListenerMessageCodec {
+        return {
+            encodeAddRequest(localOnly: boolean): ClientMessage {
+                return TopicAddMessageListenerCodec.encodeRequest(name, localOnly);
+            },
+            decodeAddResponse(msg: ClientMessage): UUID {
+                return TopicAddMessageListenerCodec.decodeResponse(msg);
+            },
+            encodeRemoveRequest(listenerId: UUID): ClientMessage {
+                return TopicAddMessageListenerCodec.encodeRequest(name, false);
+            },
+        };
     }
 }
