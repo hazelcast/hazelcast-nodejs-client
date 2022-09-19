@@ -21,3 +21,4 @@ const { Client, Predicates } = require('../lib/index');
     console.error('Error occurred:', err);
     process.exit(1);
 });
+
