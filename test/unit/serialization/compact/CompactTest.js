@@ -18,7 +18,7 @@
 const chai = require('chai');
 chai.should();
 chai.use(require('chai-as-promised'));
-const expect = chai.expect;
+
 const {
     serialize,
     createSerializationService,
@@ -42,6 +42,7 @@ const Long = require('long');
 const { CompactGenericRecordImpl } = require('../../../../lib/serialization/generic_record/CompactGenericRecord');
 const { GenericRecords, HazelcastSerializationError} = require('../../../../lib');
 const { Fields } = require('../../../../lib/serialization/generic_record');
+const TestUtil = require('../../../TestUtil');
 
 describe('CompactTest', function () {
     let serializationService;
@@ -255,10 +256,15 @@ describe('CompactTest', function () {
         serializationService = bundle.serializationService;
 
         const mainDTO = createMainDTO();
-        await expect(serialize(
+        TestUtil.getRejectionReasonOrThrow(serialize(
             serializationService,
             bundle.schemaService,
-            mainDTO)).to.be.eventually.rejectedWith(HazelcastSerializationError).and.have.property('message',
-            'No serializer is registered for class/constructor NamedDTO.');
+            mainDTO
+        ));
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            await serialize(serializationService, bundle.schemaService, mainDTO);
+        });
+        error.should.be.instanceOf(HazelcastSerializationError);
+        error.message.includes('No serializer is registered for class/constructor').should.be.true;
     });
 });
