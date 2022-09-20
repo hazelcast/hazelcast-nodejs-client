@@ -259,6 +259,6 @@ describe('CompactTest', function () {
             serializationService,
             bundle.schemaService,
             mainDTO)).to.be.eventually.rejectedWith(HazelcastSerializationError).and.have.property('message',
-            'No serializer is registered for class/constructor NamedDTO.');
+            'No serializer is registered for class/constructor.');
     });
 });
