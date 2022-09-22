@@ -256,11 +256,6 @@ describe('CompactTest', function () {
         serializationService = bundle.serializationService;
 
         const mainDTO = createMainDTO();
-        TestUtil.getRejectionReasonOrThrow(serialize(
-            serializationService,
-            bundle.schemaService,
-            mainDTO
-        ));
         const error = await TestUtil.getRejectionReasonOrThrow(async () => {
             await serialize(serializationService, bundle.schemaService, mainDTO);
         });
