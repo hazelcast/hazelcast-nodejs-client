@@ -22,10 +22,11 @@ import {DefaultCompactReader} from './DefaultCompactReader';
 import {SchemaService} from './SchemaService';
 import {DefaultCompactWriter} from './DefaultCompactWriter';
 import {FieldOperations} from '../generic_record/FieldOperations';
-import {SchemaNotFoundError, SchemaNotReplicatedError} from '../../core';
+import {HazelcastSerializationError, SchemaNotFoundError, SchemaNotReplicatedError} from '../../core';
 import {ObjectDataInput, ObjectDataOutput, PositionalObjectDataOutput} from '../ObjectData';
 import {CompactGenericRecordImpl} from '../generic_record/CompactGenericRecord';
 import {SchemaWriter} from './SchemaWriter';
+
 /**
  * Serializer for compact serializable objects.
  *
@@ -138,6 +139,9 @@ export class CompactStreamSerializer {
 
     writeObject(output: PositionalObjectDataOutput, obj: any) : void {
         const compactSerializer = this.classToSerializerMap.get(obj.constructor);
+        if (compactSerializer == undefined) {
+            throw new HazelcastSerializationError(`No serializer is registered for class/constructor ${obj.constructor.name}.`)
+        }
         const clazz = compactSerializer.getClass();
         let schema = this.classToSchemaMap.get(clazz);
         if (schema === undefined) {
