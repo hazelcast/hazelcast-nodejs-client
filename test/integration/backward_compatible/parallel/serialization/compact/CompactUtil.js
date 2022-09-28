@@ -1486,8 +1486,9 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 await schemaService.put(e.schema);
+                return serialize(serializationService, schemaService, obj);
             }
-            return await serialize(serializationService, schemaService, obj);
+            throw e;
         }
     };
 
