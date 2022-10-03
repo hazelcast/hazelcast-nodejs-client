@@ -90,7 +90,7 @@ export class ReliableTopicListenerRunner<E> {
             })
             .catch((err) => {
                 if (this.handleInternalError(err)) {
-                    this.next();
+                    setImmediate(this.next.bind(this));
                 } else {
                     this.proxy.removeMessageListener(this.listenerId);
                 }
