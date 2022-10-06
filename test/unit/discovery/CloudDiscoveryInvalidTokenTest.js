@@ -14,7 +14,7 @@ describe('Cloud Discovery Invalid Token Test', function () {
         );
 
         try {
-            const error = await getRejectionReasonOrThrow(cloudDiscovery.callService);
+            const error = await getRejectionReasonOrThrow(cloudDiscovery.callService.bind(cloudDiscovery));
             expect(error).to.be.instanceof(HazelcastError);
             expect(error.message).to.include('discovery token is invalid');
         } catch (err) {
