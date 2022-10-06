@@ -181,6 +181,7 @@ describe('NearCachedMapTest', function () {
             });
 
             it('removeAll clears nearcache', async function () {
+                TestUtil.markClientVersionAtLeast(this, '5.2.0');
                 await map1.get('key1');
                 await map1.removeAll(Predicates.alwaysTrue());
                 expectStats(map1, 0, 1, 0);

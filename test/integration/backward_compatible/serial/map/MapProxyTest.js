@@ -155,6 +155,7 @@ describe('MapProxyTest', function () {
             });
 
             it('basic_removeAll', async function () {
+                TestUtil.markClientVersionAtLeast(this, '5.2.0');
                 const predicate = await Predicates.between('this', 'val2', 'val5');
                 const sizeBefore = await map.size();
                 await map.removeAll(predicate);
@@ -163,17 +164,20 @@ describe('MapProxyTest', function () {
             });
 
             it('removeAll_throws_exception_whenPredicateNull', async function () {
+                TestUtil.markClientVersionAtLeast(this, '5.2.0');
                 const rejectionReason = await TestUtil.getRejectionReasonOrThrow(async () => await map.removeAll(null));
                 expect(rejectionReason).to.be.instanceOf(AssertionError);
             });
 
             it('removeAll_removes_all_entries_whenPredicateTrue', async function () {
+                TestUtil.markClientVersionAtLeast(this, '5.2.0');
                 await map.removeAll(Predicates.alwaysTrue());
                 const size = await map.size();
                 expect(size).to.equal(0);
             });
 
             it('removeAll_removes_no_entries_whenPredicateFalse', async function () {
+                TestUtil.markClientVersionAtLeast(this, '5.2.0');
                 const sizeBefore = await map.size();
                 const predicate = Predicates.alwaysFalse();
                 await map.removeAll(predicate);
@@ -182,6 +186,7 @@ describe('MapProxyTest', function () {
             });
 
             it('removeAll_with_predicate', async function () {
+                TestUtil.markClientVersionAtLeast(this, '5.2.0');
                 const map = await client.getMap('test2');
                 for (let i = 1; i <= 10; i++) {
                     await map.put(i, i);
