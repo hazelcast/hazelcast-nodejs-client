@@ -164,5 +164,5 @@ export interface Ringbuffer<E> extends DistributedObject {
      *                      or if `minCount` larger than `maxCount`,
      *                      or if `maxCount` larger than `1000` (to prevent overloading)
      */
-    readMany(startSequence: number | Long, minCount: number, maxCount: number): Promise<ReadResultSet<E>>;
+    readMany(startSequence: number | Long, minCount: number, maxCount: number, filter?: any): Promise<ReadResultSet<E>>;
 }
