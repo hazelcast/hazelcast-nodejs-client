@@ -404,6 +404,7 @@ describe('CompactPublicAPIsTest', function () {
         });
 
         it('removeAll', async function () {
+            TestUtil.markClientVersionAtLeast(this, '5.2.0');
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 const fn = obj.removeAll.bind(obj, new CompactPredicate());
                 await fn();
