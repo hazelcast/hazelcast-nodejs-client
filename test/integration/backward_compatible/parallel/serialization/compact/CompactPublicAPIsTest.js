@@ -166,6 +166,7 @@ describe('CompactPublicAPIsTest', function () {
     let employee;
     let SchemaNotReplicatedError;
     let clientConfig;
+    let skipped = false;
 
     const CLUSTER_CONFIG_XML = `
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
@@ -203,6 +204,7 @@ describe('CompactPublicAPIsTest', function () {
     });
 
     beforeEach(async function () {
+        skipped = false;
         const name = TestUtil.randomString(12);
 
         clientConfig = {
@@ -260,7 +262,9 @@ describe('CompactPublicAPIsTest', function () {
     });
 
     afterEach(async function () {
-        compactSerializerUsed.should.be.true;
+        if (!skipped) {
+            compactSerializerUsed.should.be.true;
+        }
         sandbox.restore();
         await map.destroy();
         await nearCachedMap1.destroy();
@@ -405,6 +409,7 @@ describe('CompactPublicAPIsTest', function () {
 
         it('removeAll', async function () {
             TestUtil.markClientVersionAtLeast(this, '5.2.0');
+            skipped = true;
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 const fn = obj.removeAll.bind(obj, new CompactPredicate());
                 await fn();
