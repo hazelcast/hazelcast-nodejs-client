@@ -192,10 +192,12 @@ describe('CompactPublicAPIsTest', function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
         employee = new CompactUtil.Employee(1, Long.ONE);
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+            skipped = true;
             this.skip();
         }
         // Compact serialization 5.2 server is not compatible with clients older than 5.2
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
+            skipped = true;
             this.skip();
         }
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG_XML);
@@ -408,8 +410,8 @@ describe('CompactPublicAPIsTest', function () {
         });
 
         it('removeAll', async function () {
-            TestUtil.markClientVersionAtLeast(this, '5.2.0');
             skipped = true;
+            TestUtil.markClientVersionAtLeast(this, '5.2.0');
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 const fn = obj.removeAll.bind(obj, new CompactPredicate());
                 await fn();
