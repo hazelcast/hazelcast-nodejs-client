@@ -136,7 +136,7 @@ Refer to [the documentation](DOCUMENTATION.md) to learn more about supported con
 You can use the following channels for your questions and development/usage issues:
 
 * [GitHub repository](https://github.com/hazelcast/hazelcast-nodejs-client)
-* [Complete documentation](DOCUMENTATION.md)
+* [Complete documentation](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/DOCUMENTATION.md)
 * [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client)
 * [Slack](https://slack.hazelcast.com)
 * [Google Groups](https://groups.google.com/forum/#!forum/hazelcast)

@@ -166,6 +166,7 @@ describe('CompactPublicAPIsTest', function () {
     let employee;
     let SchemaNotReplicatedError;
     let clientConfig;
+    let skipped = false;
 
     const CLUSTER_CONFIG_XML = `
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
@@ -191,10 +192,12 @@ describe('CompactPublicAPIsTest', function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
         employee = new CompactUtil.Employee(1, Long.ONE);
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+            skipped = true;
             this.skip();
         }
         // Compact serialization 5.2 server is not compatible with clients older than 5.2
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
+            skipped = true;
             this.skip();
         }
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG_XML);
@@ -203,6 +206,7 @@ describe('CompactPublicAPIsTest', function () {
     });
 
     beforeEach(async function () {
+        skipped = false;
         const name = TestUtil.randomString(12);
 
         clientConfig = {
@@ -260,7 +264,9 @@ describe('CompactPublicAPIsTest', function () {
     });
 
     afterEach(async function () {
-        compactSerializerUsed.should.be.true;
+        if (!skipped) {
+            compactSerializerUsed.should.be.true;
+        }
         sandbox.restore();
         await map.destroy();
         await nearCachedMap1.destroy();
@@ -404,6 +410,10 @@ describe('CompactPublicAPIsTest', function () {
         });
 
         it('removeAll', async function () {
+            if (!TestUtil.isClientVersionAtLeast('5.2.0')) {
+                skipped = true;
+                this.skip();
+            }
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 const fn = obj.removeAll.bind(obj, new CompactPredicate());
                 await fn();
