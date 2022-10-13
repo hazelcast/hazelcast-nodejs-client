@@ -62,6 +62,20 @@ export interface ReadResultSet<T> {
     size(): number;
 
     /**
+     * Returns an iterator for elements in the list.
+     * 
+     * @returns the iterator for elements in the list.
+     */
+     values(): Iterator<T>;
+
+     /**
+     * Returns an iterator for elements in the list.
+     * 
+     * @returns the iterator for elements in the list.
+     */
+    [Symbol.iterator](): Iterator<T>; 
+
+    /**
      * Returns the sequence of the item following the last read item. This
      * sequence can then be used to read items following the ones returned by
      * this result set.
