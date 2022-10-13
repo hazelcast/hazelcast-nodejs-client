@@ -1,10 +1,10 @@
 'use strict';
 
 const { expect } = require('chai');
-const {HazelcastCloudDiscovery} = require("../../../lib/discovery/HazelcastCloudDiscovery");
+const {HazelcastCloudDiscovery} = require('../../../lib/discovery/HazelcastCloudDiscovery');
 const { HazelcastError } = require('../../../lib');
 const { ClientConfigImpl } = require('../../../lib/config/Config');
-const {getRejectionReasonOrThrow} = require("../../TestUtil");
+const {getRejectionReasonOrThrow} = require('../../TestUtil');
 
 describe('Cloud Discovery Invalid Token Test', function () {
     it('Cloud Discovery should throw proper error with an invalid token', async function () {
@@ -20,6 +20,5 @@ describe('Cloud Discovery Invalid Token Test', function () {
         } catch (err) {
             console.log(err);
         }
-
     });
 });
