@@ -1917,6 +1917,13 @@ let value = await rb.readOne(sequence);
 console.log('Value:', value);
 value = await rb.readOne(sequence.add(1));
 console.log('Next value:', value);
+// Add some elements to the Ringbuffer
+await rb.addAll([300, 400, 500]);
+// We want to get 5 items from Ringbuffer and write to console.
+const items = await rb.readMany(0, 1, 5);
+for(const item of items){
+    console.log("Item:" item);
+}
 ```
 
 ### 8.4.8. Using Reliable Topic

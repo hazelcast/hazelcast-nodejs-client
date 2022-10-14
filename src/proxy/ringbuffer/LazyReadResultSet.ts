@@ -21,6 +21,32 @@ import {SerializationService, SerializationServiceV1} from '../../serialization/
 import {ReadResultSet} from '../../core';
 import {HazelcastSerializationError, SchemaNotFoundError} from './../../core/HazelcastError';
 
+
+
+/** @internal */
+class LazyReadResultSetIterator<T> implements Iterator<T> {
+
+    private index = 0;
+    private list: LazyReadResultSet<T>;
+
+    constructor(list: LazyReadResultSet<T>) {
+        this.list = list;
+    }
+
+    /**
+     * Returns the next element in the iteration.
+     * @throws {@link HazelcastSerializationError} if the next item is a compact object whose schema is not known
+     */
+    next(): IteratorResult<T> {
+        if (this.index < this.list.size()) {
+            return {done: false, value: this.list.get(this.index++)};
+        } else {
+            return {done: true, value: undefined};
+        }
+    }
+
+}
+
 /** @internal */
 export class LazyReadResultSet<T> implements ReadResultSet<T> {
 
@@ -79,5 +105,14 @@ export class LazyReadResultSet<T> implements ReadResultSet<T> {
     getNextSequenceToReadFrom(): Long {
         return this.nextSeq;
     }
+
+    values(): Iterator<T> {
+        return new LazyReadResultSetIterator(this);
+    }
+
+    [Symbol.iterator](): Iterator<T> {
+        return this.values();
+    }
+
 
 }
