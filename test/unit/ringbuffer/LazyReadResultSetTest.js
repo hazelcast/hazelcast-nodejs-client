@@ -43,7 +43,7 @@ describe('LazyReadResultSetTest', function () {
         expect(set.get(4)).to.be.undefined;
     });
 
-    it('object can be iteratable', function () {
+    it('should be iterable', function () {
         const set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4], [11, 12, 13, 14], 15);
         let index = 0;
         const values = [101, 102, 3, 4];
