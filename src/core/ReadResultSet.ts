@@ -61,13 +61,6 @@ export interface ReadResultSet<T> {
      */
     size(): number;
 
-    /**
-     * Returns an iterator for elements in the list.
-     * 
-     * @returns the iterator for elements in the list.
-     */
-     values(): Iterator<T>;
-
      /**
      * Returns an iterator for elements in the list.
      * 
