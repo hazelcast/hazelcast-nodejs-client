@@ -1902,6 +1902,12 @@ added and the head is where the items are overwritten or expired. You can reach 
 which is mapped to the elements between the head and tail (inclusive) of the Ringbuffer. For details, see the
 [Ringbuffer section](https://docs.hazelcast.com/hazelcast/latest/data-structures/ringbuffer) in the Hazelcast Reference Manual.
 
+`filter` argument is provided for to only select items that need to be read. If
+the filter is not provided, all items will be read. Otherwise, only items where the filter function returns true are
+returned. Using  filters is a good way to prevent getting items that are of no value to the receiver. This reduces the
+amount of IO and the number of operations being executed, and can result in a significant performance improvement. Note that,
+filtering logic must be defined on the server-side.
+
 A Ringbuffer usage example is shown below.
 
 ```javascript
