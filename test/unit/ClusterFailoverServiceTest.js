@@ -111,8 +111,8 @@ describe('ClusterFailoverServiceTest', function () {
         const result = await service.tryNextCluster(fn);
 
         expect(result).to.be.false;
-        expect(cnt).to.be.equal(maxTryCount);
-        expect(fn.callCount).to.be.equal(maxTryCount);
-        expect(service.current()).to.be.equal(contexts[maxTryCount % contexts.length]);
+        expect(cnt).to.be.equal(maxTryCount * contexts.length);
+        expect(fn.callCount).to.be.equal(maxTryCount * contexts.length);
+        expect(service.current()).to.be.equal(contexts[(maxTryCount * contexts.length) % contexts.length]);
     });
 });
