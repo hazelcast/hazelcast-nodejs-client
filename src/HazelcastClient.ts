@@ -618,9 +618,6 @@ export class HazelcastClient {
                 return this.invocationService.start(this.listenerService);
             })
             .then(() => {
-                return this.sendStateToCluster();
-            })
-            .then(() => {
                 return this;
             })
             .catch((e) => {
