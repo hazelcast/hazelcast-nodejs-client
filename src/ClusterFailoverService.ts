@@ -50,7 +50,7 @@ export class ClusterFailoverService {
     }
 
     private doTryNextCluster(tryCount: number, fn: TryNextFn): Promise<boolean> {
-        if (!this.lifecycleService.isRunning() || tryCount >= this.maxTryCount) {
+        if (!this.lifecycleService.isRunning() || tryCount >= (this.maxTryCount * this.candidateClusters.length)) {
             return Promise.resolve(false);
         }
 
