@@ -1,6 +1,6 @@
 'use strict';
-const HZ_VERSION = '5.2';
-const HZ_TEST_VERSION = '5.2';
+const HZ_VERSION = '5.2.0';
+const HZ_TEST_VERSION = '5.2.0';
 const HAZELCAST_TEST_VERSION = HZ_TEST_VERSION;
 const HAZELCAST_VERSION = HZ_VERSION;
 const HAZELCAST_ENTERPRISE_VERSION = HZ_VERSION;
@@ -22,7 +22,7 @@ const downloadRC = () => {
     let REPO;
     let ENTERPRISE_REPO;
     let TEST_REPO;
-    let ENTERPRISE_TEST_REPO;
+    // let ENTERPRISE_TEST_REPO;
 
     if (HZ_VERSION.endsWith('-SNAPSHOT')) {
         REPO = SNAPSHOT_REPO;
@@ -34,10 +34,10 @@ const downloadRC = () => {
 
     if (HZ_TEST_VERSION.endsWith('-SNAPSHOT')) {
         TEST_REPO = SNAPSHOT_REPO;
-        ENTERPRISE_TEST_REPO = ENTERPRISE_SNAPSHOT_REPO;
+        // ENTERPRISE_TEST_REPO = ENTERPRISE_SNAPSHOT_REPO;
     } else {
         TEST_REPO = RELEASE_REPO;
-        ENTERPRISE_TEST_REPO = ENTERPRISE_RELEASE_REPO;
+        // ENTERPRISE_TEST_REPO = ENTERPRISE_RELEASE_REPO;
     }
 
     if (fs.existsSync(`hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar`)) {
@@ -132,7 +132,8 @@ const downloadRC = () => {
                     + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION} ${subprocessTrace}`;
             }
         }
-
+        // TODO hazelcast-enterprise-tests.jar was removed from repo.
+        /*
         if (fs.existsSync(`hazelcast-enterprise-${HAZELCAST_TEST_VERSION}-tests.jar`)) {
             console.log('hazelcast-enterprise-tests.jar already exists, not downloading from maven.');
         } else {
@@ -154,7 +155,7 @@ const downloadRC = () => {
                 throw 'Failed to download hazelcast enterprise test jar '
                     + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_TEST_VERSION}:jar:tests ${subprocessTrace}`;
             }
-        }
+        }*/
         console.log('Starting Remote Controller ... enterprise ...');
     } else {
         if (fs.existsSync(`hazelcast-${HAZELCAST_VERSION}.jar`)) {
