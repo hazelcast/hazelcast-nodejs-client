@@ -122,6 +122,39 @@ function executeOnController(clusterId, script, lang) {
     return deferred.promise;
 }
 
+function blockCommunicationBetween(clusterId, memberId, otherMemberId) {
+    const deferred = deferredPromise();
+    controller.blockCommunicationBetween(clusterId, memberId, otherMemberId, (err, success) => {
+        if (err) {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(success);
+    });
+    return deferred.promise;
+}
+
+function unblockCommunicationBetween(clusterId, memberId, otherMemberId) {
+    const deferred = deferredPromise();
+    controller.unblockCommunicationBetween(clusterId, memberId, otherMemberId, (err, success) => {
+        if (err) {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(success);
+    });
+    return deferred.promise;
+}
+
+function suspectMember(clusterId, memberId, otherMemberId) {
+    const deferred = deferredPromise();
+    controller.suspectMember(clusterId, memberId, otherMemberId, (err, success) => {
+        if (err) {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(success);
+    });
+    return deferred.promise;
+}
+
 exports.exit = exit;
 exports.createCluster = createCluster;
 exports.createClusterKeepClusterName = createClusterKeepClusterName;
@@ -131,3 +164,6 @@ exports.shutdownCluster = shutdownCluster;
 exports.executeOnController = executeOnController;
 exports.terminateMember = terminateMember;
 exports.terminateCluster = terminateCluster;
+exports.blockCommunicationBetween = blockCommunicationBetween;
+exports.unblockCommunicationBetween = unblockCommunicationBetween;
+exports.suspectMember = suspectMember;

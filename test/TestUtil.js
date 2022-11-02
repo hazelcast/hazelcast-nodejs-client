@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const { expect, AssertionError } = require('chai');
 const { BuildInfo } = require('../lib/BuildInfo');
 const { Lang } = require('./integration/remote_controller/remote_controller_types');
 const { Client } = require('..');
@@ -639,3 +639,79 @@ exports.calculateServerVersionFromString = (versionString) => {
     return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
 };
 
+/**
+ * Splits a Hazelcast cluster into two using the remote controller methods.
+ *
+ * @param clusterId HzCluster's id field
+ * @param brainA List of HzMembers in the first split.
+ * @param brainB List of HzMembers in the second split.
+ *
+ * @returns Promise<boolean> Whether the split was successful.
+ */
+exports.splitCluster = async (clusterId, brainA, brainB) => {
+    let result;
+    for (const memberA of brainA) {
+        for (const memberB of brainB) {
+            result = await RC.blockCommunicationBetween(clusterId, memberA.uuid, memberB.uuid);
+            if (!result) {
+                return false;
+            }
+            // Make members suspect each other and close connections of each other.
+            result = await RC.suspectMember(clusterId, memberA.uuid, memberB.uuid);
+            if (!result) {
+                return false;
+            }
+            result = await RC.suspectMember(clusterId, memberB.uuid, memberA.uuid);
+            if (!result) {
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
+/**
+ * Merges a Hazelcast cluster that is split into two using the remote controller methods.
+ *
+ * @param clusterId HzCluster's id field
+ * @param brainA List of HzMembers in the first split.
+ * @param brainB List of HzMembers in the second split.
+ *
+ * @returns Promise<boolean> Whether the merge was successful.
+ */
+exports.mergeCluster = async (clusterId, brainA, brainB) => {
+    let result;
+    for (const memberA of brainA) {
+        for (const memberB of brainB) {
+            result = await RC.unblockCommunicationBetween(clusterId, memberA.uuid, memberB.uuid);
+            if (!result) {
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
+/**
+ * Makes sure that eventually the members in the given list are in a cluster with the expected cluster size.
+ * @param expectedClusterSize Expected cluster size
+ * @param memberIds HzMember uuids
+ */
+exports.assertClusterSizeEventually = async (expectedClusterSize, clusterId, memberIds) => {
+    exports.assertTrueEventually(async () => {
+        let i = 0;
+        while (i < memberIds.length) {
+            const memberId = memberIds[i];
+            const response = +(await RC.executeOnController(clusterId, `
+                result = instance_${i}.getCluster().getMembers().size()
+            `, Lang.JAVASCRIPT));
+            const actualClusterSize = response.result.toString();
+            if (actualClusterSize !== expectedClusterSize) {
+                throw new AssertionError(
+                    `Expected cluster size to be ${expectedClusterSize} but was ${actualClusterSize} for member ${memberId}`
+                );
+            }
+            i++;
+        }
+    });
+};

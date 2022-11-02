@@ -86,4 +86,16 @@ HzRemoteController.prototype.executeOnController = function(clusterId, script, l
     return this.client.executeOnController(clusterId, script, lang, callback);
 };
 
+HzRemoteController.prototype.blockCommunicationBetween = function(clusterId, memberId, otherMemberId, callback) {
+    return this.client.blockCommunicationBetween(clusterId, memberId, otherMemberId, callback);
+};
+
+HzRemoteController.prototype.unblockCommunicationBetween = function(clusterId, memberId, otherMemberId, callback) {
+    return this.client.unblockCommunicationBetween(clusterId, memberId, otherMemberId, callback);
+};
+
+HzRemoteController.prototype.suspectMember = function(clusterId, memberId, otherMemberId, callback) {
+    return this.client.suspectMember(clusterId, memberId, otherMemberId, callback);
+};
+
 module.exports = HzRemoteController;
