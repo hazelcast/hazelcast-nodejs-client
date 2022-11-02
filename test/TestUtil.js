@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const { expect, AssertionError } = require('chai');
+const { expect } = require('chai');
 const { BuildInfo } = require('../lib/BuildInfo');
 const { Lang } = require('./integration/remote_controller/remote_controller_types');
 const { Client } = require('..');
@@ -690,28 +690,4 @@ exports.mergeCluster = async (clusterId, brainA, brainB) => {
         }
     }
     return true;
-};
-
-/**
- * Makes sure that eventually the members in the given list are in a cluster with the expected cluster size.
- * @param expectedClusterSize Expected cluster size
- * @param memberIds HzMember uuids
- */
-exports.assertClusterSizeEventually = async (expectedClusterSize, clusterId, memberIds) => {
-    exports.assertTrueEventually(async () => {
-        let i = 0;
-        while (i < memberIds.length) {
-            const memberId = memberIds[i];
-            const response = +(await RC.executeOnController(clusterId, `
-                result = instance_${i}.getCluster().getMembers().size()
-            `, Lang.JAVASCRIPT));
-            const actualClusterSize = response.result.toString();
-            if (actualClusterSize !== expectedClusterSize) {
-                throw new AssertionError(
-                    `Expected cluster size to be ${expectedClusterSize} but was ${actualClusterSize} for member ${memberId}`
-                );
-            }
-            i++;
-        }
-    });
 };
