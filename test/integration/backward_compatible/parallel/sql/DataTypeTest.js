@@ -70,7 +70,7 @@ describe('SQLDataTypeTest', function () {
     let isCompactCompatible;
 
     const clientVersionNewerThanFive = TestUtil.isClientVersionAtLeast('5.0');
-    const JET_ENABLED_WITH_COMPACT_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled_with_compact.xml'), 'utf8');
+    let JET_ENABLED_WITH_COMPACT_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled_with_compact.xml'), 'utf8');
     const JET_ENABLED_CONFIG = fs.readFileSync(path.join(__dirname, 'jet_enabled.xml'), 'utf8');
 
     const validateResults = (rows, expectedKeys, expectedValues) => {
@@ -90,6 +90,12 @@ describe('SQLDataTypeTest', function () {
         isCompactCompatible = !((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0
             && !TestUtil.isClientVersionAtLeast('5.2.0'));
 
+        // Compact serialization 5.2 server configuration changes
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) < 0) {
+            const JET_ENABLED_WITH_COMPACT_CONFIG_BETA =
+            fs.readFileSync(path.join(__dirname, 'jet_enabled_with_compact_beta.xml'), 'utf8');
+            JET_ENABLED_WITH_COMPACT_CONFIG = JET_ENABLED_WITH_COMPACT_CONFIG_BETA;
+        }
         let CLUSTER_CONFIG;
         // Don't use compact enabled config if not compatible, we will skip the compact test anyway.
         if (serverVersionNewerThanFivePointOne && isCompactCompatible) {

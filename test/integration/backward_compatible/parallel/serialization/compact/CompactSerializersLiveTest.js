@@ -34,11 +34,17 @@ describe('CompactSerializersLiveTest', function () {
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
             this.skip();
         }
+        // Compact serialization 5.2 server configuration changes
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) < 0) {
+            COMPACT_ENABLED_ZERO_CONFIG_XML = COMPACT_ENABLED_ZERO_CONFIG_XML
+            .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
+            COMPACT_ENABLED_WITH_SERIALIZER_XML = COMPACT_ENABLED_WITH_SERIALIZER_XML_BETA;
+        }
     });
 
     const testFactory = new TestUtil.TestFactory();
 
-    const COMPACT_ENABLED_ZERO_CONFIG_XML = `
+    let COMPACT_ENABLED_ZERO_CONFIG_XML = `
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/config
@@ -47,12 +53,12 @@ describe('CompactSerializersLiveTest', function () {
                 <port>0</port>
             </network>
             <serialization>
-                <compact-serialization enabled="true" />
+                <compact-serialization/>
             </serialization>
         </hazelcast>
     `;
 
-    const COMPACT_ENABLED_WITH_SERIALIZER_XML = `
+    const COMPACT_ENABLED_WITH_SERIALIZER_XML_BETA = `
             <hazelcast xmlns="http://www.hazelcast.com/schema/config"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xsi:schemaLocation="http://www.hazelcast.com/schema/config
@@ -62,12 +68,30 @@ describe('CompactSerializersLiveTest', function () {
                 </network>
                 <serialization>
                     <compact-serialization enabled="true">
-                         <registered-classes>
-                            <class type-name="example.serialization.EmployeeDTO"
-                                        serializer="example.serialization.EmployeeDTOSerializer">
-                                example.serialization.EmployeeDTO
-                            </class>
-                    </registered-classes>
+                            <registered-classes>
+                                <class type-name="example.serialization.EmployeeDTO"
+                                            serializer="example.serialization.EmployeeDTOSerializer">
+                                    example.serialization.EmployeeDTO
+                                </class>
+                            </registered-classes>
+                    </compact-serialization>
+                </serialization>
+            </hazelcast>
+        `;
+
+    let COMPACT_ENABLED_WITH_SERIALIZER_XML = `
+            <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.hazelcast.com/schema/config
+                http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
+                <network>
+                    <port>0</port>
+                </network>
+                <serialization>
+                    <compact-serialization>
+                        <serializers>
+                            <serializer>example.serialization.EmployeeDTOSerializer</serializer>
+                        </serializers>
                     </compact-serialization>
                 </serialization>
             </hazelcast>
@@ -112,9 +136,16 @@ describe('CompactSerializersLiveTest', function () {
                 await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
                 const map = await client.getMap(mapName);
                 const value = await map.get(1);
-                value.should.be.instanceof(CompactUtil.EmployeeDTO);
-                value.age.should.be.equal(expectedAge);
-                value.id.equals(expectedId).should.be.true;
+                // Test result can be changed by configuration
+                if (name == 'Zero config') {
+                    value.should.be.instanceof(CompactUtil.EmployeeDTO);
+                    value.age.should.be.equal(expectedAge);
+                    value.id.equals(expectedId).should.be.true;
+                } else {
+                    value.schema.typeName.should.be.equal('employee');
+                    value.values['age'].should.be.equal(expectedAge);
+                    value.values['id'].equals(expectedId).should.be.true;
+                }
             });
 
             it('should write correct data', async function() {

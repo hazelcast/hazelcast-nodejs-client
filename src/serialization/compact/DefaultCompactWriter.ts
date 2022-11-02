@@ -202,7 +202,9 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeArrayOfCompact<T>(fieldName: string, value: (T | null)[] | null): void {
+        const singleTypeCompactArrayItemChecker = new SingleTypeCompactArrayItemChecker();
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
+            singleTypeCompactArrayItemChecker.check(value);
             return this.serializer.writeObject(out, value);
         });
     }
@@ -298,7 +300,9 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeArrayOfGenericRecord(fieldName: string, value: GenericRecord[]) : void {
+        const singleSchemaCompactArrayItemChecker = new SingleSchemaCompactArrayItemChecker();
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
+            singleSchemaCompactArrayItemChecker.check(value);
             return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl);
         });
     }
@@ -422,6 +426,44 @@ export class DefaultCompactWriter implements CompactWriter {
                 out.pwriteBooleanBit(position, index, boolean);
                 index++;
             }
+        }
+    }
+}
+
+export class SingleTypeCompactArrayItemChecker<T> {
+
+    private clazz: any;
+    
+    public check(value: T): void {
+        const clazzType = value.constructor.name;
+        if (this.clazz == null) {
+            this.clazz = clazzType;
+        }
+        if (this.clazz !== clazzType) {
+            throw new HazelcastSerializationError('It is not allowed to '
+                    + 'serialize an array of Compact serializable objects '
+                    + 'containing different item types. Expected array item '
+                    + 'type: ' + this.clazz + ', current item type: ' + clazzType);
+        }
+    }
+}
+export class SingleSchemaCompactArrayItemChecker {
+
+    private schema: Schema;
+
+    public check(value: GenericRecord): void {
+        const record: CompactGenericRecordImpl = value as CompactGenericRecordImpl;
+        const schema = record.getSchema();
+        if (this.schema == null) {
+            this.schema = schema;
+        }
+        
+        if (!this.schema.schemaId.equals(schema.schemaId)) {
+            throw new HazelcastSerializationError('It is not allowed to '
+                    + 'serialize an array of Compact serializable '
+                    + 'GenericRecord objects containing different schemas. '
+                    + 'Expected array item schema: ' + this.schema 
+                    + ', current schema: ' + schema);
         }
     }
 }

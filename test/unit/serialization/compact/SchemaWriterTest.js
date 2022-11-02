@@ -17,7 +17,7 @@
 
 const chai = require('chai');
 const { SchemaWriter } = require('../../../../lib/serialization/compact/SchemaWriter');
-const { FieldKind } = require('../../../../lib');
+const { FieldKind, HazelcastSerializationError } = require('../../../../lib');
 const {
     supportedFields
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
@@ -167,5 +167,15 @@ describe('SchemaWriterTest', function () {
         for (const { name, fieldKind } of fields) {
             schema.fieldDefinitionMap.get(name).kind.should.be.eq(fieldKind);
         }
+    });
+
+    it('should throw error when we write already existing field on schema', async function () {
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            const writer = new SchemaWriter('SomeType');
+            writer.writeInt32('bar', 0);
+            writer.writeString('bar', 'Some value');
+        });
+        error.should.be.instanceOf(HazelcastSerializationError);
+        error.message.includes('Field with the name bar already exists').should.be.true;
     });
 });

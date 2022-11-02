@@ -43,10 +43,16 @@ let Bits;
 let BitsSerializer;
 let Nested;
 let NestedSerializer;
+let SampleObject1;
+let SampleObject1Serializer;
+let SampleObject2;
+let SampleObject2Serializer;
 let Employee;
 let EmployeeSerializer;
 let EmployeeDTO;
 let EmployeeDTOSerializer;
+let ArrayOfCompact;
+let ArrayOfCompactSerializer;
 let Employer;
 let EmployerSerializer;
 let HIRING_STATUS;
@@ -343,6 +349,60 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
         ], field: Fields.ARRAY_OF_GENERIC_RECORD},
     };
 
+    SampleObject1 = class SampleObject1 {
+        constructor(type, id) {
+            this.type = type; // string
+            this.id = id; // int64
+        }
+    };
+    SampleObject1Serializer = class SampleObject1Serializer {
+        getClass() {
+            return SampleObject1; // used to match a js object to serialize with this serializer
+        }
+
+        getTypeName() {
+            return 'SampleObject1'; // used to match schema's typeName with serializer
+        }
+
+        read(reader) {
+            const type = reader.readString('type');
+            const id = reader.readInt64('id');
+            return new SampleObject1(type, id);
+        }
+
+        write(writer, instance) {
+            writer.writeString('type', instance.type);
+            writer.writeInt64('id', instance.id);
+        }
+    };
+
+    SampleObject2 = class SampleObject2 {
+        constructor(name, id) {
+            this.name = name; // string
+            this.id = id; // int64
+        }
+    };
+
+    SampleObject2Serializer = class SampleObject2Serializer {
+        getClass() {
+            return SampleObject2; // used to match a js object to serialize with this serializer
+        }
+
+        getTypeName() {
+            return 'SampleObject2'; // used to match schema's typeName with serializer
+        }
+
+        read(reader) {
+            const name = reader.readString('name');
+            const id = reader.readInt64('id');
+            return new SampleObject1(name, id);
+        }
+
+        write(writer, instance) {
+            writer.writeString('name', instance.name);
+            writer.writeInt64('id', instance.id);
+        }
+    };
     EmployeeDTO = class EmployeeDTO {
         constructor(age, id) {
             this.age = age; // int32
@@ -454,6 +514,31 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     HIRING_STATUS = {
         HIRING: 'HIRING',
         NOT_HIRING: 'NOT_HIRING'
+    };
+
+    ArrayOfCompact = class ArrayOfCompact {
+        constructor(arrayOfObjects) {
+            this.arrayOfObjects = arrayOfObjects;
+        }
+    };
+
+    ArrayOfCompactSerializer = class ArrayOfCompactSerializer {
+        getClass() {
+            return ArrayOfCompact;
+        }
+
+        getTypeName() {
+            return 'ArrayOfCompact';
+        }
+
+        read(reader) {
+            const arrayOfObjects = reader.readArrayOfCompact('arrayOfObjects');
+            return new ArrayOfCompact(arrayOfObjects);
+        }
+
+        write(writer, value) {
+            writer.writeArrayOfCompact('arrayOfObjects', value.arrayOfObjects);
+        }
     };
 
     Employer = class Employer {
@@ -1585,5 +1670,11 @@ module.exports = {
     EmployeeDTOSerializer,
     Employer,
     EmployerSerializer,
+    ArrayOfCompact,
+    ArrayOfCompactSerializer,
+    SampleObject1,
+    SampleObject1Serializer,
+    SampleObject2,
+    SampleObject2Serializer,
     HIRING_STATUS
 };
