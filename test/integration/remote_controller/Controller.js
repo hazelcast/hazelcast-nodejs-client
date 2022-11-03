@@ -58,6 +58,10 @@ HzRemoteController.prototype.startMember = function(clusterId, callback) {
     return this.client.startMember(clusterId, callback);
 };
 
+HzRemoteController.prototype.startMemberOnPort = function(clusterId, port, callback) {
+    return this.client.startMemberOnPort(clusterId, port, callback);
+};
+
 HzRemoteController.prototype.shutdownMember = function(clusterId, memberId, callback) {
     return this.client.shutdownMember(clusterId, memberId, callback);
 };

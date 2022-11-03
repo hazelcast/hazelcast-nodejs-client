@@ -53,6 +53,17 @@ function startMember(clusterId) {
     return deferred.promise;
 }
 
+function startMemberOnPort(clusterId, port) {
+    const deferred = deferredPromise();
+    controller.startMemberOnPort(clusterId, port, (err, member) => {
+        if (err) {
+            return deferred.reject(err);
+        }
+        return deferred.resolve(member);
+    });
+    return deferred.promise;
+}
+
 function exit() {
     const deferred = deferredPromise();
     controller.exit((err, res) => {
@@ -159,6 +170,7 @@ exports.exit = exit;
 exports.createCluster = createCluster;
 exports.createClusterKeepClusterName = createClusterKeepClusterName;
 exports.startMember = startMember;
+exports.startMemberOnPort = startMemberOnPort;
 exports.shutdownMember = shutdownMember;
 exports.shutdownCluster = shutdownCluster;
 exports.executeOnController = executeOnController;
