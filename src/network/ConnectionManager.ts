@@ -155,6 +155,7 @@ export class ConnectionManager extends EventEmitter {
      * counter, but may not show the latest total.
      */
     private totalBytesWritten : number;
+    private establishedInitialClusterConnection: boolean;
 
     constructor(
         private readonly client: ClientForConnectionManager,
@@ -833,10 +834,23 @@ export class ConnectionManager extends EventEmitter {
         this.connectionRegistry.setConnection(response.memberUuid, connection);
         if (connectionsEmpty) {
             this.clusterId = newClusterId;
-            if (clusterIdChanged) {
+            if (this.establishedInitialClusterConnection) {
+                // In split brain, the client might connect to the one half
+                // of the cluster, and then later might reconnect to the
+                // other half, after the half it was connected to is
+                // completely dead. Since the cluster id is preserved in
+                // split brain scenarios, it is impossible to distinguish
+                // reconnection to the same cluster vs reconnection to the
+                // other half of the split brain. However, in the latter,
+                // we might need to send some state to the other half of
+                // the split brain (like Compact schemas or user code
+                // deployment classes). That forces us to send the client
+                // state to the cluster after the first cluster connection,
+                // regardless the cluster id is changed or not.
                 this.connectionRegistry.setClientState(ClientState.CONNECTED_TO_CLUSTER);
                 this.initializeClientOnCluster(newClusterId);
             } else {
+                this.establishedInitialClusterConnection = true;
                 this.connectionRegistry.setClientState(ClientState.INITIALIZED_ON_CLUSTER);
                 this.emitLifecycleEvent(LifecycleState.CONNECTED);
             }
