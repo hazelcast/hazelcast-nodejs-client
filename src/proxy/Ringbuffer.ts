@@ -156,13 +156,22 @@ export interface Ringbuffer<E> extends DistributedObject {
      * until further items become available, and it can read at least the
      * minimum number of items.
      *
+     * filter` argument is provided to select only the items that are needed
+     * to be read. If the filter is not provided, all items will be read.
+     * Otherwise, only the items where the filter function returns true are returned.
+     * Using filters is a good way to prevent getting items that are of no value
+     * to the receiver. amount of IO and the number of operations being executed
+     * and can result in a significant performance improvement. Note that,
+     * filtering logic must be defined on the server-side.
+     *
      * @param startSequence sequence number of the first item to be read.
      * @param minCount minimum number of items to be read.
      * @param maxCount maximum number of items to be read.
+     * @param filter  optional filter to be applied to the items
      * @throws RangeError if `startSequence` is smaller than `0`,
      *                      or if `minCount` smaller than `0`,
      *                      or if `minCount` larger than `maxCount`,
      *                      or if `maxCount` larger than `1000` (to prevent overloading)
      */
-    readMany(startSequence: number | Long, minCount: number, maxCount: number): Promise<ReadResultSet<E>>;
+    readMany(startSequence: number | Long, minCount: number, maxCount: number, filter?: any): Promise<ReadResultSet<E>>;
 }
