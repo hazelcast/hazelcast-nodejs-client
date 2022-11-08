@@ -144,8 +144,8 @@ describe('CompactSerializersLiveTest', function () {
                     value.id.equals(expectedId).should.be.true;
                 } else {
                     value.schema.typeName.should.be.equal('employee');
-                    value.values['age'].should.be.equal(expectedAge);
-                    value.values['id'].equals(expectedId).should.be.true;
+                    value.getInt32('age').should.be.equal(expectedAge);
+                    value.getInt64('id').equals(expectedId).should.be.true;
                 }
             });
 
