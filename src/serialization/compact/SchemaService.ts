@@ -23,20 +23,32 @@ import {ClientSendAllSchemasCodec} from '../../codec/ClientSendAllSchemasCodec';
 import {ClientFetchSchemaCodec} from '../../codec/ClientFetchSchemaCodec';
 import {ClientSendSchemaCodec} from '../../codec/ClientSendSchemaCodec';
 import { HazelcastSerializationError, IllegalStateError } from '../../core';
+import { HazelcastClient } from '../../HazelcastClient';
+import { delayedPromise } from '../../util/Util';
+
+const INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
+const MAX_PUT_RETRY_COUNT = 'hazelcast.client.schema.max.put.retry.count';
 
 /**
  * Service to put and get metadata to cluster.
  * @internal
  */
 export class SchemaService {
+
+    private readonly retryPauseMillis: number;
+    private readonly maxPutRetryCount: number;
     schemas: Map<string, Schema>;
 
     constructor(
+        private readonly client: HazelcastClient,
         // a getter is used because there is a cyclic dependency between InvocationService and SchemaService
         private readonly getInvocationService: () => InvocationService,
         private readonly logger: ILogger
     ) {
         this.schemas = new Map<string, Schema>();
+        this.retryPauseMillis = client.getConfig().properties[INVOCATION_RETRY_PAUSE_MILLIS] as number;
+        this.maxPutRetryCount = client.getConfig().properties[MAX_PUT_RETRY_COUNT] as number;
+
     }
 
     /**
@@ -74,11 +86,17 @@ export class SchemaService {
             this.logger.trace('SchemaService', `Schema id ${schemaId} already exists locally`);
             return Promise.resolve();
         }
-        const message = ClientSendSchemaCodec.encodeRequest(schema);
-        const invocation = new Invocation(this.getInvocationService(), message);
-        return this.getInvocationService().invoke(invocation).then(() => {
-            this.putIfAbsent(schema);
-        });
+
+        if (this.replicateSchemaInCluster(schema)) {
+            throw new IllegalStateError(
+                `The schema ${schema} cannot be replicated in the cluster, after ${this.maxPutRetryCount}  retries. 
+                It might be the case that the client is connected to the two halves of the cluster that 
+                is experiencing a split-brain, and continue putting the data associated with that schema might 
+                result in data loss. It might be possible to replicate the schema after some time, when the cluster is healed.`
+            );
+        }
+
+        this.putIfAbsent(schema);
     }
 
     private putIfAbsent(schema: Schema): void {
@@ -105,5 +123,40 @@ export class SchemaService {
         const message = ClientSendAllSchemasCodec.encodeRequest([...this.schemas.values()]);
         const invocation = new Invocation(this.getInvocationService(), message);
         return this.getInvocationService().invokeUrgent(invocation).then(() => {});
+    }
+
+    private async replicateSchemaInCluster(schema: Schema): Promise<boolean> {
+        let clientMessage = ClientSendSchemaCodec.encodeRequest(schema);
+        outer:
+        for (let index = 0; index < this.maxPutRetryCount; index++) {
+            const invocation = new Invocation(this.getInvocationService(), clientMessage);
+            const response = await this.getInvocationService().invoke(invocation);
+            const replicatedMemberUuids = ClientSendSchemaCodec.decodeResponse(response);
+            const members = this.client.getCluster().getMembers();
+            for (const member of members) {
+                if (!replicatedMemberUuids.has(member.uuid)) {
+                    // There is a member in our member list that the schema
+                    // is not known to be replicated yet. We should retry
+                    // sending it in a random member.
+
+                    await delayedPromise(this.retryPauseMillis);
+
+                    // correlation id will be set when the invoke method is
+                    // called above
+                    clientMessage = clientMessage.copyMessageWithSharedNonInitialFrames();
+
+                    continue outer;
+
+                }
+            }
+
+            // All members in our member list all known to have the schema
+            return true;
+        }
+
+        // We tried to send it a couple of times, but the member list in our
+        // local and the member list returned by the initiator nodes did not
+        // match.
+        return false;
     }
 }

@@ -32,6 +32,7 @@ describe('SchemaServiceTest', function () {
     beforeEach(function() {
         fakeInvocationService = {invoke: sandbox.fake.resolves()};
         const getFakeInvocationService = () => fakeInvocationService;
+        // TODO Harun burada client gerekiyor.
         schemaService = new SchemaService(getFakeInvocationService, {
             trace: () => {},
             log: () => {},
