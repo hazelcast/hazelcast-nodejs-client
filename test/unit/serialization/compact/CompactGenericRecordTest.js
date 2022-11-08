@@ -73,9 +73,9 @@ GenericRecords.compact('dd', {foo: Fields.INT16}, {foo: 55})];
 const sampleArrayOfGenericRecordsDifferentTypes = [GenericRecords.compact('dd', {foo: Fields.INT16}, {foo: 3}),
 GenericRecords.compact('cc', {bar: Fields.STRING}, {bar: 'sample value'})];
 
-const getGenericRecordArray = (type) => {
+const getGenericRecordArray = ({same}) => {
     const values = {
-        ARRAY_OF_COMPACT: type == 'same' ? sampleArrayOfGenericRecords : sampleArrayOfGenericRecordsDifferentTypes
+        ARRAY_OF_COMPACT: same ? sampleArrayOfGenericRecords : sampleArrayOfGenericRecordsDifferentTypes
     };
     const fields = {
         ARRAY_OF_COMPACT: Fields.ARRAY_OF_GENERIC_RECORD
@@ -590,27 +590,25 @@ describe('CompactGenericRecordTest', function () {
         });
 
         describe('array restrictions', function () {
-            it('should not throw error if object types are equal on ARRAY_OF_COMPACT', function () {
-                (async () => {
-                    const {serializationService, schemaService} = createSerializationService(
-                        [new ArrayOfCompactSerializer(), new SampleObject1Serializer()]
-                    );
-                    const object1 = new SampleObject1('type1', Long.fromNumber(102310312));
-                    const object2 = new SampleObject1('type2', Long.fromNumber(102310312));
-                    const arrayOfObjects = [
-                        object1,
-                        object2
-                    ];
-                    const arrayOfCompactObject = new ArrayOfCompact(arrayOfObjects);
-                    await serialize(serializationService, schemaService, arrayOfCompactObject);
-                }).should.not.throw();
+            it('should not throw error if object types are equal on ARRAY_OF_COMPACT', async function () {
+                const {serializationService, schemaService} = createSerializationService(
+                    [new ArrayOfCompactSerializer(), new SampleObject1Serializer()]
+                );
+                const object1 = new SampleObject1('name1', Long.fromNumber(102310312));
+                const object2 = new SampleObject1('name2', Long.fromNumber(102310312));
+                const arrayOfObjects = [
+                    object1,
+                    object2
+                ];
+                const arrayOfCompactObject = new ArrayOfCompact(arrayOfObjects);
+                await serialize(serializationService, schemaService, arrayOfCompactObject);
             });
             it('should throw error if object types are not equal on ARRAY_OF_COMPACT', async function () {
                 const {serializationService, schemaService} = createSerializationService(
                     [new ArrayOfCompactSerializer(), new SampleObject1Serializer(), new SampleObject2Serializer()]
                 );
-                const object1 = new SampleObject1('type1', Long.fromNumber(102310312));
-                const object2 = new SampleObject2('name1', Long.fromNumber(102310312));
+                const object1 = new SampleObject1('name1', Long.fromNumber(102310312));
+                const object2 = new SampleObject2('name2', Long.fromNumber(102310312));
                 const arrayOfObjects = [
                     object1,
                     object2
@@ -625,16 +623,14 @@ describe('CompactGenericRecordTest', function () {
                 error.message.includes('It is not allowed to serialize an array of Compact serializable objects'
                 +' containing different item types.').should.be.true;
             });
-            it('should not throw error array of GenericRecord objects containing same schemas.', function () {
-                (async () => {
-                    const {serializationService, schemaService} = createSerializationService();
-                    const arrayofGenericRecords = getGenericRecordArray('same');
-                    await serialize(serializationService, schemaService, arrayofGenericRecords);
-                }).should.not.throw();
+            it('should not throw error array of GenericRecord objects containing same schemas.', async function () {
+                const {serializationService, schemaService} = createSerializationService();
+                const arrayofGenericRecords = getGenericRecordArray({same: true});
+                await serialize(serializationService, schemaService, arrayofGenericRecords);
             });
             it('should throw error array of GenericRecord objects does not containing same schemas.', async function () {
                 const {serializationService, schemaService} = createSerializationService();
-                const arrayofGenericRecords = getGenericRecordArray('diff');
+                const arrayofGenericRecords = getGenericRecordArray({same: false});
 
                 const error = await TestUtil.getRejectionReasonOrThrow(async () => {
                     await serialize(serializationService, schemaService, arrayofGenericRecords);

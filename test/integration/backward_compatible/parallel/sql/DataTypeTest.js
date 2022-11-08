@@ -84,14 +84,15 @@ describe('SQLDataTypeTest', function () {
 
     before(async function () {
         serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
+        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
         const serverVersionNewerThanFivePointOne = await TestUtil.compareServerVersionWithRC(RC, '5.1') >= 0;
 
         // If client is not newer than 5.2 and server is newer than 5.2, compact serialization is not compatible
-        isCompactCompatible = !((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0
+        isCompactCompatible = !(comparisonValueForServerVersion520 >= 0
             && !TestUtil.isClientVersionAtLeast('5.2.0'));
 
         // Compact serialization 5.2 server configuration changes
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) < 0) {
+        if (comparisonValueForServerVersion520 < 0) {
             const JET_ENABLED_WITH_COMPACT_CONFIG_BETA =
             fs.readFileSync(path.join(__dirname, 'jet_enabled_with_compact_beta.xml'), 'utf8');
             JET_ENABLED_WITH_COMPACT_CONFIG = JET_ENABLED_WITH_COMPACT_CONFIG_BETA;

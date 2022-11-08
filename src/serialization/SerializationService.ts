@@ -72,6 +72,7 @@ import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
 import {Schema} from './compact/Schema';
+import { IllegalArgumentError } from '../core';
 
 /**
  * Serializes objects and deserializes data.
@@ -123,6 +124,11 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerCustomSerializers();
         this.registerCompactSerializers();
         this.registerGlobalSerializer();
+
+        // Called here so that we can make sure that we are not overriding
+        // any of the default serializers registered above with the Compact
+        // serialization.
+        this.verifyDefaultSerializersNotOverriddenWithCompact();
     }
 
     public isData(object: any): boolean {
@@ -280,6 +286,26 @@ export class SerializationServiceV1 implements SerializationService {
     private static isPortableSerializable(obj: any): boolean {
         return (obj.readPortable && obj.writePortable
             && typeof obj.factoryId === 'number' && typeof obj.classId === 'number');
+    }
+
+    /**
+     * Makes sure that the classes registered as Compact serializable are not
+     * overriding the default serializers.
+     * 
+     * Must be called in the constructor of the child classes after they
+     * complete registering default serializers.
+     */
+    private verifyDefaultSerializersNotOverriddenWithCompact(): void {
+        const compactSerializers = this.serializationConfig.compact.serializers;
+        for (const compact of compactSerializers) {
+            if (!this.serializerNameToId[compact.getTypeName()]) {
+                continue;
+            }
+            
+            throw new IllegalArgumentError(`Compact serializer for the class ${compact.getTypeName()} can not be 
+                registered as it overrides the default serializer for that class provided by Hazelcast.`);
+
+        }
     }
 
     isCompactSerializable(obj: any): boolean {

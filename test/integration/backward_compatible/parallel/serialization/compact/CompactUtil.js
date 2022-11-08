@@ -350,8 +350,8 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     };
 
     SampleObject1 = class SampleObject1 {
-        constructor(type, id) {
-            this.type = type; // string
+        constructor(name, id) {
+            this.name = name; // string
             this.id = id; // int64
         }
     };
@@ -365,13 +365,13 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
         }
 
         read(reader) {
-            const type = reader.readString('type');
+            const name = reader.readString('name');
             const id = reader.readInt64('id');
-            return new SampleObject1(type, id);
+            return new SampleObject1(name, id);
         }
 
         write(writer, instance) {
-            writer.writeString('type', instance.type);
+            writer.writeString('name', instance.type);
             writer.writeInt64('id', instance.id);
         }
     };

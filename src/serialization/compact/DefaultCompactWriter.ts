@@ -430,12 +430,16 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 }
 
+/**
+ * Checks that the Compact serializable array items that are written are of
+ * a single type.
+ */
 export class SingleTypeCompactArrayItemChecker<T> {
 
     private clazz: any;
     
     public check(value: T): void {
-        const clazzType = value.constructor.name;
+        const clazzType = value.constructor;
         if (this.clazz == null) {
             this.clazz = clazzType;
         }
@@ -447,6 +451,10 @@ export class SingleTypeCompactArrayItemChecker<T> {
         }
     }
 }
+/**
+ * Checks that the Compact serializable GenericRecord array items that are
+ * written are of a single schema.
+ */
 export class SingleSchemaCompactArrayItemChecker {
 
     private schema: Schema;

@@ -28,7 +28,7 @@ import {FieldKind} from '../generic_record/FieldKind';
 export class SchemaWriter implements CompactWriter {
     private readonly typeName: string;
     private readonly fields: FieldDescriptor[];
-    private fieldNames;
+    private readonly fieldNames: Set<string>;
 
     constructor(typeName: string) {
         this.typeName = typeName;
@@ -211,9 +211,9 @@ export class SchemaWriter implements CompactWriter {
             throw new HazelcastSerializationError(
                 'Field with the name ' + field.fieldName + ' already exists'
             );
-        } else {
-            this.fieldNames.add(field.fieldName)
         }
+            
+        this.fieldNames.add(field.fieldName);
         this.fields.push(field);
     }
 

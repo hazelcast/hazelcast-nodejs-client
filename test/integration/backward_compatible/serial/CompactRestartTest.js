@@ -47,14 +47,15 @@ describe('CompactRestartTest', function() {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
             this.skip();
         }
         // Compact serialization 5.2 server is not compatible with clients older than 5.2
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
+        if (comparisonValueForServerVersion520 >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
             this.skip();
         }
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) < 0) {
+        if (comparisonValueForServerVersion520 < 0) {
             COMPACT_ENABLED_ZERO_CONFIG_XML = COMPACT_ENABLED_ZERO_CONFIG_XML
             .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
         }
