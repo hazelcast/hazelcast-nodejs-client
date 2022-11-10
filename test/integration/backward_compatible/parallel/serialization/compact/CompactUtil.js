@@ -371,7 +371,7 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
         }
 
         write(writer, instance) {
-            writer.writeString('name', instance.type);
+            writer.writeString('name', instance.name);
             writer.writeInt64('id', instance.id);
         }
     };

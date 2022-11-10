@@ -62,6 +62,7 @@ import {
     UuidSerializer,
     JavaArraySerializer
 } from './DefaultSerializers';
+import { SerializationSymbols, getTypes } from './SerializationSymbols'
 import {DATA_OFFSET, HeapData} from './HeapData';
 import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {PortableSerializer} from './portable/PortableSerializer';
@@ -107,6 +108,8 @@ export class SerializationServiceV1 implements SerializationService {
 
     private readonly registry: { [id: number]: Serializer };
     private readonly serializerNameToId: { [name: string]: number };
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    private readonly classToSerializerMap   : Map<Function | Symbol, [Serializer, Serializer]>;
     private readonly compactStreamSerializer: CompactStreamSerializer;
     private readonly portableSerializer: PortableSerializer;
     private readonly identifiedSerializer: IdentifiedDataSerializableSerializer;
@@ -117,6 +120,8 @@ export class SerializationServiceV1 implements SerializationService {
     ) {
         this.registry = {};
         this.serializerNameToId = {};
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        this.classToSerializerMap = new Map<Function, [Serializer, Serializer]>();
         this.compactStreamSerializer = new CompactStreamSerializer(schemaService);
         this.portableSerializer = new PortableSerializer(this.serializationConfig);
         this.identifiedSerializer = this.createIdentifiedSerializer();
@@ -188,15 +193,20 @@ export class SerializationServiceV1 implements SerializationService {
         return serializer.read(inp);
     }
 
-    registerSerializer(name: string, serializer: Serializer): void {
-        if (this.serializerNameToId[name]) {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    registerSerializer(clazz: Function | Symbol, serializer: Serializer, arraySerializer?: Serializer): void {
+        if (this.classToSerializerMap.has(clazz)) {
             throw new RangeError('Given serializer name is already in the registry.');
         }
         if (this.registry[serializer.id]) {
             throw new RangeError('Given serializer id is already in the registry.');
         }
-        this.serializerNameToId[name] = serializer.id;
+        //this.serializerNameToId[name] = serializer.id;
+        this.classToSerializerMap.set(clazz, [serializer, arraySerializer]);
         this.registry[serializer.id] = serializer;
+        if (arraySerializer) {
+            this.registry[arraySerializer.id] = arraySerializer;
+        }
     }
 
     /**
@@ -221,7 +231,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
         let serializer: Serializer = null;
         if (obj === null) {
-            serializer = this.findSerializerByName('null', false);
+            serializer = this.findSerializerByName(SerializationSymbols.NULL_SYMBOL, false);
         }
         if (serializer === null) {
             serializer = this.lookupDefaultSerializer(obj);
@@ -233,7 +243,7 @@ export class SerializationServiceV1 implements SerializationService {
             serializer = this.lookupGlobalSerializer();
         }
         if (serializer === null) {
-            serializer = this.findSerializerByName('!json', false);
+            serializer = this.findSerializerByName(SerializationSymbols.JSON_SYMBOL, false);
         }
         if (serializer === null) {
             throw new RangeError('There is no suitable serializer for ' + obj + '.');
@@ -257,12 +267,12 @@ export class SerializationServiceV1 implements SerializationService {
         const objectType = Util.getType(obj);
         if (objectType === 'array') {
             if (obj.length === 0) {
-                serializer = this.findSerializerByName('number', true);
+                serializer = this.findSerializerByName(Number.prototype.constructor, true);
             } else {
-                serializer = this.findSerializerByName(Util.getType(obj[0]), true);
+                serializer = this.findSerializerByName(obj[0], true);
             }
         } else {
-            serializer = this.findSerializerByName(objectType, false);
+            serializer = this.findSerializerByName(obj, false);
         }
         return serializer;
     }
@@ -275,7 +285,7 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     private lookupGlobalSerializer(): Serializer {
-        return this.findSerializerByName('!global', false);
+        return this.findSerializerByName(SerializationSymbols.GLOBAL_SYMBOL, false);
     }
 
     private static isIdentifiedDataSerializable(obj: any): boolean {
@@ -317,44 +327,36 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     private registerDefaultSerializers(): void {
-        this.registerSerializer('string', new StringSerializer());
-        this.registerSerializer('double', new DoubleSerializer());
-        this.registerSerializer('byte', new ByteSerializer());
-        this.registerSerializer('boolean', new BooleanSerializer());
-        this.registerSerializer('null', new NullSerializer());
-        this.registerSerializer('short', new ShortSerializer());
-        this.registerSerializer('integer', new IntegerSerializer());
-        this.registerSerializer('long', new LongSerializer());
-        this.registerSerializer('float', new FloatSerializer());
-        this.registerSerializer('char', new CharSerializer());
-        this.registerSerializer('date', new DateSerializer());
-        this.registerSerializer('localDate', new LocalDateSerializer());
-        this.registerSerializer('localTime', new LocalTimeSerializer());
-        this.registerSerializer('localDateTime', new LocalDateTimeSerializer());
-        this.registerSerializer('offsetDateTime', new OffsetDateTimeSerializer());
-        this.registerSerializer('byteArray', new ByteArraySerializer());
-        this.registerSerializer('charArray', new CharArraySerializer());
-        this.registerSerializer('booleanArray', new BooleanArraySerializer());
-        this.registerSerializer('shortArray', new ShortArraySerializer());
-        this.registerSerializer('integerArray', new IntegerArraySerializer());
-        this.registerSerializer('longArray', new LongArraySerializer());
-        this.registerSerializer('doubleArray', new DoubleArraySerializer());
-        this.registerSerializer('stringArray', new StringArraySerializer());
-        this.registerSerializer('javaClass', new JavaClassSerializer());
-        this.registerSerializer('floatArray', new FloatArraySerializer());
-        this.registerSerializer('arrayList', new ArrayListSerializer());
-        this.registerSerializer('linkedList', new LinkedListSerializer());
-        this.registerSerializer('uuid', new UuidSerializer());
-        this.registerSerializer('bigDecimal', new BigDecimalSerializer());
-        this.registerSerializer('bigint', new BigIntSerializer());
-        this.registerSerializer('javaArray', new JavaArraySerializer());
-        this.registerSerializer('!compact', this.compactStreamSerializer);
-        this.registerSerializer('identified', this.identifiedSerializer);
-        this.registerSerializer('!portable', this.portableSerializer);
+        this.registerSerializer(String.prototype.constructor, new StringSerializer(), new StringArraySerializer());
+        this.registerSerializer(Number.prototype.constructor, new DoubleSerializer(), new DoubleArraySerializer());
+        this.registerSerializer(SerializationSymbols.BYTE_SYMBOL , new ByteSerializer(), new ByteArraySerializer());
+        this.registerSerializer(Boolean.prototype.constructor, new BooleanSerializer(), new BooleanArraySerializer());
+        this.registerSerializer(SerializationSymbols.NULL_SYMBOL, new NullSerializer(), null);
+        this.registerSerializer(SerializationSymbols.SHORT_SYMBOL, new ShortSerializer(), new ShortArraySerializer());
+        this.registerSerializer(SerializationSymbols.INTEGER_SYMBOL, new IntegerSerializer(), new IntegerArraySerializer());
+        this.registerSerializer(SerializationSymbols.LONG_SYMBOL, new LongSerializer(), new LongArraySerializer());
+        this.registerSerializer(SerializationSymbols.FLOAT_SYMBOL, new FloatSerializer(), new FloatArraySerializer());
+        this.registerSerializer(SerializationSymbols.CHAR_SYMBOL, new CharSerializer(), new CharArraySerializer());
+        this.registerSerializer(SerializationSymbols.DATE_SYMBOL, new DateSerializer(), null);
+        this.registerSerializer(SerializationSymbols.LOCALDATE_SYMBOL, new LocalDateSerializer(), null);
+        this.registerSerializer(SerializationSymbols.LOCALTIME_SYMBOL, new LocalTimeSerializer(), null);
+        this.registerSerializer(SerializationSymbols.LOCALDATETIME_SYMBOL, new LocalDateTimeSerializer(), null);
+        this.registerSerializer(SerializationSymbols.OFFSETDATETIME_SYMBOL, new OffsetDateTimeSerializer(), null);
+        this.registerSerializer(SerializationSymbols.JAVACLASS_SYMBOL, new JavaClassSerializer(), null);
+        this.registerSerializer(SerializationSymbols.ARRAYLIST_SYMBOL, new ArrayListSerializer(), null);
+        this.registerSerializer(SerializationSymbols.LINKLIST_SYMBOL, new LinkedListSerializer(), null);
+        this.registerSerializer(SerializationSymbols.UUID_SYMBOL, new UuidSerializer(), null);
+        this.registerSerializer(SerializationSymbols.BIGDECIMAL_SYMBOL, new BigDecimalSerializer(), null);
+        this.registerSerializer(BigInt.prototype.constructor, new BigIntSerializer(), null);
+        this.registerSerializer(SerializationSymbols.JAVA_ARRAY_SYMBOL, new JavaArraySerializer(), null);
+        this.registerSerializer(SerializationSymbols.COMPACT_SYMBOL, this.compactStreamSerializer, null);
+        this.registerSerializer(SerializationSymbols.IDENTIFIED_SYMBOL, this.identifiedSerializer, null);
+        this.registerSerializer(SerializationSymbols.PORTABLE_SYMBOL, this.portableSerializer, null);
+
         if (this.serializationConfig.jsonStringDeserializationPolicy === JsonStringDeserializationPolicy.EAGER) {
-            this.registerSerializer('!json', new JsonSerializer());
+            this.registerSerializer(SerializationSymbols.JSON_SYMBOL, new JsonSerializer(), null);
         } else {
-            this.registerSerializer('!json', new HazelcastJsonValueSerializer());
+            this.registerSerializer(SerializationSymbols.JSON_SYMBOL, new HazelcastJsonValueSerializer(), null);
         }
     }
 
@@ -374,7 +376,7 @@ export class SerializationServiceV1 implements SerializationService {
     private registerCustomSerializers(): void {
         const customSerializers = this.serializationConfig.customSerializers;
         for (const customSerializer of customSerializers) {
-            this.registerSerializer('!custom' + customSerializer.id, customSerializer);
+            this.registerSerializer(Symbol.for('!custom' + customSerializer.id), customSerializer);
         }
     }
 
@@ -390,7 +392,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (candidate == null) {
             return;
         }
-        this.registerSerializer('!global', candidate);
+        this.registerSerializer(SerializationSymbols.GLOBAL_SYMBOL, candidate);
     }
 
     private static isCustomSerializable(object: any): boolean {
@@ -398,21 +400,19 @@ export class SerializationServiceV1 implements SerializationService {
         return (typeof object[prop] === 'number' && object[prop] >= 1);
     }
 
-    private findSerializerByName(name: string, isArray: boolean): Serializer {
-        let convertedName: string;
-        if (name === 'number') {
-            convertedName = this.serializationConfig.defaultNumberType;
-        } else if (name === 'buffer') {
-            convertedName = 'byteArray';
-        } else {
-            convertedName = name;
+    // eslint-disable-next-line @typescript-eslint/ban-types    
+    private findSerializerByName(clazz: Function | Symbol, isArray: boolean): Serializer {
+        const objectKeyValue = getTypes(clazz);
+        if (objectKeyValue) {
+            const serializers = this.classToSerializerMap.get(objectKeyValue);
+            if (serializers) {
+                if (isArray) {
+                    return serializers.length == 2 && serializers[1] ? serializers[1] : null;
+                }
+                return serializers[0];
+            }
         }
-        const serializerName = convertedName + (isArray ? 'Array' : '');
-        const serializerId = this.serializerNameToId[serializerName];
-        if (serializerId == null) {
-            return null;
-        }
-        return this.findSerializerById(serializerId);
+        return null;
     }
 
     private findSerializerById(id: number): Serializer {

@@ -435,8 +435,9 @@ export class DefaultCompactWriter implements CompactWriter {
  * a single type.
  */
 export class SingleTypeCompactArrayItemChecker<T> {
-
-    private clazz: any;
+    
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    private clazz: Function;
     
     public check(value: T): void {
         const clazzType = value.constructor;
@@ -447,7 +448,7 @@ export class SingleTypeCompactArrayItemChecker<T> {
             throw new HazelcastSerializationError('It is not allowed to '
                     + 'serialize an array of Compact serializable objects '
                     + 'containing different item types. Expected array item '
-                    + 'type: ' + this.clazz + ', current item type: ' + clazzType);
+                    + 'type: ' + this.clazz.name + ', current item type: ' + clazzType.name);
         }
     }
 }
