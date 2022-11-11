@@ -15,6 +15,8 @@
  */
 /** @ignore *//** */
 
+import * as Long from 'long';
+
 /** @internal */
 export class SerializationSymbols {
     static readonly BYTE_SYMBOL = Symbol();
@@ -24,16 +26,9 @@ export class SerializationSymbols {
     static readonly LONG_SYMBOL = Symbol();
     static readonly FLOAT_SYMBOL = Symbol();
     static readonly CHAR_SYMBOL = Symbol();
-    static readonly DATE_SYMBOL = Symbol();
-    static readonly LOCALDATE_SYMBOL = Symbol();
-    static readonly LOCALTIME_SYMBOL = Symbol();
-    static readonly LOCALDATETIME_SYMBOL = Symbol();
-    static readonly OFFSETDATETIME_SYMBOL = Symbol();
     static readonly JAVACLASS_SYMBOL = Symbol();
     static readonly ARRAYLIST_SYMBOL = Symbol();
     static readonly LINKLIST_SYMBOL = Symbol();
-    static readonly UUID_SYMBOL = Symbol();
-    static readonly BIGDECIMAL_SYMBOL = Symbol();
     static readonly JAVA_ARRAY_SYMBOL = Symbol();
     static readonly COMPACT_SYMBOL = Symbol();
     static readonly IDENTIFIED_SYMBOL = Symbol();
@@ -47,17 +42,12 @@ export function getTypes(clazz: Function | Symbol): Function | Symbol {
     if (typeof clazz == 'symbol') {
         return clazz;
     }
-    if (typeof clazz == 'string') {
-        return String.prototype.constructor;
+    switch (clazz) {
+        case Buffer:
+            return SerializationSymbols.BYTE_SYMBOL;
+        case Long:
+            return Long.prototype.constructor;
+        default:
+            return clazz;
     }
-    if (typeof clazz == 'number') {
-        return Number.prototype.constructor;
-    }
-    if (typeof clazz == 'boolean') {
-        return Boolean.prototype.constructor;
-    }
-    if (typeof clazz == 'bigint') {
-        return BigInt.prototype.constructor;
-    }
-    
 }

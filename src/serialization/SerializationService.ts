@@ -15,6 +15,7 @@
  */
 /** @ignore *//** */
 
+import * as Long from 'long';
 import {AGGREGATOR_FACTORY_ID} from '../aggregation/AggregatorConstants';
 import {aggregatorFactory} from '../aggregation/Aggregator';
 import {CLUSTER_DATA_FACTORY_ID, clusterDataFactory} from './ClusterDataFactory';
@@ -73,7 +74,7 @@ import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
 import {Schema} from './compact/Schema';
-import { IllegalArgumentError } from '../core';
+import { BigDecimal, IllegalArgumentError, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, UUID } from '../core';
 
 /**
  * Serializes objects and deserializes data.
@@ -107,7 +108,6 @@ const defaultPartitionStrategy = (obj: any): number => {
 export class SerializationServiceV1 implements SerializationService {
 
     private readonly registry: { [id: number]: Serializer };
-    private readonly serializerNameToId: { [name: string]: number };
     // eslint-disable-next-line @typescript-eslint/ban-types
     private readonly classToSerializerMap   : Map<Function | Symbol, [Serializer, Serializer]>;
     private readonly compactStreamSerializer: CompactStreamSerializer;
@@ -119,7 +119,6 @@ export class SerializationServiceV1 implements SerializationService {
         schemaService: SchemaService
     ) {
         this.registry = {};
-        this.serializerNameToId = {};
         // eslint-disable-next-line @typescript-eslint/ban-types
         this.classToSerializerMap = new Map<Function, [Serializer, Serializer]>();
         this.compactStreamSerializer = new CompactStreamSerializer(schemaService);
@@ -201,7 +200,6 @@ export class SerializationServiceV1 implements SerializationService {
         if (this.registry[serializer.id]) {
             throw new RangeError('Given serializer id is already in the registry.');
         }
-        //this.serializerNameToId[name] = serializer.id;
         this.classToSerializerMap.set(clazz, [serializer, arraySerializer]);
         this.registry[serializer.id] = serializer;
         if (arraySerializer) {
@@ -308,7 +306,7 @@ export class SerializationServiceV1 implements SerializationService {
     private verifyDefaultSerializersNotOverriddenWithCompact(): void {
         const compactSerializers = this.serializationConfig.compact.serializers;
         for (const compact of compactSerializers) {
-            if (!this.serializerNameToId[compact.getTypeName()]) {
+            if (!this.classToSerializerMap.has(compact.getClass())) {
                 continue;
             }
             
@@ -334,19 +332,19 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerSerializer(SerializationSymbols.NULL_SYMBOL, new NullSerializer(), null);
         this.registerSerializer(SerializationSymbols.SHORT_SYMBOL, new ShortSerializer(), new ShortArraySerializer());
         this.registerSerializer(SerializationSymbols.INTEGER_SYMBOL, new IntegerSerializer(), new IntegerArraySerializer());
-        this.registerSerializer(SerializationSymbols.LONG_SYMBOL, new LongSerializer(), new LongArraySerializer());
+        this.registerSerializer(Long.prototype.constructor, new LongSerializer(), new LongArraySerializer());
         this.registerSerializer(SerializationSymbols.FLOAT_SYMBOL, new FloatSerializer(), new FloatArraySerializer());
         this.registerSerializer(SerializationSymbols.CHAR_SYMBOL, new CharSerializer(), new CharArraySerializer());
-        this.registerSerializer(SerializationSymbols.DATE_SYMBOL, new DateSerializer(), null);
-        this.registerSerializer(SerializationSymbols.LOCALDATE_SYMBOL, new LocalDateSerializer(), null);
-        this.registerSerializer(SerializationSymbols.LOCALTIME_SYMBOL, new LocalTimeSerializer(), null);
-        this.registerSerializer(SerializationSymbols.LOCALDATETIME_SYMBOL, new LocalDateTimeSerializer(), null);
-        this.registerSerializer(SerializationSymbols.OFFSETDATETIME_SYMBOL, new OffsetDateTimeSerializer(), null);
+        this.registerSerializer(Date.prototype.constructor, new DateSerializer(), null);
+        this.registerSerializer(LocalDate.prototype.constructor, new LocalDateSerializer(), null);
+        this.registerSerializer(LocalTime.prototype.constructor, new LocalTimeSerializer(), null);
+        this.registerSerializer(LocalDateTime.prototype.constructor, new LocalDateTimeSerializer(), null);
+        this.registerSerializer(OffsetDateTime.prototype.constructor, new OffsetDateTimeSerializer(), null);
         this.registerSerializer(SerializationSymbols.JAVACLASS_SYMBOL, new JavaClassSerializer(), null);
         this.registerSerializer(SerializationSymbols.ARRAYLIST_SYMBOL, new ArrayListSerializer(), null);
         this.registerSerializer(SerializationSymbols.LINKLIST_SYMBOL, new LinkedListSerializer(), null);
-        this.registerSerializer(SerializationSymbols.UUID_SYMBOL, new UuidSerializer(), null);
-        this.registerSerializer(SerializationSymbols.BIGDECIMAL_SYMBOL, new BigDecimalSerializer(), null);
+        this.registerSerializer(UUID.prototype.constructor, new UuidSerializer(), null);
+        this.registerSerializer(BigDecimal.prototype.constructor, new BigDecimalSerializer(), null);
         this.registerSerializer(BigInt.prototype.constructor, new BigIntSerializer(), null);
         this.registerSerializer(SerializationSymbols.JAVA_ARRAY_SYMBOL, new JavaArraySerializer(), null);
         this.registerSerializer(SerializationSymbols.COMPACT_SYMBOL, this.compactStreamSerializer, null);
@@ -402,11 +400,13 @@ export class SerializationServiceV1 implements SerializationService {
 
     // eslint-disable-next-line @typescript-eslint/ban-types    
     private findSerializerByName(clazz: Function | Symbol, isArray: boolean): Serializer {
-        const objectKeyValue = getTypes(clazz);
+        const clazzType = typeof clazz == 'symbol' ? clazz : clazz.constructor;
+        const isArrayChange = (clazz.constructor == Buffer) ? true : isArray;
+        const objectKeyValue = getTypes(clazzType);
         if (objectKeyValue) {
             const serializers = this.classToSerializerMap.get(objectKeyValue);
             if (serializers) {
-                if (isArray) {
+                if (isArrayChange) {
                     return serializers.length == 2 && serializers[1] ? serializers[1] : null;
                 }
                 return serializers[0];
