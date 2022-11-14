@@ -21,7 +21,6 @@ export class SerializationSymbols {
     static readonly NULL_SYMBOL = Symbol();
     static readonly SHORT_SYMBOL = Symbol();
     static readonly INTEGER_SYMBOL = Symbol();
-    static readonly LONG_SYMBOL = Symbol();
     static readonly FLOAT_SYMBOL = Symbol();
     static readonly CHAR_SYMBOL = Symbol();
     static readonly JAVACLASS_SYMBOL = Symbol();
