@@ -408,11 +408,11 @@ export class SerializationServiceV1 implements SerializationService {
     private findSerializerByType(clazz: Function | Symbol, isArray: boolean): Serializer {
         const clazzType = typeof clazz == 'symbol' ? clazz : 
             (clazz.constructor === Buffer ? SerializationSymbols.BYTE_SYMBOL : clazz.constructor);
-        const isArrayChange = (clazz.constructor == Buffer) ? true : isArray;
+        const isArraySerializer = (clazz.constructor == Buffer) ? true : isArray;
         if (clazzType) {
             const serializers = this.classToSerializerMap.get(clazzType);
             if (serializers) {
-                if (isArrayChange) {
+                if (isArraySerializer) {
                     return serializers.length == 2 && serializers[1] ? serializers[1] : null;
                 }
                 return serializers[0];
