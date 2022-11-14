@@ -106,4 +106,8 @@ export class SchemaService {
         const invocation = new Invocation(this.getInvocationService(), message);
         return this.getInvocationService().invokeUrgent(invocation).then(() => {});
     }
+
+    hasAnySchemas(): boolean {
+        return !(this.schemas.size === 0);
+    }
 }

@@ -137,6 +137,7 @@ export class ClientMessage {
     endFrame: Frame;
     private retryable: boolean;
     private connection: Connection;
+    private containsSerializedDataInRequest: boolean;
     private _nextFrame: Frame;
     // cached total length for encode case
     private cachedTotalLength: number;
@@ -284,12 +285,22 @@ export class ClientMessage {
         this.cachedTotalLength = undefined;
     }
 
+    isContainsSerializedDataInRequest(): boolean {
+        return this.containsSerializedDataInRequest;
+    }
+
+    setContainsSerializedDataInRequest(containsSerializedDataInRequest:boolean): void {
+        this.containsSerializedDataInRequest = containsSerializedDataInRequest;
+    }
+
+
     copyWithNewCorrelationId(): ClientMessage {
         const startFrameCopy = this.startFrame.deepCopy();
         const newMessage = new ClientMessage(startFrameCopy, this.endFrame);
 
         newMessage.resetCorrelationId();
         newMessage.retryable = this.retryable;
+        newMessage.containsSerializedDataInRequest = this.containsSerializedDataInRequest;
         return newMessage;
     }
 
