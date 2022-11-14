@@ -63,7 +63,7 @@ import {
     UuidSerializer,
     JavaArraySerializer
 } from './DefaultSerializers';
-import { SerializationSymbols, getTypes } from './SerializationSymbols'
+import {SerializationSymbols} from './SerializationSymbols'
 import {DATA_OFFSET, HeapData} from './HeapData';
 import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {PortableSerializer} from './portable/PortableSerializer';
@@ -74,7 +74,7 @@ import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
 import {Schema} from './compact/Schema';
-import { BigDecimal, IllegalArgumentError, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, UUID } from '../core';
+import {BigDecimal, IllegalArgumentError, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, UUID} from '../core';
 
 /**
  * Serializes objects and deserializes data.
@@ -108,8 +108,14 @@ const defaultPartitionStrategy = (obj: any): number => {
 export class SerializationServiceV1 implements SerializationService {
 
     private readonly registry: { [id: number]: Serializer };
+    
+    // We hold default type serializers in a Map. Key values will be class types or Symbol and values 
+    // will be serializers( one is type serializer and second one is array serializer of that object) 
+    // Some of the types do not have equivalent class on Nodejs (Byte, Short, Null and etc.), so we need to use 
+    // unique values for these types as a Symbol (defined in @SerializationSymbols). 
+    // For these types we use unique Symbol as a key value.
     // eslint-disable-next-line @typescript-eslint/ban-types
-    private readonly classToSerializerMap   : Map<Function | Symbol, [Serializer, Serializer]>;
+    private readonly classToSerializerMap : Map<Function | Symbol, [Serializer, Serializer]>;
     private readonly compactStreamSerializer: CompactStreamSerializer;
     private readonly portableSerializer: PortableSerializer;
     private readonly identifiedSerializer: IdentifiedDataSerializableSerializer;
@@ -120,7 +126,7 @@ export class SerializationServiceV1 implements SerializationService {
     ) {
         this.registry = {};
         // eslint-disable-next-line @typescript-eslint/ban-types
-        this.classToSerializerMap = new Map<Function, [Serializer, Serializer]>();
+        this.classToSerializerMap = new Map<Function | Symbol, [Serializer, Serializer]>();
         this.compactStreamSerializer = new CompactStreamSerializer(schemaService);
         this.portableSerializer = new PortableSerializer(this.serializationConfig);
         this.identifiedSerializer = this.createIdentifiedSerializer();
@@ -229,7 +235,7 @@ export class SerializationServiceV1 implements SerializationService {
         }
         let serializer: Serializer = null;
         if (obj === null) {
-            serializer = this.findSerializerByName(SerializationSymbols.NULL_SYMBOL, false);
+            serializer = this.findSerializerByType(SerializationSymbols.NULL_SYMBOL, false);
         }
         if (serializer === null) {
             serializer = this.lookupDefaultSerializer(obj);
@@ -241,7 +247,7 @@ export class SerializationServiceV1 implements SerializationService {
             serializer = this.lookupGlobalSerializer();
         }
         if (serializer === null) {
-            serializer = this.findSerializerByName(SerializationSymbols.JSON_SYMBOL, false);
+            serializer = this.findSerializerByType(SerializationSymbols.JSON_SYMBOL, false);
         }
         if (serializer === null) {
             throw new RangeError('There is no suitable serializer for ' + obj + '.');
@@ -265,12 +271,12 @@ export class SerializationServiceV1 implements SerializationService {
         const objectType = Util.getType(obj);
         if (objectType === 'array') {
             if (obj.length === 0) {
-                serializer = this.findSerializerByName(Number.prototype.constructor, true);
+                serializer = this.findSerializerByType(Number.prototype.constructor, true);
             } else {
-                serializer = this.findSerializerByName(obj[0], true);
+                serializer = this.findSerializerByType(obj[0], true);
             }
         } else {
-            serializer = this.findSerializerByName(obj, false);
+            serializer = this.findSerializerByType(obj, false);
         }
         return serializer;
     }
@@ -283,7 +289,7 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     private lookupGlobalSerializer(): Serializer {
-        return this.findSerializerByName(SerializationSymbols.GLOBAL_SYMBOL, false);
+        return this.findSerializerByType(SerializationSymbols.GLOBAL_SYMBOL, false);
     }
 
     private static isIdentifiedDataSerializable(obj: any): boolean {
@@ -399,12 +405,12 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     // eslint-disable-next-line @typescript-eslint/ban-types    
-    private findSerializerByName(clazz: Function | Symbol, isArray: boolean): Serializer {
-        const clazzType = typeof clazz == 'symbol' ? clazz : clazz.constructor;
+    private findSerializerByType(clazz: Function | Symbol, isArray: boolean): Serializer {
+        const clazzType = typeof clazz == 'symbol' ? clazz : 
+            (clazz.constructor === Buffer ? SerializationSymbols.BYTE_SYMBOL : clazz.constructor);
         const isArrayChange = (clazz.constructor == Buffer) ? true : isArray;
-        const objectKeyValue = getTypes(clazzType);
-        if (objectKeyValue) {
-            const serializers = this.classToSerializerMap.get(objectKeyValue);
+        if (clazzType) {
+            const serializers = this.classToSerializerMap.get(clazzType);
             if (serializers) {
                 if (isArrayChange) {
                     return serializers.length == 2 && serializers[1] ? serializers[1] : null;

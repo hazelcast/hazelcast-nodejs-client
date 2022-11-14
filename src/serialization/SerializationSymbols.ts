@@ -15,8 +15,6 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
-
 /** @internal */
 export class SerializationSymbols {
     static readonly BYTE_SYMBOL = Symbol();
@@ -35,19 +33,4 @@ export class SerializationSymbols {
     static readonly PORTABLE_SYMBOL = Symbol();
     static readonly JSON_SYMBOL = Symbol();
     static readonly GLOBAL_SYMBOL = Symbol();
-}
-
-// eslint-disable-next-line @typescript-eslint/ban-types 
-export function getTypes(clazz: Function | Symbol): Function | Symbol {
-    if (typeof clazz == 'symbol') {
-        return clazz;
-    }
-    switch (clazz) {
-        case Buffer:
-            return SerializationSymbols.BYTE_SYMBOL;
-        case Long:
-            return Long.prototype.constructor;
-        default:
-            return clazz;
-    }
 }

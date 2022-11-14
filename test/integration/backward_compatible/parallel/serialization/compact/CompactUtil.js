@@ -158,9 +158,6 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
             writer.writeInt64('id', value.id);
         }
     };
-
-
-
     class NonCompactClass {
         constructor(a, b) {
             this.a = a;
