@@ -34,20 +34,6 @@ describe('ClientMessageReaderTest', function () {
         return buffer;
     }
 
-    function createFrameWithRandomBytes(length) {
-        const buffer = Buffer.allocUnsafe(length);
-        for (let i = 0; i < length; i++) {
-            buffer.writeUInt8(Math.floor(Math.random() * 256), i);
-        }
-        return new Frame(buffer);
-    }
-
-    function writeToBuffer(message) {
-        const buffer = Buffer.allocUnsafe(message.getTotalLength());
-        message.writeTo(buffer);
-        return buffer;
-    }
-
     beforeEach(function() {
         reader = new ClientMessageReader();
     });
@@ -112,6 +98,29 @@ describe('ClientMessageReaderTest', function () {
         reader.read();
 
         expect(reader.read()).to.be.equal(null);
+    });
+});
+
+describe('PortedClientMessageReaderTestFromJava', function () {
+
+    function createFrameWithRandomBytes(length) {
+        const buffer = Buffer.allocUnsafe(length);
+        for (let i = 0; i < length; i++) {
+            buffer.writeUInt8(Math.floor(Math.random() * 256), i);
+        }
+        return new Frame(buffer);
+    }
+
+    function writeToBuffer(message) {
+        const buffer = Buffer.allocUnsafe(message.getTotalLength());
+        message.writeTo(buffer);
+        return buffer;
+    }
+
+    let reader;
+
+    beforeEach(function() {
+        reader = new ClientMessageReader();
     });
 
     it('testReadSingleFrameMessage', function() {
