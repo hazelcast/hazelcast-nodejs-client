@@ -159,7 +159,7 @@ describe('RingbufferProxyTest', function () {
         expect(size.toNumber()).to.equal(2);
     });
 
-    it('correctly works with prefix filter', async function () {
+    it('readMany correctly works with a filter', async function () {
         await rb.addAll(['item1', 'prefixedItem2', 'prefixedItem3']);
         const items = await rb.readMany(0, 1, 3, new PrefixFilter('prefixed'));
         expect(items.get(0)).to.equal('prefixedItem2');
