@@ -194,6 +194,9 @@ describe('ClientMessageReaderTest', function () {
 
         const firstPartition = buffer.slice(0, 750);
         const secondPartition = buffer.slice(750, 1002);
+
+        // Message Length = 1000 + 6 bytes
+        // part1 = 750, part2 = 252, part3 = 4 bytes
         const thirdPartition = buffer.slice(1002);
 
         reader.append(firstPartition);
@@ -218,6 +221,9 @@ describe('ClientMessageReaderTest', function () {
         message.addFrame(frame);
 
         const buffer = writeToBuffer(message);
+
+        // Set limit to a small value so that we can simulate
+        // that the frame length and flags are not read yet.
         const firstPartition = buffer.slice(0, 4);
         reader.append(firstPartition);
         let messageRead = reader.read();
