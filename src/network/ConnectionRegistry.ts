@@ -66,6 +66,12 @@ export interface ConnectionRegistry {
      * @return Error if invocation is not allowed, null otherwise
      */
     checkIfInvocationAllowed(): Error | null;
+
+    /**
+     * Returns {@code true} if the client is initialized on the cluster, by
+     * sending its local state, if necessary.
+     */
+    clientInitializedOnCluster(): boolean;
 }
 
 /**
@@ -182,6 +188,10 @@ export class ConnectionRegistryImpl implements ConnectionRegistry {
             error = new IOError('No connection found to cluster.');
         }
         return error;
+    }
+
+    clientInitializedOnCluster(): boolean {
+        return this.clientState === ClientState.INITIALIZED_ON_CLUSTER;
     }
 
     deleteConnection(uuid: UUID): void {

@@ -248,10 +248,6 @@ export class ConnectionManager extends EventEmitter {
         });
     }
 
-    clientInitializedOnCluster(): boolean {
-        return this.connectionRegistry.getClientState() === ClientState.INITIALIZED_ON_CLUSTER;
-    }
-
     getClientUuid(): UUID {
         return this.clientUuid;
     }
