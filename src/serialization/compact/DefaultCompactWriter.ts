@@ -440,6 +440,13 @@ export class SingleTypeCompactArrayItemChecker<T> {
     private clazz: Function;
     
     public check(value: T): void {
+        if (value === undefined) {
+            throw new HazelcastSerializationError('The value undefined can not be used in an Array of Compact value.');
+        }
+        if (value.constructor === undefined) {
+            throw new HazelcastSerializationError('While checking if all elements in a compact array are of same type, ' 
+            + 'encountered with a value with undefined contructor. Can not continue with single type checking.');
+        }
         const clazzType = value.constructor;
         if (this.clazz == null) {
             this.clazz = clazzType;

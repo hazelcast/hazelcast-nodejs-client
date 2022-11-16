@@ -51,8 +51,7 @@ let Employee;
 let EmployeeSerializer;
 let EmployeeDTO;
 let EmployeeDTOSerializer;
-let DefaultObjectSampleClass;
-let DefaultObjectSampleClassSerializer;
+let DefaultSerializerOverridingSerializer;
 let ArrayOfCompact;
 let ArrayOfCompactSerializer;
 let Employer;
@@ -135,12 +134,7 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
         }
     };
 
-    DefaultObjectSampleClass = class {
-        constructor(id) {
-            this.id = id;
-        }
-    };
-    DefaultObjectSampleClassSerializer = class DefaultObjectSampleClassSerializer {
+    DefaultSerializerOverridingSerializer = class DefaultSerializerOverridingSerializer {
         getClass() {
             return String;
         }
@@ -149,13 +143,10 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
             return 'DefaultObjectSampleClass';
         }
 
-        read(reader) {
-            const id = reader.getFieldKind('id') !== FieldKind.INT64 ? Long.ZERO : reader.readInt64('id');
-            return new DefaultObjectSampleClass(id);
+        read() {
         }
 
-        write(writer, value) {
-            writer.writeInt64('id', value.id);
+        write() {
         }
     };
     class NonCompactClass {
@@ -1701,6 +1692,6 @@ module.exports = {
     SampleObject1Serializer,
     SampleObject2,
     SampleObject2Serializer,
-    DefaultObjectSampleClassSerializer,
+    DefaultSerializerOverridingSerializer,
     HIRING_STATUS
 };

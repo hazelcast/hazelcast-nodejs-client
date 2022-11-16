@@ -623,6 +623,44 @@ describe('CompactGenericRecordTest', function () {
                 error.message.includes('It is not allowed to serialize an array of Compact serializable objects'
                 +' containing different item types.').should.be.true;
             });
+            it('should throw error if one of the object is undefined on ARRAY_OF_COMPACT', async function () {
+                const {serializationService, schemaService} = createSerializationService(
+                    [new ArrayOfCompactSerializer(), new SampleObject1Serializer(), new SampleObject2Serializer()]
+                );
+                const object1 = undefined;
+                const object2 = new SampleObject2('name2', Long.fromNumber(102310312));
+                const arrayOfObjects = [
+                    object1,
+                    object2
+                ];
+                const arrayOfCompactObject = new ArrayOfCompact(arrayOfObjects);
+
+                const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+                    await serialize(serializationService, schemaService, arrayOfCompactObject);
+                });
+
+                error.should.be.instanceOf(HazelcastSerializationError);
+                error.message.includes('The value undefined can not be used in an Array of Compact value.').should.be.true;
+            });
+            it('should throw error if one of the object is undefined on ARRAY_OF_COMPACT2', async function () {
+                const {serializationService, schemaService} = createSerializationService(
+                    [new ArrayOfCompactSerializer(), new SampleObject1Serializer(), new SampleObject2Serializer()]
+                );
+                const object1 = Object.create(null);
+                const object2 = new SampleObject2('name2', Long.fromNumber(102310312));
+                const arrayOfObjects = [
+                    object1,
+                    object2
+                ];
+                const arrayOfCompactObject = new ArrayOfCompact(arrayOfObjects);
+
+                const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+                    await serialize(serializationService, schemaService, arrayOfCompactObject);
+                });
+
+                error.should.be.instanceOf(HazelcastSerializationError);
+                error.message.includes('encountered with a value with undefined contructor').should.be.true;
+            });
             it('should not throw error array of GenericRecord objects containing same schemas.', async function () {
                 const {serializationService, schemaService} = createSerializationService();
                 const arrayofGenericRecords = getGenericRecordArray({same: true});

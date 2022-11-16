@@ -16,6 +16,7 @@
 /** @ignore *//** */
 
 import * as Long from 'long';
+import * as Util from '../util/Util';
 import {AGGREGATOR_FACTORY_ID} from '../aggregation/AggregatorConstants';
 import {aggregatorFactory} from '../aggregation/Aggregator';
 import {CLUSTER_DATA_FACTORY_ID, clusterDataFactory} from './ClusterDataFactory';
@@ -24,7 +25,6 @@ import {
     RELIABLE_TOPIC_MESSAGE_FACTORY_ID,
     reliableTopicMessageFactory,
 } from '../proxy/topic/ReliableTopicMessage';
-import * as Util from '../util/Util';
 import {Data, DataInput, DataOutput} from './Data';
 import {Serializer, IdentifiedDataSerializableFactory} from './Serializable';
 import {
@@ -104,21 +104,27 @@ const defaultPartitionStrategy = (obj: any): number => {
     }
 }
 
+/**
+ * The type key that is used in serializer registration for a object type.
+ */
+// eslint-disable-next-line @typescript-eslint/ban-types
+type TypeKey = Function | Symbol;
+
 /** @internal */
 export class SerializationServiceV1 implements SerializationService {
 
     private readonly registry: { [id: number]: Serializer };
-    
-    // We hold default type serializers in a Map. Key values will be class types or Symbol and values 
-    // will be serializers( one is type serializer and second one is array serializer of that object) 
-    // Some of the types do not have equivalent class on Nodejs (Byte, Short, Null and etc.), so we need to use 
-    // unique values for these types as a Symbol (defined in @SerializationSymbols). 
+
+    // We hold default type serializers in a Map. Key values will be class types or Symbol and values
+    // will be serializers( one is type serializer and second one is array serializer of that object)
+    // Some of the types do not have equivalent class on Nodejs (Byte, Short, Null and etc.), so we need to use
+    // unique values for these types as a Symbol (defined in @SerializationSymbols).
     // For these types we use unique Symbol as a key value.
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    private readonly classToSerializerMap : Map<Function | Symbol, [Serializer, Serializer]>;
+    private readonly typeKeyToSerializersMap : Map<TypeKey, [Serializer, Serializer]>;
     private readonly compactStreamSerializer: CompactStreamSerializer;
     private readonly portableSerializer: PortableSerializer;
     private readonly identifiedSerializer: IdentifiedDataSerializableSerializer;
+    private readonly typeKeyForDefaultNumberType : TypeKey;
 
     constructor(
         private readonly serializationConfig: SerializationConfigImpl,
@@ -126,7 +132,7 @@ export class SerializationServiceV1 implements SerializationService {
     ) {
         this.registry = {};
         // eslint-disable-next-line @typescript-eslint/ban-types
-        this.classToSerializerMap = new Map<Function | Symbol, [Serializer, Serializer]>();
+        this.typeKeyToSerializersMap = new Map<TypeKey, [Serializer, Serializer]>();
         this.compactStreamSerializer = new CompactStreamSerializer(schemaService);
         this.portableSerializer = new PortableSerializer(this.serializationConfig);
         this.identifiedSerializer = this.createIdentifiedSerializer();
@@ -134,6 +140,7 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerCustomSerializers();
         this.registerCompactSerializers();
         this.registerGlobalSerializer();
+        this.typeKeyForDefaultNumberType = Util.getTypeKeyForDefaultNumberType(this.serializationConfig.defaultNumberType);
 
         // Called here so that we can make sure that we are not overriding
         // any of the default serializers registered above with the Compact
@@ -198,15 +205,22 @@ export class SerializationServiceV1 implements SerializationService {
         return serializer.read(inp);
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    registerSerializer(clazz: Function | Symbol, serializer: Serializer, arraySerializer?: Serializer): void {
-        if (this.classToSerializerMap.has(clazz)) {
-            throw new RangeError('Given serializer name is already in the registry.');
+    /**
+     * Registers a serializer to the system.
+     * @param typeKey A typekey is either a constructor function or a symbol, defining the type of the object to be serialized.
+     * @param serializer The serializer to be registered.
+     * @param arraySerializer The serializer to be used for arrays of the given type. Global and custom serializers don't have
+     * this one and this should be null. For some types we don't have array serializers defined, for them this should be null
+     * as well.
+     */
+    registerSerializer(typeKey: TypeKey, serializer: Serializer, arraySerializer: Serializer | null): void {
+        if (this.typeKeyToSerializersMap.has(typeKey)) {
+            throw new RangeError('Given serializer type is already in the registry.');
         }
         if (this.registry[serializer.id]) {
             throw new RangeError('Given serializer id is already in the registry.');
         }
-        this.classToSerializerMap.set(clazz, [serializer, arraySerializer]);
+        this.typeKeyToSerializersMap.set(typeKey, [serializer, arraySerializer]);
         this.registry[serializer.id] = serializer;
         if (arraySerializer) {
             this.registry[arraySerializer.id] = arraySerializer;
@@ -256,8 +270,7 @@ export class SerializationServiceV1 implements SerializationService {
 
     }
 
-    private lookupDefaultSerializer(obj: any): Serializer {
-        let serializer: Serializer = null;
+    private lookupDefaultSerializer(obj: any): Serializer | null {
         if (this.isCompactSerializable(obj)) {
             return this.compactStreamSerializer;
         }
@@ -268,21 +281,41 @@ export class SerializationServiceV1 implements SerializationService {
             return this.portableSerializer
         }
 
-        const objectType = Util.getType(obj);
-        if (objectType === 'array') {
-            if (obj.length === 0) {
-                serializer = this.findSerializerByType(Number.prototype.constructor, true);
-            } else {
-                serializer = this.findSerializerByType(obj[0], true);
+        const isArray = Array.isArray(obj);
+        if (!isArray) {
+            // Number needs special care because it can be serialized with one of many serializers.
+            if (typeof obj === 'number') {
+                return this.findSerializerByType(this.typeKeyForDefaultNumberType, isArray);
             }
-        } else {
-            serializer = this.findSerializerByType(obj, false);
+            // We know obj is not undefined or null at this point, meaning it has a constructor field.
+            return this.findSerializerByType(obj.constructor, isArray);
         }
-        return serializer;
+        return this.lookupDefaultSerializerForArray(obj);
+    }
+
+    private lookupDefaultSerializerForArray(obj: Array<any>): Serializer | null {
+        if (obj.length === 0) {
+            return this.findSerializerByType(this.typeKeyForDefaultNumberType, true);
+        }
+        const firstElement = obj[0];
+        // First element can be anything. Check for null and undefined.
+        if (firstElement === null) {
+            return this.findSerializerByType(SerializationSymbols.NULL_SYMBOL, true);
+        } else if (firstElement === undefined) {
+            throw new RangeError('Array serialization type is determined using the first element. '
+                + 'The first element is undefined. Throwing an error because undefined cannot be'
+                + ' serialized in Hazelcast serialization.');
+        } else if (typeof firstElement === 'number') {
+            // Number needs special care because it can be serialized with one of many serializers.
+            return this.findSerializerByType(this.typeKeyForDefaultNumberType, true);
+        }
+        return this.findSerializerByType(obj[0].constructor, true);
     }
 
     private lookupCustomSerializer(obj: any): Serializer {
+        // Note: What about arrays of custom serializable objects?
         if (SerializationServiceV1.isCustomSerializable(obj)) {
+            // We can also use findSerializerByType with Symbol.for. It should not matter.
             return this.findSerializerById(obj.hzCustomId);
         }
         return null;
@@ -305,20 +338,19 @@ export class SerializationServiceV1 implements SerializationService {
     /**
      * Makes sure that the classes registered as Compact serializable are not
      * overriding the default serializers.
-     * 
-     * Must be called in the constructor of the child classes after they
-     * complete registering default serializers.
+     *
+     * Must be called in the constructor after completing registering default serializers.
      */
     private verifyDefaultSerializersNotOverriddenWithCompact(): void {
         const compactSerializers = this.serializationConfig.compact.serializers;
         for (const compact of compactSerializers) {
-            if (!this.classToSerializerMap.has(compact.getClass())) {
-                continue;
+            const clazz = compact.getClass();
+            if (this.typeKeyToSerializersMap.has(clazz) || clazz === Number) {
+                // From the config validation, we know clazz is a function, so we can use the name field of it.
+                throw new IllegalArgumentError(
+                    `Compact serializer for the class ${clazz.name} and typename ${compact.getTypeName()}`
+                  + ' can not be registered as it overrides a default serializer for that class provided by Hazelcast.');
             }
-            
-            throw new IllegalArgumentError(`Compact serializer for the class ${compact.getTypeName()} can not be 
-                registered as it overrides the default serializer for that class provided by Hazelcast.`);
-
         }
     }
 
@@ -331,27 +363,27 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     private registerDefaultSerializers(): void {
-        this.registerSerializer(String.prototype.constructor, new StringSerializer(), new StringArraySerializer());
-        this.registerSerializer(Number.prototype.constructor, new DoubleSerializer(), new DoubleArraySerializer());
+        this.registerSerializer(String, new StringSerializer(), new StringArraySerializer());
+        this.registerSerializer(SerializationSymbols.DOUBLE_SYMBOL, new DoubleSerializer(), new DoubleArraySerializer());
         this.registerSerializer(SerializationSymbols.BYTE_SYMBOL , new ByteSerializer(), new ByteArraySerializer());
-        this.registerSerializer(Boolean.prototype.constructor, new BooleanSerializer(), new BooleanArraySerializer());
+        this.registerSerializer(Boolean, new BooleanSerializer(), new BooleanArraySerializer());
         this.registerSerializer(SerializationSymbols.NULL_SYMBOL, new NullSerializer(), null);
         this.registerSerializer(SerializationSymbols.SHORT_SYMBOL, new ShortSerializer(), new ShortArraySerializer());
         this.registerSerializer(SerializationSymbols.INTEGER_SYMBOL, new IntegerSerializer(), new IntegerArraySerializer());
-        this.registerSerializer(Long.prototype.constructor, new LongSerializer(), new LongArraySerializer());
+        this.registerSerializer(Long, new LongSerializer(), new LongArraySerializer());
         this.registerSerializer(SerializationSymbols.FLOAT_SYMBOL, new FloatSerializer(), new FloatArraySerializer());
         this.registerSerializer(SerializationSymbols.CHAR_SYMBOL, new CharSerializer(), new CharArraySerializer());
-        this.registerSerializer(Date.prototype.constructor, new DateSerializer(), null);
-        this.registerSerializer(LocalDate.prototype.constructor, new LocalDateSerializer(), null);
-        this.registerSerializer(LocalTime.prototype.constructor, new LocalTimeSerializer(), null);
-        this.registerSerializer(LocalDateTime.prototype.constructor, new LocalDateTimeSerializer(), null);
-        this.registerSerializer(OffsetDateTime.prototype.constructor, new OffsetDateTimeSerializer(), null);
+        this.registerSerializer(Date, new DateSerializer(), null);
+        this.registerSerializer(LocalDate, new LocalDateSerializer(), null);
+        this.registerSerializer(LocalTime, new LocalTimeSerializer(), null);
+        this.registerSerializer(LocalDateTime, new LocalDateTimeSerializer(), null);
+        this.registerSerializer(OffsetDateTime, new OffsetDateTimeSerializer(), null);
         this.registerSerializer(SerializationSymbols.JAVACLASS_SYMBOL, new JavaClassSerializer(), null);
         this.registerSerializer(SerializationSymbols.ARRAYLIST_SYMBOL, new ArrayListSerializer(), null);
-        this.registerSerializer(SerializationSymbols.LINKLIST_SYMBOL, new LinkedListSerializer(), null);
-        this.registerSerializer(UUID.prototype.constructor, new UuidSerializer(), null);
-        this.registerSerializer(BigDecimal.prototype.constructor, new BigDecimalSerializer(), null);
-        this.registerSerializer(BigInt.prototype.constructor, new BigIntSerializer(), null);
+        this.registerSerializer(SerializationSymbols.LINKEDLIST_SYMBOL, new LinkedListSerializer(), null);
+        this.registerSerializer(UUID, new UuidSerializer(), null);
+        this.registerSerializer(BigDecimal, new BigDecimalSerializer(), null);
+        this.registerSerializer(BigInt, new BigIntSerializer(), null);
         this.registerSerializer(SerializationSymbols.JAVA_ARRAY_SYMBOL, new JavaArraySerializer(), null);
         this.registerSerializer(SerializationSymbols.COMPACT_SYMBOL, this.compactStreamSerializer, null);
         this.registerSerializer(SerializationSymbols.IDENTIFIED_SYMBOL, this.identifiedSerializer, null);
@@ -380,7 +412,7 @@ export class SerializationServiceV1 implements SerializationService {
     private registerCustomSerializers(): void {
         const customSerializers = this.serializationConfig.customSerializers;
         for (const customSerializer of customSerializers) {
-            this.registerSerializer(Symbol.for('!custom' + customSerializer.id), customSerializer);
+            this.registerSerializer(Symbol.for('!custom' + customSerializer.id), customSerializer, null);
         }
     }
 
@@ -396,7 +428,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (candidate == null) {
             return;
         }
-        this.registerSerializer(SerializationSymbols.GLOBAL_SYMBOL, candidate);
+        this.registerSerializer(SerializationSymbols.GLOBAL_SYMBOL, candidate, null);
     }
 
     private static isCustomSerializable(object: any): boolean {
@@ -404,21 +436,16 @@ export class SerializationServiceV1 implements SerializationService {
         return (typeof object[prop] === 'number' && object[prop] >= 1);
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-types    
-    private findSerializerByType(clazz: Function | Symbol, isArray: boolean): Serializer {
-        const clazzType = typeof clazz == 'symbol' ? clazz : 
-            (clazz.constructor === Buffer ? SerializationSymbols.BYTE_SYMBOL : clazz.constructor);
-        const isArraySerializer = (clazz.constructor == Buffer) ? true : isArray;
-        if (clazzType) {
-            const serializers = this.classToSerializerMap.get(clazzType);
-            if (serializers) {
-                if (isArraySerializer) {
-                    return serializers.length == 2 && serializers[1] ? serializers[1] : null;
-                }
-                return serializers[0];
-            }
+    private findSerializerByType(typeKey: TypeKey, isArray: boolean): Serializer | null {
+        if (typeKey === Buffer) {
+            typeKey = SerializationSymbols.BYTE_SYMBOL;
+            isArray = true;
         }
-        return null;
+        const serializers = this.typeKeyToSerializersMap.get(typeKey);
+        if (serializers === undefined) {
+            return null;
+        }
+        return isArray ? serializers[1] : serializers[0];
     }
 
     private findSerializerById(id: number): Serializer {

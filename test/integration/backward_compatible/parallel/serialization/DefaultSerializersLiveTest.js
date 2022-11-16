@@ -22,9 +22,23 @@ const { Lang } = require('../../../remote_controller/remote_controller_types');
 const { RestValue, UUID } = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');
 
+let map;
+const generateGet = (key) => {
+    return 'var StringArray = Java.type("java.lang.String[]");' +
+        'function foo() {' +
+        '   var map = instance_0.getMap("' + map.getName() + '");' +
+        '   var res = map.get("' + key + '");' +
+        '   if (res.getClass().isArray()) {' +
+        '       return Java.from(res);' +
+        '   } else {' +
+        '       return res;' +
+        '   }' +
+        '}' +
+        'result = ""+foo();';
+};
+
 describe('DefaultSerializersLiveTest', function () {
     let cluster, client;
-    let map;
 
     const testFactory = new TestUtil.TestFactory();
 
@@ -51,20 +65,6 @@ describe('DefaultSerializersLiveTest', function () {
         return response.result.toString();
     };
 
-    const generateGet = (key) => {
-        return 'var StringArray = Java.type("java.lang.String[]");' +
-            'function foo() {' +
-            '   var map = instance_0.getMap("' + map.getName() + '");' +
-            '   var res = map.get("' + key + '");' +
-            '   if (res.getClass().isArray()) {' +
-            '       return Java.from(res);' +
-            '   } else {' +
-            '       return res;' +
-            '   }' +
-            '}' +
-            'result = ""+foo();';
-    };
-
     it('string', async function () {
         await map.put('testStringKey', 'testStringValue');
         const response = await RC.executeOnController(cluster.id, generateGet('testStringKey'), Lang.JAVASCRIPT);
@@ -81,12 +81,6 @@ describe('DefaultSerializersLiveTest', function () {
         await map.put('a', 23);
         const response = await RC.executeOnController(cluster.id, generateGet('a'), 1);
         expect(Number.parseInt(response.result.toString())).to.equal(23);
-    });
-
-    it('array', async function () {
-        await map.put('a', ['a', 'v', 'vg']);
-        const response = await RC.executeOnController(cluster.id, generateGet('a'), Lang.JAVASCRIPT);
-        expect(response.result.toString()).to.equal(['a', 'v', 'vg'].toString());
     });
 
     it('buffer on client', async function () {
@@ -664,3 +658,50 @@ describe('DefaultSerializersLiveTest', function () {
         }
     });
 });
+
+describe('DefaultSerializersLiveTest Arrays', function () {
+    let cluster, client;
+
+    const testFactory = new TestUtil.TestFactory();
+
+    before(async function () {
+        cluster = await testFactory.createClusterForParallelTests();
+        const member = await RC.startMember(cluster.id);
+        client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            serialization: {
+                defaultNumberType: 'byte'
+            }
+        }, member);
+    });
+
+    beforeEach(async function() {
+        map = await client.getMap(TestUtil.randomString(10));
+    });
+
+    after(async function () {
+        await testFactory.shutdownAll();
+    });
+    it('should get same string values', async function () {
+        await map.put('a', ['a', 'v', 'vg']);
+        const response = await RC.executeOnController(cluster.id, generateGet('a'), Lang.JAVASCRIPT);
+        expect(response.result.toString()).to.equal(['a', 'v', 'vg'].toString());
+    });
+    it('should get values on byte range(-128, +127) when we set numbers out of bounds of byte', async function () {
+        const sampleNumbersArray = [2121, 12121, 547879785, 0, 1, -1, -2121, -12121, -547879785];
+        const expectedReturn =
+            [(2121%128), (12121%128), (547879785%128), (0%128), (1%128), (-1%128), (-2121%128), (-12121%128), (-547879785%128)];
+        const nums = Buffer.from(sampleNumbersArray);
+        await map.put('a', nums);
+        const response = await RC.executeOnController(cluster.id, generateGet('a'), Lang.JAVASCRIPT);
+        expect(response.result.toString()).to.equal(expectedReturn.toString());
+    });
+    it('should get same byte values', async function () {
+        const sampleNumbersArray = [12, 13, 14];
+        const nums = Buffer.from(sampleNumbersArray);
+        await map.put('a', nums);
+        const response = await RC.executeOnController(cluster.id, generateGet('a'), Lang.JAVASCRIPT);
+        expect(response.result.toString()).to.equal([12, 13, 14].toString());
+    });
+});
+

@@ -241,8 +241,8 @@ export interface CompactWriter {
     /**
      * Writes an array of nested compact objects.
      *
-     * For compact objects, it is not allowed write an array containing different item
-     * types or a {@link HazelcastSerializationError} will be thrown.
+     * For compact objects, if an array contains different item types or undefined 
+     * a {@link HazelcastSerializationError} will be thrown.
      * 
      * @param fieldName name of the field.
      * @param value     to be written.

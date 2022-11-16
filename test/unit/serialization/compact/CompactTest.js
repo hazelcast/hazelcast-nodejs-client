@@ -37,11 +37,11 @@ const {
     NamedDTOSerializer,
     NodeDTOSerializer,
     NodeDTO,
-    DefaultObjectSampleClassSerializer,
+    DefaultSerializerOverridingSerializer,
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const Long = require('long');
 const { CompactGenericRecordImpl } = require('../../../../lib/serialization/generic_record/CompactGenericRecord');
-const { GenericRecords, HazelcastSerializationError, IllegalArgumentError} = require('../../../../lib');
+const { GenericRecords, HazelcastSerializationError, IllegalArgumentError } = require('../../../../lib');
 const { Fields } = require('../../../../lib/serialization/generic_record');
 const TestUtil = require('../../../TestUtil');
 
@@ -264,10 +264,10 @@ describe('CompactTest', function () {
         error.message.includes('No serializer is registered for class/constructor').should.be.true;
     });
 
-    it('should throw proper error when overridding the default serializer(String class)', async function() {
+    it('should throw proper error when overriding the string serializer(String class)', async function() {
         const error = await TestUtil.getRejectionReasonOrThrow(async () => {
             createSerializationService(
-                [ new DefaultObjectSampleClassSerializer() ]
+                [ new DefaultSerializerOverridingSerializer() ]
             );
         });
         error.should.be.instanceOf(IllegalArgumentError);

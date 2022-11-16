@@ -22,10 +22,11 @@ export class SerializationSymbols {
     static readonly SHORT_SYMBOL = Symbol();
     static readonly INTEGER_SYMBOL = Symbol();
     static readonly FLOAT_SYMBOL = Symbol();
+    static readonly DOUBLE_SYMBOL = Symbol();
     static readonly CHAR_SYMBOL = Symbol();
     static readonly JAVACLASS_SYMBOL = Symbol();
     static readonly ARRAYLIST_SYMBOL = Symbol();
-    static readonly LINKLIST_SYMBOL = Symbol();
+    static readonly LINKEDLIST_SYMBOL = Symbol();
     static readonly JAVA_ARRAY_SYMBOL = Symbol();
     static readonly COMPACT_SYMBOL = Symbol();
     static readonly IDENTIFIED_SYMBOL = Symbol();
