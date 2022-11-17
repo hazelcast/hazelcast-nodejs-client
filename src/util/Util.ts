@@ -18,9 +18,10 @@
 import * as assert from 'assert';
 import * as Long from 'long';
 import * as Path from 'path';
-import {BigDecimal, IllegalStateError, LocalDate, LocalDateTime, LocalTime, MemberImpl, OffsetDateTime, UUID} from '../core';
+import {IllegalStateError, MemberImpl} from '../core';
 import {MemberVersion} from '../core/MemberVersion';
 import {BuildInfo} from '../BuildInfo';
+import {SerializationSymbols} from '../serialization/SerializationSymbols';
 
 /** @internal */
 export function assertNotNull(v: any): void {
@@ -63,34 +64,6 @@ export function shuffleArray<T>(array: T[]): void {
         temp = array[i - 1];
         array[i - 1] = array[randomIndex];
         array[randomIndex] = temp;
-    }
-}
-
-/** @internal */
-export function getType(obj: any): string {
-    if (Long.isLong(obj)) {
-        return 'long';
-    } else if (Buffer.isBuffer(obj)) {
-        return 'buffer';
-    } else if (UUID.isUUID(obj)) {
-        return 'uuid';
-    } else if (obj instanceof LocalDate) {
-        return 'localDate';
-    } else if (obj instanceof LocalTime) {
-        return 'localTime';
-    } else if (obj instanceof LocalDateTime) {
-        return 'localDateTime';
-    } else if (obj instanceof OffsetDateTime) {
-        return 'offsetDateTime';
-    } else if (obj instanceof BigDecimal) {
-        return 'bigDecimal';
-    } else {
-        const t = typeof obj;
-        if (t !== 'object') {
-            return t;
-        } else {
-            return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
-        }
     }
 }
 
@@ -141,6 +114,28 @@ export function tryGetString(val: any): string {
         return val;
     } else {
         throw new RangeError(val + ' is not a string.');
+    }
+}
+
+/** @internal */
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function getTypeKeyForDefaultNumberType(defaultNumberType: string): Function | Symbol {
+    switch (defaultNumberType) {
+        case 'byte':
+            return SerializationSymbols.BYTE_SYMBOL;
+        case 'short':
+            return SerializationSymbols.SHORT_SYMBOL;
+        case 'integer':
+            return SerializationSymbols.INTEGER_SYMBOL;
+        case 'float':
+            return SerializationSymbols.FLOAT_SYMBOL;
+        case 'double':
+            return SerializationSymbols.DOUBLE_SYMBOL;
+        case 'long':
+            return Long;
+        default:
+            throw new RangeError(`Unexpected defaultNumberType value. (${defaultNumberType}) 
+                Expected values: byte, short, integer, float, double, long`);
     }
 }
 

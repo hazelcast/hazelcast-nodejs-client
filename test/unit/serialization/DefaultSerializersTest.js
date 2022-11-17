@@ -15,10 +15,16 @@
  */
 'use strict';
 
-const { expect } = require('chai');
+const { expect, assert } = require('chai');
 const Long = require('long');
 const { SerializationServiceV1 } = require('../../../lib/serialization/SerializationService');
 const { SerializationConfigImpl } = require('../../../lib/config/SerializationConfig');
+const {
+    DoubleArraySerializer,
+    ByteArraySerializer,
+    JsonSerializer,
+    IntegerArraySerializer
+} = require('../../../src/serialization/DefaultSerializers');
 const {
     Predicates,
     RestValue,
@@ -29,6 +35,7 @@ const {
     LocalDate,
     BigDecimal
 } = require('../../../');
+const TestUtil = require('../../../test/TestUtil');
 
 describe('DefaultSerializersTest', function () {
     const restValue = new RestValue();
@@ -138,3 +145,68 @@ describe('DefaultSerializersTest', function () {
         });
     });
 });
+
+describe('DefaultSerializersTest For Arrays', function () {
+    it('should throw error when array first element is undefined', function () {
+        const undefinedArray = [undefined, 'foo', 'bar'];
+        const config = new SerializationConfigImpl();
+        const serializationService = new SerializationServiceV1(config);
+        expect(() => serializationService.toData(undefinedArray)).to.throw(RangeError, 'The first element is undefined');
+    });
+
+    it('should use DefaultNumberTypeArray (DoubleArraySerializer) serializer for empty array', function () {
+        const emptyArray = [];
+        const config = new SerializationConfigImpl();
+        const serializationService = new SerializationServiceV1(config);
+        const returnValue = serializationService.toData(emptyArray);
+        assert.equal(returnValue.getType(), new DoubleArraySerializer().id);
+    });
+
+    it('should use DefaultNumberTypeArray (DoubleArraySerializer) serializer for numbers array', function () {
+        const numbersArray = [189, 255];
+        const config = new SerializationConfigImpl();
+        const serializationService = new SerializationServiceV1(config);
+        const returnValue = serializationService.toData(numbersArray);
+        assert.equal(returnValue.getType(), new DoubleArraySerializer().id);
+    });
+
+    it('should use IntegerArraySerializer for numbers array when I set defaultNumberType to integer', function () {
+        const numbersArray = [189, 255];
+        const config = new SerializationConfigImpl();
+        config.defaultNumberType = 'integer';
+        const serializationService = new SerializationServiceV1(config);
+        const returnValue = serializationService.toData(numbersArray);
+        assert.equal(returnValue.getType(), new IntegerArraySerializer().id);
+    });
+
+    it('should use ByteArraySerializer for numbers array when I set defaultNumberType to byte', function () {
+        const sampleNumbersArray = [12, 18];
+        const nums = Buffer.from(sampleNumbersArray);
+        const config = new SerializationConfigImpl();
+        config.defaultNumberType = 'byte';
+        const serializationService = new SerializationServiceV1(config);
+        const returnValue = serializationService.toData(nums);
+        assert.equal(returnValue.getType(), new ByteArraySerializer().id);
+    });
+
+    it('should use JsonSerializer when the first element of array is null, NullArraySerializer is not defined', function () {
+        const firstElementNullArray = [null, 18];
+        const config = new SerializationConfigImpl();
+        config.defaultNumberType = 'byte';
+        const serializationService = new SerializationServiceV1(config);
+        const returnValue = serializationService.toData(firstElementNullArray);
+        assert.equal(returnValue.getType(), new JsonSerializer().id);
+    });
+
+    it('should throw range error when defaultNumberType is set to short and send values out of bounds.', async function () {
+        const outOfBoundsShortArray = [-32769, 32768];
+        const config = new SerializationConfigImpl();
+        config.defaultNumberType = 'short';
+        const serializationService = new SerializationServiceV1(config);
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            await serializationService.toData(outOfBoundsShortArray);
+        });
+        error.message.includes('-32768').should.be.true;
+    });
+});
+

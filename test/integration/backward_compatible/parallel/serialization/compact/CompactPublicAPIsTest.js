@@ -168,7 +168,7 @@ describe('CompactPublicAPIsTest', function () {
     let clientConfig;
     let skipped = false;
 
-    const CLUSTER_CONFIG_XML = `
+    let CLUSTER_CONFIG_XML = `
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/config
@@ -177,7 +177,7 @@ describe('CompactPublicAPIsTest', function () {
                 <port>0</port>
             </network>
             <serialization>
-                <compact-serialization enabled="true"/>
+                <compact-serialization/>
             </serialization>
         </hazelcast>
     `;
@@ -199,6 +199,10 @@ describe('CompactPublicAPIsTest', function () {
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
             skipped = true;
             this.skip();
+        }
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) < 0) {
+            CLUSTER_CONFIG_XML = CLUSTER_CONFIG_XML
+            .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
         }
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG_XML);
         member = await RC.startMember(cluster.id);
