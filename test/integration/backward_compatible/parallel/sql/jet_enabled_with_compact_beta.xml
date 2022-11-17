@@ -22,10 +22,13 @@
         <port>0</port>
     </network>
     <serialization>
-        <compact-serialization>
-            <serializers>
-                <serializer>example.serialization.EmployeeDTOSerializer</serializer>
-            </serializers>
+        <compact-serialization enabled="true">
+            <registered-classes>
+                <class type-name="example.serialization.EmployeeDTO"
+                    serializer="example.serialization.EmployeeDTOSerializer">
+                    example.serialization.EmployeeDTOSerializer
+                </class>
+            </registered-classes>
         </compact-serialization>
     </serialization>
 </hazelcast>

@@ -202,7 +202,9 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeArrayOfCompact<T>(fieldName: string, value: (T | null)[] | null): void {
+        const singleTypeCompactArrayItemChecker = new SingleTypeCompactArrayItemChecker();
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
+            singleTypeCompactArrayItemChecker.check(value);
             return this.serializer.writeObject(out, value);
         });
     }
@@ -298,7 +300,9 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     writeArrayOfGenericRecord(fieldName: string, value: GenericRecord[]) : void {
+        const singleSchemaCompactArrayItemChecker = new SingleSchemaCompactArrayItemChecker();
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
+            singleSchemaCompactArrayItemChecker.check(value);
             return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl);
         });
     }
@@ -422,6 +426,60 @@ export class DefaultCompactWriter implements CompactWriter {
                 out.pwriteBooleanBit(position, index, boolean);
                 index++;
             }
+        }
+    }
+}
+
+/**
+ * Checks that the Compact serializable array items that are written are of
+ * a single type.
+ */
+export class SingleTypeCompactArrayItemChecker<T> {
+    
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    private clazz: Function;
+    
+    public check(value: T): void {
+        if (value === undefined) {
+            throw new HazelcastSerializationError('The value undefined can not be used in an Array of Compact value.');
+        }
+        if (value.constructor === undefined) {
+            throw new HazelcastSerializationError('While checking if all elements in a compact array are of same type, ' 
+            + 'encountered with a value with undefined contructor. Can not continue with single type checking.');
+        }
+        const clazzType = value.constructor;
+        if (this.clazz == null) {
+            this.clazz = clazzType;
+        }
+        if (this.clazz !== clazzType) {
+            throw new HazelcastSerializationError('It is not allowed to '
+                    + 'serialize an array of Compact serializable objects '
+                    + 'containing different item types. Expected array item '
+                    + 'type: ' + this.clazz.name + ', current item type: ' + clazzType.name);
+        }
+    }
+}
+/**
+ * Checks that the Compact serializable GenericRecord array items that are
+ * written are of a single schema.
+ */
+export class SingleSchemaCompactArrayItemChecker {
+
+    private schema: Schema;
+
+    public check(value: GenericRecord): void {
+        const record: CompactGenericRecordImpl = value as CompactGenericRecordImpl;
+        const schema = record.getSchema();
+        if (this.schema == null) {
+            this.schema = schema;
+        }
+        
+        if (!this.schema.schemaId.equals(schema.schemaId)) {
+            throw new HazelcastSerializationError('It is not allowed to '
+                    + 'serialize an array of Compact serializable '
+                    + 'GenericRecord objects containing different schemas. '
+                    + 'Expected array item schema: ' + this.schema 
+                    + ', current schema: ' + schema);
         }
     }
 }
