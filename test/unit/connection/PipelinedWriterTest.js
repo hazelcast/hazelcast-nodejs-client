@@ -20,6 +20,8 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 
 const { PipelinedWriter } = require('../../../lib/network/Connection');
+const { IOError } = require('../../../lib/core/HazelcastError');
+const TestUtil = require('../../TestUtil');
 const {
     ClientMessage,
     Frame
@@ -199,16 +201,17 @@ describe('PipelinedWriterTest', function () {
         Promise.all([resolver1.promise, resolver2.promise]).then(() => done());
     });
 
-    it('rejects single promise on write failure', function(done) {
+    it('rejects single promise on write failure', async function() {
         const err = new Error();
         setUpWriteFailure(err);
 
         const resolver = deferredPromise();
         writer.write(createMessageFromString('test'), resolver);
-        resolver.promise.catch((err) => {
-            expect(err).to.be.equal(err);
-            done();
+        const rejReason = await TestUtil.getRejectionReasonOrThrow(async () => {
+            await resolver.promise;
         });
+        expect(rejReason.cause).to.be.equal(err);
+        expect(rejReason).to.be.instanceOf(IOError);
     });
 
     it('rejects multiple promises on write failure', function(done) {

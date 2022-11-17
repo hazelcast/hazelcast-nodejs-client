@@ -96,7 +96,8 @@ export class PipelinedWriter extends Writer {
         this.closeReason = this.makeIOError(closeReason);
         this.closed = true;
         this.canWrite = false;
-        this.socket.destroy(closeReason);
+        // If we pass a error to destroy, an unhandled error will be thrown because we don't handle the error event
+        this.socket.destroy();
         // no more items can be added now
         this.queue = FROZEN_ARRAY;
     }
