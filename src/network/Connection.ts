@@ -93,11 +93,10 @@ export class PipelinedWriter extends Writer {
         if (this.closed) {
             return;
         }
-        this.closeReason = new IOError(closeReason.message);
+        this.closeReason = this.makeIOError(closeReason);
         this.closed = true;
         this.canWrite = false;
         this.socket.destroy(closeReason);
-        this.rejectOngoingRequests(closeReason);
         // no more items can be added now
         this.queue = FROZEN_ARRAY;
     }
@@ -153,7 +152,7 @@ export class PipelinedWriter extends Writer {
         // write to the socket: no further writes until flushed
         this.canWrite = this.socket.write(buf, (err: Error) => {
             if (err) {
-                this.close(err);
+                this.handleError(err, writeBatch);
                 return;
             }
 
@@ -172,11 +171,22 @@ export class PipelinedWriter extends Writer {
         });
     }
 
-    private rejectOngoingRequests(err: Error): void {
-        const error = new IOError('Socket error', err);
+    private handleError(err: Error, sentResolvers: OutputQueueItem[]): void {
+        const error = this.makeIOError(err);
+        for (const item of sentResolvers) {
+            item.resolver.reject(error);
+        }
         for (const item of this.queue) {
             item.resolver.reject(error);
         }
+        this.close(error);
+    }
+
+    private makeIOError(err: Error): IOError {
+        if (err instanceof IOError) {
+            return err;
+        }
+        return new IOError(err.message, err);
     }
 }
 
