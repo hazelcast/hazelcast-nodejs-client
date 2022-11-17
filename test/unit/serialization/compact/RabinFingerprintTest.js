@@ -86,6 +86,6 @@ describe('RabinFingerprintTest', function () {
         writer.writeInt8('age', 0);
         writer.writeArrayOfTimestamp('times', []);
         const schema = writer.build();
-        schema.schemaId.eq(Long.fromString('-5445839760245891300')).should.be.true;
+        schema.schemaId.eq(Long.fromString('3662264393229655598')).should.be.true;
     });
 });
