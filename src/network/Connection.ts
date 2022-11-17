@@ -96,7 +96,8 @@ export class PipelinedWriter extends Writer {
         this.closeReason = this.makeIOError(closeReason);
         this.closed = true;
         this.canWrite = false;
-        // If we pass a error to destroy, an unhandled error will be thrown because we don't handle the error event
+        // If we pass an error to destroy, an unhandled error will be thrown because we don't handle the error event
+        // So we don't pass anything to the socket. It is internal anyway.
         this.socket.destroy();
         // no more items can be added now
         this.queue = FROZEN_ARRAY;
@@ -215,7 +216,7 @@ export class DirectWriter extends Writer {
     }
 
     close(): void {
-        // no-op
+        this.socket.destroy();
     }
 }
 
