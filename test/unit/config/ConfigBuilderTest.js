@@ -619,7 +619,7 @@ describe('ConfigBuilderValidationTest', function () {
     describe('serialization', function () {
         it('should validate defaultNumberType values', function () {
             const invalidDefaultNumberTypesArray = [
-                'İnteger', 'byta', 'shot', 'aa', 'bb', 'flot', 'lang'
+                'İnteger', 'byta', 'shot', 'aa', 'bb', 'flot', 'lang', null, undefined, Symbol(), {}, () => {}, [], 1, BigInt(121)
             ];
 
             for (const invalidDefaultNumberType of invalidDefaultNumberTypesArray) {
@@ -627,19 +627,7 @@ describe('ConfigBuilderValidationTest', function () {
                     serialization: {
                         defaultNumberType: invalidDefaultNumberType
                     }
-                }).build()).to.throw(InvalidConfigurationError, 'defaultNumberType');
-            }
-
-            const notStringDefaultNumberTypesArray = [
-                null, undefined, Symbol(), {}, () => {}, [], 1, BigInt(121)
-            ];
-
-            for (const invalidDefaultNumberType of notStringDefaultNumberTypesArray) {
-                expect(() => new ConfigBuilder({
-                    serialization: {
-                        defaultNumberType: invalidDefaultNumberType
-                    }
-                }).build()).to.throw(InvalidConfigurationError, 'Config validation error');
+                }).build()).to.throw(InvalidConfigurationError);
             }
 
             const validDefaultNumberTypesArray = [

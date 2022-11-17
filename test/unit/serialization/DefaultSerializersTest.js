@@ -206,7 +206,7 @@ describe('DefaultSerializersTest For Arrays', function () {
         const error = await TestUtil.getRejectionReasonOrThrow(async () => {
             await serializationService.toData(outOfBoundsShortArray);
         });
-        error.message.includes('The value of "value" is out of range. It must be >= -32768 and <= 32767.').should.be.true;
+        error.message.includes('-32768').should.be.true;
     });
 });
 
