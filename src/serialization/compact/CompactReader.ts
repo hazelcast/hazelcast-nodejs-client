@@ -27,7 +27,6 @@ import {FieldKind} from '../generic_record';
  * might be especially useful if the class might evolve in future, either by adding or
  * removing fields.
  *
- * This API is currently in Beta and can change at any time.
  */
 export interface CompactReader {
     /**

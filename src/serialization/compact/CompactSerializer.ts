@@ -26,7 +26,6 @@ import {CompactWriter} from './CompactWriter';
  *
  * {@link write} and {@link read} methods must be consistent with each other.
  *
- * This API is currently in Beta and can change at any time.
  */
 export interface CompactSerializer<C> {
     /**
