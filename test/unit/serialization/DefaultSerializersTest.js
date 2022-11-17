@@ -35,6 +35,7 @@ const {
     LocalDate,
     BigDecimal
 } = require('../../../');
+const TestUtil = require('../../../test/TestUtil');
 
 describe('DefaultSerializersTest', function () {
     const restValue = new RestValue();
@@ -152,6 +153,7 @@ describe('DefaultSerializersTest For Arrays', function () {
         const serializationService = new SerializationServiceV1(config);
         expect(() => serializationService.toData(undefinedArray)).to.throw(RangeError, 'The first element is undefined');
     });
+
     it('should use DefaultNumberTypeArray (DoubleArraySerializer) serializer for empty array', function () {
         const emptyArray = [];
         const config = new SerializationConfigImpl();
@@ -159,6 +161,7 @@ describe('DefaultSerializersTest For Arrays', function () {
         const returnValue = serializationService.toData(emptyArray);
         assert.equal(returnValue.getType(), new DoubleArraySerializer().id);
     });
+
     it('should use DefaultNumberTypeArray (DoubleArraySerializer) serializer for numbers array', function () {
         const numbersArray = [189, 255];
         const config = new SerializationConfigImpl();
@@ -166,6 +169,7 @@ describe('DefaultSerializersTest For Arrays', function () {
         const returnValue = serializationService.toData(numbersArray);
         assert.equal(returnValue.getType(), new DoubleArraySerializer().id);
     });
+
     it('should use IntegerArraySerializer for numbers array when I set defaultNumberType to integer', function () {
         const numbersArray = [189, 255];
         const config = new SerializationConfigImpl();
@@ -174,6 +178,7 @@ describe('DefaultSerializersTest For Arrays', function () {
         const returnValue = serializationService.toData(numbersArray);
         assert.equal(returnValue.getType(), new IntegerArraySerializer().id);
     });
+
     it('should use ByteArraySerializer for numbers array when I set defaultNumberType to byte', function () {
         const sampleNumbersArray = [12, 18];
         const nums = Buffer.from(sampleNumbersArray);
@@ -183,6 +188,7 @@ describe('DefaultSerializersTest For Arrays', function () {
         const returnValue = serializationService.toData(nums);
         assert.equal(returnValue.getType(), new ByteArraySerializer().id);
     });
+
     it('should use JsonSerializer when the first element of array is null, NullArraySerializer is not defined', function () {
         const firstElementNullArray = [null, 18];
         const config = new SerializationConfigImpl();
@@ -190,6 +196,17 @@ describe('DefaultSerializersTest For Arrays', function () {
         const serializationService = new SerializationServiceV1(config);
         const returnValue = serializationService.toData(firstElementNullArray);
         assert.equal(returnValue.getType(), new JsonSerializer().id);
+    });
+
+    it('should throw range error when defaultNumberType is set to short and send values out of bounds.', async function () {
+        const outOfBoundsShortArray = [-32769, 32768];
+        const config = new SerializationConfigImpl();
+        config.defaultNumberType = 'short';
+        const serializationService = new SerializationServiceV1(config);
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            await serializationService.toData(outOfBoundsShortArray);
+        });
+        error.message.includes('The value of "value" is out of range. It must be >= -32768 and <= 32767.').should.be.true;
     });
 });
 

@@ -630,6 +630,18 @@ describe('ConfigBuilderValidationTest', function () {
                 }).build()).to.throw(InvalidConfigurationError, 'defaultNumberType');
             }
 
+            const notStringDefaultNumberTypesArray = [
+                null, undefined, Symbol(), {}, () => {}, [], 1, BigInt(121)
+            ];
+
+            for (const invalidDefaultNumberType of notStringDefaultNumberTypesArray) {
+                expect(() => new ConfigBuilder({
+                    serialization: {
+                        defaultNumberType: invalidDefaultNumberType
+                    }
+                }).build()).to.throw(InvalidConfigurationError, 'Config validation error');
+            }
+
             const validDefaultNumberTypesArray = [
                 'integer', 'Integer', 'bytE', 'shoRt', 'DoUble', 'floaT', 'loNG', 'long'
             ];

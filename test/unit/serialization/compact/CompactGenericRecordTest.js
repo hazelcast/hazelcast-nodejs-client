@@ -642,7 +642,7 @@ describe('CompactGenericRecordTest', function () {
                 error.should.be.instanceOf(HazelcastSerializationError);
                 error.message.includes('The value undefined can not be used in an Array of Compact value.').should.be.true;
             });
-            it('should throw error if one of the object is undefined on ARRAY_OF_COMPACT2', async function () {
+            it('should throw error if one of the object\'s constructor is undefined on ARRAY_OF_COMPACT', async function () {
                 const {serializationService, schemaService} = createSerializationService(
                     [new ArrayOfCompactSerializer(), new SampleObject1Serializer(), new SampleObject2Serializer()]
                 );

@@ -140,7 +140,7 @@ if (TestUtil.isClientVersionAtLeast('5.1.0')) {
         }
 
         getTypeName() {
-            return 'DefaultObjectSampleClass';
+            return TestUtil.randomString();
         }
 
         read() {
