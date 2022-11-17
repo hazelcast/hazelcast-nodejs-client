@@ -41,7 +41,7 @@ abstract class Writer extends EventEmitter {
 
     abstract write(message: ClientMessage, resolver: DeferredPromise<void>): void;
 
-    abstract close(): void;
+    abstract close(cause?: Error): void;
 
 }
 
@@ -57,9 +57,10 @@ interface OutputQueueItem {
 export class PipelinedWriter extends Writer {
 
     private queue: OutputQueueItem[] = [];
-    private error: Error;
     private scheduled = false;
     private canWrite = true;
+    private closed = false;
+    private closeReason: Error;
     // reusable buffer for coalescing
     private readonly coalesceBuf: Buffer;
 
@@ -80,16 +81,23 @@ export class PipelinedWriter extends Writer {
     }
 
     write(message: ClientMessage, resolver: DeferredPromise<void>): void {
-        if (this.error) {
-            // if there was a write error, it's useless to keep writing to the socket
-            return process.nextTick(() => resolver.reject(this.error));
+        if (this.closed) {
+            // if the socket is closed, it's useless to keep writing to the socket
+            return process.nextTick(() => resolver.reject(this.closeReason));
         }
         this.queue.push({ message, resolver });
         this.schedule();
     }
 
-    close(): void {
+    close(closeReason?: Error): void {
+        if (this.closed) {
+            return;
+        }
+        this.closeReason = new IOError(closeReason.message);
+        this.closed = true;
         this.canWrite = false;
+        this.socket.destroy(closeReason);
+        this.rejectOngoingRequests(closeReason);
         // no more items can be added now
         this.queue = FROZEN_ARRAY;
     }
@@ -103,7 +111,7 @@ export class PipelinedWriter extends Writer {
     }
 
     private process(): void {
-        if (this.error) {
+        if (this.closed) {
             return;
         }
 
@@ -145,7 +153,7 @@ export class PipelinedWriter extends Writer {
         // write to the socket: no further writes until flushed
         this.canWrite = this.socket.write(buf, (err: Error) => {
             if (err) {
-                this.handleError(err, writeBatch);
+                this.close(err);
                 return;
             }
 
@@ -164,15 +172,11 @@ export class PipelinedWriter extends Writer {
         });
     }
 
-    private handleError(err: any, sentResolvers: OutputQueueItem[]): void {
-        this.error = new IOError(err);
-        for (const item of sentResolvers) {
-            item.resolver.reject(this.error);
-        }
+    private rejectOngoingRequests(err: Error): void {
+        const error = new IOError('Socket error', err);
         for (const item of this.queue) {
-            item.resolver.reject(this.error);
+            item.resolver.reject(error);
         }
-        this.close();
     }
 }
 
@@ -422,8 +426,7 @@ export class Connection {
 
         this.logClose();
 
-        this.writer.close();
-        this.socket.end();
+        this.writer.close(cause);
 
         this.connectionManager.onConnectionClose(this);
     }
