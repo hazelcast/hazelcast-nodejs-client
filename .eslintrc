@@ -112,6 +112,7 @@
                 "plugin:mocha/recommended"
             ],
             "rules": {
+                "mocha/no-skipped-tests": "off",
                 "mocha/no-hooks-for-single-case": "off",
                 "mocha/no-setup-in-describe": "off",
                 "camelcase": "off",
