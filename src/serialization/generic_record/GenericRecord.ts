@@ -27,7 +27,6 @@ import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '.
  *
  * GenericRecords is only supported for Compact serializable objects.
  *
- * This API is currently in Beta and can change at any time.
  */
 export interface GenericRecord {
     /**

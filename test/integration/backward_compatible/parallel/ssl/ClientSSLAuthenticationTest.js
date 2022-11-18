@@ -26,7 +26,7 @@ const RC = require('../../../RC');
 const { IllegalStateError } = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');
 
-describe('ClientSSLAuthenticationTest', function () {
+describe.skip('ClientSSLAuthenticationTest', function () {
     let cluster;
 
     const maRequiredXML = __dirname + '/hazelcast-ma-required.xml';

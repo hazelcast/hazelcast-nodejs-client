@@ -22,10 +22,23 @@ const { Lang } = require('../../../remote_controller/remote_controller_types');
 const { RestValue, UUID } = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');
 
+const generateGet = (key, mapName) => {
+    return 'var StringArray = Java.type("java.lang.String[]");' +
+        'function foo() {' +
+        '   var map = instance_0.getMap("' + mapName + '");' +
+        '   var res = map.get("' + key + '");' +
+        '   if (res.getClass().isArray()) {' +
+        '       return Java.from(res);' +
+        '   } else {' +
+        '       return res;' +
+        '   }' +
+        '}' +
+        'result = ""+foo();';
+};
+
 describe('DefaultSerializersLiveTest', function () {
     let cluster, client;
     let map;
-
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
@@ -51,49 +64,22 @@ describe('DefaultSerializersLiveTest', function () {
         return response.result.toString();
     };
 
-    const generateGet = (key) => {
-        return 'var StringArray = Java.type("java.lang.String[]");' +
-            'function foo() {' +
-            '   var map = instance_0.getMap("' + map.getName() + '");' +
-            '   var res = map.get("' + key + '");' +
-            '   if (res.getClass().isArray()) {' +
-            '       return Java.from(res);' +
-            '   } else {' +
-            '       return res;' +
-            '   }' +
-            '}' +
-            'result = ""+foo();';
-    };
-
     it('string', async function () {
         await map.put('testStringKey', 'testStringValue');
-        const response = await RC.executeOnController(cluster.id, generateGet('testStringKey'), Lang.JAVASCRIPT);
+        const response = await RC.executeOnController(cluster.id, generateGet('testStringKey', map.getName()), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal('testStringValue');
     });
 
     it('utf8 sample string test', async function () {
         await map.put('key', 'Iñtërnâtiônàlizætiøn');
-        const response = await RC.executeOnController(cluster.id, generateGet('key'), Lang.JAVASCRIPT);
+        const response = await RC.executeOnController(cluster.id, generateGet('key', map.getName()), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal('Iñtërnâtiônàlizætiøn');
     });
 
     it('number', async function () {
         await map.put('a', 23);
-        const response = await RC.executeOnController(cluster.id, generateGet('a'), 1);
+        const response = await RC.executeOnController(cluster.id, generateGet('a', map.getName()), 1);
         expect(Number.parseInt(response.result.toString())).to.equal(23);
-    });
-
-    it('array', async function () {
-        await map.put('a', ['a', 'v', 'vg']);
-        const response = await RC.executeOnController(cluster.id, generateGet('a'), Lang.JAVASCRIPT);
-        expect(response.result.toString()).to.equal(['a', 'v', 'vg'].toString());
-    });
-
-    it('buffer on client', async function () {
-        await map.put('foo', Buffer.from('bar'));
-        const response = await map.get('foo');
-        expect(Buffer.isBuffer(response)).to.be.true;
-        expect(response.toString()).to.equal('bar');
     });
 
     it('emoji string test on client', async function () {
@@ -116,19 +102,19 @@ describe('DefaultSerializersLiveTest', function () {
 
     it('emoji string test on RC', async function () {
         await map.put('key', '1⚐中💦2😭‍🙆😔5');
-        const response = await RC.executeOnController(cluster.id, generateGet('key'), Lang.JAVASCRIPT);
+        const response = await RC.executeOnController(cluster.id, generateGet('key', map.getName()), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal('1⚐中💦2😭‍🙆😔5');
     });
 
     it('utf8 characters test on RC', async function () {
         await map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
-        const response = await RC.executeOnController(cluster.id, generateGet('key'), Lang.JAVASCRIPT);
+        const response = await RC.executeOnController(cluster.id, generateGet('key', map.getName()), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
     });
 
     it('utf8 characters test on RC with surrogates', async function () {
         await map.put('key', '\u0040\u0041\u01DF\u06A0\u12E0\uD834\uDF06');
-        const response = await RC.executeOnController(cluster.id, generateGet('key'), Lang.JAVASCRIPT);
+        const response = await RC.executeOnController(cluster.id, generateGet('key', map.getName()), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal('\u0040\u0041\u01DF\u06A0\u12E0\u{1D306}');
     });
 
@@ -165,30 +151,6 @@ describe('DefaultSerializersLiveTest', function () {
         const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
         const result = JSON.parse(response.result);
         expect(result).to.equal(uuid.toString());
-    });
-
-    it('should deserialize Java Array', async function () {
-        TestUtil.markClientVersionAtLeast(this, '5.1');
-        const script = `
-            var map = instance_0.getMap("${map.getName()}");
-            map.set("key", Java.to([1, 2, 3], "java.lang.Object[]"));
-        `;
-        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-
-        const actualValue = await map.get('key');
-        expect(actualValue).to.deep.equal([1, 2, 3]);
-    });
-
-    it('should deserialize empty Java Array', async function () {
-        TestUtil.markClientVersionAtLeast(this, '5.1');
-        const script = `
-            var map = instance_0.getMap("${map.getName()}");
-            map.set("key", Java.to([], "java.lang.Object[]"));
-        `;
-        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-
-        const actualValue = await map.get('key');
-        expect(actualValue).to.deep.equal([]);
     });
 
     it('should deserialize ArrayList', async function () {
@@ -664,3 +626,74 @@ describe('DefaultSerializersLiveTest', function () {
         }
     });
 });
+
+describe('DefaultSerializersLiveTest Arrays', function () {
+    let cluster, client;
+    let map;
+
+    const testFactory = new TestUtil.TestFactory();
+
+    before(async function () {
+        cluster = await testFactory.createClusterForParallelTests();
+        const member = await RC.startMember(cluster.id);
+        client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            serialization: {
+                defaultNumberType: 'short'
+            }
+        }, member);
+    });
+
+    beforeEach(async function() {
+        map = await client.getMap(TestUtil.randomString(10));
+    });
+
+    after(async function () {
+        await testFactory.shutdownAll();
+    });
+
+    it('should serialize string array correctly', async function () {
+        await map.put('a', ['a', 'v', 'vg']);
+        const response = await RC.executeOnController(cluster.id, generateGet('a', map.getName()), Lang.JAVASCRIPT);
+        expect(response.result.toString()).to.equal(['a', 'v', 'vg'].toString());
+    });
+
+    it('should serialize numbers as shorts when defaultNumberType is set to short', async function () {
+        const sampleNumbersArray = [-32768, 32767, 10000, 12121, 0, 1, -1, -2121, -12121, -10000];
+        await map.put('a', sampleNumbersArray);
+        const response = await RC.executeOnController(cluster.id, generateGet('a', map.getName()), Lang.JAVASCRIPT);
+        expect(response.result.toString()).to.equal(sampleNumbersArray.toString());
+    });
+
+    it('buffer on client', async function () {
+        await map.put('foo', Buffer.from('bar'));
+        const response = await map.get('foo');
+        expect(Buffer.isBuffer(response)).to.be.true;
+        expect(response.toString()).to.equal('bar');
+    });
+
+    it('should deserialize Java Array', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.1');
+        const script = `
+            var map = instance_0.getMap("${map.getName()}");
+            map.set("key", Java.to([1, 2, 3], "java.lang.Object[]"));
+        `;
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        const actualValue = await map.get('key');
+        expect(actualValue).to.deep.equal([1, 2, 3]);
+    });
+
+    it('should deserialize empty Java Array', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.1');
+        const script = `
+            var map = instance_0.getMap("${map.getName()}");
+            map.set("key", Java.to([], "java.lang.Object[]"));
+        `;
+        await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+
+        const actualValue = await map.get('key');
+        expect(actualValue).to.deep.equal([]);
+    });
+});
+
