@@ -41,7 +41,7 @@ abstract class Writer extends EventEmitter {
 
     abstract write(message: ClientMessage, resolver: DeferredPromise<void>): void;
 
-    abstract close(cause?: Error): void;
+    abstract close(cause: Error | null): void;
 
 }
 
@@ -60,7 +60,7 @@ export class PipelinedWriter extends Writer {
     private scheduled = false;
     private canWrite = true;
     private closed = false;
-    private closeReason: Error;
+    private closeCause: Error;
     // reusable buffer for coalescing
     private readonly coalesceBuf: Buffer;
 
@@ -83,17 +83,19 @@ export class PipelinedWriter extends Writer {
     write(message: ClientMessage, resolver: DeferredPromise<void>): void {
         if (this.closed) {
             // if the socket is closed, it's useless to keep writing to the socket
-            return process.nextTick(() => resolver.reject(this.closeReason));
+            return process.nextTick(() => resolver.reject(this.closeCause));
         }
         this.queue.push({ message, resolver });
         this.schedule();
     }
 
-    close(closeReason?: Error): void {
+    close(closeCause: Error | null): void {
         if (this.closed) {
             return;
         }
-        this.closeReason = this.makeIOError(closeReason);
+        if (closeCause) {
+            this.closeCause = this.makeIOError(closeCause);
+        }
         this.closed = true;
         this.canWrite = false;
         // If we pass an error to destroy, an unhandled error will be thrown because we don't handle the error event
@@ -427,7 +429,7 @@ export class Connection {
     /**
      * Closes this connection.
      */
-    close(reason: string, cause: Error): void {
+    close(reason: string | null, cause: Error | null): void {
         if (this.closedTime !== 0) {
             return;
         }
@@ -438,7 +440,7 @@ export class Connection {
 
         this.logClose();
 
-        this.writer.close(cause);
+        this.writer.close(this.closedCause ? this.closedCause : new Error(reason ? reason : 'Connection closed'));
 
         this.connectionManager.onConnectionClose(this);
     }
