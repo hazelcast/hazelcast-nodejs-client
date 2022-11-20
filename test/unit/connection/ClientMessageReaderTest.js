@@ -101,8 +101,7 @@ describe('ClientMessageReaderTest', function () {
     });
 });
 
-describe('PortedClientMessageReaderTestFromJava', function () {
-
+describe('ClientMessageReaderTest', function () {
     function createFrameWithRandomBytes(length) {
         const buffer = Buffer.allocUnsafe(length);
         for (let i = 0; i < length; i++) {
@@ -155,7 +154,6 @@ describe('PortedClientMessageReaderTestFromJava', function () {
 
         const messageRead = reader.read();
         expect(messageRead).to.be.not.equal(null);
-        expect(messageRead.hasNextFrame()).to.be.true;
         let frameRead = messageRead.nextFrame();
         expect(frameRead.content).to.deep.equal(frame1.content);
 
@@ -182,10 +180,11 @@ describe('PortedClientMessageReaderTestFromJava', function () {
         const secondPartition = buffer.slice(750);
 
         reader.append(firstPartition);
+        expect(reader.read()).to.be.null;
         reader.append(secondPartition);
 
         const messageRead = reader.read();
-        expect(messageRead.hasNextFrame()).to.be.true;
+        expect(messageRead.hasNextFrame()).to.be.null;
 
         const frameRead = messageRead.nextFrame();
         expect(frameRead.content).to.deep.equal(frame.content);
@@ -209,12 +208,13 @@ describe('PortedClientMessageReaderTestFromJava', function () {
         const thirdPartition = buffer.slice(1002);
 
         reader.append(firstPartition);
-        reader.read();
+        expect(reader.read()).to.be.null;
         reader.append(secondPartition);
-        reader.read();
+        expect(reader.read()).to.be.null;
         reader.append(thirdPartition);
 
         const messageRead = reader.read();
+        expect(messageRead).not.to.be.null;
         expect(messageRead.hasNextFrame()).to.be.true;
 
         const frameRead = messageRead.nextFrame();
@@ -237,11 +237,13 @@ describe('PortedClientMessageReaderTestFromJava', function () {
         reader.append(firstPartition);
         let messageRead = reader.read();
 
+        // should not be able to read with just 4 bytes of data
         expect(messageRead).to.be.null;
         const secondPartition = buffer.slice(4, buffer.length);
         reader.append(secondPartition);
 
         messageRead = reader.read();
+        // should be able to read when the rest of the data comes
         expect(messageRead).to.be.not.equal(null);
         expect(messageRead.hasNextFrame()).to.be.true;
 
