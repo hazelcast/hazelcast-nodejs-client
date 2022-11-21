@@ -23,8 +23,9 @@ import {ClientSendAllSchemasCodec} from '../../codec/ClientSendAllSchemasCodec';
 import {ClientFetchSchemaCodec} from '../../codec/ClientFetchSchemaCodec';
 import {ClientSendSchemaCodec} from '../../codec/ClientSendSchemaCodec';
 import { HazelcastSerializationError, IllegalStateError } from '../../core';
-import { HazelcastClient } from '../../HazelcastClient';
 import { delayedPromise } from '../../util/Util';
+import { ClientConfig } from '../../config';
+import { ClusterService } from '../../invocation/ClusterService';
 
 const INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
 const MAX_PUT_RETRY_COUNT = 'hazelcast.client.schema.max.put.retry.count';
@@ -40,15 +41,16 @@ export class SchemaService {
     schemas: Map<string, Schema>;
 
     constructor(
-        private readonly client: HazelcastClient,
+        clientConfig: ClientConfig,
+        // a getter is used because there is a cyclic dependency between ClusterService and SchemaService
+        private readonly getClusterService: () => ClusterService,
         // a getter is used because there is a cyclic dependency between InvocationService and SchemaService
         private readonly getInvocationService: () => InvocationService,
         private readonly logger: ILogger
     ) {
         this.schemas = new Map<string, Schema>();
-        this.retryPauseMillis = client.getConfig().properties[INVOCATION_RETRY_PAUSE_MILLIS] as number;
-        this.maxPutRetryCount = client.getConfig().properties[MAX_PUT_RETRY_COUNT] as number;
-
+        this.retryPauseMillis = clientConfig.properties[INVOCATION_RETRY_PAUSE_MILLIS] as number;
+        this.maxPutRetryCount = clientConfig.properties[MAX_PUT_RETRY_COUNT] as number;
     }
 
     /**
@@ -125,14 +127,14 @@ export class SchemaService {
         return this.getInvocationService().invokeUrgent(invocation).then(() => {});
     }
 
-    private async replicateSchemaInCluster(schema: Schema): Promise<boolean> {
+    async replicateSchemaInCluster(schema: Schema): Promise<boolean> {
         let clientMessage = ClientSendSchemaCodec.encodeRequest(schema);
         outer:
         for (let index = 0; index < this.maxPutRetryCount; index++) {
             const invocation = new Invocation(this.getInvocationService(), clientMessage);
             const response = await this.getInvocationService().invoke(invocation);
             const replicatedMemberUuids = ClientSendSchemaCodec.decodeResponse(response);
-            const members = this.client.getCluster().getMembers();
+            const members = this.getClusterService().getMembers();
             for (const member of members) {
                 if (!replicatedMemberUuids.has(member.uuid)) {
                     // There is a member in our member list that the schema
@@ -151,12 +153,12 @@ export class SchemaService {
             }
 
             // All members in our member list all known to have the schema
-            return true;
+            return Promise.resolve(true);
         }
 
         // We tried to send it a couple of times, but the member list in our
         // local and the member list returned by the initiator nodes did not
         // match.
-        return false;
+        return Promise.resolve(false);
     }
 }

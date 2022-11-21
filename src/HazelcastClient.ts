@@ -146,7 +146,12 @@ export class HazelcastClient {
         this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as string);
         const logger = this.loggingService.getLogger();
-        this.schemaService = new SchemaService(this, () => this.invocationService, logger);
+        this.schemaService = new SchemaService(
+            this.config, 
+            () => this.clusterService, 
+            () => this.invocationService, 
+            logger
+        );
         this.serializationService = new SerializationServiceV1(this.config.serialization, this.schemaService);
         this.instanceName = this.config.instanceName || 'hz.client_' + this.id;
         this.nearCacheManager = new NearCacheManager(

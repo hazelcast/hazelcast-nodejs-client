@@ -44,7 +44,7 @@ export class ClientSendSchemaCodec {
         return clientMessage;
     }
 
-    static encodeResponse( replicatedMembers: UUID[] ): ClientMessage {
+    static encodeResponse(replicatedMembers: UUID[]): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         clientMessage.addFrame(initialFrame);
@@ -53,7 +53,7 @@ export class ClientSendSchemaCodec {
         return clientMessage;
     }
 
-    static decodeResponse( clientMessage: ClientMessage ): Set<UUID> {
+    static decodeResponse(clientMessage: ClientMessage): Set<UUID> {
         return SetUUIDCodec.decode(clientMessage);
     }
 }
