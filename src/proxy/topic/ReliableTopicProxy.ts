@@ -17,7 +17,7 @@
 
 import * as Long from 'long';
 import {OverflowPolicy} from '../OverflowPolicy';
-import {AddressImpl, SchemaNotReplicatedError, TopicOverloadError} from '../../core';
+import {AddressImpl, HazelcastError, SchemaNotReplicatedError, TopicOverloadError} from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
 import {
@@ -31,7 +31,7 @@ import {ReliableTopicMessage} from './ReliableTopicMessage';
 import {ReliableTopicListenerRunner} from './ReliableTopicListenerRunner';
 import {MessageListener} from '../MessageListener';
 import {TopicOverloadPolicy} from '../TopicOverloadPolicy';
-import {ClientConfig, ClientConfigImpl} from '../../config/Config';
+import {ClientConfig, ClientConfigImpl} from '../../config';
 import {ClusterService} from '../../invocation/ClusterService';
 import {ILogger} from '../../logging';
 import {ProxyManager} from '../ProxyManager';
@@ -148,6 +148,29 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             default:
                 throw new RangeError('Unknown overload policy');
         }
+    }
+
+    publishAll(messages: any[]): Promise<void> {
+        const reliableTopicMessages: ReliableTopicMessage[] = [];
+        for (const message of messages) {
+            const reliableTopicMessage = new ReliableTopicMessage();
+            reliableTopicMessage.payload = this.serializationService.toData(message);
+            reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
+            reliableTopicMessage.publisherAddress = this.localAddress;
+            reliableTopicMessages.push(reliableTopicMessage);
+        }
+
+        return this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.FAIL);
+    }
+
+    addListener(listener: MessageListener<E>): Promise<string> {
+        throw new HazelcastError('This method is not supported for Reliable Topic.' +
+                                        ' Use addMessageListener instead.');
+    }
+
+    removeListener(listenerId: string): Promise<boolean> {
+        throw new HazelcastError('This method is not supported for Reliable Topic.' +
+                                        ' Use removeMessageListener instead.');
     }
 
     public getRingbuffer(): Ringbuffer<ReliableTopicMessage> {
