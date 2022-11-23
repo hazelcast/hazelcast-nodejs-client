@@ -24,7 +24,7 @@ const RC = require('../../../RC');
 const { IllegalStateError } = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');
 
-describe('ClientSSLTest', function () {
+describe.skip('ClientSSLTest', function () {
     let cluster;
     let client;
     let serverConfig;

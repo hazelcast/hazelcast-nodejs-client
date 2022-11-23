@@ -617,6 +617,31 @@ describe('ConfigBuilderValidationTest', function () {
     });
 
     describe('serialization', function () {
+        it('should validate defaultNumberType values', function () {
+            const invalidDefaultNumberTypesArray = [
+                'İnteger', 'byta', 'shot', 'aa', 'bb', 'flot', 'lang', null, undefined, Symbol(), {}, () => {}, [], 1, BigInt(121)
+            ];
+
+            for (const invalidDefaultNumberType of invalidDefaultNumberTypesArray) {
+                expect(() => new ConfigBuilder({
+                    serialization: {
+                        defaultNumberType: invalidDefaultNumberType
+                    }
+                }).build()).to.throw(InvalidConfigurationError);
+            }
+
+            const validDefaultNumberTypesArray = [
+                'integer', 'Integer', 'bytE', 'shoRt', 'DoUble', 'floaT', 'loNG', 'long'
+            ];
+            for (const validDefaultNumberType of validDefaultNumberTypesArray) {
+                expect(() => new ConfigBuilder({
+                    serialization: {
+                        defaultNumberType: validDefaultNumberType
+                    }
+                }).build()).not.to.throw();
+            }
+        });
+
         it('should validate portable and data serializable factories', function () {
             const invalidFactoriesArray = [
                 () => {}, 1, undefined, '1', { aaasd: () => {}}, { 1.1: () => {}, 2: () => {} }

@@ -20,13 +20,13 @@ const CompactUtil = require('../parallel/serialization/compact/CompactUtil');
 const RC = require('../../RC');
 const { Predicates } = require('../../../../lib');
 
-const COMPACT_ENABLED_ZERO_CONFIG_XML = `
+let COMPACT_ENABLED_ZERO_CONFIG_XML = `
     <hazelcast xmlns="http://www.hazelcast.com/schema/config"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.hazelcast.com/schema/config
         http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
         <serialization>
-            <compact-serialization enabled="true" />
+            <compact-serialization/>
         </serialization>
     </hazelcast>
 `;
@@ -47,12 +47,17 @@ describe('CompactRestartTest', function() {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
             this.skip();
         }
         // Compact serialization 5.2 server is not compatible with clients older than 5.2
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
+        if (comparisonValueForServerVersion520 >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
             this.skip();
+        }
+        if (comparisonValueForServerVersion520 < 0) {
+            COMPACT_ENABLED_ZERO_CONFIG_XML = COMPACT_ENABLED_ZERO_CONFIG_XML
+            .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
         }
         cluster = await testFactory.createClusterForSerialTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
         member = await RC.startMember(cluster.id);
