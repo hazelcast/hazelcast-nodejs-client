@@ -33,7 +33,7 @@ export class BigDecimal {
      * Unscaled value of this `BigDecimal`. This value is a native JavaScript BigInt object, which is used to store
      * digits of this BigDecimal.
      */
-    readonly unscaledValue: BigInt;
+    readonly unscaledValue: bigint;
 
     /**
      * Scale of this `BigDecimal`. If zero or positive, the scale
@@ -56,7 +56,7 @@ export class BigDecimal {
      * by ten to the power of the negation of the scale. For example,
      * a scale of `-3` means the unscaled value is multiplied by `1000`.
      */
-    constructor(unscaledValue: BigInt, scale: number) {
+    constructor(unscaledValue: bigint, scale: number) {
         this.unscaledValue = unscaledValue;
         this.scale = scale;
     }
@@ -177,7 +177,7 @@ export class BigDecimal {
         let len = value.length;
         let precision = 0; // The number of decimal digits in this BigDecimal
         let scale = 0; // record scale value
-        let unscaledValue: BigInt; // the unscaled value in BigInteger
+        let unscaledValue: bigint; // the unscaled value in BigInteger
 
         // handle the sign
         let isneg = false; // assume positive
@@ -278,7 +278,7 @@ export class BigDecimal {
      * @param val
      * @internal
      */
-    private static bigIntAbs(val: BigInt) {
+    private static bigIntAbs(val: bigint) {
         if (val < BigInt(0)) {
             return val.valueOf() * BigInt(-1);
         } else {

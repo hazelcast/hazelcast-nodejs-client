@@ -71,8 +71,8 @@ const getRC = () => {
 const startRC = async () => {
     console.log('Starting Hazelcast Remote Controller ... oss ...');
     if (ON_WINDOWS) {
-        const outFD = fs.openSync('rc_stdout.txt', 'w');
-        const errFD = fs.openSync('rc_stderr.txt', 'w');
+        const outFD = fs.openSync('rc_stdout.log', 'w');
+        const errFD = fs.openSync('rc_stderr.log', 'w');
         rcProcess = spawn('java', [
             `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
             '-cp',

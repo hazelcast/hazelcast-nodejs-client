@@ -153,7 +153,8 @@ class CompactReturningEntryProcessorSerializer {
 }
 
 /**
- * Tests all Public APIs if they can serialize compact objects.
+ * Tests all Public APIs if they can serialize compact objects and if they throw the errors right away other
+ * than the SchemaNotReplicatedError.
  */
 describe('CompactPublicAPIsTest', function () {
     let cluster;
@@ -165,8 +166,9 @@ describe('CompactPublicAPIsTest', function () {
     let employee;
     let SchemaNotReplicatedError;
     let clientConfig;
+    let skipped = false;
 
-    const CLUSTER_CONFIG_XML = `
+    let CLUSTER_CONFIG_XML = `
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/config
@@ -175,7 +177,7 @@ describe('CompactPublicAPIsTest', function () {
                 <port>0</port>
             </network>
             <serialization>
-                <compact-serialization enabled="true"/>
+                <compact-serialization/>
             </serialization>
         </hazelcast>
     `;
@@ -189,12 +191,26 @@ describe('CompactPublicAPIsTest', function () {
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
         employee = new CompactUtil.Employee(1, Long.ONE);
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+            skipped = true;
+            this.skip();
+        }
+        // Compact serialization 5.2 server is not compatible with clients older than 5.2
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
+            skipped = true;
+            this.skip();
+        }
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) < 0) {
+            CLUSTER_CONFIG_XML = CLUSTER_CONFIG_XML
+            .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
+        }
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG_XML);
         member = await RC.startMember(cluster.id);
         SchemaNotReplicatedError = require('../../../../../../lib').SchemaNotReplicatedError;
     });
 
     beforeEach(async function () {
+        skipped = false;
         const name = TestUtil.randomString(12);
 
         clientConfig = {
@@ -237,7 +253,6 @@ describe('CompactPublicAPIsTest', function () {
         };
 
         client = await testFactory.newHazelcastClientForParallelTests(clientConfig, member);
-        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
         map = await client.getMap(name);
         nearCachedMap1 = await client.getMap('nearCached1' + name);
         nearCachedMap2 = await client.getMap('nearCached2' + name);
@@ -253,7 +268,9 @@ describe('CompactPublicAPIsTest', function () {
     });
 
     afterEach(async function () {
-        compactSerializerUsed.should.be.true;
+        if (!skipped) {
+            compactSerializerUsed.should.be.true;
+        }
         sandbox.restore();
         await map.destroy();
         await nearCachedMap1.destroy();
@@ -296,545 +313,774 @@ describe('CompactPublicAPIsTest', function () {
         });
     };
 
+    /**
+     * Tests that proxy method should throw the same error toData throws if the error is not an instance of
+     * SchemaNotReplicatedError. This test is necessary for a good coverage.
+     *
+     * @param client Client instance
+     * @param proxyMethod Proxy method bound `this` value and its parameters
+     */
+    const shouldThrowSerializationErrors = (client, proxyMethod) => {
+        const err = new Error('Mock Serialization Error');
+        sandbox.replace(client.getSerializationService(), 'toData', sandbox.fake.throws(err));
+        const thrownErr = TestUtil.getThrownErrorOrThrow(() => {
+            proxyMethod();
+        });
+        thrownErr.should.be.equal(err);
+        sandbox.restore();
+    };
+
     describe('Map/NearCaches', function () {
         it('aggregate', async function() {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                const result = await obj.aggregate(new CompactReturningAggregator());
+                const fn = obj.aggregate.bind(obj, new CompactReturningAggregator());
+                const result = await fn();
                 result.should.be.deep.eq(OUTER_INSTANCE);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('aggregateWithPredicate', async function() {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                const result = await obj.aggregateWithPredicate(new CompactReturningAggregator(), new CompactPredicate());
+                const fn = obj.aggregateWithPredicate.bind(obj, new CompactReturningAggregator(), new CompactPredicate());
+                const result = await fn();
                 result.should.be.deep.eq(OUTER_INSTANCE);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('containsKey', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.containsKey(OUTER_INSTANCE);
+                const fn = obj.containsKey.bind(obj, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('containsValue', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.containsValue(OUTER_INSTANCE);
+                const fn = obj.containsValue.bind(obj, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('put', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.put(OUTER_INSTANCE, employee);
+                const fn = obj.put.bind(obj, OUTER_INSTANCE, employee);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('putAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.putAll([[OUTER_INSTANCE, OUTER_INSTANCE], [employee, employee]]);
+                const fn = obj.putAll.bind(obj, [[OUTER_INSTANCE, OUTER_INSTANCE], [employee, employee]]);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('setAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.setAll([[OUTER_INSTANCE, OUTER_INSTANCE], [employee, employee]]);
+                const fn = obj.setAll.bind(obj, [[OUTER_INSTANCE, OUTER_INSTANCE], [employee, employee]]);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('get', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.get(OUTER_INSTANCE);
+                const fn = obj.get.bind(obj, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('getAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.getAll([OUTER_INSTANCE, employee]);
+                const fn = obj.getAll.bind(obj, [OUTER_INSTANCE, employee]);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('remove', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.remove(OUTER_INSTANCE, employee);
+                const fn = obj.remove.bind(obj, OUTER_INSTANCE, employee);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
+            }
+        });
+
+        it('removeAll', async function () {
+            if (!TestUtil.isClientVersionAtLeast('5.2.0')) {
+                skipped = true;
+                this.skip();
+            }
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                const fn = obj.removeAll.bind(obj, new CompactPredicate());
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('delete', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.delete(OUTER_INSTANCE);
+                const fn = obj.delete.bind(obj, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('evict', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.evict(OUTER_INSTANCE);
+                const fn = obj.evict.bind(obj, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('forceUnlock', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.forceUnlock(OUTER_INSTANCE);
+                const fn = obj.forceUnlock.bind(obj, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('isLocked', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.isLocked(OUTER_INSTANCE);
+                const fn = obj.isLocked.bind(obj, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('loadAll', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                const fn = obj.loadAll.bind(obj, [OUTER_INSTANCE, employee]);
                 const error = await TestUtil.getRejectionReasonOrThrow(
-                    async () => await obj.loadAll([OUTER_INSTANCE, employee])
+                    async () => await fn()
                 );
                 // MapStore configuration is needed for this to work, it throws NullPointerError.
                 // So we assert it does not throw SchemaNotReplicatedError
                 error.should.not.be.instanceOf(SchemaNotReplicatedError);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('putIfAbsent', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.putIfAbsent(OUTER_INSTANCE, employee);
+                const fn = obj.putIfAbsent.bind(obj, OUTER_INSTANCE, employee);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('putTransient', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.putTransient(OUTER_INSTANCE, employee);
+                const fn = obj.putTransient.bind(obj, OUTER_INSTANCE, employee);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('replaceIfSame', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.replaceIfSame(OUTER_INSTANCE, employee, OUTER_INSTANCE2);
+                const fn = obj.replaceIfSame.bind(obj, OUTER_INSTANCE, employee, OUTER_INSTANCE2);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('replace', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.replace(OUTER_INSTANCE, employee);
+                const fn = obj.replace.bind(obj, OUTER_INSTANCE, employee);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('set', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.set(OUTER_INSTANCE, employee);
+                const fn = obj.set.bind(obj, OUTER_INSTANCE, employee);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('lock', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.lock(OUTER_INSTANCE);
+                const fn = obj.lock.bind(obj, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('unlock', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                const error = await TestUtil.getRejectionReasonOrThrow(async () => await obj.unlock(OUTER_INSTANCE));
+                const fn = obj.unlock.bind(obj, OUTER_INSTANCE);
+                const error = await TestUtil.getRejectionReasonOrThrow(async () => await fn());
                 error.should.not.be.instanceOf(SchemaNotReplicatedError);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('getEntryView', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.getEntryView(OUTER_INSTANCE);
+                const fn = obj.getEntryView.bind(obj, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('tryLock', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.tryLock(OUTER_INSTANCE);
+                const fn = obj.tryLock.bind(obj, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('tryPut', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.tryPut(OUTER_INSTANCE, employee, 0);
+                const fn = obj.tryPut.bind(obj, OUTER_INSTANCE, employee, 0);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('tryRemove', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.tryRemove(OUTER_INSTANCE, 0);
+                const fn = obj.tryRemove.bind(obj, OUTER_INSTANCE, 0);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('addEntryListener', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.addEntryListener({}, OUTER_INSTANCE);
+                const fn = obj.addEntryListener.bind(obj, {}, OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('addEntryListenerWithPredicate (key argument serialization)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.addEntryListenerWithPredicate({}, Predicates.alwaysTrue(), OUTER_INSTANCE);
+                const fn = obj.addEntryListenerWithPredicate.bind(obj, {}, Predicates.alwaysTrue(), OUTER_INSTANCE);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('addEntryListenerWithPredicate (compact predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                const events = [];
-                await obj.addEntryListenerWithPredicate({
+                const fn = obj.addEntryListenerWithPredicate.bind(obj, {
                     added: event => {
                         events.push(event);
                     },
                 }, new CompactPredicate(), INNER_INSTANCE, true);
+                const events = [];
+                await fn();
                 await putToMapFromOtherClient(obj.getName(), INNER_INSTANCE, OUTER_INSTANCE);
                 await assertEntryEvent(events);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('executeOnEntries', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await putToMapFromOtherClient(obj.getName(), OUTER_INSTANCE, INNER_INSTANCE);
-                const results = await obj.executeOnEntries(new CompactReturningEntryProcessor());
+                const fn = obj.executeOnEntries.bind(obj, new CompactReturningEntryProcessor());
+                const results = await fn();
                 results.should.be.deep.equal([[OUTER_INSTANCE, OUTER_INSTANCE]]);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('executeOnEntries (with predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await putToMapFromOtherClient(obj.getName(), OUTER_INSTANCE, INNER_INSTANCE);
-                const results = await obj.executeOnEntries(new CompactReturningEntryProcessor(), new CompactPredicate());
+                const fn = obj.executeOnEntries.bind(obj, new CompactReturningEntryProcessor(), new CompactPredicate());
+                const results = await fn();
                 results.should.be.deep.equal([[OUTER_INSTANCE, OUTER_INSTANCE]]);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('executeOnKey', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await putToMapFromOtherClient(obj.getName(), OUTER_INSTANCE, INNER_INSTANCE);
-                const results = await obj.executeOnKey(OUTER_INSTANCE, new CompactReturningEntryProcessor());
+                const fn = obj.executeOnKey.bind(obj, OUTER_INSTANCE, new CompactReturningEntryProcessor());
+                const results = await fn();
                 results.should.be.deep.equal(OUTER_INSTANCE);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('executeOnKeys', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await putToMapFromOtherClient(obj.getName(), OUTER_INSTANCE, INNER_INSTANCE);
-                const results = await obj.executeOnKeys([OUTER_INSTANCE], new CompactReturningEntryProcessor());
+                const fn = obj.executeOnKeys.bind(obj, [OUTER_INSTANCE], new CompactReturningEntryProcessor());
+                const results = await fn();
                 results.should.be.deep.equal([[OUTER_INSTANCE, OUTER_INSTANCE]]);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('setTtl', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
-                await obj.setTtl(OUTER_INSTANCE, 1000);
+                const fn = obj.setTtl.bind(obj, OUTER_INSTANCE, 1000);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('entrySetWithPredicate', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                const result = await obj.entrySetWithPredicate(new CompactPredicate());
+                const fn = obj.entrySetWithPredicate.bind(obj, new CompactPredicate());
+                const result = await fn();
                 result.should.be.deep.equal([[INNER_INSTANCE, OUTER_INSTANCE]]);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('entrySetWithPredicate (paging predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                const result = await obj.entrySetWithPredicate(pagingPredicate);
+                const fn = obj.entrySetWithPredicate.bind(obj, pagingPredicate);
+                const result = await fn();
                 result.should.be.deep.equal([[INNER_INSTANCE, OUTER_INSTANCE]]);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('keySetWithPredicate', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                const result = await obj.keySetWithPredicate(new CompactPredicate());
+                const fn = obj.keySetWithPredicate.bind(obj, new CompactPredicate());
+                const result = await fn();
                 result.should.be.deep.equal([INNER_INSTANCE]);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('keySetWithPredicate (paging predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                const result = await obj.keySetWithPredicate(pagingPredicate);
+                const fn = obj.keySetWithPredicate.bind(obj, pagingPredicate);
+                const result = await fn();
                 result.should.be.deep.equal([INNER_INSTANCE]);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('valuesWithPredicate', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                const result = await obj.valuesWithPredicate(new CompactPredicate());
+                const fn = obj.valuesWithPredicate.bind(obj, new CompactPredicate());
+                const result = await fn();
                 result.get(0).should.be.deep.equal(OUTER_INSTANCE);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
 
         it('valuesWithPredicate (paging predicate)', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 await obj.set(INNER_INSTANCE, OUTER_INSTANCE);
-                const result = await obj.valuesWithPredicate(pagingPredicate);
+                const fn = obj.valuesWithPredicate.bind(obj, pagingPredicate);
+                const result = await fn();
                 result.get(0).should.be.deep.equal(OUTER_INSTANCE);
+                shouldThrowSerializationErrors(client, fn);
             }
         });
     });
 
     describe('MultiMap', function () {
         it('put', async function () {
-            await multimap.put(OUTER_INSTANCE, employee);
+            const fn = multimap.put.bind(multimap, OUTER_INSTANCE, employee);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('get', async function () {
-            await multimap.get(OUTER_INSTANCE);
+            const fn = multimap.get.bind(multimap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('remove', async function () {
-            await multimap.remove(OUTER_INSTANCE, employee);
+            const fn = multimap.remove.bind(multimap, OUTER_INSTANCE, employee);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('removeAll', async function () {
-            await multimap.removeAll(OUTER_INSTANCE);
+            const fn = multimap.removeAll.bind(multimap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('containsKey', async function () {
-            await multimap.containsKey(OUTER_INSTANCE);
+            const fn = multimap.containsKey.bind(multimap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('containsValue', async function () {
-            await multimap.containsValue(OUTER_INSTANCE);
+            const fn = multimap.containsValue.bind(multimap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('containsEntry', async function () {
-            await multimap.containsEntry(OUTER_INSTANCE, employee);
+            const fn = multimap.containsEntry.bind(multimap, OUTER_INSTANCE, employee);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('valueCount', async function () {
-            await multimap.valueCount(OUTER_INSTANCE);
+            const fn = multimap.valueCount.bind(multimap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('addEntryListener', async function () {
-            await multimap.addEntryListener({}, OUTER_INSTANCE);
+            const fn = multimap.addEntryListener.bind(multimap, {}, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('isLocked', async function () {
-            await multimap.isLocked(OUTER_INSTANCE);
+            const fn = multimap.isLocked.bind(multimap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('tryLock', async function () {
-            await multimap.tryLock(OUTER_INSTANCE);
+            const fn = multimap.tryLock.bind(multimap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('lock', async function () {
-            await multimap.lock(OUTER_INSTANCE);
+            const fn = multimap.lock.bind(multimap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('unlock', async function () {
-            const error = await TestUtil.getRejectionReasonOrThrow(async () => await multimap.unlock(OUTER_INSTANCE));
+            const fn = multimap.unlock.bind(multimap, OUTER_INSTANCE);
+            const error = await TestUtil.getRejectionReasonOrThrow(async () => await fn());
             error.should.not.be.instanceOf(SchemaNotReplicatedError);
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('forceUnlock', async function () {
-            await multimap.forceUnlock(OUTER_INSTANCE);
+            const fn = multimap.forceUnlock.bind(multimap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('putAll', async function () {
-            await multimap.putAll(
-                [[OUTER_INSTANCE, [employee]], [employee, [OUTER_INSTANCE2]], [OUTER_INSTANCE, [OUTER_INSTANCE2]]]
+            const fn = multimap.putAll.bind(
+                multimap, [[OUTER_INSTANCE, [employee]], [employee, [OUTER_INSTANCE2]], [OUTER_INSTANCE, [OUTER_INSTANCE2]]]
             );
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
     });
 
     describe('ReplicatedMap', function () {
         it('put', async function () {
-            await replicatedMap.put(OUTER_INSTANCE, employee);
+            const fn = replicatedMap.put.bind(replicatedMap, OUTER_INSTANCE, employee);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('get', async function () {
-            await replicatedMap.get(OUTER_INSTANCE);
+            const fn = replicatedMap.get.bind(replicatedMap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('containsKey', async function () {
-            await replicatedMap.containsKey(OUTER_INSTANCE);
+            const fn = replicatedMap.containsKey.bind(replicatedMap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('containsValue', async function () {
-            await replicatedMap.containsValue(OUTER_INSTANCE);
+            const fn = replicatedMap.containsValue.bind(replicatedMap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('remove', async function () {
-            await replicatedMap.remove(OUTER_INSTANCE);
+            const fn = replicatedMap.remove.bind(replicatedMap, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('putAll', async function () {
-            await replicatedMap.putAll([[OUTER_INSTANCE, employee], [employee, OUTER_INSTANCE2]]);
+            const fn = replicatedMap.putAll.bind(replicatedMap, [[OUTER_INSTANCE, employee], [employee, OUTER_INSTANCE2]]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('addEntryListenerToKeyWithPredicate (key argument serialization)', async function () {
-            await replicatedMap.addEntryListenerToKeyWithPredicate({}, OUTER_INSTANCE, Predicates.alwaysTrue());
+            const fn = replicatedMap.addEntryListenerToKeyWithPredicate.bind(
+                replicatedMap, {}, OUTER_INSTANCE, Predicates.alwaysTrue()
+            );
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('addEntryListenerToKeyWithPredicate (compact predicate)', async function () {
             const events = [];
-            await replicatedMap.addEntryListenerToKeyWithPredicate({
+            const fn = replicatedMap.addEntryListenerToKeyWithPredicate.bind(replicatedMap, {
                 added: event => {
                     events.push(event);
                 },
             }, INNER_INSTANCE, new CompactPredicate());
+            await fn();
             await putToReplicatedMapFromOtherClient(replicatedMap.getName(), INNER_INSTANCE, OUTER_INSTANCE);
             await assertEntryEvent(events);
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('addEntryListenerToKey', async function () {
-            await replicatedMap.addEntryListenerToKey({}, OUTER_INSTANCE);
+            const fn = replicatedMap.addEntryListenerToKey.bind(replicatedMap, {}, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
     });
 
     describe('List', function () {
         it('add', async function () {
-            await list.add(OUTER_INSTANCE);
+            const fn = list.add.bind(list, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('addAt', async function () {
-            await list.addAt(0, OUTER_INSTANCE);
+            const fn = list.addAt.bind(list, 0, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('addAll', async function () {
-            await list.addAll([OUTER_INSTANCE, employee]);
+            const fn = list.addAll.bind(list, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('addAllAt', async function () {
-            await list.addAllAt(0, [OUTER_INSTANCE, employee]);
+            const fn = list.addAllAt.bind(list, 0, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('contains', async function () {
-            await list.contains(OUTER_INSTANCE);
+            const fn = list.contains.bind(list, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('containsAll', async function () {
-            await list.containsAll([OUTER_INSTANCE, employee]);
+            const fn = list.containsAll.bind(list, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('indexOf', async function () {
-            await list.indexOf(OUTER_INSTANCE);
+            const fn = list.indexOf.bind(list, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('lastIndexOf', async function () {
-            await list.lastIndexOf(OUTER_INSTANCE);
+            const fn = list.lastIndexOf.bind(list, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('remove', async function () {
-            await list.remove(OUTER_INSTANCE);
+            const fn = list.remove.bind(list, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('removeAll', async function () {
-            await list.removeAll([OUTER_INSTANCE, employee]);
+            const fn = list.removeAll.bind(list, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('retainAll', async function () {
-            await list.retainAll([OUTER_INSTANCE, employee]);
+            const fn = list.retainAll.bind(list, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('set', async function () {
             await list.add(OUTER_INSTANCE);
             // Clear schema retrieved via add()
             client.schemaService.schemas.clear();
-            await list.set(0, OUTER_INSTANCE);
+            const fn = list.set.bind(list, 0, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
     });
 
     describe('AtomicReference', function () {
         it('compareAndSet', async function () {
-            await atomicReference.compareAndSet(OUTER_INSTANCE, employee);
+            const fn = atomicReference.compareAndSet.bind(atomicReference, OUTER_INSTANCE, employee);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('set', async function () {
-            await atomicReference.set(OUTER_INSTANCE);
+            const fn = atomicReference.set.bind(atomicReference, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('getAndSet', async function () {
-            await atomicReference.getAndSet(OUTER_INSTANCE);
+            const fn = atomicReference.getAndSet.bind(atomicReference, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('contains', async function () {
-            await atomicReference.contains(OUTER_INSTANCE);
+            const fn = atomicReference.contains.bind(atomicReference, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
     });
 
     describe('Queue', function () {
         it('add', async function () {
-            await queue.add(OUTER_INSTANCE);
+            const fn = queue.add.bind(queue, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('addAll', async function () {
-            await queue.addAll([OUTER_INSTANCE, employee]);
+            const fn = queue.addAll.bind(queue, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('contains', async function () {
-            await queue.contains(OUTER_INSTANCE);
+            const fn = queue.contains.bind(queue, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('containsAll', async function () {
-            await queue.containsAll([OUTER_INSTANCE, employee]);
+            const fn = queue.containsAll.bind(queue, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('offer', async function () {
-            await queue.offer(OUTER_INSTANCE);
+            const fn = queue.offer.bind(queue, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('put', async function () {
-            await queue.put(OUTER_INSTANCE);
+            const fn = queue.put.bind(queue, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('remove', async function () {
-            await queue.remove(OUTER_INSTANCE);
+            const fn = queue.remove.bind(queue, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('removeAll', async function () {
-            await queue.removeAll([OUTER_INSTANCE, employee]);
+            const fn = queue.removeAll.bind(queue, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('retainAll', async function () {
-            await queue.retainAll([OUTER_INSTANCE, employee]);
+            const fn = queue.retainAll.bind(queue, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
     });
 
     describe('Set', function () {
         it('add', async function () {
-            await set.add(OUTER_INSTANCE);
+            const fn = set.add.bind(set, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('addAll', async function () {
-            await set.addAll([OUTER_INSTANCE, employee]);
+            const fn = set.addAll.bind(set, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('contains', async function () {
-            await set.contains(OUTER_INSTANCE);
+            const fn = set.contains.bind(set, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('containsAll', async function () {
-            await set.containsAll([OUTER_INSTANCE, employee]);
+            const fn = set.containsAll.bind(set, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('remove', async function () {
-            await set.remove(OUTER_INSTANCE);
+            const fn = set.remove.bind(set, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('removeAll', async function () {
-            await set.removeAll([OUTER_INSTANCE, employee]);
+            const fn = set.removeAll.bind(set, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('retainAll', async function () {
-            await set.retainAll([OUTER_INSTANCE, employee]);
+            const fn = set.retainAll.bind(set, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
     });
 
     describe('ReliableTopic', function () {
         it('publish', async function () {
-            await topic.publish(OUTER_INSTANCE);
+            const fn = topic.publish.bind(topic, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
     });
 
     describe('RingBuffer', function () {
         it('add', async function () {
-            await ringBuffer.add(OUTER_INSTANCE);
+            const fn = ringBuffer.add.bind(ringBuffer, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
 
         it('addAll', async function () {
-            await ringBuffer.addAll([OUTER_INSTANCE, employee]);
+            const fn = ringBuffer.addAll.bind(ringBuffer, [OUTER_INSTANCE, employee]);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
         });
     });
 });

@@ -13,22 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-import {CompactSerializer} from '../serialization/compact/CompactSerializer';
+const { Client, Predicates } = require('hazelcast-client');
 
-/**
- * Compact serialization config for the client.
- */
-export interface CompactSerializationConfig {
+(async () => {
+    const client = await Client.newHazelcastClient();
+    const map = await client.getMap('my-distributed-map');
 
-    /**
-     * Defines Compact serializers.
-     */
-    serializers?: Array<CompactSerializer<any>>;
+    for (let i = 0; i < 10 ; i++) {
+        await map.put('key' + i, i);
+    }
+    console.log('Map size before removing:', await map.size());
 
-}
+    const predicate = Predicates.between('this', 3, 7);
+    await map.removeAll(predicate);
 
-/** @internal */
-export class CompactSerializationConfigImpl implements CompactSerializationConfig {
-    serializers: Array<CompactSerializer<any>> = [];
-}
+    console.log('Map size after removing:', await map.size());
+
+    await client.shutdown();
+})().catch(err => {
+    console.error('Error occurred:', err);
+    process.exit(1);
+});
+

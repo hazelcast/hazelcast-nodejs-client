@@ -27,7 +27,7 @@ const BSerializer = require('./SameNamedClass').ASerializer;
 const { Predicates, HazelcastSerializationError } = require('../../../../../../lib/core');
 const CompactUtil = require('./CompactUtil');
 
-const COMPACT_ENABLED_ZERO_CONFIG_XML = `
+let COMPACT_ENABLED_ZERO_CONFIG_XML = `
     <hazelcast xmlns="http://www.hazelcast.com/schema/config"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.hazelcast.com/schema/config
@@ -36,7 +36,7 @@ const COMPACT_ENABLED_ZERO_CONFIG_XML = `
             <port>0</port>
         </network>
         <serialization>
-            <compact-serialization enabled="true" />
+            <compact-serialization/>
         </serialization>
     </hazelcast>
 `;
@@ -74,6 +74,19 @@ describe('CompactTest', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+            this.skip();
+        }
+        // Compact serialization 5.2 server is not compatible with clients older than 5.2
+        if (comparisonValueForServerVersion520 >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
+            this.skip();
+        }
+        // Compact serialization 5.2 server configuration changes
+        if (comparisonValueForServerVersion520 < 0) {
+            COMPACT_ENABLED_ZERO_CONFIG_XML = COMPACT_ENABLED_ZERO_CONFIG_XML
+            .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
+        }
         cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
         member = await RC.startMember(cluster.id);
     });
@@ -90,7 +103,7 @@ describe('CompactTest', function () {
         mapName = TestUtil.randomString(10);
     });
 
-    const shouldReadAndWrite = async (testFn, obj, serializers) => {
+    const shouldReadAndWrite = async (obj, serializers) => {
         const client = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
@@ -99,7 +112,6 @@ describe('CompactTest', function () {
                 }
             }
         }, member);
-        TestUtil.markServerVersionAtLeast(testFn, client, '5.1.0');
         const client2 = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
@@ -133,8 +145,6 @@ describe('CompactTest', function () {
             }
         }, member);
 
-        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
-
         const map = await client.getMap(mapName);
         const baseName = FieldKind[fieldKind];
         const fieldName = Object.prototype.hasOwnProperty.call(writerFieldNameMap, baseName) ?
@@ -146,20 +156,19 @@ describe('CompactTest', function () {
 
     it('should work with basic test', async function () {
         await shouldReadAndWrite(
-            this, new CompactUtil.EmployeeDTO(30, Long.fromString('102310312')), [new CompactUtil.EmployeeDTOSerializer()]
+            new CompactUtil.EmployeeDTO(30, Long.fromString('102310312')), [new CompactUtil.EmployeeDTOSerializer()]
         );
     });
 
     it('should be able to read and write all fields', async function () {
         await shouldReadAndWrite(
-            this,
             new CompactUtil.Flexible(CompactUtil.referenceObjects),
             [new CompactUtil.FlexibleSerializer(supportedFields), new CompactUtil.EmployeeSerializer()]
         );
     });
 
     it('should be able to read and write empty class', async function () {
-        await shouldReadAndWrite(this, new CompactUtil.Flexible({}), []);
+        await shouldReadAndWrite(new CompactUtil.Flexible({}), []);
     });
 
     it('should be able to read and write class with only variable size fields', async function () {
@@ -169,7 +178,6 @@ describe('CompactTest', function () {
             fields[fieldName] = CompactUtil.referenceObjects[fieldName];
         }
         await shouldReadAndWrite(
-            this,
             new CompactUtil.Flexible(fields),
             [new CompactUtil.FlexibleSerializer(CompactUtil.varSizeFields), new CompactUtil.EmployeeSerializer()]
         );
@@ -182,7 +190,6 @@ describe('CompactTest', function () {
             fields[fieldName] = CompactUtil.referenceObjects[fieldName];
         }
         await shouldReadAndWrite(
-            this,
             new CompactUtil.Flexible(fields),
             [new CompactUtil.FlexibleSerializer(CompactUtil.fixedSizeFields), new CompactUtil.EmployeeSerializer()]
         );
@@ -201,7 +208,6 @@ describe('CompactTest', function () {
 
             referenceObjects[FieldKind[FieldKind.ARRAY_OF_STRING]].value.push(null);
             await shouldReadAndWrite(
-                this,
                 new CompactUtil.Flexible(referenceObjects),
                 [new CompactUtil.FlexibleSerializer([FieldKind.ARRAY_OF_STRING, FieldKind.INT32, FieldKind.STRING])]
             );
@@ -217,7 +223,6 @@ describe('CompactTest', function () {
             };
 
             await shouldReadAndWrite(
-                this,
                 new CompactUtil.Flexible(referenceObjects), [new CompactUtil.FlexibleSerializer([FieldKind.ARRAY_OF_BOOLEAN])]
             );
         });
@@ -230,7 +235,6 @@ describe('CompactTest', function () {
             };
 
             await shouldReadAndWrite(
-                this,
                 new CompactUtil.Flexible(referenceObjects), [new CompactUtil.FlexibleSerializer([FieldKind.ARRAY_OF_BOOLEAN])]
             );
         });
@@ -271,7 +275,7 @@ describe('CompactTest', function () {
                 }
             }
 
-            await shouldReadAndWrite(this, new CompactUtil.Flexible(allFields), [new Serializer(fieldNames)]);
+            await shouldReadAndWrite(new CompactUtil.Flexible(allFields), [new Serializer(fieldNames)]);
         });
     });
 
@@ -667,8 +671,6 @@ describe('CompactTest', function () {
             }
         }, member);
 
-        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
-
         const client2 = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {
@@ -693,8 +695,8 @@ describe('CompactTest', function () {
 
     it('should work with same-named different classes by giving different typenames', async function () {
         A.name.should.be.eq(B.name);
-        await shouldReadAndWrite(this, new A(1), [new ASerializer(), new BSerializer()]);
-        await shouldReadAndWrite(this, new B('1'), [new ASerializer(), new BSerializer()]);
+        await shouldReadAndWrite(new A(1), [new ASerializer(), new BSerializer()]);
+        await shouldReadAndWrite(new B('1'), [new ASerializer(), new BSerializer()]);
     });
 
     describe('SchemaEvolution', function () {
@@ -718,7 +720,6 @@ describe('CompactTest', function () {
                     }
                 }
             }, member);
-            TestUtil.markServerVersionAtLeast(this, v1Client, '5.1.0');
             const v1Map = await v1Client.getMap(mapName);
             await v1Map.put('key1', new CompactUtil.Flexible(v1Fields));
 
@@ -802,7 +803,6 @@ describe('CompactTest', function () {
                     }
                 }
             }, member);
-            TestUtil.markServerVersionAtLeast(this, v1Client, '5.1.0');
             const v1Map = await v1Client.getMap(mapName);
             await v1Map.put('key1', new CompactUtil.Flexible(v1Fields));
 
@@ -906,7 +906,6 @@ describe('CompactTest', function () {
                 }
             }
         }, member);
-        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
         const client2 = await testFactory.newHazelcastClientForParallelTests({
             clusterName: cluster.id,
             serialization: {

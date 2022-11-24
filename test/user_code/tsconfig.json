@@ -3,7 +3,8 @@
         "noEmit": true,
         "module": "commonjs",
         "moduleResolution": "node",
-        "stripInternal": true
+        "stripInternal": true,
+        "strict": true
     },
     "include": [
         "UserCodeTest.ts"
