@@ -68,7 +68,7 @@ describe('ClientReconnectTest', function () {
      * close the client connection immediately it is possible for the client to realize that later when map.put
      * or getMap invocation started. In that case, the connection will be closed with TargetDisconnectedError.
      * Because these client messages are not retryable, the invocation will be rejected with an error, leading
-     * to flaky tests. To avoid that, we use the "TestUtil.waitForConnectionCount" function 
+     * to flaky tests. To avoid that, we use the "TestUtil.waitForConnectionCount" function
      * to wait for disconnection in the tests below.
      */
     it('member restarts, while map.put in progress', async function () {
