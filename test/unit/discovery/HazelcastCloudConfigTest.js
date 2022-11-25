@@ -27,7 +27,7 @@ describe('HazelcastClientCloudConfigTest', function () {
 
         const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(config.properties, token);
 
-        expect(urlEndpoint).to.be.equal('https://coordinator.hazelcast.cloud/cluster/discovery?token=TOKEN');
+        expect(urlEndpoint).to.be.equal('https://api.viridian.hazelcast.com/cluster/discovery?token=TOKEN');
     });
 
     it('customCloudUrlEndpoint', function () {
