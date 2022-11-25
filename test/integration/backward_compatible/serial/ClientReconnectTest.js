@@ -18,6 +18,9 @@
 const { expect } = require('chai');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
+const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
+const { ConnectionManager } = require('../../../../lib/network/ConnectionManager');
 
 /**
  * Basic tests for reconnection to cluster scenarios.
@@ -78,6 +81,29 @@ describe('ClientReconnectTest', function () {
         await map.put('testkey', 'testvalue');
         const val = await map.get('testkey');
         expect(val).to.equal('testvalue');
+    });
+
+    it('should send the client state to the cluster after reconnections, ' +
+        +'regardless it is connected back to possibly the same cluster with the same id or not.', async function () {
+        const fakeInitializeClientOnCluster = sandbox.replace(
+            ConnectionManager.prototype,
+            'initializeClientOnCluster',
+            sandbox.fake(ConnectionManager.prototype.initializeClientOnCluster)
+        );
+        cluster = await testFactory.createClusterForSerialTests();
+        const member = await RC.startMember(cluster.id);
+        client = await testFactory.newHazelcastClientForSerialTests({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.client.heartbeat.interval': 1000,
+                'hazelcast.client.heartbeat.timeout': 3000
+            }
+        });
+        await RC.terminateMember(cluster.id, member.uuid);
+        await waitForDisconnection(client);
+        await RC.startMember(cluster.id);
+        await client.getMap('test');
+        fakeInitializeClientOnCluster.callCount.should.be.eq(1);
     });
 
     it('member restarts, while map.put in progress 2', async function () {
