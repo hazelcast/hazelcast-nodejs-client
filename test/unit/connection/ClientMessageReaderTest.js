@@ -22,7 +22,7 @@ const { ClientMessageReader } = require('../../../lib/network/Connection');
 const cm = require('../../../lib/protocol/ClientMessage');
 const {Frame, ClientMessage} = require('../../../lib/protocol/ClientMessage');
 
-describe('ClientMessageReaderTest', function () {
+describe('OldClientMessageReaderTest', function () {
     const HEADER_SIZE = cm.SIZE_OF_FRAME_LENGTH_AND_FLAGS;
 
     let reader;
@@ -184,6 +184,7 @@ describe('ClientMessageReaderTest', function () {
         reader.append(secondPartition);
 
         const messageRead = reader.read();
+        expect(messageRead).to.be.not.null;
         expect(messageRead.hasNextFrame()).to.be.null;
 
         const frameRead = messageRead.nextFrame();
