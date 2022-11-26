@@ -146,10 +146,16 @@ export class HazelcastClient {
         this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as string);
         const logger = this.loggingService.getLogger();
+        this.clusterFailoverService = this.initClusterFailoverService();
+        this.clusterService = new ClusterService(
+            this.config,
+            logger,
+            this.clusterFailoverService
+        );
         this.schemaService = new SchemaService(
             this.config, 
-            () => this.clusterService, 
-            () => this.invocationService, 
+            this.clusterService, 
+            () => this.invocationService,
             logger
         );
         this.serializationService = new SerializationServiceV1(this.config.serialization, this.schemaService);
@@ -165,12 +171,6 @@ export class HazelcastClient {
         this.lifecycleService = new LifecycleServiceImpl(
             this.config.lifecycleListeners,
             logger
-        );
-        this.clusterFailoverService = this.initClusterFailoverService();
-        this.clusterService = new ClusterService(
-            this.config,
-            logger,
-            this.clusterFailoverService
         );
         this.connectionRegistry = new ConnectionRegistryImpl(
             this.config.connectionStrategy.asyncStart,

@@ -31,4 +31,11 @@ export class UuidUtil {
         const leastS = new Long(randomUInt(), randomUInt(), isUnsigned);
         return new UUID(mostS, leastS);
     }
+    static convertUUIDSetToStringSet(uuidSet: Set<UUID>): Set<string> {
+        const result = new Set<string>();
+        for (const uuid of uuidSet) {
+            result.add(uuid.toString());
+        }
+        return result;
+    }
 }

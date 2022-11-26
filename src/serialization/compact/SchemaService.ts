@@ -26,6 +26,7 @@ import { HazelcastSerializationError, IllegalStateError } from '../../core';
 import { delayedPromise } from '../../util/Util';
 import { ClientConfig } from '../../config';
 import { ClusterService } from '../../invocation/ClusterService';
+import { UuidUtil } from '../../util/UuidUtil';
 
 const INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
 const MAX_PUT_RETRY_COUNT = 'hazelcast.client.schema.max.put.retry.count';
@@ -42,8 +43,7 @@ export class SchemaService {
 
     constructor(
         clientConfig: ClientConfig,
-        // a getter is used because there is a cyclic dependency between ClusterService and SchemaService
-        private readonly getClusterService: () => ClusterService,
+        private readonly clusterService: ClusterService,
         // a getter is used because there is a cyclic dependency between InvocationService and SchemaService
         private readonly getInvocationService: () => InvocationService,
         private readonly logger: ILogger
@@ -81,7 +81,7 @@ export class SchemaService {
     /**
      * Puts the schema with the given id to the cluster.
      */
-    put(schema: Schema): Promise<void> {
+    async put(schema: Schema): Promise<void> {
         const schemaId = schema.schemaId;
         const existingSchema = this.schemas.get(schemaId.toString());
         if (existingSchema !== undefined) {
@@ -89,16 +89,18 @@ export class SchemaService {
             return Promise.resolve();
         }
 
-        if (this.replicateSchemaInCluster(schema)) {
+        const result = await this.replicateSchemaInCluster(schema);
+        if (!result) {
             throw new IllegalStateError(
                 `The schema ${schema} cannot be replicated in the cluster, after ${this.maxPutRetryCount}  retries. 
                 It might be the case that the client is connected to the two halves of the cluster that 
                 is experiencing a split-brain, and continue putting the data associated with that schema might 
-                result in data loss. It might be possible to replicate the schema after some time, when the cluster is healed.`
+                result in data loss. It might be possible to replicate the schema after some time, when 
+                the cluster is healed.`
             );
+        } else {
+            this.putIfAbsent(schema);
         }
-
-        this.putIfAbsent(schema);
     }
 
     private putIfAbsent(schema: Schema): void {
@@ -133,10 +135,10 @@ export class SchemaService {
         for (let index = 0; index < this.maxPutRetryCount; index++) {
             const invocation = new Invocation(this.getInvocationService(), clientMessage);
             const response = await this.getInvocationService().invoke(invocation);
-            const replicatedMemberUuids = ClientSendSchemaCodec.decodeResponse(response);
-            const members = this.getClusterService().getMembers();
+            const replicatedMemberUuids = UuidUtil.convertUUIDSetToStringSet(ClientSendSchemaCodec.decodeResponse(response));
+            const members = this.clusterService.getMembers();
             for (const member of members) {
-                if (!replicatedMemberUuids.has(member.uuid)) {
+                if (!replicatedMemberUuids.has(member.uuid.toString())) {
                     // There is a member in our member list that the schema
                     // is not known to be replicated yet. We should retry
                     // sending it in a random member.

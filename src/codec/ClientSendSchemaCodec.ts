@@ -20,7 +20,7 @@ import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../protocol/ClientMessa
 import {Schema} from '../serialization/compact/Schema';
 import {SchemaCodec} from './custom/SchemaCodec';
 import {SetUUIDCodec} from './builtin/SetUUIDCodec';
-import { UUID } from '../core';
+import {UUID} from '../core/UUID';
 
 // hex: 0x001300
 const REQUEST_MESSAGE_TYPE = 4864;
@@ -44,16 +44,10 @@ export class ClientSendSchemaCodec {
         return clientMessage;
     }
 
-    static encodeResponse(replicatedMembers: UUID[]): ClientMessage {
-        const clientMessage = ClientMessage.createForEncode();
-        const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
-        clientMessage.addFrame(initialFrame);
-
-        SetUUIDCodec.encode(clientMessage, replicatedMembers);
-        return clientMessage;
-    }
-
     static decodeResponse(clientMessage: ClientMessage): Set<UUID> {
+        // empty initial frame
+        clientMessage.nextFrame();
+
         return SetUUIDCodec.decode(clientMessage);
     }
 }
