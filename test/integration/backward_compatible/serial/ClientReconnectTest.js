@@ -18,6 +18,9 @@
 const { expect } = require('chai');
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
+const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
+const { ConnectionManager } = require('../../../../lib/network/ConnectionManager');
 
 /**
  * Basic tests for reconnection to cluster scenarios.
@@ -25,28 +28,6 @@ const TestUtil = require('../../../TestUtil');
 describe('ClientReconnectTest', function () {
     let cluster;
     let client;
-
-    /**
-     * Waits for disconnection. getMap(), map.put() messages are not retryable. If terminateMember does not
-     * close the client connection immediately it is possible for the client to realize that later when map.put
-     * or getMap invocation started. In that case, the connection will be closed with TargetDisconnectedError.
-     * Because these client messages are not retryable, the invocation will be rejected with an error, leading
-     * to flaky tests. To avoid that, this function will wait for the connections count to be zero.
-     */
-    const waitForDisconnection = async (client) => {
-        let getConnectionsFn;
-        if (TestUtil.isClientVersionAtLeast('4.2')) {
-            const clientRegistry = client.connectionRegistry;
-            getConnectionsFn = clientRegistry.getConnections.bind(clientRegistry);
-        } else {
-            const connManager = client.getConnectionManager();
-            getConnectionsFn = connManager.getActiveConnections.bind(connManager);
-        }
-
-        await TestUtil.assertTrueEventually(async () => {
-            expect(getConnectionsFn()).to.be.empty;
-        });
-    };
 
     const testFactory = new TestUtil.TestFactory();
 
@@ -59,6 +40,37 @@ describe('ClientReconnectTest', function () {
         await testFactory.shutdownAll();
     });
 
+    it('should send the client state to the cluster after reconnections, ' +
+        +'regardless it is connected back to possibly the same cluster with the same id or not.', async function () {
+        const fakeInitializeClientOnCluster = sandbox.replace(
+            ConnectionManager.prototype,
+            'initializeClientOnCluster',
+            sandbox.fake(ConnectionManager.prototype.initializeClientOnCluster)
+        );
+        cluster = await testFactory.createClusterForSerialTests();
+        const member = await RC.startMember(cluster.id);
+        client = await testFactory.newHazelcastClientForSerialTests({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.client.heartbeat.interval': 1000,
+                'hazelcast.client.heartbeat.timeout': 3000
+            }
+        });
+        await RC.terminateMember(cluster.id, member.uuid);
+        await TestUtil.waitForConnectionCount(client, 0);
+        await RC.startMember(cluster.id);
+        await TestUtil.waitForConnectionCount(client, 1);
+        fakeInitializeClientOnCluster.callCount.should.be.eq(1);
+    });
+
+    /**
+     * getMap(), map.put() messages are not retryable. If terminateMember does not
+     * close the client connection immediately it is possible for the client to realize that later when map.put
+     * or getMap invocation started. In that case, the connection will be closed with TargetDisconnectedError.
+     * Because these client messages are not retryable, the invocation will be rejected with an error, leading
+     * to flaky tests. To avoid that, we use the "TestUtil.waitForConnectionCount" function
+     * to wait for disconnection in the tests below.
+     */
     it('member restarts, while map.put in progress', async function () {
         cluster = await testFactory.createClusterForSerialTests();
         const member = await RC.startMember(cluster.id);
@@ -72,7 +84,7 @@ describe('ClientReconnectTest', function () {
         const map = await client.getMap('test');
 
         await RC.terminateMember(cluster.id, member.uuid);
-        await waitForDisconnection(client);
+        await TestUtil.waitForConnectionCount(client, 0);
         await RC.startMember(cluster.id);
 
         await map.put('testkey', 'testvalue');
@@ -95,7 +107,7 @@ describe('ClientReconnectTest', function () {
         });
         const map = await client.getMap('test');
         await RC.terminateMember(cluster.id, member.uuid);
-        await waitForDisconnection(client);
+        await TestUtil.waitForConnectionCount(client, 0);
 
         const promise = map.put('testkey', 'testvalue').then(() => {
             return map.get('testkey');
@@ -119,7 +131,7 @@ describe('ClientReconnectTest', function () {
             }
         });
         await RC.terminateMember(cluster.id, member.uuid);
-        await waitForDisconnection(client);
+        await TestUtil.waitForConnectionCount(client, 0);
 
         let map;
 

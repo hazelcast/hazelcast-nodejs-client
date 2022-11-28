@@ -639,3 +639,21 @@ exports.calculateServerVersionFromString = (versionString) => {
     return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
 };
 
+/**
+ * This function will wait for the connections count to be equal to given parameter (connectionCount).
+ */
+exports.waitForConnectionCount = async (client, connectionCount) => {
+    let getConnectionsFn;
+    if (this.isClientVersionAtLeast('4.2')) {
+        const clientRegistry = client.connectionRegistry;
+        getConnectionsFn = clientRegistry.getConnections.bind(clientRegistry);
+    } else {
+        const connManager = client.getConnectionManager();
+        getConnectionsFn = connManager.getActiveConnections.bind(connManager);
+    }
+
+    await this.assertTrueEventually(async () => {
+        expect(getConnectionsFn().length).to.be.equal(connectionCount);
+    });
+};
+
