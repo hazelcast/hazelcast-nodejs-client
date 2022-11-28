@@ -304,6 +304,15 @@ export class ClientMessage {
         return newMessage;
     }
 
+    copyMessageWithSharedNonInitialFrames(): ClientMessage {
+        const startFrameCopy = this.startFrame.deepCopy();
+        const newMessage = new ClientMessage(startFrameCopy, this.endFrame);
+
+        newMessage.retryable = this.retryable;
+        newMessage.containsSerializedDataInRequest = this.containsSerializedDataInRequest;
+        return newMessage;
+    }
+
     writeTo(buffer: Buffer, offset = 0): number {
         let pos = offset;
         let currentFrame = this.startFrame;
