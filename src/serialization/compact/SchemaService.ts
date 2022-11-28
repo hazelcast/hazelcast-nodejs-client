@@ -26,6 +26,7 @@ import { HazelcastSerializationError, IllegalStateError } from '../../core';
 import { delayedPromise } from '../../util/Util';
 import { ClientConfig } from '../../config';
 import { ClusterService } from '../../invocation/ClusterService';
+import { ClientMessage } from '../../protocol/ClientMessage';
 import { UuidUtil } from '../../util/UuidUtil';
 
 const INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
@@ -43,7 +44,7 @@ export class SchemaService {
 
     constructor(
         clientConfig: ClientConfig,
-        private readonly clusterService: ClusterService,
+        private readonly getClusterService: () => ClusterService,
         // a getter is used because there is a cyclic dependency between InvocationService and SchemaService
         private readonly getInvocationService: () => InvocationService,
         private readonly logger: ILogger
@@ -81,26 +82,26 @@ export class SchemaService {
     /**
      * Puts the schema with the given id to the cluster.
      */
-    async put(schema: Schema): Promise<void> {
+    put(schema: Schema): Promise<void> {
         const schemaId = schema.schemaId;
         const existingSchema = this.schemas.get(schemaId.toString());
         if (existingSchema !== undefined) {
             this.logger.trace('SchemaService', `Schema id ${schemaId} already exists locally`);
             return Promise.resolve();
         }
-
-        const result = await this.replicateSchemaInCluster(schema);
-        if (!result) {
-            throw new IllegalStateError(
-                `The schema ${schema} cannot be replicated in the cluster, after ${this.maxPutRetryCount}  retries. 
-                It might be the case that the client is connected to the two halves of the cluster that 
-                is experiencing a split-brain, and continue putting the data associated with that schema might 
-                result in data loss. It might be possible to replicate the schema after some time, when 
-                the cluster is healed.`
-            );
-        } else {
-            this.putIfAbsent(schema);
-        }
+        return this.replicateSchemaInCluster(schema).then((result) => {
+            if (!result) {
+                throw new IllegalStateError(
+                    `The schema ${schema.typeName} cannot be replicated in the cluster, after ${this.maxPutRetryCount}  retries. 
+                    It might be the case that the client is connected to the two halves of the cluster that 
+                    is experiencing a split-brain, and continue putting the data associated with that schema might 
+                    result in data loss. It might be possible to replicate the schema after some time, when 
+                    the cluster is healed.`
+                );
+            } else {
+                this.putIfAbsent(schema);
+            }
+        }).catch((err) => { console.error(err); });
     }
 
     private putIfAbsent(schema: Schema): void {
@@ -129,38 +130,41 @@ export class SchemaService {
         return this.getInvocationService().invokeUrgent(invocation).then(() => {});
     }
 
-    async replicateSchemaInCluster(schema: Schema): Promise<boolean> {
-        let clientMessage = ClientSendSchemaCodec.encodeRequest(schema);
-        outer:
-        for (let index = 0; index < this.maxPutRetryCount; index++) {
-            const invocation = new Invocation(this.getInvocationService(), clientMessage);
-            const response = await this.getInvocationService().invoke(invocation);
-            const replicatedMemberUuids = UuidUtil.convertUUIDSetToStringSet(ClientSendSchemaCodec.decodeResponse(response));
-            const members = this.clusterService.getMembers();
-            for (const member of members) {
-                if (!replicatedMemberUuids.has(member.uuid.toString())) {
-                    // There is a member in our member list that the schema
-                    // is not known to be replicated yet. We should retry
-                    // sending it in a random member.
+    replicateSchemaInCluster(schema: Schema): Promise<boolean> {
+        const clientMessage = ClientSendSchemaCodec.encodeRequest(schema);
+        return this.retryMaxPutRetryCount(clientMessage, 0);
+    }
 
-                    await delayedPromise(this.retryPauseMillis);
+    private retryMaxPutRetryCount(clientMessage: ClientMessage, index: number) : Promise<boolean> {
+        if (index === this.maxPutRetryCount) {
+            return Promise.resolve(false);
+        } else {
+            const invocationService = this.getInvocationService(); 
+            const invocation = new Invocation(invocationService, clientMessage);
+            return invocationService.invoke(invocation).then((response) => {
+                const replicatedMemberUuids = UuidUtil.convertUUIDSetToStringSet(ClientSendSchemaCodec.decodeResponse(response));
+                const members = this.getClusterService().getMembers();
+                for (const member of members) {
+                    if (!replicatedMemberUuids.has(member.uuid.toString())) {
+                        // There is a member in our member list that the schema
+                        // is not known to be replicated yet. We should retry
+                        // sending it in a random member.
+    
+                        return delayedPromise(this.retryPauseMillis)
+                        .then(() => {
+                            // correlation id will be set when the invoke method is
+                            // called above
+                            clientMessage = clientMessage.copyMessageWithSharedNonInitialFrames();
 
-                    // correlation id will be set when the invoke method is
-                    // called above
-                    clientMessage = clientMessage.copyMessageWithSharedNonInitialFrames();
-
-                    continue outer;
-
+                            return this.retryMaxPutRetryCount(clientMessage, ++index);
+                        })
+                    }
                 }
-            }
 
-            // All members in our member list all known to have the schema
-            return Promise.resolve(true);
+                // All members in our member list all known to have the schema
+                return Promise.resolve(true);
+            })
         }
-
-        // We tried to send it a couple of times, but the member list in our
-        // local and the member list returned by the initiator nodes did not
-        // match.
-        return Promise.resolve(false);
+        
     }
 }

@@ -146,15 +146,9 @@ export class HazelcastClient {
         this.loggingService = new LoggingService(this.config.customLogger,
             this.config.properties['hazelcast.logging.level'] as string);
         const logger = this.loggingService.getLogger();
-        this.clusterFailoverService = this.initClusterFailoverService();
-        this.clusterService = new ClusterService(
-            this.config,
-            logger,
-            this.clusterFailoverService
-        );
         this.schemaService = new SchemaService(
             this.config, 
-            this.clusterService, 
+            () => this.clusterService, 
             () => this.invocationService,
             logger
         );
@@ -171,6 +165,17 @@ export class HazelcastClient {
         this.lifecycleService = new LifecycleServiceImpl(
             this.config.lifecycleListeners,
             logger
+        );
+        this.clusterFailoverService = HazelcastClient.initClusterFailoverService(
+            this.failoverConfig,
+            this.config,
+            this.lifecycleService,
+            this.loggingService
+        );
+        this.clusterService = new ClusterService(
+            this.config,
+            logger,
+            this.clusterFailoverService
         );
         this.connectionRegistry = new ConnectionRegistryImpl(
             this.config.connectionStrategy.asyncStart,
@@ -652,18 +657,23 @@ export class HazelcastClient {
     }
 
     /** @internal */
-    private initClusterFailoverService(): ClusterFailoverService {
+    private static initClusterFailoverService(
+        failoverConfig: ClientFailoverConfigImpl,
+        config: ClientConfigImpl,
+        lifecycleService: LifecycleService,
+        loggingService: LoggingService
+    ): ClusterFailoverService {
         let tryCount: number;
         let clientConfigs: ClientConfigImpl[];
-        if (this.failoverConfig == null) {
+        if (failoverConfig == null) {
             tryCount = 0;
-            clientConfigs = [this.config];
+            clientConfigs = [config];
         } else {
-            tryCount = this.failoverConfig.tryCount;
-            clientConfigs = this.failoverConfig.clientConfigs;
+            tryCount = failoverConfig.tryCount;
+            clientConfigs = failoverConfig.clientConfigs;
         }
         const builder = new ClusterFailoverServiceBuilder(
-            tryCount, clientConfigs, this.lifecycleService, this.loggingService);
+            tryCount, clientConfigs, lifecycleService, loggingService);
         return builder.build();
     }
 }
