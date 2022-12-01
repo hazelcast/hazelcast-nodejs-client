@@ -98,10 +98,9 @@ export class SchemaService {
                     result in data loss. It might be possible to replicate the schema after some time, when 
                     the cluster is healed.`
                 );
-            } else {
-                this.putIfAbsent(schema);
-            }
-        }).catch((err) => { console.error(err); });
+            } 
+            this.putIfAbsent(schema);
+        })
     }
 
     private putIfAbsent(schema: Schema): void {
@@ -135,36 +134,33 @@ export class SchemaService {
         return this.retryMaxPutRetryCount(clientMessage, 0);
     }
 
-    private retryMaxPutRetryCount(clientMessage: ClientMessage, index: number) : Promise<boolean> {
-        if (index === this.maxPutRetryCount) {
+    private retryMaxPutRetryCount(clientMessage: ClientMessage, currentRetryCount: number) : Promise<boolean> {
+        if (currentRetryCount === this.maxPutRetryCount) {
             return Promise.resolve(false);
-        } else {
-            const invocationService = this.getInvocationService(); 
-            const invocation = new Invocation(invocationService, clientMessage);
-            return invocationService.invoke(invocation).then((response) => {
-                const replicatedMemberUuids = UuidUtil.convertUUIDSetToStringSet(ClientSendSchemaCodec.decodeResponse(response));
-                const members = this.getClusterService().getMembers();
-                for (const member of members) {
-                    if (!replicatedMemberUuids.has(member.uuid.toString())) {
-                        // There is a member in our member list that the schema
-                        // is not known to be replicated yet. We should retry
-                        // sending it in a random member.
-    
-                        return delayedPromise(this.retryPauseMillis)
-                        .then(() => {
-                            // correlation id will be set when the invoke method is
-                            // called above
-                            clientMessage = clientMessage.copyMessageWithSharedNonInitialFrames();
-
-                            return this.retryMaxPutRetryCount(clientMessage, ++index);
-                        })
-                    }
-                }
-
-                // All members in our member list all known to have the schema
-                return Promise.resolve(true);
-            })
         }
+        const invocationService = this.getInvocationService(); 
+        const invocation = new Invocation(invocationService, clientMessage);
+        return invocationService.invoke(invocation).then((response) => {
+            const replicatedMemberUuids = UuidUtil.convertUUIDSetToStringSet(ClientSendSchemaCodec.decodeResponse(response));
+            const members = this.getClusterService().getMembers();
+            for (const member of members) {
+                if (!replicatedMemberUuids.has(member.uuid.toString())) {
+                    // There is a member in our member list that the schema
+                    // is not known to be replicated yet. We should retry
+                    // sending it in a random member.
+                    return delayedPromise(this.retryPauseMillis).then(() => {
+                        // correlation id will be set when the invoke method is
+                        // called above
+                        clientMessage = clientMessage.copyMessageWithSharedNonInitialFrames();
+
+                        return this.retryMaxPutRetryCount(clientMessage, ++currentRetryCount);
+                    })
+                }
+            }
+
+            // All members in our member list all known to have the schema
+            return Promise.resolve(true);
+        })
         
     }
 }
