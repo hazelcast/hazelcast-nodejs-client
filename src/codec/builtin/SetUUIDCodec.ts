@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientMessage, Frame} from '../../protocol/ClientMessage';
+import {ClientMessage} from '../../protocol/ClientMessage';
 import {UUID} from '../../core/UUID';
 import {BitsUtil} from '../../util/BitsUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
