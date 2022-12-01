@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 
-import {ClientMessage, Frame} from '../../protocol/ClientMessage';
+import {ClientMessage} from '../../protocol/ClientMessage';
 import {UUID} from '../../core/UUID';
 import {BitsUtil} from '../../util/BitsUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
 /** @internal */
 export class SetUUIDCodec {
-    static encode(clientMessage: ClientMessage, list: UUID[]): void {
-        const itemCount = list.length;
-        const frame = new Frame(Buffer.allocUnsafe(itemCount * BitsUtil.UUID_SIZE_IN_BYTES));
-        for (let i = 0; i < itemCount; i++) {
-            FixSizedTypesCodec.encodeUUID(frame.content, i * BitsUtil.UUID_SIZE_IN_BYTES, list[i]);
-        }
-        clientMessage.addFrame(frame);
-    }
-
     static decode(clientMessage: ClientMessage): Set<UUID> {
         const frame = clientMessage.nextFrame();
         const itemCount = frame.content.length / BitsUtil.UUID_SIZE_IN_BYTES;

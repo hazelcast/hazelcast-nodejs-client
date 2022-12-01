@@ -589,14 +589,6 @@ export class HazelcastClient {
         this.connectionManager.reset();
     }
 
-    /**
-     * Returns {@code true} if we need to check the urgent invocations, by
-     * examining the local registry of the schema service.
-     */
-    shouldCheckUrgentInvocations(): boolean {
-        return this.schemaService.hasAnySchemas();
-    }
-
     /** @internal */
     private init(): Promise<HazelcastClient> {
         const logger = this.loggingService.getLogger();
