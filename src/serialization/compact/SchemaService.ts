@@ -129,6 +129,10 @@ export class SchemaService {
         return this.getInvocationService().invokeUrgent(invocation).then(() => {});
     }
 
+    hasAnySchemas(): boolean {
+        return !(this.schemas.size === 0);
+    }
+    
     replicateSchemaInCluster(schema: Schema): Promise<boolean> {
         const clientMessage = ClientSendSchemaCodec.encodeRequest(schema);
         return this.retryMaxPutRetryCount(clientMessage, 0);
