@@ -108,6 +108,15 @@ export enum ClientState {
      * Invocations are allowed in this state.
      */
     INITIALIZED_ON_CLUSTER = 2,
+
+    /**
+     * When the client closes the last connection to the cluster it
+     * currently connected to, it switches to this state.
+     * 
+     * In this state, reconnectToMembersTask is not allowed to
+     * attempt connecting to last known member list.
+     */
+    DISCONNECTED_FROM_CLUSTER = 3
 }
 
 interface ClientForConnectionManager {
@@ -362,6 +371,7 @@ export class ConnectionManager extends EventEmitter {
                 if (this.connectionRegistry.getClientState() === ClientState.INITIALIZED_ON_CLUSTER) {
                     this.emitLifecycleEvent(LifecycleState.DISCONNECTED);
                 }
+                this.connectionRegistry.setClientState(ClientState.DISCONNECTED_FROM_CLUSTER);
                 this.triggerClusterReconnection();
             }
             this.emitConnectionRemovedEvent(connection);
@@ -744,6 +754,13 @@ export class ConnectionManager extends EventEmitter {
         }
 
         for (const member of this.clusterService.getMembers()) {
+            if (this.connectionRegistry.getClientState() === ClientState.DISCONNECTED_FROM_CLUSTER) {
+                // Best effort check to prevent this task from attempting to
+                // open a new connection when the client is not connected to any of the cluster members.
+                // In such occasions, only `doConnectToCandidateCluster`
+                // method should open new connections.
+                return;
+            }
             if (this.connectionRegistry.getConnection(member.uuid) != null) {
                 continue;
             }

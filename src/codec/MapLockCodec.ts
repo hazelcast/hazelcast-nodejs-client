@@ -38,6 +38,7 @@ export class MapLockCodec {
     static encodeRequest(name: string, key: Data, threadId: Long, ttl: Long, referenceId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
+        clientMessage.setContainsSerializedDataInRequest(true);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_THREAD_ID_OFFSET, threadId);
