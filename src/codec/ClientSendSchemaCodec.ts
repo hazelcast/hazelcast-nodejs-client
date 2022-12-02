@@ -19,6 +19,8 @@ import {BitsUtil} from '../util/BitsUtil';
 import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../protocol/ClientMessage';
 import {Schema} from '../serialization/compact/Schema';
 import {SchemaCodec} from './custom/SchemaCodec';
+import {SetUUIDCodec} from './builtin/SetUUIDCodec';
+import {UUID} from '../core/UUID';
 
 // hex: 0x001300
 const REQUEST_MESSAGE_TYPE = 4864;
@@ -40,5 +42,12 @@ export class ClientSendSchemaCodec {
 
         SchemaCodec.encode(clientMessage, schema);
         return clientMessage;
+    }
+
+    static decodeResponse(clientMessage: ClientMessage): Set<UUID> {
+        // empty initial frame
+        clientMessage.nextFrame();
+
+        return SetUUIDCodec.decode(clientMessage);
     }
 }
