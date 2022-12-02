@@ -144,6 +144,12 @@ export class IllegalStateError extends HazelcastError {
     }
 }
 
+export class InvocationMightContainCompactDataError extends HazelcastError {
+    constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
+        super(msg, cause, serverStackTrace);
+    }
+}
+
 export class StaleSequenceError extends HazelcastError {
     constructor(msg: string, cause?: Error, serverStackTrace?: ServerErrorStackElement[]) {
         super(msg, cause, serverStackTrace);
