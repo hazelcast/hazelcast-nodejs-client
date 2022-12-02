@@ -23,6 +23,7 @@ const { SetAddCodec } = require('../../../../lib/codec/SetAddCodec');
 const { Invocation } = require('../../../../lib/invocation/InvocationService');
 const { expect } = require('chai');
 const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
 const Long = require('long');
 
 describe('ClientInvocationServiceImplTest', function () {
@@ -33,18 +34,20 @@ describe('ClientInvocationServiceImplTest', function () {
 
     const testFactory = new TestUtil.TestFactory();
 
-    const checkUrgentInvocation_withNoData = async (client) => {
+    const checkUrgentInvocation_withNoData = (client) => {
         const clientMessage = ClientPingCodec.encodeRequest();
+        expect(clientMessage.isContainsSerializedDataInRequest()).to.be.an('undefined');
         const invocation = new Invocation(client.invocationService, clientMessage);
-        await client.invocationService.invokeUrgent(invocation);
+        client.invocationService.invokeUrgent(invocation).catch(() => {});
         return clientMessage;
     };
 
-    const checkUrgentInvocation_withData = async (client) => {
+    const checkUrgentInvocation_withData = (client) => {
         const data = client.getSerializationService().toData(1);
         const clientMessage = SetAddCodec.encodeRequest('test', data);
+        expect(clientMessage.isContainsSerializedDataInRequest()).to.be.eq(true);
         const invocation = new Invocation(client.invocationService, clientMessage);
-        await client.invocationService.invokeUrgent(invocation);
+        client.invocationService.invokeUrgent(invocation).catch(() => {});
         return clientMessage;
     };
 
@@ -71,20 +74,21 @@ describe('ClientInvocationServiceImplTest', function () {
     });
 
     afterEach(async function () {
+        sandbox.restore();
         client.shutdown();
     });
 
-    it('testInvokeUrgent_whenThereAreNoCompactSchemas_andClientIsInitializedOnCluster', async function () {
+    it('testInvokeUrgent_whenThereAreNoCompactSchemas_andClientIsInitializedOnCluster', function () {
         // No compact schemas, no need to check urgent invocations
-        expect(client.schemaService.hasAnySchemas()).to.be.eq(false);
+        expect(client.getInvocationService().shouldCheckUrgentInvocations()).to.be.eq(false);
         // client is connected to the member and initialized on it since this
         // is the initial cluster connection
         expect(client.getConnectionManager().getConnectionRegistry().clientInitializedOnCluster()).to.be.eq(true);
 
-        const connectionMock = sinon.mock(connection);
+        const connectionMock = sandbox.mock(connection);
 
-        const pingInvocationClientMessage = await checkUrgentInvocation_withNoData(client);
-        const setAddInvocationClientMessage = await checkUrgentInvocation_withData(client);
+        const pingInvocationClientMessage = checkUrgentInvocation_withNoData(client);
+        const setAddInvocationClientMessage = checkUrgentInvocation_withData(client);
 
         connectionMock.expects('write').once().withArgs(pingInvocationClientMessage);
         connectionMock.expects('write').once().withArgs(setAddInvocationClientMessage);
@@ -95,15 +99,15 @@ describe('ClientInvocationServiceImplTest', function () {
         await sampleMap.put('test', new CompactUtil.EmployeeDTO(23, Long.fromNumber(123)));
 
         // Some compact schemas, need to check urgent invocations
-        expect(client.schemaService.hasAnySchemas()).to.be.eq(true);
+        expect(client.getInvocationService().shouldCheckUrgentInvocations()).to.be.eq(true);
         // client is connected to the member and initialized on it since this
         // is the initial cluster connection
         expect(client.getConnectionManager().getConnectionRegistry().clientInitializedOnCluster()).to.be.eq(true);
 
-        const connectionMock = sinon.mock(connection);
+        const connectionMock = sandbox.mock(connection);
 
-        const pingInvocationClientMessage = await checkUrgentInvocation_withNoData(client);
-        const setAddInvocationClientMessage = await checkUrgentInvocation_withData(client);
+        const pingInvocationClientMessage = checkUrgentInvocation_withNoData(client);
+        const setAddInvocationClientMessage = checkUrgentInvocation_withData(client);
 
         connectionMock.expects('write').once().withArgs(pingInvocationClientMessage);
         connectionMock.expects('write').once().withArgs(setAddInvocationClientMessage);
@@ -114,16 +118,16 @@ describe('ClientInvocationServiceImplTest', function () {
         await TestUtil.waitForConnectionCount(client, 0);
 
         // No compact schemas, no need to check urgent invocations
-        expect(client.schemaService.hasAnySchemas()).to.be.eq(false);
+        expect(client.getInvocationService().shouldCheckUrgentInvocations()).to.be.eq(false);
         // client is disconnected, so not initialized on cluster
         await TestUtil.assertTrueEventually(async () => {
             expect(client.getConnectionManager().getConnectionRegistry().clientInitializedOnCluster()).to.be.eq(false);
         });
 
-        const connectionMock = sinon.mock(connection);
+        const connectionMock = sandbox.mock(connection);
         // Urgent invocations should be done
-        const pingInvocationClientMessage = await checkUrgentInvocation_withNoData(client);
-        const setAddInvocationClientMessage = await checkUrgentInvocation_withData(client);
+        const pingInvocationClientMessage = checkUrgentInvocation_withNoData(client);
+        const setAddInvocationClientMessage = checkUrgentInvocation_withData(client);
 
         connectionMock.expects('write').once().withArgs(pingInvocationClientMessage);
         connectionMock.expects('write').once().withArgs(setAddInvocationClientMessage);
@@ -137,16 +141,16 @@ describe('ClientInvocationServiceImplTest', function () {
         await TestUtil.waitForConnectionCount(client, 0);
 
         // Some compact schemas, need to check urgent invocations
-        expect(client.schemaService.hasAnySchemas()).to.be.eq(true);
+        expect(client.getInvocationService().shouldCheckUrgentInvocations()).to.be.eq(true);
         // client is disconnected, so not initialized on cluster
         await TestUtil.assertTrueEventually(async () => {
             expect(client.getConnectionManager().getConnectionRegistry().clientInitializedOnCluster()).to.be.eq(false);
         });
 
-        const connectionMock = sinon.mock(connection);
+        const connectionMock = sandbox.mock(connection);
         // Urgent invocations should be done, if they contain no data
-        const pingInvocationClientMessage = await checkUrgentInvocation_withNoData(client);
-        const setAddInvocationClientMessage = await checkUrgentInvocation_withData(client);
+        const pingInvocationClientMessage = checkUrgentInvocation_withNoData(client);
+        const setAddInvocationClientMessage = checkUrgentInvocation_withData(client);
 
         connectionMock.expects('write').once().withArgs(pingInvocationClientMessage);
         connectionMock.expects('write').never().withArgs(setAddInvocationClientMessage);

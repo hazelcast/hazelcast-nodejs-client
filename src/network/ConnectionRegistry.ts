@@ -68,7 +68,7 @@ export interface ConnectionRegistry {
     checkIfInvocationAllowed(): Error | null;
 
     /**
-     * Returns {@code true} if the client is initialized on the cluster, by
+     * Returns `true` if the client is initialized on the cluster, by
      * sending its local state, if necessary.
      */
     clientInitializedOnCluster(): boolean;

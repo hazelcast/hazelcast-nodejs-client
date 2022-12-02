@@ -541,13 +541,16 @@ export class InvocationService {
         invocation.invokeCount++;
         if (!invocation.urgent) {
             const error = this.connectionRegistry.checkIfInvocationAllowed();
-            if (error != null) {
+            if (error !== null) {
                 this.notifyError(invocation, error);
                 return;
             }
-        }
-        else {
-            this.checkUrgentInvocationAllowed(invocation);
+        } else {
+            const error = this.checkUrgentInvocationAllowed(invocation);
+            if (error !== null) {
+                this.notifyError(invocation, error);
+                return;
+            }
         }
 
         let invocationPromise: Promise<void>;
@@ -582,9 +585,12 @@ export class InvocationService {
                 this.notifyError(invocation, error);
                 return;
             }
-        }
-        else {
-            this.checkUrgentInvocationAllowed(invocation);
+        } else {
+            const error = this.checkUrgentInvocationAllowed(invocation);
+            if (error !== null) {
+                this.notifyError(invocation, error);
+                return;
+            }
         }
 
         let invocationPromise: Promise<void>;
@@ -698,21 +704,25 @@ export class InvocationService {
         this.pending.delete(correlationId);
     }
 
-    checkUrgentInvocationAllowed(invocation: Invocation): void {
+    shouldCheckUrgentInvocations() {
+        return this.schemaService.hasAnySchemas();
+    }
+
+    checkUrgentInvocationAllowed(invocation: Invocation): Error | null {
         if (this.connectionRegistry.clientInitializedOnCluster()) {
             // If the client is initialized on the cluster, that means we
             // have sent all the schemas to the cluster, even if we are
             // reconnected to it
-            return;
+            return null;
         }
 
-        if (!this.schemaService.hasAnySchemas()) {
+        if (!this.shouldCheckUrgentInvocations()) {
             // If there were no Compact schemas to begin with, we don't need
             // to perform the check below. If the client didn't send a Compact
             // schema up until this point, the retries or listener registrations
             // could not send a schema, because if they were, we wouldn't hit
             // this line.
-            return;
+            return null;
         }
 
         // We are not yet initialized on cluster, so the Compact schemas might
@@ -724,8 +734,8 @@ export class InvocationService {
         // is initialized on the cluster, which means schemas are replicated
         // in the cluster.
         if (invocation.request.isContainsSerializedDataInRequest()) {
-            throw new InvocationMightContainCompactDataError('The invocation' 
-            + invocation + ' might contain Compact serialized '
+            return new InvocationMightContainCompactDataError('The invocation with correlation id '
+            + invocation.request.getCorrelationId() + ' might contain Compact serialized '
             + 'data and it is not safe to invoke it when the client is not '
             + 'yet initialized on the cluster');
         }
