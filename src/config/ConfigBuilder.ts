@@ -348,6 +348,9 @@ export class ConfigBuilder {
             case 'hazelcast.client.invocation.retry.pause.millis':
                 tryGetNumber(value);
                 break;
+            case 'hazelcast.client.schema.max.put.retry.count':
+                tryGetNumber(value);
+                break;
             case 'hazelcast.client.invocation.timeout.millis':
                 tryGetNumber(value);
                 break;
