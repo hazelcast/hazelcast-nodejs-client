@@ -13,28 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @ignore *//** */
 
-import * as Long from 'long';
-import {UUID} from '../core/UUID';
-
-const INT_BOUND = 0xFFFFFFFF;
-
-function randomUInt(): number {
-    return Math.floor(Math.random() * INT_BOUND);
-}
+import {ClientMessage} from '../../protocol/ClientMessage';
+import {UUID} from '../../core/UUID';
+import {BitsUtil} from '../../util/BitsUtil';
+import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 
 /** @internal */
-export class UuidUtil {
-    static generate(isUnsigned = true): UUID {
-        const mostS = new Long(randomUInt(), randomUInt(), isUnsigned);
-        const leastS = new Long(randomUInt(), randomUInt(), isUnsigned);
-        return new UUID(mostS, leastS);
-    }
-    static convertUUIDSetToStringSet(uuidSet: Set<UUID>): Set<string> {
-        const result = new Set<string>();
-        for (const uuid of uuidSet) {
-            result.add(uuid.toString());
+export class SetUUIDCodec {
+    static decode(clientMessage: ClientMessage): Set<UUID> {
+        const frame = clientMessage.nextFrame();
+        const itemCount = frame.content.length / BitsUtil.UUID_SIZE_IN_BYTES;
+        const result = new Set<UUID>();
+        for (let i = 0; i < itemCount; i++) {
+            result.add(FixSizedTypesCodec.decodeUUID(frame.content, i * BitsUtil.UUID_SIZE_IN_BYTES));
         }
         return result;
     }

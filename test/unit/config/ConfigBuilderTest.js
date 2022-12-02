@@ -152,6 +152,7 @@ describe('ConfigBuilderTest', function () {
         expect(properties['hazelcast.client.heartbeat.interval']).to.equal(1000);
         expect(properties['hazelcast.client.heartbeat.timeout']).to.equal(10000);
         expect(properties['hazelcast.client.invocation.retry.pause.millis']).to.equal(4000);
+        expect(properties['hazelcast.client.schema.max.put.retry.count']).to.equal(500);
         expect(properties['hazelcast.client.invocation.timeout.millis']).to.equal(180000);
         expect(properties['hazelcast.client.cloud.url']).to.equal('https://hz.cloud');
         expect(properties['hazelcast.client.statistics.enabled']).to.be.true;
@@ -388,6 +389,7 @@ describe('ConfigBuilderValidationTest', function () {
             'hazelcast.invalidation.min.reconciliation.interval.seconds',
             'hazelcast.client.autopipelining.threshold.bytes',
             'hazelcast.client.operation.backup.timeout.millis',
+            'hazelcast.client.schema.max.put.retry.count',
         ];
 
         const propsAcceptingBoolean = [

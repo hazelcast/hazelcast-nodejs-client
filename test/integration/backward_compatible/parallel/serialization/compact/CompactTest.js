@@ -24,8 +24,11 @@ const Long = require('long');
 const { A, ASerializer } = require('./Class');
 const B = require('./SameNamedClass').A;
 const BSerializer = require('./SameNamedClass').ASerializer;
-const { Predicates, HazelcastSerializationError } = require('../../../../../../lib/core');
+const { Predicates, HazelcastSerializationError, IllegalStateError } = require('../../../../../../lib/core');
 const CompactUtil = require('./CompactUtil');
+const { UuidUtil } = require('../../../../../../lib/util/UuidUtil');
+const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
 
 let COMPACT_ENABLED_ZERO_CONFIG_XML = `
     <hazelcast xmlns="http://www.hazelcast.com/schema/config"
@@ -96,6 +99,7 @@ describe('CompactTest', function () {
     });
 
     afterEach(async function () {
+        sandbox.restore();
         await testFactory.shutdownAllClients();
     });
 
@@ -153,6 +157,31 @@ describe('CompactTest', function () {
         await map.set('key', new CompactUtil.Flexible(fields));
         return map;
     };
+
+    it('should throw IllegalStateError exception, because of schema could not be replicated in the cluster', async function() {
+        TestUtil.markClientVersionAtLeast(this, '5.2.0');
+        const fakeResult = new Set();
+        sandbox.replace(UuidUtil, 'convertUUIDSetToStringSet', sandbox.fake.returns(fakeResult));
+
+        const client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            serialization: {
+                compact: {
+                    serializers: [new CompactUtil.FlexibleSerializer([FieldKind.INT32])]
+                }
+            },
+            properties: {
+                'hazelcast.client.schema.max.put.retry.count': 1,
+                'hazelcast.client.invocation.retry.pause.millis': 100
+            }
+        }, member);
+        const map = await client.getMap(mapName);
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            await map.put(1, new CompactUtil.Flexible({INT32: {value: 42}}));
+        });
+        error.should.be.instanceOf(IllegalStateError);
+        error.message.includes('cannot be replicated in the cluster, after').should.be.true;
+    });
 
     it('should work with basic test', async function () {
         await shouldReadAndWrite(
