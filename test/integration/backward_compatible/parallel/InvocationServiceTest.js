@@ -73,7 +73,7 @@ describe('ClientInvocationServiceImplTest', function () {
         client.shutdown();
     });
 
-    it('should call write() function once and need urgent invocations false, when no compact schema exist', async function () {
+    it('testInvokeUrgent_whenThereAreNoCompactSchemas_andClientIsInitializedOnCluster', async function () {
         // No compact schemas, no need to check urgent invocations
         expect(client.schemaService.hasAnySchemas()).to.be.eq(false);
         // client is connected to the member and initialized on it since this
@@ -89,7 +89,7 @@ describe('ClientInvocationServiceImplTest', function () {
         connectionMock.expects('write').once().withArgs(setAddInvocationClientMessage);
     });
 
-    it('should call write() function once and need urgent invocations true, when compact schema exist', async function () {
+    it('testInvokeUrgent_whenThereAreCompactSchemas_andClientIsInitializedOnCluster', async function () {
         const sampleMap = await client.getMap('testMap');
         await sampleMap.put('test', new CompactUtil.EmployeeDTO(23, Long.fromNumber(123)));
 
