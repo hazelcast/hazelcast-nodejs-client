@@ -5,6 +5,7 @@
         "hazelcast.client.heartbeat.interval": 1000,
         "hazelcast.client.heartbeat.timeout": 10000,
         "hazelcast.client.invocation.retry.pause.millis": 4000,
+        "hazelcast.client.schema.max.put.retry.count": 500,
         "hazelcast.client.invocation.timeout.millis": 180000,
         "hazelcast.client.cloud.url": "https://hz.cloud",
         "hazelcast.client.statistics.enabled": true,
