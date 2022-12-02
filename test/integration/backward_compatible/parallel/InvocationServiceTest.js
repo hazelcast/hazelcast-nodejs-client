@@ -47,6 +47,14 @@ describe('ClientInvocationServiceImplTest', function () {
         return clientMessage;
     };
 
+    before(async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.2.0');
+        // Server version should not be lower than 5.2 for compact serialization tests
+        if (await TestUtil.compareServerVersionWithRC(RC, '5.2.0') < 0) {
+            this.skip();
+        }
+    });
+
     beforeEach(async function () {
         cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
