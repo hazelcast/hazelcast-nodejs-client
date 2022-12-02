@@ -32,10 +32,12 @@ export interface SSLConfig {
      * Default SSL options are empty which means the following default configuration
      * is used while connecting to the server.
      *
+     * ```json
      * {
      *   checkServerIdentity: (): any => null,
      *   rejectUnauthorized: true,
      * };
+     * ```
      *
      * If you want to override the default behavior, you can define your own options.
      */
