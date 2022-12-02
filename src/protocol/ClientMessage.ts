@@ -137,7 +137,7 @@ export class ClientMessage {
     endFrame: Frame;
     private retryable: boolean;
     private connection: Connection;
-    private containsSerializedDataInRequest: boolean;
+    private containsSerializedDataInRequest = false;
     private _nextFrame: Frame;
     // cached total length for encode case
     private cachedTotalLength: number;

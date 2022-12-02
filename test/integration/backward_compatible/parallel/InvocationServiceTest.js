@@ -36,7 +36,7 @@ describe('ClientInvocationServiceImplTest', function () {
 
     const checkUrgentInvocation_withNoData = (client) => {
         const clientMessage = ClientPingCodec.encodeRequest();
-        expect(clientMessage.isContainsSerializedDataInRequest()).to.be.an('undefined');
+        expect(clientMessage.isContainsSerializedDataInRequest()).to.be.eq(false);
         const invocation = new Invocation(client.invocationService, clientMessage);
         client.invocationService.invokeUrgent(invocation).catch(() => {});
         return clientMessage;
