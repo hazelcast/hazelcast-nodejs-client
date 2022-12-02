@@ -23,20 +23,35 @@ import {ClientSendAllSchemasCodec} from '../../codec/ClientSendAllSchemasCodec';
 import {ClientFetchSchemaCodec} from '../../codec/ClientFetchSchemaCodec';
 import {ClientSendSchemaCodec} from '../../codec/ClientSendSchemaCodec';
 import { HazelcastSerializationError, IllegalStateError } from '../../core';
+import { delayedPromise } from '../../util/Util';
+import { ClientConfig } from '../../config';
+import { ClusterService } from '../../invocation/ClusterService';
+import { ClientMessage } from '../../protocol/ClientMessage';
+import { UuidUtil } from '../../util/UuidUtil';
+
+const INVOCATION_RETRY_PAUSE_MILLIS = 'hazelcast.client.invocation.retry.pause.millis';
+const MAX_PUT_RETRY_COUNT = 'hazelcast.client.schema.max.put.retry.count';
 
 /**
  * Service to put and get metadata to cluster.
  * @internal
  */
 export class SchemaService {
+
+    private readonly retryPauseMillis: number;
+    private readonly maxPutRetryCount: number;
     schemas: Map<string, Schema>;
 
     constructor(
+        clientConfig: ClientConfig,
+        private readonly getClusterService: () => ClusterService,
         // a getter is used because there is a cyclic dependency between InvocationService and SchemaService
         private readonly getInvocationService: () => InvocationService,
         private readonly logger: ILogger
     ) {
         this.schemas = new Map<string, Schema>();
+        this.retryPauseMillis = clientConfig.properties[INVOCATION_RETRY_PAUSE_MILLIS] as number;
+        this.maxPutRetryCount = clientConfig.properties[MAX_PUT_RETRY_COUNT] as number;
     }
 
     /**
@@ -74,11 +89,18 @@ export class SchemaService {
             this.logger.trace('SchemaService', `Schema id ${schemaId} already exists locally`);
             return Promise.resolve();
         }
-        const message = ClientSendSchemaCodec.encodeRequest(schema);
-        const invocation = new Invocation(this.getInvocationService(), message);
-        return this.getInvocationService().invoke(invocation).then(() => {
+        return this.replicateSchemaInCluster(schema).then((result) => {
+            if (!result) {
+                throw new IllegalStateError(
+                    `The schema ${schema.typeName} cannot be replicated in the cluster, after ${this.maxPutRetryCount}  retries. 
+                    It might be the case that the client is connected to the two halves of the cluster that 
+                    is experiencing a split-brain, and continue putting the data associated with that schema might 
+                    result in data loss. It might be possible to replicate the schema after some time, when 
+                    the cluster is healed.`
+                );
+            } 
             this.putIfAbsent(schema);
-        });
+        })
     }
 
     private putIfAbsent(schema: Schema): void {
@@ -109,5 +131,40 @@ export class SchemaService {
 
     hasAnySchemas(): boolean {
         return !(this.schemas.size === 0);
+    }
+    
+    replicateSchemaInCluster(schema: Schema): Promise<boolean> {
+        const clientMessage = ClientSendSchemaCodec.encodeRequest(schema);
+        return this.retryMaxPutRetryCount(clientMessage, 0);
+    }
+
+    private retryMaxPutRetryCount(clientMessage: ClientMessage, currentRetryCount: number) : Promise<boolean> {
+        if (currentRetryCount === this.maxPutRetryCount) {
+            return Promise.resolve(false);
+        }
+        const invocationService = this.getInvocationService(); 
+        const invocation = new Invocation(invocationService, clientMessage);
+        return invocationService.invoke(invocation).then((response) => {
+            const replicatedMemberUuids = UuidUtil.convertUUIDSetToStringSet(ClientSendSchemaCodec.decodeResponse(response));
+            const members = this.getClusterService().getMembers();
+            for (const member of members) {
+                if (!replicatedMemberUuids.has(member.uuid.toString())) {
+                    // There is a member in our member list that the schema
+                    // is not known to be replicated yet. We should retry
+                    // sending it in a random member.
+                    return delayedPromise(this.retryPauseMillis).then(() => {
+                        // correlation id will be set when the invoke method is
+                        // called above
+                        clientMessage = clientMessage.copyMessageWithSharedNonInitialFrames();
+
+                        return this.retryMaxPutRetryCount(clientMessage, ++currentRetryCount);
+                    })
+                }
+            }
+
+            // All members in our member list all known to have the schema
+            return Promise.resolve(true);
+        })
+        
     }
 }

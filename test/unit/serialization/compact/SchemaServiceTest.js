@@ -22,31 +22,40 @@ const { Schema } = require('../../../../lib/serialization/compact/Schema');
 const { SchemaService } = require('../../../../lib/serialization/compact/SchemaService');
 const { FieldKind } = require('../../../../lib');
 const { FieldDescriptor } = require('../../../../lib/serialization/generic_record/FieldDescriptor');
+const { ClientConfigImpl } = require('../../../../lib/config');
 
 chai.should();
 
 describe('SchemaServiceTest', function () {
     let schemaService;
-    let fakeInvocationService;
+    let fakeReplicateSchemaInCluster;
 
     beforeEach(function() {
-        fakeInvocationService = {invoke: sandbox.fake.resolves()};
-        const getFakeInvocationService = () => fakeInvocationService;
-        schemaService = new SchemaService(getFakeInvocationService, {
-            trace: () => {},
-            log: () => {},
-            error: () => {},
-            warn: () => {},
-            info: () => {},
-            debug: () => {},
-        });
+        const clientConfig = new ClientConfigImpl();
+        const getFakeInvocationService = () => {};
+        const getFakeClusterService = () => {};
+        schemaService = new SchemaService(
+            clientConfig,
+            getFakeClusterService,
+            getFakeInvocationService,
+            {
+                trace: () => {},
+                log: () => {},
+                error: () => {},
+                warn: () => {},
+                info: () => {},
+                debug: () => {},
+            }
+        );
+        fakeReplicateSchemaInCluster = sandbox.fake.resolves(true);
+        sandbox.replace(schemaService, 'replicateSchemaInCluster', fakeReplicateSchemaInCluster);
     });
 
     afterEach(function () {
         sandbox.restore();
     });
 
-    it('should not send invocation if schema is already registered', async function () {
+    it('put() should return immediately if schema is already registered', async function () {
         const fields = [];
         for (const f in FieldKind) {
             const fieldKind = +f;
@@ -58,7 +67,6 @@ describe('SchemaServiceTest', function () {
         const schema = new Schema('something', fields);
         await schemaService.put(schema);
         await schemaService.put(schema);
-
-        fakeInvocationService.invoke.callCount.should.be.eq(1);
+        fakeReplicateSchemaInCluster.callCount.should.be.eq(1);
     });
 });
