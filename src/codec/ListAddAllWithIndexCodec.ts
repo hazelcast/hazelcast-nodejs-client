@@ -37,6 +37,7 @@ export class ListAddAllWithIndexCodec {
     static encodeRequest(name: string, index: number, valueList: Data[]): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
+        clientMessage.setContainsSerializedDataInRequest(true);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_INDEX_OFFSET, index);

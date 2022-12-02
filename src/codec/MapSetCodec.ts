@@ -37,6 +37,7 @@ export class MapSetCodec {
     static encodeRequest(name: string, key: Data, value: Data, threadId: Long, ttl: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
+        clientMessage.setContainsSerializedDataInRequest(true);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_THREAD_ID_OFFSET, threadId);

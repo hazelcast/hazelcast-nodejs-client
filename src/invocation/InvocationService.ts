@@ -25,7 +25,8 @@ import {
     TargetDisconnectedError,
     TargetNotMemberError,
     UUID,
-    SchemaNotFoundError
+    SchemaNotFoundError,
+    InvocationMightContainCompactDataError
 } from '../core';
 import {Connection} from '../network/Connection';
 import {ILogger} from '../logging/ILogger';
@@ -156,6 +157,10 @@ export class Invocation {
     }
 
     shouldRetry(err: Error): boolean {
+        if (err instanceof InvocationMightContainCompactDataError) {
+            return true;
+        }
+
         if (this.connection != null
                 && (err instanceof IOError || err instanceof TargetDisconnectedError)) {
             return false;
@@ -536,7 +541,13 @@ export class InvocationService {
         invocation.invokeCount++;
         if (!invocation.urgent) {
             const error = this.connectionRegistry.checkIfInvocationAllowed();
-            if (error != null) {
+            if (error !== null) {
+                this.notifyError(invocation, error);
+                return;
+            }
+        } else {
+            const error = this.checkUrgentInvocationAllowed(invocation);
+            if (error !== null) {
                 this.notifyError(invocation, error);
                 return;
             }
@@ -571,6 +582,12 @@ export class InvocationService {
         if (!invocation.urgent) {
             const error = this.connectionRegistry.checkIfInvocationAllowed();
             if (error != null) {
+                this.notifyError(invocation, error);
+                return;
+            }
+        } else {
+            const error = this.checkUrgentInvocationAllowed(invocation);
+            if (error !== null) {
                 this.notifyError(invocation, error);
                 return;
             }
@@ -685,5 +702,48 @@ export class InvocationService {
 
     deregisterInvocation(correlationId: number): void {
         this.pending.delete(correlationId);
+    }
+    
+    /**
+     * Returns `true` if we need to check the urgent invocations, by
+     * examining the local registry of the schema service.
+     */
+    shouldCheckUrgentInvocations() {
+        return this.schemaService.hasAnySchemas();
+    }
+
+    checkUrgentInvocationAllowed(invocation: Invocation): Error | null {
+        if (this.connectionRegistry.clientInitializedOnCluster()) {
+            // If the client is initialized on the cluster, that means we
+            // have sent all the schemas to the cluster, even if we are
+            // reconnected to it
+            return null;
+        }
+
+        if (!this.shouldCheckUrgentInvocations()) {
+            // If there were no Compact schemas to begin with, we don't need
+            // to perform the check below. If the client didn't send a Compact
+            // schema up until this point, the retries or listener registrations
+            // could not send a schema, because if they were, we wouldn't hit
+            // this line.
+            return null;
+        }
+
+        // We are not yet initialized on cluster, so the Compact schemas might
+        // not be sent yet. This message contains some serialized classes,
+        // and it is possible that it can also contain Compact serialized data.
+        // In that case, allowing this invocation to go through now could
+        // violate the invariant that the schema must come to cluster before
+        // the data. We will retry this invocation and wait until the client
+        // is initialized on the cluster, which means schemas are replicated
+        // in the cluster.
+        if (invocation.request.isContainsSerializedDataInRequest()) {
+            return new InvocationMightContainCompactDataError('The invocation with correlation id '
+            + invocation.request.getCorrelationId() + ' might contain Compact serialized '
+            + 'data and it is not safe to invoke it when the client is not '
+            + 'yet initialized on the cluster');
+        }
+        
+        return null;
     }
 }

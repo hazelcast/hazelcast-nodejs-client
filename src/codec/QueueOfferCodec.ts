@@ -37,6 +37,7 @@ export class QueueOfferCodec {
     static encodeRequest(name: string, value: Data, timeoutMillis: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
+        clientMessage.setContainsSerializedDataInRequest(true);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_TIMEOUT_MILLIS_OFFSET, timeoutMillis);

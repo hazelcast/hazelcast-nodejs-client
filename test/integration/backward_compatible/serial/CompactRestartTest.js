@@ -19,6 +19,8 @@ const TestUtil = require('../../../TestUtil');
 const CompactUtil = require('../parallel/serialization/compact/CompactUtil');
 const RC = require('../../RC');
 const { Predicates } = require('../../../../lib');
+const chai = require('chai');
+chai.should();
 
 let COMPACT_ENABLED_ZERO_CONFIG_XML = `
     <hazelcast xmlns="http://www.hazelcast.com/schema/config"

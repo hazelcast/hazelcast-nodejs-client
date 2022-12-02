@@ -37,6 +37,7 @@ export class RingbufferAddCodec {
     static encodeRequest(name: string, overflowPolicy: number, value: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
+        clientMessage.setContainsSerializedDataInRequest(true);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeInt(initialFrame.content, REQUEST_OVERFLOW_POLICY_OFFSET, overflowPolicy);

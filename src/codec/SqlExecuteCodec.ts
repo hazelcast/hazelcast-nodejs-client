@@ -44,6 +44,7 @@ const REQUEST_EXPECTED_RESULT_TYPE_OFFSET = REQUEST_CURSOR_BUFFER_SIZE_OFFSET + 
 const REQUEST_SKIP_UPDATE_STATISTICS_OFFSET = REQUEST_EXPECTED_RESULT_TYPE_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
 const REQUEST_INITIAL_FRAME_SIZE = REQUEST_SKIP_UPDATE_STATISTICS_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES;
 const RESPONSE_UPDATE_COUNT_OFFSET = RESPONSE_BACKUP_ACKS_OFFSET + BitsUtil.BYTE_SIZE_IN_BYTES;
+const RESPONSE_IS_INFINITE_ROWS_OFFSET = RESPONSE_UPDATE_COUNT_OFFSET + BitsUtil.LONG_SIZE_IN_BYTES;
 
 /** @internal */
 export interface SqlExecuteResponseParams {
@@ -51,6 +52,8 @@ export interface SqlExecuteResponseParams {
     rowPage: SqlPage;
     updateCount: Long;
     error: SqlError;
+    isInfiniteRows: boolean;
+    isIsInfiniteRowsExists: boolean;
 }
 
 /** @internal */
@@ -58,6 +61,7 @@ export class SqlExecuteCodec {
     static encodeRequest(sql: string, parameters: Data[], timeoutMillis: Long, cursorBufferSize: number, schema: string, expectedResultType: number, queryId: SqlQueryId, skipUpdateStatistics: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
+        clientMessage.setContainsSerializedDataInRequest(true);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_TIMEOUT_MILLIS_OFFSET, timeoutMillis);
@@ -80,6 +84,12 @@ export class SqlExecuteCodec {
 
         const response = {} as SqlExecuteResponseParams;
         response.updateCount = FixSizedTypesCodec.decodeLong(initialFrame.content, RESPONSE_UPDATE_COUNT_OFFSET);
+        if (initialFrame.content.length >= RESPONSE_IS_INFINITE_ROWS_OFFSET + BitsUtil.BOOLEAN_SIZE_IN_BYTES) {
+            response.isInfiniteRows = FixSizedTypesCodec.decodeBoolean(initialFrame.content, RESPONSE_IS_INFINITE_ROWS_OFFSET);
+            response.isIsInfiniteRowsExists = true;
+        } else {
+            response.isIsInfiniteRowsExists = false;
+        }
         response.rowMetadata = ListMultiFrameCodec.decodeNullable(clientMessage, SqlColumnMetadataCodec.decode);
         response.rowPage = CodecUtil.decodeNullable(clientMessage, SqlPageCodec.decode);
         response.error = CodecUtil.decodeNullable(clientMessage, SqlErrorCodec.decode);

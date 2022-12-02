@@ -36,6 +36,7 @@ export class MapLoadGivenKeysCodec {
     static encodeRequest(name: string, keys: Data[], replaceExistingValues: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
+        clientMessage.setContainsSerializedDataInRequest(true);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_REPLACE_EXISTING_VALUES_OFFSET, replaceExistingValues);
