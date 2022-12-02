@@ -57,9 +57,9 @@ interface OutputQueueItem {
 export class PipelinedWriter extends Writer {
 
     private queue: OutputQueueItem[] = [];
+    private error: Error;
     private scheduled = false;
     private canWrite = true;
-    private closeCause: Error;
     // reusable buffer for coalescing
     private readonly coalesceBuf: Buffer;
 
@@ -79,24 +79,20 @@ export class PipelinedWriter extends Writer {
         });
     }
 
-    private isClosed(): boolean {
-        return this.closeCause ? true : false;
-    }
-
     write(message: ClientMessage, resolver: DeferredPromise<void>): void {
-        if (this.isClosed()) {
+        if (this.error) {
             // if the socket is closed, it's useless to keep writing to the socket
-            return process.nextTick(() => resolver.reject(this.closeCause));
+            return process.nextTick(() => resolver.reject(this.error));
         }
         this.queue.push({ message, resolver });
         this.schedule();
     }
 
-    close(closeCause: Error): void {
-        if (this.isClosed()) {
+    close(error: Error): void {
+        if (this.error) {
             return;
         }
-        this.closeCause = this.makeIOError(closeCause);
+        this.error = this.makeIOError(error);
         this.canWrite = false;
         // If we pass an error to destroy, an unhandled error will be thrown because we don't handle the error event
         // So we don't pass anything to the socket. It is internal anyway.
@@ -114,7 +110,7 @@ export class PipelinedWriter extends Writer {
     }
 
     private process(): void {
-        if (this.isClosed()) {
+        if (this.error) {
             return;
         }
 
