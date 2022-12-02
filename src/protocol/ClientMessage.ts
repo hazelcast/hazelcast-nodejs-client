@@ -293,7 +293,6 @@ export class ClientMessage {
         this.containsSerializedDataInRequest = containsSerializedDataInRequest;
     }
 
-
     copyWithNewCorrelationId(): ClientMessage {
         const startFrameCopy = this.startFrame.deepCopy();
         const newMessage = new ClientMessage(startFrameCopy, this.endFrame);

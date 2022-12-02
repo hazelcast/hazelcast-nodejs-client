@@ -703,7 +703,11 @@ export class InvocationService {
     deregisterInvocation(correlationId: number): void {
         this.pending.delete(correlationId);
     }
-
+    
+    /**
+     * Returns `true` if we need to check the urgent invocations, by
+     * examining the local registry of the schema service.
+     */
     shouldCheckUrgentInvocations() {
         return this.schemaService.hasAnySchemas();
     }
