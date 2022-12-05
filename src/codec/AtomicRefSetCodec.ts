@@ -38,6 +38,7 @@ export class AtomicRefSetCodec {
     static encodeRequest(groupId: RaftGroupId, name: string, newValue: Data, returnOldValue: boolean): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(false);
+        clientMessage.setContainsSerializedDataInRequest(true);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeBoolean(initialFrame.content, REQUEST_RETURN_OLD_VALUE_OFFSET, returnOldValue);
