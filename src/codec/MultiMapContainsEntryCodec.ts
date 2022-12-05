@@ -37,6 +37,7 @@ export class MultiMapContainsEntryCodec {
     static encodeRequest(name: string, key: Data, value: Data, threadId: Long): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
+        clientMessage.setContainsSerializedDataInRequest(true);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         FixSizedTypesCodec.encodeLong(initialFrame.content, REQUEST_THREAD_ID_OFFSET, threadId);
