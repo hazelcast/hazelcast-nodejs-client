@@ -40,9 +40,9 @@ export interface CompactReader {
      * Reads a boolean.
      *
      * This method can also read a nullable boolean, as long as it is not
-     * {@code null}. If a {@code null} value is read with this method,
+     * `null`. If a `null` value is read with this method,
      * {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -54,9 +54,9 @@ export interface CompactReader {
      * Reads an 8-bit two's complement signed integer.
      *
      * This method can also read a nullable int8, as long as it is not
-     * {@code null}. If a {@code null} value is read with this method,
+     * `null`. If a `null` value is read with this method,
      * {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -68,9 +68,9 @@ export interface CompactReader {
      * Reads a 16-bit two's complement signed integer.
      *
      * This method can also read a nullable int16, as long as it is not
-     * {@code null}. If a {@code null} value is read with this method,
+     * `null`. If a `null` value is read with this method,
      * {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -82,9 +82,9 @@ export interface CompactReader {
      * Reads a 32-bit two's complement signed integer.
      *
      * This method can also read a nullable int32, as long as it is not
-     * {@code null}. If a {@code null} value is read with this method,
+     * `null`. If a `null` value is read with this method,
      * {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -96,9 +96,9 @@ export interface CompactReader {
      * Reads a 64-bit two's complement signed integer.
      *
      * This method can also read a nullable int64, as long as it is not
-     * {@code null}. If a {@code null} value is read with this method,
+     * `null`. If a `null` value is read with this method,
      * {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -110,9 +110,9 @@ export interface CompactReader {
      * Reads a 32-bit IEEE 754 floating point number.
      *
      * This method can also read a nullable float32, as long as it is not
-     * {@code null}. If a {@code null} value is read with this method,
+     * `null`. If a `null` value is read with this method,
      * {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -124,9 +124,9 @@ export interface CompactReader {
      * Reads a 64-bit IEEE 754 floating point number.
      *
      * This method can also read a nullable float64, as long as it is not
-     * {@code null}. If a {@code null} value is read with this method,
+     * `null`. If a `null` value is read with this method,
      * {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -208,9 +208,9 @@ export interface CompactReader {
      * Reads an array of booleans.
      *
      * This method can also read an array of nullable booleans, as long as it
-     * does not contain {@code null} values. If a {@code null} array item is
+     * does not contain `null` values. If a `null` array item is
      * read with this method, {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -222,9 +222,9 @@ export interface CompactReader {
      * Reads an array of 8-bit two's complement signed integers.
      *
      * This method can also read an array of nullable int8s, as long as it
-     * does not contain {@code null} values. If a {@code null} array item is
+     * does not contain `null` values. If a `null` array item is
      * read with this method, {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -236,9 +236,9 @@ export interface CompactReader {
      * Reads an array of 16-bit two's complement signed integers.
      *
      * This method can also read an array of nullable int16s, as long as it
-     * does not contain {@code null} values. If a {@code null} array item is
+     * does not contain `null` values. If a `null` array item is
      * read with this method, {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -250,9 +250,9 @@ export interface CompactReader {
      * Reads an array of 32-bit two's complement signed integers.
      *
      * This method can also read an array of nullable int32s, as long as it
-     * does not contain {@code null} values. If a {@code null} array item is
+     * does not contain `null` values. If a `null` array item is
      * read with this method, {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -264,9 +264,9 @@ export interface CompactReader {
      * Reads an array of 64-bit two's complement signed integers.
      *
      * This method can also read an array of nullable int64s, as long as it
-     * does not contain {@code null} values. If a {@code null} array item is
+     * does not contain `null` values. If a `null` array item is
      * read with this method, {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -278,9 +278,9 @@ export interface CompactReader {
      * Reads an array of 32-bit IEEE 754 floating point numbers.
      *
      * This method can also read an array of nullable float32s, as long as it
-     * does not contain {@code null} values. If a {@code null} array item is
+     * does not contain `null` values. If a `null` array item is
      * read with this method, {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -292,9 +292,9 @@ export interface CompactReader {
      * Reads an array of 64-bit IEEE 754 floating point numbers.
      *
      * This method can also read an array of nullable float64s, as long as it
-     * does not contain {@code null} values. If a {@code null} array item is
+     * does not contain `null` values. If a `null` array item is
      * read with this method, {@link HazelcastSerializationError} is thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -377,7 +377,7 @@ export interface CompactReader {
      * Reads a nullable boolean.
      *
      * This method can also read a non-nullable boolean.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -389,7 +389,7 @@ export interface CompactReader {
      * Reads a nullable 8-bit two's complement signed integer.
      *
      * This method can also read a non-nullable int8.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -401,7 +401,7 @@ export interface CompactReader {
      * Reads a nullable 16-bit two's complement signed integer.
      *
      * This method can also read a non-nullable int16.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -413,7 +413,7 @@ export interface CompactReader {
      * Reads a nullable 32-bit two's complement signed integer.
      *
      * This method can also read a non-nullable int32.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -425,7 +425,7 @@ export interface CompactReader {
      * Reads a nullable 64-bit two's complement signed integer.
      *
      * This method can also read a non-nullable int64.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -437,7 +437,7 @@ export interface CompactReader {
      * Reads a nullable 32-bit IEEE 754 floating point number.
      *
      * This method can also read a non-nullable float32.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -449,7 +449,7 @@ export interface CompactReader {
      * Reads a nullable 64-bit IEEE 754 floating point number.
      *
      * This method can also read a non-nullable float64.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -461,7 +461,7 @@ export interface CompactReader {
      * Reads a nullable array of nullable booleans.
      *
      * This method can also read array of non-nullable booleans.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -473,7 +473,7 @@ export interface CompactReader {
      * Reads a nullable array of nullable 8-bit two's complement signed integers.
      *
      * This method can also read array of non-nullable int8s.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -485,7 +485,7 @@ export interface CompactReader {
      * Reads a nullable array of nullable 16-bit two's complement signed integers.
      *
      * This method can also read array of non-nullable int16s.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -497,7 +497,7 @@ export interface CompactReader {
      * Reads a nullable array of nullable 32-bit two's complement signed integers.
      *
      * This method can also read array of non-nullable int32s.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -509,7 +509,7 @@ export interface CompactReader {
      * Reads a nullable array of nullable 64-bit two's complement signed integers.
      *
      * This method can also read array of non-nullable int64s.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -521,7 +521,7 @@ export interface CompactReader {
      * Reads a nullable array of nullable 32-bit IEEE 754 floating point numbers.
      *
      * This method can also read array of non-nullable float32s.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.
@@ -533,7 +533,7 @@ export interface CompactReader {
      * Reads a nullable array of nullable 64-bit IEEE 754 floating point numbers.
      *
      * This method can also read array of non-nullable float64s.
-     * 
+     *
      * @param fieldName name of the field.
      * @throws {@link HazelcastSerializationError} if the field does not exist in the
      * schema, or the type of the field does not match with the one defined in the schema.

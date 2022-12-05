@@ -20,7 +20,7 @@ import {
     DistributedObject,
     DistributedObjectListener,
     LoadBalancer,
-    IllegalStateError
+    IllegalStateError,
 } from './core';
 import {ClientGetDistributedObjectsCodec} from './codec/ClientGetDistributedObjectsCodec';
 import {ClientConfig, ClientConfigImpl} from './config/Config';
@@ -147,8 +147,8 @@ export class HazelcastClient {
             this.config.properties['hazelcast.logging.level'] as string);
         const logger = this.loggingService.getLogger();
         this.schemaService = new SchemaService(
-            this.config, 
-            () => this.clusterService, 
+            this.config,
+            () => this.clusterService,
             () => this.invocationService,
             logger
         );
