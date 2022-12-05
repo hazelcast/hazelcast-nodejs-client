@@ -34,6 +34,7 @@ export class MapEntriesWithPredicateCodec {
     static encodeRequest(name: string, predicate: Data): ClientMessage {
         const clientMessage = ClientMessage.createForEncode();
         clientMessage.setRetryable(true);
+        clientMessage.setContainsSerializedDataInRequest(true);
 
         const initialFrame = Frame.createInitialFrame(REQUEST_INITIAL_FRAME_SIZE);
         clientMessage.addFrame(initialFrame);
