@@ -26,9 +26,10 @@ const {
     Frame
 } = require('../../../lib/protocol/ClientMessage');
 const { deferredPromise } = require('../../../lib/util/Util');
+const sandbox = sinon.createSandbox();
 
 describe('DirectWriterTest', function () {
-    let queue;
+    let writer;
     let mockSocket;
     let writtenBytes;
 
@@ -40,24 +41,28 @@ describe('DirectWriterTest', function () {
 
     const setUpWriteSuccess = () => {
         mockSocket = new Socket({});
-        sinon.stub(mockSocket, 'write').callsFake((data, cb) => {
+        sandbox.stub(mockSocket, 'write').callsFake((data, cb) => {
             cb();
             mockSocket.emit('data', data);
         });
-        queue = new DirectWriter(mockSocket, numberOfBytes => {
+        writer = new DirectWriter(mockSocket, numberOfBytes => {
             writtenBytes += numberOfBytes;
         });
     };
 
     const setUpWriteFailure = (err) => {
         mockSocket = new Socket({});
-        sinon.stub(mockSocket, 'write').callsFake((_, cb) => {
+        sandbox.stub(mockSocket, 'write').callsFake((_, cb) => {
             cb(err);
         });
-        queue = new DirectWriter(mockSocket, numberOfBytes => {
+        writer = new DirectWriter(mockSocket, numberOfBytes => {
             writtenBytes += numberOfBytes;
         });
     };
+
+    afterEach(function() {
+        sandbox.restore();
+    });
 
     it('increment written bytes correctly', function(done) {
         setUpWriteSuccess();
@@ -70,7 +75,7 @@ describe('DirectWriterTest', function () {
             done();
         });
 
-        queue.write(msg, deferredPromise());
+        writer.write(msg, deferredPromise());
     });
 
     it('writes single message into socket', function(done) {
@@ -82,7 +87,7 @@ describe('DirectWriterTest', function () {
             done();
         });
 
-        queue.write(msg, deferredPromise());
+        writer.write(msg, deferredPromise());
     });
 
     it('writes multiple messages separately into socket', function(done) {
@@ -97,16 +102,16 @@ describe('DirectWriterTest', function () {
             }
         });
 
-        queue.write(msg, deferredPromise());
-        queue.write(msg, deferredPromise());
-        queue.write(msg, deferredPromise());
+        writer.write(msg, deferredPromise());
+        writer.write(msg, deferredPromise());
+        writer.write(msg, deferredPromise());
     });
 
     it('resolves promise on write success', function(done) {
         setUpWriteSuccess();
 
         const resolver = deferredPromise();
-        queue.write(createMessage('test'), resolver);
+        writer.write(createMessage('test'), resolver);
         resolver.promise.then(done);
     });
 
@@ -115,7 +120,7 @@ describe('DirectWriterTest', function () {
         setUpWriteFailure(err);
 
         const resolver = deferredPromise();
-        queue.write(createMessage('test'), resolver);
+        writer.write(createMessage('test'), resolver);
         resolver.promise.catch((err) => {
             expect(err).to.be.equal(err);
             done();
@@ -125,18 +130,29 @@ describe('DirectWriterTest', function () {
     it('emits write event on write success', function(done) {
         setUpWriteSuccess();
 
-        queue.on('write', done);
-        queue.write(createMessage('test'), deferredPromise());
+        writer.on('write', done);
+        writer.write(createMessage('test'), deferredPromise());
     });
 
     it('does not emit write event on write failure', function(done) {
         setUpWriteFailure(new Error());
 
-        queue.on('write', () => done(new Error()));
+        writer.on('write', () => done(new Error()));
         const resolver = deferredPromise();
-        queue.write(createMessage('test'), resolver);
+        writer.write(createMessage('test'), resolver);
         resolver.promise.catch(() => {
             done();
         });
+    });
+
+    it('should close the socket upon being closed', function() {
+        setUpWriteSuccess();
+
+        // This is equivalent to a sinon spy
+        const spy = sandbox.fake(mockSocket.destroy);
+        sandbox.replace(mockSocket, 'destroy', spy);
+        writer.close();
+
+        expect(spy.calledOnce).to.be.true;
     });
 });
