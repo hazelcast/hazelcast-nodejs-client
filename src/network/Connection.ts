@@ -213,7 +213,7 @@ export class DirectWriter extends Writer {
         });
     }
 
-    close(): void {
+    close(cause: Error): void {
         this.socket.destroy();
     }
 }
