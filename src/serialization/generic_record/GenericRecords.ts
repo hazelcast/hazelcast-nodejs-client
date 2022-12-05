@@ -28,8 +28,8 @@ export class GenericRecords {
      *
      * @param typeName Represents the type of the compact object, included in serialized form
      * @param fields Represents the field schema of the compact
-     * @param values Values to use in the generic record. This should be in sync with {@link fields}
-     * @throws TypeError if a value is of wrong type according to {@link fields}
+     * @param values Values to use in the generic record. This should be in sync with `fields`
+     * @throws TypeError if a value is of wrong type according to `fields`
      * @throws RangeError if a value is out of range of its type
      * @returns A compact generic record
      */

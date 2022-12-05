@@ -134,7 +134,7 @@ export function getTypeKeyForDefaultNumberType(defaultNumberType: string): Funct
         case 'long':
             return Long;
         default:
-            throw new RangeError(`Unexpected defaultNumberType value. (${defaultNumberType}) 
+            throw new RangeError(`Unexpected defaultNumberType value. (${defaultNumberType})
                 Expected values: byte, short, integer, float, double, long`);
     }
 }
@@ -302,6 +302,7 @@ export function timedPromise<T>(wrapped: Promise<T>, timeout: number, err?: Erro
  * @param members list of all members
  * @throws {@link IllegalStateError} If there are more than 2 distinct member versions found
  * @return the chosen member or null, if no data member is found
+ * @internal
  */
 export function memberOfLargerSameVersionGroup(members: MemberImpl[]): MemberImpl | null {
     // The members should have at most 2 different version (ignoring the patch version).
