@@ -20,14 +20,11 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 
 const { PipelinedWriter } = require('../../../lib/network/Connection');
-const { IOError } = require('../../../lib/core/HazelcastError');
-const TestUtil = require('../../TestUtil');
 const {
     ClientMessage,
     Frame
 } = require('../../../lib/protocol/ClientMessage');
 const { deferredPromise } = require('../../../lib/util/Util');
-const sandbox = sinon.createSandbox();
 
 describe('PipelinedWriterTest', function () {
     const THRESHOLD = 8192;
@@ -38,7 +35,7 @@ describe('PipelinedWriterTest', function () {
 
     function setUpWriteSuccess(canWrite) {
         mockSocket = new Socket({});
-        sandbox.stub(mockSocket, 'write').callsFake((data, cb) => {
+        sinon.stub(mockSocket, 'write').callsFake((data, cb) => {
             process.nextTick(cb);
             process.nextTick(() => mockSocket.emit('data', data));
             return canWrite;
@@ -50,7 +47,7 @@ describe('PipelinedWriterTest', function () {
 
     function setUpWriteFailure(err) {
         mockSocket = new Socket({});
-        sandbox.stub(mockSocket, 'write').callsFake((_, cb) => {
+        sinon.stub(mockSocket, 'write').callsFake((_, cb) => {
             process.nextTick(() => cb(err));
             return false;
         });
@@ -70,10 +67,6 @@ describe('PipelinedWriterTest', function () {
         clientMessage.addFrame(new Frame(buffer));
         return clientMessage;
     }
-
-    afterEach(function () {
-        sandbox.restore();
-    });
 
     it('increment written bytes correctly', function(done) {
         setUpWriteSuccess(true);
@@ -206,17 +199,16 @@ describe('PipelinedWriterTest', function () {
         Promise.all([resolver1.promise, resolver2.promise]).then(() => done());
     });
 
-    it('rejects single promise on write failure', async function() {
+    it('rejects single promise on write failure', function(done) {
         const err = new Error();
         setUpWriteFailure(err);
 
         const resolver = deferredPromise();
         writer.write(createMessageFromString('test'), resolver);
-        const rejReason = await TestUtil.getRejectionReasonOrThrow(async () => {
-            await resolver.promise;
+        resolver.promise.catch((err) => {
+            expect(err).to.be.equal(err);
+            done();
         });
-        expect(rejReason.cause).to.be.equal(err);
-        expect(rejReason).to.be.instanceOf(IOError);
     });
 
     it('rejects multiple promises on write failure', function(done) {
@@ -283,40 +275,5 @@ describe('PipelinedWriterTest', function () {
             mockSocket.emit('drain');
             writer.write(msg, deferredPromise());
         });
-    });
-
-    it('should not schedule a write if a write() is called when the writer is already closed', async function() {
-        setUpWriteSuccess(true);
-
-        const msg = createMessageFromString('test');
-        // Pass a IOError so that the same error is used to reject the write() deferred promise
-        const closeReason = new IOError();
-        writer.close(closeReason);
-        const deferred = deferredPromise();
-
-        // This is equivalent to a sinon spy
-        const spy = sandbox.fake(writer.schedule);
-        sandbox.replace(writer, 'schedule', spy);
-        writer.write(msg, deferred);
-
-        const rejectionReason = await TestUtil.getRejectionReasonOrThrow(async () => await deferred.promise);
-        expect(rejectionReason).to.be.equal(closeReason);
-        expect(spy.callCount).to.be.equal(0);
-    });
-
-    it('should not destroy the socket twice upon closing again', async function() {
-        setUpWriteSuccess(true);
-
-        // Pass a IOError so that the same error is used to reject the write() deferred promise
-        const closeReason = new IOError();
-
-        // This is equivalent to a sinon spy
-        const spy = sandbox.fake(mockSocket.destroy);
-        sandbox.replace(mockSocket, 'destroy', spy);
-
-        writer.close(closeReason);
-        writer.close(closeReason);
-
-        expect(spy.callCount).to.be.equal(1);
     });
 });

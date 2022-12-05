@@ -41,7 +41,7 @@ abstract class Writer extends EventEmitter {
 
     abstract write(message: ClientMessage, resolver: DeferredPromise<void>): void;
 
-    abstract close(cause: Error): void;
+    abstract close(): void;
 
 }
 
@@ -81,22 +81,15 @@ export class PipelinedWriter extends Writer {
 
     write(message: ClientMessage, resolver: DeferredPromise<void>): void {
         if (this.error) {
-            // if the socket is closed, it's useless to keep writing to the socket
+            // if there was a write error, it's useless to keep writing to the socket
             return process.nextTick(() => resolver.reject(this.error));
         }
         this.queue.push({ message, resolver });
         this.schedule();
     }
 
-    close(error: Error): void {
-        if (this.error) {
-            return;
-        }
-        this.error = this.makeIOError(error);
+    close(): void {
         this.canWrite = false;
-        // If we pass an error to destroy, an unhandled error will be thrown because we don't handle the error event
-        // So we don't pass anything to the socket. It is internal anyway.
-        this.socket.destroy();
         // no more items can be added now
         this.queue = FROZEN_ARRAY;
     }
@@ -171,22 +164,15 @@ export class PipelinedWriter extends Writer {
         });
     }
 
-    private handleError(err: Error, sentResolvers: OutputQueueItem[]): void {
-        const error = this.makeIOError(err);
+    private handleError(err: any, sentResolvers: OutputQueueItem[]): void {
+        this.error = new IOError(err);
         for (const item of sentResolvers) {
-            item.resolver.reject(error);
+            item.resolver.reject(this.error);
         }
         for (const item of this.queue) {
-            item.resolver.reject(error);
+            item.resolver.reject(this.error);
         }
-        this.close(error);
-    }
-
-    private makeIOError(err: Error): IOError {
-        if (err instanceof IOError) {
-            return err;
-        }
-        return new IOError(err.message, err);
+        this.close();
     }
 }
 
@@ -213,8 +199,8 @@ export class DirectWriter extends Writer {
         });
     }
 
-    close(cause: Error): void {
-        this.socket.destroy();
+    close(): void {
+        // no-op
     }
 }
 
@@ -425,7 +411,7 @@ export class Connection {
     /**
      * Closes this connection.
      */
-    close(reason: string | null, cause: Error | null): void {
+    close(reason: string, cause: Error): void {
         if (this.closedTime !== 0) {
             return;
         }
@@ -436,7 +422,8 @@ export class Connection {
 
         this.logClose();
 
-        this.writer.close(this.closedCause ? this.closedCause : new Error(reason ? reason : 'Connection closed'));
+        this.writer.close();
+        this.socket.end();
 
         this.connectionManager.onConnectionClose(this);
     }
