@@ -18,7 +18,7 @@
  This file should be in sync with ReferenceObjects.java file.
 
  After changing this file, you should change the ReferenceObjects.java file also.
- And please dont forget to read the instructions in ReferenceObjects.java for creating binary file.
+ And please don't forget to read the instructions in ReferenceObjects.java for creating binary file.
  (1.serialization.compatibility.binary)
 */
 
