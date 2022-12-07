@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 'use strict';
-
 class APortable {
-    constructor(bool, b, c, d, s, f, i, l, str, p, booleans, bytes, chars,
+    constructor(bool, b, c, d, s, f, i, l, str, bd, ld, lt, ldt, odt, p, booleans, bytes, chars,
                 doubles, shorts, floats, ints, longs, strings, portables,
                 identifiedDataSerializable, customStreamSerializableObject,
                 customByteArraySerializableObject, data) {
@@ -32,6 +31,11 @@ class APortable {
         this.i = i;
         this.l = l;
         this.str = str;
+        this.bd = bd;
+        this.ld = ld;
+        this.lt = lt;
+        this.ldt = ldt;
+        this.odt = odt;
         this.p = p;
 
         this.booleans = booleans;
@@ -75,6 +79,11 @@ class APortable {
         this.i = reader.readInt('i');
         this.l = reader.readLong('l');
         this.str = reader.readString('str');
+        this.bd = reader.readDecimal('bd');
+        this.ld = reader.readDate('ld');
+        this.lt = reader.readTime('lt');
+        this.ldt = reader.readTimestamp('ldt');
+        this.odt = reader.readTimestampWithTimezone('odt');
         this.p = reader.readPortable('p');
 
         this.booleans = reader.readBooleanArray('booleans');

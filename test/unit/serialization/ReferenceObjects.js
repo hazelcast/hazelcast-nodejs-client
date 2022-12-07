@@ -23,6 +23,7 @@ const { HeapData } = require('../../../lib/serialization/HeapData');
 const AnInnerPortable = require('./AnInnerPortable');
 const AnIdentifiedDataSerializable = require('./AnIdentifiedDataSerializable');
 const APortable = require('./APortable');
+const { GetTimeOffsetByHour } = require('../../TestUtil');
 const CustomByteArraySerializable = require('./CustomSerializable').CustomByteArraySerializable;
 const CustomStreamSerializable = require('./CustomSerializable').CustomStreamSerializable;
 
@@ -71,13 +72,6 @@ to.anAnIdentifiedDataSerializable = new AnIdentifiedDataSerializable(
     to.shorts, to.floats, to.ints, to.longs, to.Strings, to.anAnInnerPortable, null,
     to.aCustomStreamSerializable, to.aCustomByteArraySerializable, exports.aData
 );
-to.aAPortable = new APortable(
-    to.aBoolean, to.aByte, to.aCharacter, to.aDouble, to.aShort, to.aFloat,
-    to.anInteger, to.aLong, to.aString, to.anAnInnerPortable, to.booleans, to.bytes,
-    to.chars, to.doubles, to.shorts, to.floats, to.ints, to.longs, to.Strings,
-    exports.portables, to.anAnIdentifiedDataSerializable, to.aCustomStreamSerializable,
-    to.aCustomByteArraySerializable, exports.aData
-);
 to.aDate = new Date(Date.UTC(1990, 2, 1, 0, 0, 0, 0));
 to.aBigInteger = BigInt('1314432323232411');
 to.aBigDecimal = BigDecimal.fromString('31231');
@@ -86,9 +80,19 @@ to.aClass = 'java.math.BigDecimal';
 to.aLocalDate = new LocalDate(2021, 6, 28);
 to.aLocalTime = new LocalTime(11, 22, 41, 123456789);
 to.aLocalDateTime = new LocalDateTime(to.aLocalDate, to.aLocalTime);
-to.aOffsetDateTime = new OffsetDateTime(to.aLocalDateTime, 64800);
+to.aOffsetDateTime = new OffsetDateTime(to.aLocalDateTime, GetTimeOffsetByHour(18));
 
 to.Objects = [to.anAnInnerPortable, to.aNULL, to.aBigDecimal, to.aShort];
+
+to.aAPortable = new APortable(
+    to.aBoolean, to.aByte, to.aCharacter, to.aDouble, to.aShort, to.aFloat,
+    to.anInteger, to.aLong, to.aString, to.aBigDecimal, to.aLocalDate, to.aLocalTime,
+    to.aLocalDateTime, to.aOffsetDateTime, to.anAnInnerPortable, to.booleans, to.bytes,
+    to.chars, to.doubles, to.shorts, to.floats, to.ints, to.longs, to.Strings,
+    exports.portables, to.anAnIdentifiedDataSerializable, to.aCustomStreamSerializable,
+    to.aCustomByteArraySerializable, exports.aData
+);
+
 const nonNullList = [
     to.aBoolean, to.aByte, to.aCharacter, to.aDouble, to.aShort, to.aFloat, to.anInteger,
     to.aLong, to.anAnInnerPortable, to.booleans, to.bytes, to.chars, to.doubles,
