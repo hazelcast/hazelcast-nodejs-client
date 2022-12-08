@@ -32,7 +32,7 @@ const { HeapData } = require('../../../lib/serialization/HeapData');
 const AnInnerPortable = require('./AnInnerPortable');
 const AnIdentifiedDataSerializable = require('./AnIdentifiedDataSerializable');
 const APortable = require('./APortable');
-const { GetTimeOffsetByHour } = require('../../TestUtil');
+const { getTimeOffsetByHour } = require('../../TestUtil');
 const CustomByteArraySerializable = require('./CustomSerializable').CustomByteArraySerializable;
 const CustomStreamSerializable = require('./CustomSerializable').CustomStreamSerializable;
 
@@ -89,7 +89,7 @@ to.aClass = 'java.math.BigDecimal';
 to.aLocalDate = new LocalDate(2021, 6, 28);
 to.aLocalTime = new LocalTime(11, 22, 41, 123456789);
 to.aLocalDateTime = new LocalDateTime(to.aLocalDate, to.aLocalTime);
-to.aOffsetDateTime = new OffsetDateTime(to.aLocalDateTime, GetTimeOffsetByHour(18));
+to.aOffsetDateTime = new OffsetDateTime(to.aLocalDateTime, getTimeOffsetByHour(18));
 
 to.Objects = [to.anAnInnerPortable, to.aNULL, to.aBigDecimal, to.aShort];
 

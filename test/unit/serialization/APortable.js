@@ -16,7 +16,7 @@
 'use strict';
 class APortable {
     constructor(bool, b, c, d, s, f, i, l, str, bd, ld, lt, ldt, odt, p, booleans, bytes, chars,
-                doubles, shorts, floats, ints, longs, strings, portables,
+                doubles, shorts, floats, ints, longs, strings, decimals, dates, times, dateTimes, offsetDateTimes, portables,
                 identifiedDataSerializable, customStreamSerializableObject,
                 customByteArraySerializableObject, data) {
         if (arguments.length === 0) {
@@ -47,6 +47,11 @@ class APortable {
         this.ints = ints;
         this.longs = longs;
         this.strings = strings;
+        this.decimals = decimals;
+        this.dates = dates;
+        this.times = times;
+        this.dateTimes = dateTimes;
+        this.offsetDateTimes = offsetDateTimes;
         this.portables = portables;
 
         this.byteSize = bytes.length;
@@ -95,6 +100,11 @@ class APortable {
         this.ints = reader.readIntArray('is');
         this.longs = reader.readLongArray('ls');
         this.strings = reader.readStringArray('strs');
+        this.decimals = reader.readDecimalArray('decimals');
+        this.dates = reader.readDateArray('dates');
+        this.times = reader.readTimeArray('times');
+        this.dateTimes = reader.readTimestampArray('dateTimes');
+        this.offsetDateTimes = reader.readTimestampWithTimezoneArray('offsetDateTimes');
         this.portables = reader.readPortableArray('ps');
 
         this.booleansNull = reader.readBooleanArray('booleansNull');

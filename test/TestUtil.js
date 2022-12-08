@@ -659,7 +659,7 @@ exports.waitForConnectionCount = async (client, connectionCount) => {
 /**
  * This function converts hours to seconds
  */
-exports.GetTimeOffsetByHour = (hour) => {
+exports.getTimeOffsetByHour = (hour) => {
     const timeOffset = hour * 60 * 60;
     return timeOffset;
 };
