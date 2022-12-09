@@ -719,7 +719,7 @@ Or, if you want to use your own serialization method, you can use [Custom Serial
 
 ## 4.1. Compact Serialization
 
-> **WARNING: Supported in client version 5.1+ and server version 5.0+. However, it is recommended to use 5.1+ client with a 5.1+
+> **NOTES: Supported in client version 5.1+ and server version 5.0+. However, it is recommended to use 5.1+ client with a 5.1+
 server.
 
 As an enhancement to existing serialization methods, Hazelcast offers the compact serialization, with the
