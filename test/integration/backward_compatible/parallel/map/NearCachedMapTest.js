@@ -38,6 +38,17 @@ describe('NearCachedMapTest', function () {
 
             before(async function () {
                 TestUtil.markClientVersionAtLeast(this, '5.1');
+                const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
+                const isClientVersionAtLeast520 = TestUtil.isClientVersionAtLeast('5.2.0');
+                // Compact serialization 5.2 and newer server is not compatible with clients older than 5.2
+                // Compact serialization 5.2 and newer clients are not compatible with servers older than 5.2
+                const isNotCompactCompatible =
+                    (comparisonValueForServerVersion520 >= 0 && !isClientVersionAtLeast520) ||
+                    (comparisonValueForServerVersion520 < 0 && isClientVersionAtLeast520);
+
+                if (isNotCompactCompatible) {
+                    this.skip();
+                }
                 cluster = await testFactory.createClusterForParallelTests();
                 member = await RC.startMember(cluster.id);
             });
