@@ -719,12 +719,10 @@ Or, if you want to use your own serialization method, you can use [Custom Serial
 
 ## 4.1. Compact Serialization
 
-> **WARNING: This serialization method is in Beta, and API can be changed in a breaking way.**
-
 > **WARNING: Supported in client version 5.1+ and server version 5.0+. However, it is recommended to use 5.1+ client with a 5.1+
-server because compatiblity is not guaranteed as compact is in Beta.**
+server.
 
-As an enhancement to existing serialization methods, Hazelcast offers a beta version of the compact serialization, with the
+As an enhancement to existing serialization methods, Hazelcast offers the compact serialization, with the
 following main features.
 
 * Separates the schema from the data and stores it per type, not per object which results in less memory and bandwidth usage
