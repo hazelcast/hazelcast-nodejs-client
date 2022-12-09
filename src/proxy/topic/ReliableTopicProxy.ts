@@ -21,6 +21,7 @@ import {AddressImpl, HazelcastError, SchemaNotReplicatedError, TopicOverloadErro
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
 import {
+    assertNotNull,
     deferredPromise,
     DeferredPromise
 } from '../../util/Util';
@@ -152,15 +153,47 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     publishAll(messages: any[]): Promise<void> {
         const reliableTopicMessages: ReliableTopicMessage[] = [];
-        for (const message of messages) {
-            const reliableTopicMessage = new ReliableTopicMessage();
-            reliableTopicMessage.payload = this.serializationService.toData(message);
-            reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
-            reliableTopicMessage.publisherAddress = this.localAddress;
-            reliableTopicMessages.push(reliableTopicMessage);
-        }
+        assertNotNull(messages);
 
-        return this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.FAIL);
+        try {
+            for (const message of messages) {
+                const reliableTopicMessage = new ReliableTopicMessage();
+                reliableTopicMessage.payload = this.serializationService.toData(message);
+                reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
+                reliableTopicMessage.publisherAddress = this.localAddress;
+                reliableTopicMessages.push(reliableTopicMessage);
+            }
+            switch (this.overloadPolicy) {
+                case TopicOverloadPolicy.ERROR:
+                    for (const reliableTopicMessage of reliableTopicMessages) {
+                        this.addWithError(reliableTopicMessage);
+                    }
+                    break;
+                case TopicOverloadPolicy.DISCARD_NEWEST:
+                    for (const reliableTopicMessage of reliableTopicMessages) {
+                        this.addOrDiscard(reliableTopicMessage);
+                    }
+                    break;
+                case TopicOverloadPolicy.DISCARD_OLDEST:
+                    for (const reliableTopicMessage of reliableTopicMessages) {
+                        this.addOrOverwrite(reliableTopicMessage);
+                    }
+                    break;
+                case TopicOverloadPolicy.BLOCK:
+                    for (const reliableTopicMessage of reliableTopicMessages) {
+                        this.addWithBackoff(reliableTopicMessage);
+                    }
+                    break;
+                default:
+                    throw new RangeError('Unknown overload policy');
+            }
+        } catch (e) {
+            if (e instanceof SchemaNotReplicatedError) {
+                return this.registerSchema(e.schema, e.clazz).then(() => this.publishAll(messages));
+            }
+            throw e;
+        }
+        return Promise.resolve();
     }
 
     addListener(listener: MessageListener<E>): Promise<string> {

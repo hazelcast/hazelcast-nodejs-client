@@ -388,8 +388,8 @@ export class HazelcastClient {
     /**
      * Returns a distributed Topic instance with the given name.
      */
-    getTopic<E>(name: string): Promise<Topic<E>> {
-        return this.proxyManager.getOrCreateProxy(name, ProxyManager.TOPIC_SERVICE) as Promise<Topic<E>>;
+    getTopic<E>(name: string): Promise<ITopic<E>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.TOPIC_SERVICE) as Promise<ITopic<E>>;
     }
 
     /**

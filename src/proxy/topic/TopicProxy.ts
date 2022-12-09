@@ -1,6 +1,6 @@
 import {ITopic} from '../ITopic';
 import {MessageListener} from '../MessageListener';
-import {HazelcastError, UUID} from '../../core';
+import {HazelcastError, Member, UUID} from '../../core';
 import {TopicAddMessageListenerCodec} from '../../codec/TopicAddMessageListenerCodec';
 import {TopicRemoveMessageListenerCodec} from '../../codec/TopicRemoveMessageListenerCodec';
 import { ListenerMessageCodec} from '../../listener/ListenerMessageCodec';
@@ -11,13 +11,15 @@ import {TopicPublishCodec} from '../../codec/TopicPublishCodec';
 import {HazelcastClient} from '../../HazelcastClient';
 import Long = require('long');
 import {Data} from '../../serialization';
+import {EntryEvent} from '../EntryListener';
+import {EventType} from '../EventType';
 
 export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
 
     publish(message: E): Promise<void> {
         assertNotNull(message);
         const toObject = this.serializationService.toObject.bind(this.serializationService);
-        const messageData = toObject(message);
+        const messageData = this.toData(message);
         const request = TopicPublishCodec.encodeRequest(this.name, messageData);
         const partitionId = this.partitionService.getPartitionId(messageData);
         return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, ()=>{}, request);
@@ -26,7 +28,7 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
     publishAll(messages: any[]): Promise<void> {
         assertNotNull(messages);
         const toObject = this.serializationService.toObject.bind(this.serializationService);
-        const messageDataList = toObject(messages);
+        const messageDataList = this.toData(messages);
         const request = TopicPublishCodec.encodeRequest(this.name, messageDataList);
         const partitionId = this.partitionService.getPartitionId(messageDataList);
         return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, ()=>{}, request);
@@ -36,15 +38,24 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
         assertNotNull(listener);
         const client = new HazelcastClient();
 
-        return this.listenerService.registerListener(this.createListenerMessageCodec(), (message: ClientMessage) => {
-            TopicAddMessageListenerCodec.handle(message, (item: Data, publishTime: Long, uuid: UUID) => {
-                const member = client.getClusterService().getMember(uuid.toString());
-            // I cannot figure out how to implement DataAwareMessage(from Java) here
-            // Should I implement or do we have another way to do this?
-            }
+        // const entryEventHandler = (uuid: UUID,
+        //                            numberOfAffectedEntries: number): void => {
+        //     const member = this.clusterService.getMember(uuid.toString());
+        //     const name = this.name;
+        //
+        //     const topicEvent = new TopicEvent(name, numberOfAffectedEntries, member);
+        //
+        //
+        // }
 
-            );
-        });
+        const handler = (m: ClientMessage): void => {
+            TopicAddMessageListenerCodec.handle(m, this.toObject.bind(this));
+        }
+
+        return this.listenerService.registerListener(
+            this.createListenerMessageCodec(),
+            handler,
+        );
     }
 
      removeListener(listenerId: string): Promise<boolean> {
@@ -64,14 +75,29 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
     private createListenerMessageCodec(): ListenerMessageCodec {
         return {
             encodeAddRequest(): ClientMessage {
-                return TopicAddMessageListenerCodec.encodeRequest(this.name, this.localOnly);
+                return TopicAddMessageListenerCodec.encodeRequest(super.name, super.localOnly);
             },
             decodeAddResponse(msg: ClientMessage): UUID {
                 return TopicAddMessageListenerCodec.decodeResponse(msg);
             },
             encodeRemoveRequest(): ClientMessage {
-                return TopicRemoveMessageListenerCodec.encodeRequest(this.name, this.listenerId);
+                return TopicRemoveMessageListenerCodec.encodeRequest(super.name, super.listenerId);
             },
         };
+    }
+}
+
+
+class TopicEvent {
+    name: string;
+
+    numberOfAffectedEntries: number;
+
+    member: Member;
+
+    constructor(name: string, numberOfAffectedEntries: number, member: Member) {
+        this.name = name;
+        this.numberOfAffectedEntries = numberOfAffectedEntries;
+        this.member = member;
     }
 }

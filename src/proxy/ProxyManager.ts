@@ -46,6 +46,7 @@ import {RepairingTask} from '../nearcache/RepairingTask';
 import {ClusterService} from '../invocation/ClusterService';
 import {LockReferenceIdGenerator} from './LockReferenceIdGenerator';
 import {SchemaService} from '../serialization/compact/SchemaService';
+import {TopicProxy} from './topic/TopicProxy';
 
 /** @internal */
 export const NAMESPACE_SEPARATOR = '/';
@@ -68,6 +69,7 @@ export class ProxyManager {
     public static readonly FLAKEID_SERVICE: string = 'hz:impl:flakeIdGeneratorService';
     public static readonly PNCOUNTER_SERVICE: string = 'hz:impl:PNCounterService';
     public static readonly RELIABLETOPIC_SERVICE: string = 'hz:impl:reliableTopicService';
+    public static readonly TOPIC_SERVICE: string = 'hz:impl:topicService';
 
     public readonly service: { [serviceName: string]: any } = {};
     private readonly proxies = new Map<string, Promise<DistributedObject>>();
@@ -98,6 +100,7 @@ export class ProxyManager {
         this.service[ProxyManager.FLAKEID_SERVICE] = FlakeIdGeneratorProxy;
         this.service[ProxyManager.PNCOUNTER_SERVICE] = PNCounterProxy;
         this.service[ProxyManager.RELIABLETOPIC_SERVICE] = ReliableTopicProxy;
+        this.service[ProxyManager.TOPIC_SERVICE] = TopicProxy;
     }
 
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): Promise<DistributedObject> {
@@ -224,6 +227,19 @@ export class ProxyManager {
                 name,
                 this.logger,
                 this.clientConfig,
+                this,
+                this.partitionService,
+                this.invocationService,
+                this.serializationService,
+                this.listenerService,
+                this.clusterService,
+                this.connectionRegistry,
+                this.schemaService
+            );
+        } else if (serviceName === ProxyManager.TOPIC_SERVICE) {
+            localProxy = new TopicProxy(
+                serviceName,
+                name,
                 this,
                 this.partitionService,
                 this.invocationService,
