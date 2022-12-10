@@ -185,7 +185,7 @@ describe('ClientMessageReaderTest', function () {
 
         const messageRead = reader.read();
         expect(messageRead).to.be.not.null;
-        expect(messageRead.hasNextFrame()).to.be.null;
+        expect(messageRead.hasNextFrame()).to.be.true;
 
         const frameRead = messageRead.nextFrame();
         expect(frameRead.content).to.deep.equal(frame.content);
