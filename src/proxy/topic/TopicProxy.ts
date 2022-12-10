@@ -16,6 +16,15 @@ import {EventType} from '../EventType';
 
 export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
 
+    name: string;
+    localOnly: boolean;
+    listenerID: string;
+
+    constructor(serviceName: string, name: string) {
+
+
+    }
+
     publish(message: E): Promise<void> {
         assertNotNull(message);
         const toObject = this.serializationService.toObject.bind(this.serializationService);
@@ -36,7 +45,6 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
 
     addListener(listener: MessageListener<E>): Promise<string> {
         assertNotNull(listener);
-        const client = new HazelcastClient();
 
         // const entryEventHandler = (uuid: UUID,
         //                            numberOfAffectedEntries: number): void => {
@@ -75,13 +83,13 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
     private createListenerMessageCodec(): ListenerMessageCodec {
         return {
             encodeAddRequest(): ClientMessage {
-                return TopicAddMessageListenerCodec.encodeRequest(super.name, super.localOnly);
+                return TopicAddMessageListenerCodec.encodeRequest(this.name, this.localOnly);
             },
             decodeAddResponse(msg: ClientMessage): UUID {
                 return TopicAddMessageListenerCodec.decodeResponse(msg);
             },
             encodeRemoveRequest(): ClientMessage {
-                return TopicRemoveMessageListenerCodec.encodeRequest(super.name, super.listenerId);
+                return TopicRemoveMessageListenerCodec.encodeRequest(this.name, super.listenerId);
             },
         };
     }
