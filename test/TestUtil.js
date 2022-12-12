@@ -221,6 +221,17 @@ exports.compareServerVersionWithRC = async function (rc, version) {
     return rcServerVersion - comparedVersion;
 };
 
+exports.isCompactCompatible = async function () {
+    const comparisonValueForServerVersion520 = await exports.compareServerVersionWithRC(RC, '5.2.0');
+    const isClientVersionAtLeast520 = exports.isClientVersionAtLeast('5.2.0');
+    // Compact serialization 5.2 and newer server is not compatible with clients older than 5.2
+    // Compact serialization 5.2 and newer clients are not compatible with servers older than 5.2
+    const isCompactCompatible =
+        !((comparisonValueForServerVersion520 >= 0 && !isClientVersionAtLeast520) ||
+            (comparisonValueForServerVersion520 < 0 && isClientVersionAtLeast520));
+    return isCompactCompatible;
+};
+
 exports.isClientVersionAtLeast = function(version) {
     const actual = exports.calculateServerVersionFromString(BuildInfo.getClientVersion());
     const expected = exports.calculateServerVersionFromString(version);
