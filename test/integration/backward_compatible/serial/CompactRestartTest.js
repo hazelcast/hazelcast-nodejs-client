@@ -50,14 +50,8 @@ describe('CompactRestartTest', function() {
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
         const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
-        const isClientVersionAtLeast520 = TestUtil.isClientVersionAtLeast('5.2.0');
-        // Compact serialization 5.2 and newer server is not compatible with clients older than 5.2
-        // Compact serialization 5.2 and newer clients are not compatible with servers older than 5.2
-        const isNotCompactCompatible =
-            (comparisonValueForServerVersion520 >= 0 && !isClientVersionAtLeast520) ||
-            (comparisonValueForServerVersion520 < 0 && isClientVersionAtLeast520);
-
-        if (isNotCompactCompatible) {
+        const isCompactCompatible = await TestUtil.isCompactCompatible();
+        if (!isCompactCompatible) {
             this.skip();
         }
         if (comparisonValueForServerVersion520 < 0) {

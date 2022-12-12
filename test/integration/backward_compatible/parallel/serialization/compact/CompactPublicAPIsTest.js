@@ -191,14 +191,9 @@ describe('CompactPublicAPIsTest', function () {
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
         const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
-        const isClientVersionAtLeast520 = TestUtil.isClientVersionAtLeast('5.2.0');
-        // Compact serialization 5.2 and newer server is not compatible with clients older than 5.2
-        // Compact serialization 5.2 and newer clients are not compatible with servers older than 5.2
-        const isNotCompactCompatible =
-            (comparisonValueForServerVersion520 >= 0 && !isClientVersionAtLeast520) ||
-            (comparisonValueForServerVersion520 < 0 && isClientVersionAtLeast520);
-
-        if (isNotCompactCompatible) {
+        const isCompactCompatible = await TestUtil.isCompactCompatible();
+        if (!isCompactCompatible) {
+            skipped = true;
             this.skip();
         }
         employee = new CompactUtil.Employee(1, Long.ONE);
@@ -206,12 +201,7 @@ describe('CompactPublicAPIsTest', function () {
             skipped = true;
             this.skip();
         }
-        // Compact serialization 5.2 server is not compatible with clients older than 5.2
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
-            skipped = true;
-            this.skip();
-        }
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) < 0) {
+        if (comparisonValueForServerVersion520 < 0) {
             CLUSTER_CONFIG_XML = CLUSTER_CONFIG_XML
             .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
         }
