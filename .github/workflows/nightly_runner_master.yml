@@ -22,6 +22,16 @@ jobs:
               uses: actions/setup-node@v2
               with:
                   node-version: ${{ matrix.nodejs_version }}
+            - name: Checkout to test artifacts
+              uses: actions/checkout@v2
+              with:
+                repository: hazelcast/private-test-artifacts
+                path: certs
+                ref: data
+                token: ${{ secrets.GH_TOKEN }}
+            - name: Copy certificates JAR to destination with the appropriate name
+              run: |
+                cp $GITHUB_WORKSPACE/certs/certs.jar $GITHUB_WORKSPACE/certs.jar
             - name: Checkout code
               uses: actions/checkout@v2
             - name: Install dependencies and compile client
