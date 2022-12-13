@@ -75,7 +75,7 @@ jobs:
               token: ${{ secrets.GH_TOKEN }}
           - name: Copy certificates JAR to destination with the appropriate name
             run: |
-              cp $GITHUB_WORKSPACE/certs/certs.jar $GITHUB_WORKSPACE/certs.jar
+              cp ${{ github.workspace }}/certs/certs.jar ${{ github.workspace }}/certs.jar
 
           - name: Install dependencies and compile client
             run: |
