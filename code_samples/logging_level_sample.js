@@ -17,11 +17,11 @@
 
 const { Client } = require('hazelcast-client');
 
-// This sample code demonstrates logging. We don't need to do any operations.
+// This sample code demonstrates configuring logging level. We don't need to do any operations.
 (async () => {
     const client = await Client.newHazelcastClient({
         properties: {
-            'hazelcast.logging.level': 'DEBUG'
+            'hazelcast.logging.level': 'DeBuG'
         }
     });
     await client.shutdown();
