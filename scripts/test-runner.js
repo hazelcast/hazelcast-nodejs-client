@@ -9,7 +9,6 @@ const {
     HAZELCAST_RC_VERSION,
     HAZELCAST_TEST_VERSION,
     HAZELCAST_ENTERPRISE_VERSION,
-    HAZELCAST_ENTERPRISE_TEST_VERSION,
     HAZELCAST_VERSION,
     downloadRC
 } = require('./download-rc.js');
@@ -40,7 +39,7 @@ let CLASSPATH = `hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar${PATH_S
 
 if (HAZELCAST_ENTERPRISE_KEY) {
     CLASSPATH = `hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar${PATH_SEPARATOR}`
-              + `hazelcast-enterprise-${HAZELCAST_ENTERPRISE_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
+              + `certs.jar${PATH_SEPARATOR}`
               + CLASSPATH;
 } else {
     CLASSPATH = `hazelcast-${HAZELCAST_VERSION}.jar${PATH_SEPARATOR}${CLASSPATH}`;

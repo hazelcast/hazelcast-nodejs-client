@@ -178,9 +178,10 @@ const DEFAULT_PROPERTIES: Properties = {
     'hazelcast.client.heartbeat.interval': 5000,
     'hazelcast.client.heartbeat.timeout': 60000,
     'hazelcast.client.invocation.retry.pause.millis': 1000,
+    'hazelcast.client.schema.max.put.retry.count': 100,
     'hazelcast.client.invocation.timeout.millis': 120000,
     'hazelcast.client.internal.clean.resources.millis': 100,
-    'hazelcast.client.cloud.url': 'https://coordinator.hazelcast.cloud',
+    'hazelcast.client.cloud.url': 'https://api.viridian.hazelcast.com',
     /**
      * `hazelcast.client.statistics.enabled` and `hazelcast.client.period.seconds` are
      * @deprecated since 5.1

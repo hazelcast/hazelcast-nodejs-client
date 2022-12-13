@@ -221,6 +221,17 @@ exports.compareServerVersionWithRC = async function (rc, version) {
     return rcServerVersion - comparedVersion;
 };
 
+exports.isCompactCompatible = async function () {
+    const comparisonValueForServerVersion520 = await exports.compareServerVersionWithRC(RC, '5.2.0');
+    const isClientVersionAtLeast520 = exports.isClientVersionAtLeast('5.2.0');
+    // Compact serialization 5.2 and newer server is not compatible with clients older than 5.2
+    // Compact serialization 5.2 and newer clients are not compatible with servers older than 5.2
+    const isCompactCompatible =
+        !((comparisonValueForServerVersion520 >= 0 && !isClientVersionAtLeast520) ||
+            (comparisonValueForServerVersion520 < 0 && isClientVersionAtLeast520));
+    return isCompactCompatible;
+};
+
 exports.isClientVersionAtLeast = function(version) {
     const actual = exports.calculateServerVersionFromString(BuildInfo.getClientVersion());
     const expected = exports.calculateServerVersionFromString(version);
@@ -637,5 +648,23 @@ exports.calculateServerVersionFromString = (versionString) => {
 
     // version is NaN when one of major, minor and patch is not a number.
     return isNaN(version) ? BuildInfo.UNKNOWN_VERSION_ID : version;
+};
+
+/**
+ * This function will wait for the connections count to be equal to given parameter (connectionCount).
+ */
+exports.waitForConnectionCount = async (client, connectionCount) => {
+    let getConnectionsFn;
+    if (this.isClientVersionAtLeast('4.2')) {
+        const clientRegistry = client.connectionRegistry;
+        getConnectionsFn = clientRegistry.getConnections.bind(clientRegistry);
+    } else {
+        const connManager = client.getConnectionManager();
+        getConnectionsFn = connManager.getActiveConnections.bind(connManager);
+    }
+
+    await this.assertTrueEventually(async () => {
+        expect(getConnectionsFn().length).to.be.equal(connectionCount);
+    });
 };
 

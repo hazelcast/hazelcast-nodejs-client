@@ -44,6 +44,10 @@ describe('PartitionServiceTest', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        const isCompactCompatible = await TestUtil.isCompactCompatible();
+        if (!isCompactCompatible) {
+            this.skip();
+        }
         cluster = await testFactory.createClusterForParallelTests();
         member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForParallelTests({

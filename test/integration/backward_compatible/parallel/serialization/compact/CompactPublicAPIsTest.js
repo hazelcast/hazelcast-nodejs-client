@@ -168,7 +168,7 @@ describe('CompactPublicAPIsTest', function () {
     let clientConfig;
     let skipped = false;
 
-    const CLUSTER_CONFIG_XML = `
+    let CLUSTER_CONFIG_XML = `
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/config
@@ -177,7 +177,7 @@ describe('CompactPublicAPIsTest', function () {
                 <port>0</port>
             </network>
             <serialization>
-                <compact-serialization enabled="true"/>
+                <compact-serialization/>
             </serialization>
         </hazelcast>
     `;
@@ -190,15 +190,20 @@ describe('CompactPublicAPIsTest', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
+        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
+        const isCompactCompatible = await TestUtil.isCompactCompatible();
+        if (!isCompactCompatible) {
+            skipped = true;
+            this.skip();
+        }
         employee = new CompactUtil.Employee(1, Long.ONE);
         if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
             skipped = true;
             this.skip();
         }
-        // Compact serialization 5.2 server is not compatible with clients older than 5.2
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
-            skipped = true;
-            this.skip();
+        if (comparisonValueForServerVersion520 < 0) {
+            CLUSTER_CONFIG_XML = CLUSTER_CONFIG_XML
+            .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
         }
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG_XML);
         member = await RC.startMember(cluster.id);

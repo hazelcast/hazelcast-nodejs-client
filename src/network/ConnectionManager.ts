@@ -108,6 +108,15 @@ export enum ClientState {
      * Invocations are allowed in this state.
      */
     INITIALIZED_ON_CLUSTER = 2,
+
+    /**
+     * When the client closes the last connection to the cluster it
+     * currently connected to, it switches to this state.
+     * 
+     * In this state, reconnectToMembersTask is not allowed to
+     * attempt connecting to last known member list.
+     */
+    DISCONNECTED_FROM_CLUSTER = 3
 }
 
 interface ClientForConnectionManager {
@@ -155,6 +164,7 @@ export class ConnectionManager extends EventEmitter {
      * counter, but may not show the latest total.
      */
     private totalBytesWritten : number;
+    private establishedInitialClusterConnection: boolean;
 
     constructor(
         private readonly client: ClientForConnectionManager,
@@ -361,6 +371,7 @@ export class ConnectionManager extends EventEmitter {
                 if (this.connectionRegistry.getClientState() === ClientState.INITIALIZED_ON_CLUSTER) {
                     this.emitLifecycleEvent(LifecycleState.DISCONNECTED);
                 }
+                this.connectionRegistry.setClientState(ClientState.DISCONNECTED_FROM_CLUSTER);
                 this.triggerClusterReconnection();
             }
             this.emitConnectionRemovedEvent(connection);
@@ -743,6 +754,13 @@ export class ConnectionManager extends EventEmitter {
         }
 
         for (const member of this.clusterService.getMembers()) {
+            if (this.connectionRegistry.getClientState() === ClientState.DISCONNECTED_FROM_CLUSTER) {
+                // Best effort check to prevent this task from attempting to
+                // open a new connection when the client is not connected to any of the cluster members.
+                // In such occasions, only `doConnectToCandidateCluster`
+                // method should open new connections.
+                return;
+            }
             if (this.connectionRegistry.getConnection(member.uuid) != null) {
                 continue;
             }
@@ -833,10 +851,23 @@ export class ConnectionManager extends EventEmitter {
         this.connectionRegistry.setConnection(response.memberUuid, connection);
         if (connectionsEmpty) {
             this.clusterId = newClusterId;
-            if (clusterIdChanged) {
+            if (this.establishedInitialClusterConnection) {
+                // In split brain, the client might connect to the one half
+                // of the cluster, and then later might reconnect to the
+                // other half, after the half it was connected to is
+                // completely dead. Since the cluster id is preserved in
+                // split brain scenarios, it is impossible to distinguish
+                // reconnection to the same cluster vs reconnection to the
+                // other half of the split brain. However, in the latter,
+                // we might need to send some state to the other half of
+                // the split brain (like Compact schemas or user code
+                // deployment classes). That forces us to send the client
+                // state to the cluster after the first cluster connection,
+                // regardless the cluster id is changed or not.
                 this.connectionRegistry.setClientState(ClientState.CONNECTED_TO_CLUSTER);
                 this.initializeClientOnCluster(newClusterId);
             } else {
+                this.establishedInitialClusterConnection = true;
                 this.connectionRegistry.setClientState(ClientState.INITIALIZED_ON_CLUSTER);
                 this.emitLifecycleEvent(LifecycleState.CONNECTED);
             }

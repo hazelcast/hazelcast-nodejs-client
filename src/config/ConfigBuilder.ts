@@ -40,6 +40,7 @@ import {LoadBalancerType} from './LoadBalancerConfig';
 import {LogLevel} from '../logging';
 import {TokenCredentialsImpl, TokenEncoding, UsernamePasswordCredentialsImpl,} from '../security';
 import {MetricsConfig} from './MetricsConfig';
+import * as Util from '../util/Util';
 
 /**
  * Responsible for user-defined config validation. Builds the effective config with necessary defaults.
@@ -347,6 +348,9 @@ export class ConfigBuilder {
             case 'hazelcast.client.invocation.retry.pause.millis':
                 tryGetNumber(value);
                 break;
+            case 'hazelcast.client.schema.max.put.retry.count':
+                tryGetNumber(value);
+                break;
             case 'hazelcast.client.invocation.timeout.millis':
                 tryGetNumber(value);
                 break;
@@ -471,7 +475,10 @@ export class ConfigBuilder {
     private handleSerialization(jsonObject: any): void {
         for (const key in jsonObject) {
             if (key === 'defaultNumberType') {
-                this.effectiveConfig.serialization.defaultNumberType = tryGetString(jsonObject[key]).toLowerCase();
+                const defaultNumberType = tryGetString(jsonObject[key]).toLowerCase();
+                // For checking expected value for defaultNumberType. If get unexpected value, throw RangeError.
+                Util.getTypeKeyForDefaultNumberType(defaultNumberType);
+                this.effectiveConfig.serialization.defaultNumberType = defaultNumberType;
             } else if (key === 'isBigEndian') {
                 this.effectiveConfig.serialization.isBigEndian = tryGetBoolean(jsonObject[key]);
             } else if (key === 'portableVersion') {
