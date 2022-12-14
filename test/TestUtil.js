@@ -101,6 +101,29 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
     }));
 };
 
+exports.assertTrueAllTheTime = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
+    return new Promise(((resolve, reject) => {
+        let intervalTimer;
+        function scheduleNext() {
+            intervalTimer = setTimeout(() => {
+                taskAsyncFn()
+                    .then(() => {
+                        scheduleNext();
+                    })
+                    .catch(e => {
+                        reject(new Error('Must be assert true all the time. Error: ' + e.message));
+                    });
+            }, intervalMs);
+        }
+        scheduleNext();
+
+        setTimeout(() => {
+            clearInterval(intervalTimer);
+            resolve();
+        }, timeoutMs);
+    }));
+};
+
 const expectAlmostEqual = function (actual, expected) {
     if (expected === null) {
         return expect(actual).to.equal(expected);
@@ -666,5 +689,17 @@ exports.waitForConnectionCount = async (client, connectionCount) => {
     await this.assertTrueEventually(async () => {
         expect(getConnectionsFn().length).to.be.equal(connectionCount);
     });
+};
+
+exports.getClientConnections = async (client) => {
+    let getConnectionsFn;
+    if (this.isClientVersionAtLeast('4.2')) {
+        const clientRegistry = client.connectionRegistry;
+        getConnectionsFn = clientRegistry.getConnections.bind(clientRegistry);
+    } else {
+        const connManager = client.getConnectionManager();
+        getConnectionsFn = connManager.getActiveConnections.bind(connManager);
+    }
+    return getConnectionsFn;
 };
 
