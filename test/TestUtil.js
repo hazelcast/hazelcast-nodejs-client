@@ -104,7 +104,7 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
 /**
  * This function checks that given function always assert true for the specified time(timeoutMs)
  */
-exports.assertTrueAllTheTime = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
+exports.assertTrueAllTheTime = function (taskAsyncFn, intervalMs = 1000, timeoutMs = 60000) {
     return new Promise(((resolve, reject) => {
         let intervalTimer;
         function scheduleNext() {
@@ -680,15 +680,7 @@ exports.calculateServerVersionFromString = (versionString) => {
  * This function will wait for the connections count to be equal to given parameter (connectionCount).
  */
 exports.waitForConnectionCount = async (client, connectionCount) => {
-    let getConnectionsFn;
-    if (this.isClientVersionAtLeast('4.2')) {
-        const clientRegistry = client.connectionRegistry;
-        getConnectionsFn = clientRegistry.getConnections.bind(clientRegistry);
-    } else {
-        const connManager = client.getConnectionManager();
-        getConnectionsFn = connManager.getActiveConnections.bind(connManager);
-    }
-
+    const getConnectionsFn = await exports.getClientConnections(client);
     await this.assertTrueEventually(async () => {
         expect(getConnectionsFn().length).to.be.equal(connectionCount);
     });

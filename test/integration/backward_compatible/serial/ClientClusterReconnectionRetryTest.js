@@ -28,15 +28,10 @@ const sandbox = sinon.createSandbox();
 describe('ClientClusterReconnectionRetryTest', function () {
     let cluster;
     let client;
-    const ASSERTION_MILISECONDS = 30000;
-    const INT32_MAX_VALUE = 2147483647;
+    const ASSERTION_MILLISECONDS = 30000;
+    const INT32_MAX_VALUE = Math.pow(2, 31) - 1;
 
     const testFactory = new TestUtil.TestFactory();
-
-    beforeEach(function () {
-       client = undefined;
-       cluster = undefined;
-    });
 
     afterEach(async function () {
         await testFactory.shutdownAll();
@@ -60,13 +55,13 @@ describe('ClientClusterReconnectionRetryTest', function () {
         await TestUtil.waitForConnectionCount(client, 0);
         // Wait a bit more to make it more likely that the first reconnection
         // attempt is made before we restart the instance
-        await TestUtil.promiseLater(ASSERTION_MILISECONDS, () => { });
+        await TestUtil.promiseLater(ASSERTION_MILLISECONDS, () => { });
 
         await RC.startMember(cluster.id);
         const clientConnectionsFn = await TestUtil.getClientConnections(client);
         await TestUtil.assertTrueAllTheTime(async () => {
             expect(clientConnectionsFn().length).to.be.equal(0);
-        }, 100, ASSERTION_MILISECONDS);
+        }, 100, ASSERTION_MILLISECONDS);
     });
 
     it('testClientState_AfterDisconnected', async function () {
