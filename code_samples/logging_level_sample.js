@@ -21,7 +21,7 @@ const { Client } = require('hazelcast-client');
 (async () => {
     const client = await Client.newHazelcastClient({
         properties: {
-            'hazelcast.logging.level': 'DeBuG'
+            'hazelcast.logging.level': 'DeBuG' // this property value is case-insensitive
         }
     });
     await client.shutdown();
