@@ -101,6 +101,9 @@ exports.assertTrueEventually = function (taskAsyncFn, intervalMs = 100, timeoutM
     }));
 };
 
+/**
+ * This function checks that given function always assert true for the specified time(timeoutMs)
+ */
 exports.assertTrueAllTheTime = function (taskAsyncFn, intervalMs = 100, timeoutMs = 60000) {
     return new Promise(((resolve, reject) => {
         let intervalTimer;
@@ -691,6 +694,9 @@ exports.waitForConnectionCount = async (client, connectionCount) => {
     });
 };
 
+/**
+ * Returns client getConnectionsFn according to client version
+ */
 exports.getClientConnections = async (client) => {
     let getConnectionsFn;
     if (this.isClientVersionAtLeast('4.2')) {

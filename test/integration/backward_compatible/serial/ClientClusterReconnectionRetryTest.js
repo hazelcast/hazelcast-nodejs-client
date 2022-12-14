@@ -65,9 +65,7 @@ describe('ClientClusterReconnectionRetryTest', function () {
         await RC.startMember(cluster.id);
         const clientConnectionsFn = await TestUtil.getClientConnections(client);
         await TestUtil.assertTrueAllTheTime(async () => {
-            return clientConnectionsFn().length === 0 ?
-                Promise.resolve(true) :
-                Promise.reject(new Error('Result can not be false. Connection length:' + clientConnectionsFn().length));
+            expect(clientConnectionsFn().length).to.be.equal(0);
         }, 100, ASSERTION_MILISECONDS);
     });
 
