@@ -102,6 +102,9 @@ describe('OldClientMessageReaderTest', function () {
 });
 
 describe('ClientMessageReaderTest', function () {
+
+    let reader;
+
     function createFrameWithRandomBytes(length) {
         const buffer = Buffer.allocUnsafe(length);
         for (let i = 0; i < length; i++) {
@@ -115,8 +118,6 @@ describe('ClientMessageReaderTest', function () {
         message.writeTo(buffer);
         return buffer;
     }
-
-    let reader;
 
     beforeEach(function() {
         reader = new ClientMessageReader();
