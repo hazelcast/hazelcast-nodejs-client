@@ -24,10 +24,13 @@ const Long = require('long');
 const { A, ASerializer } = require('./Class');
 const B = require('./SameNamedClass').A;
 const BSerializer = require('./SameNamedClass').ASerializer;
-const { Predicates, HazelcastSerializationError } = require('../../../../../../lib/core');
+const { Predicates, HazelcastSerializationError, IllegalStateError } = require('../../../../../../lib/core');
 const CompactUtil = require('./CompactUtil');
+const { UuidUtil } = require('../../../../../../lib/util/UuidUtil');
+const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
 
-const COMPACT_ENABLED_ZERO_CONFIG_XML = `
+let COMPACT_ENABLED_ZERO_CONFIG_XML = `
     <hazelcast xmlns="http://www.hazelcast.com/schema/config"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.hazelcast.com/schema/config
@@ -36,7 +39,7 @@ const COMPACT_ENABLED_ZERO_CONFIG_XML = `
             <port>0</port>
         </network>
         <serialization>
-            <compact-serialization enabled="true" />
+            <compact-serialization/>
         </serialization>
     </hazelcast>
 `;
@@ -74,12 +77,15 @@ describe('CompactTest', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
+        const isCompactCompatible = await TestUtil.isCompactCompatible();
+        if (!isCompactCompatible) {
             this.skip();
         }
-        // Compact serialization 5.2 server is not compatible with clients older than 5.2
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
-            this.skip();
+        // Compact serialization 5.2 server configuration changes
+        if (comparisonValueForServerVersion520 < 0) {
+            COMPACT_ENABLED_ZERO_CONFIG_XML = COMPACT_ENABLED_ZERO_CONFIG_XML
+            .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
         }
         cluster = await testFactory.createClusterForParallelTests(undefined, COMPACT_ENABLED_ZERO_CONFIG_XML);
         member = await RC.startMember(cluster.id);
@@ -90,6 +96,7 @@ describe('CompactTest', function () {
     });
 
     afterEach(async function () {
+        sandbox.restore();
         await testFactory.shutdownAllClients();
     });
 
@@ -147,6 +154,31 @@ describe('CompactTest', function () {
         await map.set('key', new CompactUtil.Flexible(fields));
         return map;
     };
+
+    it('should throw IllegalStateError exception, because of schema could not be replicated in the cluster', async function() {
+        TestUtil.markClientVersionAtLeast(this, '5.2.0');
+        const fakeResult = new Set();
+        sandbox.replace(UuidUtil, 'convertUUIDSetToStringSet', sandbox.fake.returns(fakeResult));
+
+        const client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            serialization: {
+                compact: {
+                    serializers: [new CompactUtil.FlexibleSerializer([FieldKind.INT32])]
+                }
+            },
+            properties: {
+                'hazelcast.client.schema.max.put.retry.count': 1,
+                'hazelcast.client.invocation.retry.pause.millis': 100
+            }
+        }, member);
+        const map = await client.getMap(mapName);
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            await map.put(1, new CompactUtil.Flexible({INT32: {value: 42}}));
+        });
+        error.should.be.instanceOf(IllegalStateError);
+        error.message.includes('cannot be replicated in the cluster, after').should.be.true;
+    });
 
     it('should work with basic test', async function () {
         await shouldReadAndWrite(

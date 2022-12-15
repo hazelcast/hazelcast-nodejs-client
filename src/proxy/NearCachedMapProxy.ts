@@ -38,7 +38,7 @@ import {SerializationService} from '../serialization/SerializationService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
 import {ClusterService} from '../invocation/ClusterService';
 import {SchemaService} from '../serialization/compact/SchemaService';
-import {SchemaNotFoundError} from '../core';
+import {SchemaNotFoundError, Predicate} from '../core';
 
 /** @internal */
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
@@ -191,6 +191,14 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     protected removeInternal(keyData: Data, valueData: Data | undefined): Promise<V | boolean> {
         return super.removeInternal(keyData, valueData)
             .then<V | boolean>(oldValue => this.invalidateCacheEntryAndReturn(keyData, oldValue));
+    }
+
+    protected removeAllInternal(predicate: Predicate): Promise<void> {
+        try {
+            return super.removeAllInternal(predicate);
+        } finally {
+            this.nearCache.clear();
+        }
     }
 
     private getAllInternalHelper(

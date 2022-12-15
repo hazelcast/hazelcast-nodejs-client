@@ -158,4 +158,13 @@ describe('RingbufferProxyTest', function () {
         const size = await rb.size();
         expect(size.toNumber()).to.equal(2);
     });
+
+    it('readMany correctly works with a filter', async function () {
+        await rb.addAll(['item1', 'prefixedItem2', 'prefixedItem3']);
+        const items = await rb.readMany(0, 1, 3, new PrefixFilter('prefixed'));
+        expect(items.get(0)).to.equal('prefixedItem2');
+        expect(items.get(1)).to.equal('prefixedItem3');
+        expect(items.getReadCount()).to.equal(3);
+        expect(items.size()).to.equal(2);
+    });
 });

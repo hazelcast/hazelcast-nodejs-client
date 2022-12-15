@@ -42,4 +42,14 @@ describe('LazyReadResultSetTest', function () {
         const set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4], [11, 12, 13, 14], 15);
         expect(set.get(4)).to.be.undefined;
     });
+
+    it('should be iterable', function () {
+        const set = new LazyReadResultSet(mockSerializationService, 4, [1, 2, 3, 4], [11, 12, 13, 14], 15);
+        let index = 0;
+        const values = [101, 102, 3, 4];
+        for (const item of set) {
+            expect(item).to.equal(values[index]);
+            index++;
+        }
+    });
 });

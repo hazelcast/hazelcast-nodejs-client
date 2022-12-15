@@ -26,7 +26,7 @@ import {HazelcastError} from '../core';
 
 /**
  * Discovery service that discovers nodes via hazelcast.cloud
- * https://coordinator.hazelcast.cloud/cluster/discovery?token=<TOKEN>
+ * https://api.viridian.hazelcast.com/cluster/discovery?token=<TOKEN>
  * @internal
  */
 export class HazelcastCloudDiscovery {
@@ -73,6 +73,10 @@ export class HazelcastCloudDiscovery {
 
         let dataAsAString = '';
         const req = get(endpointUrlOptions, (res: IncomingMessage) => {
+            if (res.statusCode != 200) {
+                deferred.reject(new HazelcastError('Your cluster discovery token is invalid.'));
+                return;
+            }
             res.setEncoding('utf8');
             res.on('data', (chunk) => {
                 dataAsAString += chunk;

@@ -24,7 +24,6 @@ import {GenericRecord} from './GenericRecord';
  *
  * @param T The field's corresponding type in JavaScript.
  *
- * This API is currently in Beta and can change at any time.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Field<T> {

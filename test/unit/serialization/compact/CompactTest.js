@@ -17,6 +17,8 @@
 
 const chai = require('chai');
 chai.should();
+chai.use(require('chai-as-promised'));
+
 const {
     serialize,
     createSerializationService,
@@ -35,11 +37,13 @@ const {
     NamedDTOSerializer,
     NodeDTOSerializer,
     NodeDTO,
+    DefaultSerializerOverridingSerializer,
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const Long = require('long');
 const { CompactGenericRecordImpl } = require('../../../../lib/serialization/generic_record/CompactGenericRecord');
-const { GenericRecords } = require('../../../../lib');
+const { GenericRecords, HazelcastSerializationError, IllegalArgumentError } = require('../../../../lib');
 const { Fields } = require('../../../../lib/serialization/generic_record');
+const TestUtil = require('../../../TestUtil');
 
 describe('CompactTest', function () {
     let serializationService;
@@ -243,5 +247,30 @@ describe('CompactTest', function () {
         const data = await serialize(serializationService, schemaService, employer);
         const object = await serializationService.toObject(data);
         object.should.be.deep.equal(employer);
+    });
+
+    it('should throw proper error when nested field serializer is missing', async function() {
+        const bundle = createSerializationService(
+            [new MainDTOSerializer(), new InnerDTOSerializer()]
+        );
+
+        serializationService = bundle.serializationService;
+
+        const mainDTO = createMainDTO();
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            await serialize(serializationService, bundle.schemaService, mainDTO);
+        });
+        error.should.be.instanceOf(HazelcastSerializationError);
+        error.message.includes('No serializer is registered for class/constructor').should.be.true;
+    });
+
+    it('should throw proper error when overriding the string serializer(String class)', async function() {
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            createSerializationService(
+                [ new DefaultSerializerOverridingSerializer() ]
+            );
+        });
+        error.should.be.instanceOf(IllegalArgumentError);
+        error.message.includes('Compact serializer for the class').should.be.true;
     });
 });

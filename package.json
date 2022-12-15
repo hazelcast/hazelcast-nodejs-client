@@ -1,6 +1,6 @@
 {
     "name": "hazelcast-client",
-    "version": "5.1.0",
+    "version": "5.2.0",
     "description": "Hazelcast - open source In-Memory Data Grid - client for Node.js",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -9,24 +9,23 @@
         "lib/**/*.d.ts"
     ],
     "dependencies": {
-        "@types/long": "4.0.2",
+        "@types/long": "4.0.0",
         "long": "4.0.0"
     },
     "devDependencies": {
-        "@istanbuljs/nyc-config-typescript": "^1.0.2",
+        "@istanbuljs/nyc-config-typescript": "~1.0.2",
         "@types/node": "~10.17.60",
-        "@typescript-eslint/eslint-plugin": "~5.27.0",
-        "@typescript-eslint/parser": "~5.27.0",
+        "@typescript-eslint/eslint-plugin": "~5.45.0",
+        "@typescript-eslint/parser": "~5.45.0",
         "chai": "~4.3.6",
         "chai-as-promised": "~7.1.1",
-        "eslint": "~8.16.0",
+        "eslint": "~8.28.0",
         "eslint-plugin-mocha": "~9.0.0",
         "husky": "~6.0.0",
         "jsonschema": "~1.4.0",
         "markdown-link-check": "~3.10.2",
-        "markdownlint-cli": "~0.31.1",
+        "markdownlint-cli": "~0.32.2",
         "mocha": "~9.2.2",
-        "mocha-jenkins-reporter": "~0.4.7",
         "mousse": "~0.3.1",
         "nyc": "~15.1.0",
         "path-exists-cli": "~2.0.0",
@@ -35,10 +34,10 @@
         "sinon-chai": "~3.7.0",
         "source-map-support": "~0.5.21",
         "thrift": "~0.16.0",
-        "ts-node": "~10.7.0",
-        "typedoc": "~0.22.10",
-        "typescript": "~4.7.2",
-        "winston": "~3.7.2",
+        "ts-node": "~10.9.1",
+        "typedoc": "~0.22.18",
+        "typescript": "~4.7.4",
+        "winston": "~3.8.2",
         "yargs": "~17.5.1"
     },
     "engines": {

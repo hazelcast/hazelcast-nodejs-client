@@ -166,8 +166,9 @@ describe('CompactPublicAPIsTest', function () {
     let employee;
     let SchemaNotReplicatedError;
     let clientConfig;
+    let skipped = false;
 
-    const CLUSTER_CONFIG_XML = `
+    let CLUSTER_CONFIG_XML = `
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/config
@@ -176,7 +177,7 @@ describe('CompactPublicAPIsTest', function () {
                 <port>0</port>
             </network>
             <serialization>
-                <compact-serialization enabled="true"/>
+                <compact-serialization/>
             </serialization>
         </hazelcast>
     `;
@@ -189,13 +190,20 @@ describe('CompactPublicAPIsTest', function () {
 
     before(async function () {
         TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        employee = new CompactUtil.Employee(1, Long.ONE);
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
+        const isCompactCompatible = await TestUtil.isCompactCompatible();
+        if (!isCompactCompatible) {
+            skipped = true;
             this.skip();
         }
-        // Compact serialization 5.2 server is not compatible with clients older than 5.2
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.2.0')) >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
+        employee = new CompactUtil.Employee(1, Long.ONE);
+        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+            skipped = true;
             this.skip();
+        }
+        if (comparisonValueForServerVersion520 < 0) {
+            CLUSTER_CONFIG_XML = CLUSTER_CONFIG_XML
+            .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
         }
         cluster = await testFactory.createClusterForParallelTests(null, CLUSTER_CONFIG_XML);
         member = await RC.startMember(cluster.id);
@@ -203,6 +211,7 @@ describe('CompactPublicAPIsTest', function () {
     });
 
     beforeEach(async function () {
+        skipped = false;
         const name = TestUtil.randomString(12);
 
         clientConfig = {
@@ -260,7 +269,9 @@ describe('CompactPublicAPIsTest', function () {
     });
 
     afterEach(async function () {
-        compactSerializerUsed.should.be.true;
+        if (!skipped) {
+            compactSerializerUsed.should.be.true;
+        }
         sandbox.restore();
         await map.destroy();
         await nearCachedMap1.destroy();
@@ -398,6 +409,18 @@ describe('CompactPublicAPIsTest', function () {
         it('remove', async function () {
             for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
                 const fn = obj.remove.bind(obj, OUTER_INSTANCE, employee);
+                await fn();
+                shouldThrowSerializationErrors(client, fn);
+            }
+        });
+
+        it('removeAll', async function () {
+            if (!TestUtil.isClientVersionAtLeast('5.2.0')) {
+                skipped = true;
+                this.skip();
+            }
+            for (const obj of [map, nearCachedMap1, nearCachedMap2]) {
+                const fn = obj.removeAll.bind(obj, new CompactPredicate());
                 await fn();
                 shouldThrowSerializationErrors(client, fn);
             }

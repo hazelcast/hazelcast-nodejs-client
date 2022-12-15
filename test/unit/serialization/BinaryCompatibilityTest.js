@@ -36,6 +36,7 @@ describe('BinaryCompatibilityTest', function () {
     const isBigEndianValues = [true, false];
 
     const dataMap = {};
+    const defaultNumberTypes = ['byte', 'short', 'integer', 'float', 'double', 'long'];
 
     function createFileName(version) {
         return version + '.serialization.compatibility.binary';
@@ -108,7 +109,9 @@ describe('BinaryCompatibilityTest', function () {
             }
         ];
         cfg.isBigEndian = isBigEndian;
-        cfg.defaultNumberType = defaultNumberType;
+        if (defaultNumberTypes.includes(defaultNumberType)) {
+            cfg.defaultNumberType = defaultNumberType;
+        }
         return new SerializationServiceV1(cfg);
     }
 

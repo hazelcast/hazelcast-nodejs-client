@@ -719,12 +719,10 @@ Or, if you want to use your own serialization method, you can use [Custom Serial
 
 ## 4.1. Compact Serialization
 
-> **WARNING: This serialization method is in Beta, and API can be changed in a breaking way.**
+> **NOTES: Supported in client version 5.1+ and server version 5.0+. However, it is recommended to use 5.1+ client with a 5.1+
+server.
 
-> **WARNING: Supported in client version 5.1+ and server version 5.0+. However, it is recommended to use 5.1+ client with a 5.1+
-server because compatiblity is not guaranteed as compact is in Beta.**
-
-As an enhancement to existing serialization methods, Hazelcast offers a beta version of the compact serialization, with the
+As an enhancement to existing serialization methods, Hazelcast offers the compact serialization, with the
 following main features.
 
 * Separates the schema from the data and stores it per type, not per object which results in less memory and bandwidth usage
@@ -1917,6 +1915,13 @@ let value = await rb.readOne(sequence);
 console.log('Value:', value);
 value = await rb.readOne(sequence.add(1));
 console.log('Next value:', value);
+// Add some elements to the Ringbuffer
+await rb.addAll([300, 400, 500]);
+// We want to get 5 items from Ringbuffer and write to console.
+const items = await rb.readMany(0, 1, 5);
+for(const item of items){
+    console.log("Item:" item);
+}
 ```
 
 ### 8.4.8. Using Reliable Topic

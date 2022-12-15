@@ -20,7 +20,6 @@ import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '.
 /**
  * Provides means of writing compact serialized fields to the binary data.
  *
- * This API is currently in Beta and can change at any time.
  */
 export interface CompactWriter {
     /**
@@ -242,6 +241,9 @@ export interface CompactWriter {
     /**
      * Writes an array of nested compact objects.
      *
+     * For compact objects, if an array contains different item types or undefined 
+     * a {@link HazelcastSerializationError} will be thrown.
+     * 
      * @param fieldName name of the field.
      * @param value     to be written.
      */
