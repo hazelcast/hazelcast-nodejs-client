@@ -19,7 +19,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 
-const { LogLevel, IllegalStateError } = require('../../../');
+const { IllegalStateError } = require('../../../');
 const { LoggingService } = require('../../../lib/logging/LoggingService');
 const { AddressImpl } = require('../../../lib/core/Address');
 const { HazelcastCloudAddressProvider } = require('../../../lib/discovery/HazelcastCloudAddressProvider');
@@ -37,7 +37,7 @@ describe('HazelcastCloudProviderTest', function () {
     });
 
     beforeEach(function () {
-        const logger = new LoggingService(null, LogLevel.INFO).getLogger();
+        const logger = new LoggingService(null, 'INFO').getLogger();
         hazelcastCloudDiscovery = new HazelcastCloudDiscovery();
         sandbox.stub(HazelcastCloudDiscovery.prototype, 'discoverNodes')
             .callsFake(() => Promise.resolve(expectedAddresses));

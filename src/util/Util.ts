@@ -69,7 +69,7 @@ export function shuffleArray<T>(array: T[]): void {
 
 /** @internal */
 export function enumFromString<T>(enumType: any, value: string): T {
-    return enumType[value ? value.toUpperCase() : value];
+    return enumType[value.toUpperCase()];
 }
 
 /** @internal */
