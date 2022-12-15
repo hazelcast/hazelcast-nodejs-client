@@ -729,7 +729,7 @@ following main features.
 
 * Separates the schema from the data and stores it per type, not per object which results in less memory and bandwidth usage
 compared to other formats.
-* Does not require changing the source code of the class in any way.
+* Does not require a class to implement an interface or change the source code of the class in any way.
 * Supports schema evolution which permits adding or removing fields, or changing the types of fields.
 * Platform and language independent.
 * Supports partial deserialization of fields during queries or indexing.
@@ -751,8 +751,7 @@ is especially useful in rolling upgrade scenarios.
 The Compact serialization does not require any changes in the user classes as it doesn’t need a class to implement a particular
 interface. Serializers might be implemented and registered separately from the classes.
 
-The underlying format of the compact serialized objects is platform and language independent. All clients will have this feature
-in the future.
+The underlying format of the compact serialized objects is platform and language independent.
 
 ### 4.1.1. Configuration
 
