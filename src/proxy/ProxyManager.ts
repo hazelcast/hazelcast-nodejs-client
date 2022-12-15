@@ -240,6 +240,7 @@ export class ProxyManager {
             localProxy = new TopicProxy(
                 serviceName,
                 name,
+                this.clientConfig,
                 this,
                 this.partitionService,
                 this.invocationService,
@@ -248,6 +249,7 @@ export class ProxyManager {
                 this.clusterService,
                 this.connectionRegistry,
                 this.schemaService
+
             );
         } else if (serviceName === ProxyManager.FLAKEID_SERVICE) {
             localProxy = new FlakeIdGeneratorProxy(

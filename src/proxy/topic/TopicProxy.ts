@@ -1,6 +1,6 @@
 import {ITopic} from '../ITopic';
-import {MessageListener} from '../MessageListener';
-import {HazelcastError, Member, UUID} from '../../core';
+import {Message, MessageListener} from '../MessageListener';
+import {AddressImpl, HazelcastError, Member, UUID} from '../../core';
 import {TopicAddMessageListenerCodec} from '../../codec/TopicAddMessageListenerCodec';
 import {TopicRemoveMessageListenerCodec} from '../../codec/TopicRemoveMessageListenerCodec';
 import { ListenerMessageCodec} from '../../listener/ListenerMessageCodec';
@@ -13,21 +13,59 @@ import Long = require('long');
 import {Data} from '../../serialization';
 import {EntryEvent} from '../EntryListener';
 import {EventType} from '../EventType';
+import {ILogger} from '../../logging';
+import {ClientConfig, ClientConfigImpl} from '../../config';
+import {ProxyManager} from '../ProxyManager';
+import {PartitionService} from '../../PartitionService';
+import {InvocationService} from '../../invocation/InvocationService';
+import {SerializationService} from '../../serialization/SerializationService';
+import {ListenerService} from '../../listener/ListenerService';
+import {ClusterService} from '../../invocation/ClusterService';
+import {ConnectionRegistry} from '../../network/ConnectionRegistry';
+import {SchemaService} from '../../serialization/compact/SchemaService';
+import {Connection} from '../../network/Connection';
+import {TopicOverloadPolicy} from '../TopicOverloadPolicy';
 
 export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
 
-    name: string;
-    localOnly: boolean;
-    listenerID: string;
 
-    constructor(serviceName: string, name: string) {
+    private readonly overloadPolicy: TopicOverloadPolicy;
+    private readonly localAddress: AddressImpl;
 
-
+    constructor(
+        serviceName: string,
+        name: string,
+        clientConfig: ClientConfig,
+        proxyManager: ProxyManager,
+        partitionService: PartitionService,
+        invocationService: InvocationService,
+        serializationService: SerializationService,
+        listenerService: ListenerService,
+        clusterService: ClusterService,
+        connectionRegistry: ConnectionRegistry,
+        schemaService: SchemaService
+    ) {
+        super(
+            serviceName,
+            name,
+            proxyManager,
+            partitionService,
+            invocationService,
+            serializationService,
+            listenerService,
+            clusterService,
+            connectionRegistry,
+            schemaService
+        );
+        const connection: Connection = this.connectionRegistry.getRandomConnection();
+        this.localAddress = connection != null ? connection.getLocalAddress() : null;
+        const config = (clientConfig as ClientConfigImpl).getReliableTopicConfig(name);
+        this.overloadPolicy = config.overloadPolicy;
     }
 
     publish(message: E): Promise<void> {
         assertNotNull(message);
-        const toObject = this.serializationService.toObject.bind(this.serializationService);
+
         const messageData = this.toData(message);
         const request = TopicPublishCodec.encodeRequest(this.name, messageData);
         const partitionId = this.partitionService.getPartitionId(messageData);
@@ -36,7 +74,6 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
 
     publishAll(messages: any[]): Promise<void> {
         assertNotNull(messages);
-        const toObject = this.serializationService.toObject.bind(this.serializationService);
         const messageDataList = this.toData(messages);
         const request = TopicPublishCodec.encodeRequest(this.name, messageDataList);
         const partitionId = this.partitionService.getPartitionId(messageDataList);
@@ -46,24 +83,10 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
     addListener(listener: MessageListener<E>): Promise<string> {
         assertNotNull(listener);
 
-        // const entryEventHandler = (uuid: UUID,
-        //                            numberOfAffectedEntries: number): void => {
-        //     const member = this.clusterService.getMember(uuid.toString());
-        //     const name = this.name;
-        //
-        //     const topicEvent = new TopicEvent(name, numberOfAffectedEntries, member);
-        //
-        //
-        // }
-
-        const handler = (m: ClientMessage): void => {
-            TopicAddMessageListenerCodec.handle(m, this.toObject.bind(this));
+        const codec = TopicAddMessageListenerCodec;
+        const handler = (m: ClientMessage) => {
+            const message = codec.handle(m, this.toObject.bind(this));
         }
-
-        return this.listenerService.registerListener(
-            this.createListenerMessageCodec(),
-            handler,
-        );
     }
 
      removeListener(listenerId: string): Promise<boolean> {
@@ -83,29 +106,69 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
     private createListenerMessageCodec(): ListenerMessageCodec {
         return {
             encodeAddRequest(): ClientMessage {
-                return TopicAddMessageListenerCodec.encodeRequest(this.name, this.localOnly);
+                return TopicAddMessageListenerCodec.encodeRequest(super.name, super.localOnly);
             },
             decodeAddResponse(msg: ClientMessage): UUID {
                 return TopicAddMessageListenerCodec.decodeResponse(msg);
             },
             encodeRemoveRequest(): ClientMessage {
-                return TopicRemoveMessageListenerCodec.encodeRequest(this.name, super.listenerId);
+                return TopicRemoveMessageListenerCodec.encodeRequest(super.name, super.listenerId);
             },
         };
     }
 }
 
-
-class TopicEvent {
-    name: string;
-
-    numberOfAffectedEntries: number;
-
-    member: Member;
-
-    constructor(name: string, numberOfAffectedEntries: number, member: Member) {
-        this.name = name;
-        this.numberOfAffectedEntries = numberOfAffectedEntries;
-        this.member = member;
-    }
-}
+//
+// class TopicEvent {
+//     name: string;
+//
+//     numberOfAffectedEntries: number;
+//
+//     member: Member;
+//
+//     constructor(name: string, numberOfAffectedEntries: number, member: Member) {
+//         this.name = name;
+//         this.numberOfAffectedEntries = numberOfAffectedEntries;
+//         this.member = member;
+//     }
+// }
+//
+// class DataAwareMessage extends Message<Object> {
+//
+//     messageData: Data;
+//     serializationService: SerializationService;
+//
+//     serialVersionUID = 1;
+//
+//     constructor(messageData: Data, publishTime: Long, publishingMember: Member, serializationService: SerializationService) {
+//         super();
+//         this.serializationService = serializationService;
+//         this.messageData = messageData;
+//     }
+//
+//     getMessageObject(): Object {
+//         if (this.messageObject == null && this.messageData != null) {
+//             this.messageObject = this.serializationService.toObject(this.messageData);
+//         }
+//         return this.messageObject;
+//     }
+//
+//     getMessageData(): Data {
+//         return this.messageData;
+//     }
+// }
+//
+// class TopicMessage<E> {
+//
+//     name: string;
+//     message: E;
+//     publishTime: Long;
+//     publishingMember: Member;
+//
+//     constructor(name: string, message: E, publishTime: Long, publishingMember: Member) {
+//         this.name = name;
+//         this.message = message;
+//         this.publishTime = publishTime;
+//         this.publishingMember = publishingMember;
+//     }
+// }
