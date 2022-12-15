@@ -20,10 +20,12 @@
   * [3.1 Client Properties](#31-client-properties)
 * [4. Serialization](#4-serialization)
   * [4.1. Compact Serialization](#41-compact-serialization)
-    * [4.1.1. Schema Evolution](#411-schema-evolution)
-    * [4.1.2. Generic Record Representation](#412-generic-record-representation)
-    * [4.1.3. Compact Configuration and Usage](#413-compact-configuration-and-usage)
-    * [4.1.4. Limitations](#414-limitations)
+    * [4.1.1. Configuration](#411-configuration)
+    * [4.1.2. Implementing CompactSerializer](#412-implementing-compactserializer)
+    * [4.1.3. Schema Evolution](#413-schema-evolution)
+    * [4.1.4. Generic Record Representation](#414-generic-record-representation)
+    * [4.1.5. SQL Support](#415-sql-support)
+    * [4.1.6. Limitations](#416-limitations)
   * [4.2. IdentifiedDataSerializable Serialization](#42-identifieddataserializable-serialization)
   * [4.3. Portable Serialization](#43-portable-serialization)
     * [4.3.1. Versioning for Portable Serialization](#431-versioning-for-portable-serialization)
@@ -719,8 +721,8 @@ Or, if you want to use your own serialization method, you can use [Custom Serial
 
 ## 4.1. Compact Serialization
 
-> **NOTES: Supported in client version 5.1+ and server version 5.0+. However, it is recommended to use 5.1+ client with a 5.1+
-server.
+> **NOTES: Compact serialization is promoted to the stable status in the 5.2 release. The older versions released under
+the BETA status are not compatible with stable the 5.2 server version.**
 
 As an enhancement to existing serialization methods, Hazelcast offers the compact serialization, with the
 following main features.
@@ -730,16 +732,16 @@ compared to other formats.
 * Does not require changing the source code of the class in any way.
 * Supports schema evolution which permits adding or removing fields, or changing the types of fields.
 * Platform and language independent.
-* Supports partial deserialization of fields, without deserializing the whole objects during queries or indexing.
+* Supports partial deserialization of fields during queries or indexing.
 
-Hazelcast achieves these features by having a well-known schema of objects and replicating them across the cluster which enables
+Hazelcast achieves these features by having well-known schemas of objects and replicating them across the cluster which enables
 members and clients to fetch schemas they don’t have in their local registries. Each serialized object carries just a schema
 identifier and relies on the schema distribution service or configuration to match identifiers with the actual schema. Once the
 schemas are fetched, they are cached locally on the members and clients so that the next operations that use the schema do not
 incur extra costs.
 
 Schemas help Hazelcast to identify the locations of the fields on the serialized binary data. With this information, Hazelcast
-can deserialize individual fields of the data, without reading the whole binary. This results in a better query and indexing
+can deserialize individual fields of the data, without deserializing the whole binary. This results in a better query and indexing
 performance.
 
 Schemas can evolve freely by adding or removing fields. Even the types of the fields can be changed. Multiple versions of the
@@ -749,13 +751,86 @@ is especially useful in rolling upgrade scenarios.
 The Compact serialization does not require any changes in the user classes as it doesn’t need a class to implement a particular
 interface. Serializers might be implemented and registered separately from the classes.
 
-Zero config option is not supported in Node.js client due to technical limitations. You need to register compact serializers
-in the compact serialization config.
-
 The underlying format of the compact serialized objects is platform and language independent. All clients will have this feature
 in the future.
 
-### 4.1.1. Schema Evolution
+### 4.1.1. Configuration
+
+The only thing you need to configure is to register compact serializers. You can do that via
+`serialization.compact.serializers` configuration option.
+
+You have to supply a unique type name for the class in the serializer.
+
+Choosing a type name will associate that name with the schema and will make the polyglot use cases, where there are multiple
+clients from different languages, possible. Serializers in different languages can work on the same data, provided that their
+read and write methods are compatible, and they have the same type name.
+
+
+> **NOTES: If you evolve your class in the later versions of your application, by adding or removing fields, you should continue
+using the same type name for that class.**
+
+The following is an example of compact configuration:
+
+```js
+const client = await Client.newHazelcastClient({
+    serialization: {
+        compact: {
+            serializers: [new EmployeeSerializer()]
+        }
+    }
+});
+```
+
+### 4.1.2. Implementing CompactSerializer
+
+Compact serialization can be used by implementing a `CompactSerializer` for a class and registering it in the configuration.
+
+For example, assume that you have the following `Employee` class.
+
+```js
+class Employee {
+    constructor(age, id) {
+        this.age = age;
+        this.id = id;
+    }
+}
+```
+
+Then, a Compact serializer can be implemented as below.
+
+
+```js
+class EmployeeSerializer {
+    getTypeName() {
+        return 'Employee';
+    }
+
+    getClass() {
+        return Employee;
+    }
+
+    read(reader) {
+        const age = reader.readInt32('age');
+        const id = reader.readInt64('id');
+        return new Employee(age, id);
+    }
+
+    write(writer, value) {
+        writer.writeInt32('age', value.age);
+        writer.writeInt64('id', value.id);
+    }
+}
+```
+
+The last step is to register the serializer in the member or client configuration, as shown in the
+[Configuration](#411-configuration) section.
+
+Upon serialization, a schema will be created from the serializer, and a unique schema identifier will be assigned to it
+automatically.
+
+After the configuration registration, Hazelcast will serialize instances of the `Employee` class using the `EmployeeSerializer`.
+
+### 4.1.3. Schema Evolution
 
 Compact serialization permits schemas and classes to evolve by adding or removing fields, or by changing the types of fields.
 More than one version of a class may live in the same cluster and different clients or members might use different versions
@@ -789,12 +864,12 @@ class Employee {
     constructor(id, name, age) {
         this.id = id; // int32
         this.name = name; // string
-        this.age = age; // int64
+        this.age = age; // int64, Newly added field
     }
 }
 ```
 
-When faced with binary data serialized by the new writer, old readers will be able to read the following fields.
+Then, when faced with binary data serialized by the new writer, old readers will be able to read the following fields.
 
 ```js
 // CompactSerializer's read method
@@ -807,15 +882,15 @@ read(reader) {
 }
 ```
 
-When faced with binary data serialized by the old writer, new readers will be able to read the following fields.
-Also, you can use the `getFieldKind` method to handle the case where such field does not exist.
+Then, when faced with binary data serialized by the old writer, new readers will be able to read the following fields.
+Also, Node.js client provides convenient APIs to check the existence of fields in the data when there is no such field.
 
 ```js
 // CompactSerializer's read method
 read(reader) {
     const id = reader.readInt64("id");
     const name = reader.readString("name");
-    // Read the "age" if it exists or set it to the default value, 0.
+    // Read the "age" if it exists or use the default value 0.
     // reader.readInt32("age") would throw if the "age" field
     // does not exist in data.
     const age = reader.getFieldKind("age") === FieldKind.INT32 ? reader.readInt32("age") : 0;
@@ -823,10 +898,15 @@ read(reader) {
 }
 ```
 
-Note that, when an old reader reads a data written by an old writer, or a new reader reads a data written by a new writer,
-they will be able to read all fields.
+Note that, when an old reader reads data written by an old writer, or a new reader reads a data written by a new writer, they
+will be able to read all fields written.
 
-### 4.1.2. Generic Record Representation
+One thing to be careful while evolving the class is to not have any conditional code in the `write` method.
+That method must write all the fields available in the current version of the class to the writer, with appropriate field names
+and types. Node.js client uses the `write` method of the serializer to extract a schema out of the object, hence any conditional
+code that may or may not run depending on the object in that method might result in an undefined behavior.
+
+### 4.1.4. Generic Record Representation
 
 Compact serialized objects can also be represented by a GenericRecord. A GenericRecord is the representation of some object
 when the client does not have the serializer/configuration to construct it. For example, if you read a compact object and
@@ -879,68 +959,21 @@ const anotherRecord = GenericRecords.compact('employee', fields, {
 });
 ```
 
-### 4.1.3. Compact Configuration and Usage
+For more information, you can check
+[the related page](https://docs.hazelcast.com/hazelcast/latest/clusters/accessing-domain-objects) in Hazelcast reference
+documentation.
 
-The only thing you need to configure is to register compact serializers. You can do that via
-`serialization.compact.serializers` configuration option. The following is an example of compact configuration:
+### 4.1.5. SQL Support
 
-```js
-'use strict';
-const { Client } = require('hazelcast-client');
-const Long = require('long');
+Compact serialized objects can be used in SQL statements, provided that a mapping is created, similar to other serialization
+formats. See [Compact Object mappings section](https://docs.hazelcast.com/hazelcast/latest/sql/mapping-to-maps#compact-objects)
+in Hazelcast reference manual to learn more.
 
-class Employee {
-    constructor(age, id) {
-        this.age = age;
-        this.id = id;
-    }
-}
+### 4.1.6. Limitations
 
-class EmployeeSerializer {
-    getTypeName() {
-        return 'Employee';
-    }
-
-    getClass() {
-        return Employee;
-    }
-
-    read(reader) {
-        const age = reader.readInt32('age');
-        const id = reader.readInt64('id');
-        return new Employee(age, id);
-    }
-
-    write(writer, value) {
-        writer.writeInt32('age', value.age);
-        writer.writeInt64('id', value.id);
-    }
-}
-
-async function main() {
-    const client = await Client.newHazelcastClient({
-        serialization: {
-            compact: {
-                serializers: [new EmployeeSerializer()]
-            }
-        }
-    });
-    const map = await client.getMap('mapName');
-    await map.put(20, new Employee(23, Long.fromNumber(1)));
-
-    const employee = await map.get(20);
-    console.log(employee);
-
-    await client.shutdown();
-}
-```
-
-Here, `employee` is an instance of Employee class.
-
-### 4.1.4. Limitations
-
-* Compact serialization does not work with lazy deserialization if the schema needs to be fetched. This is due to technical
-limitations. In the future, lazy deserialization **may** be removed to make compact work with such APIs.
+APIs with lazy deserialization, e.g `ReadOnlyLazyList` may throw `HazelcastSerializationError` in case a compact object is read
+and its schema is not known by the client. This is due to a technical limitation. If the schema is fetched by the client
+already, it won't throw. To fetch the schema, you can use any API that reads an object with the same schema.
 
 ## 4.2. IdentifiedDataSerializable Serialization
 
