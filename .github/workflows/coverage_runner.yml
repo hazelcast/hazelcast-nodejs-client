@@ -11,18 +11,15 @@ on:
       - master
       - '[45].*.x'
   pull_request_target:
-    branches:
-      - master
-      - '[45].*.x'
 
 jobs:
   check_for_membership:
     runs-on: ubuntu-latest
-    name: Check membership of given user  
+    name: Check membership of given user
     outputs:
       check-result: ${{ steps.composite.outputs.check-result }}
-    
-    steps: 
+
+    steps:
       - name: Action for membership check
         id: composite
         uses: hazelcast/hazelcast-tpm/membership@main
@@ -45,7 +42,7 @@ jobs:
             uses: actions/setup-java@v1
             with:
                 java-version: 8
-          
+
           - name: Setup Node.js
             uses: actions/setup-node@v2
             with:
@@ -56,11 +53,11 @@ jobs:
             uses: actions/checkout@v2
             with:
               ref: refs/pull/${{ github.event.pull_request.number }}/merge
-              
+
           - name: Checkout repository for push event
             if: github.event_name == 'push'
             uses: actions/checkout@v2
-                  
+
           - name: Checkout PR coming from community.
             if: github.event_name == 'workflow_dispatch'
             uses: actions/checkout@v2
@@ -84,20 +81,20 @@ jobs:
             with:
               files: coverage/lcov.info
               override_pr: ${{ github.event.pull_request.number }}
-              
+
           - name: Publish results to Codecov for Push
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'push' }}
             uses: codecov/codecov-action@v1
             with:
               files: coverage/lcov.info
-              
+
           - name: Publish result to Codecov for PR coming from community
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'workflow_dispatch' }}
             uses: codecov/codecov-action@v1
             with:
               files: coverage/lcov.info
               override_pr: ${{ github.event.inputs.pr_number }}
-              
+
           - name: Upload remote controller logs if test run fails
             uses: actions/upload-artifact@v2
             if: failure()
