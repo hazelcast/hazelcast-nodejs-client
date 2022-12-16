@@ -836,8 +836,8 @@ Compact serialization supports the types in this list
 [in the reference manual](https://docs.hazelcast.com/hazelcast/latest/serialization/compact-serialization#supported-types)
 as first class types. Any other type can be implemented on top of these, by using these types as building blocks.
 
-**NOTE: Compact serialization supports circularly-dependent types, provided that the cycle ends at some point on runtime by some
-null value.**
+> **NOTE: Compact serialization supports circularly-dependent types, provided that the cycle ends at some point on runtime by some
+> null value.**
 
 ### 4.1.4. Schema Evolution
 
