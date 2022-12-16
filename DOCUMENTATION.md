@@ -22,10 +22,11 @@
   * [4.1. Compact Serialization](#41-compact-serialization)
     * [4.1.1. Configuration](#411-configuration)
     * [4.1.2. Implementing CompactSerializer](#412-implementing-compactserializer)
-    * [4.1.3. Schema Evolution](#413-schema-evolution)
-    * [4.1.4. Generic Record Representation](#414-generic-record-representation)
-    * [4.1.5. SQL Support](#415-sql-support)
-    * [4.1.6. Limitations](#416-limitations)
+    * [4.1.3. Supported Types](#413-supported-types)
+    * [4.1.4. Schema Evolution](#414-schema-evolution)
+    * [4.1.5. Generic Record Representation](#415-generic-record-representation)
+    * [4.1.6. SQL Support](#416-sql-support)
+    * [4.1.7. Limitations](#417-limitations)
   * [4.2. IdentifiedDataSerializable Serialization](#42-identifieddataserializable-serialization)
   * [4.3. Portable Serialization](#43-portable-serialization)
     * [4.3.1. Versioning for Portable Serialization](#431-versioning-for-portable-serialization)
@@ -829,7 +830,16 @@ automatically.
 
 After the configuration registration, Hazelcast will serialize instances of the `Employee` class using the `EmployeeSerializer`.
 
-### 4.1.3. Schema Evolution
+### 4.1.3. Supported Types
+
+Compact serialization supports the types in this list
+[in the reference manual](https://docs.hazelcast.com/hazelcast/latest/serialization/compact-serialization#supported-types)
+as first class types. Any other type can be implemented on top of these, by using these types as building blocks.
+
+**NOTE: Compact serialization supports circularly-dependent types, provided that the cycle ends at some point on runtime by some
+null value.**
+
+### 4.1.4. Schema Evolution
 
 Compact serialization permits schemas and classes to evolve by adding or removing fields, or by changing the types of fields.
 More than one version of a class may live in the same cluster and different clients or members might use different versions
@@ -905,7 +915,7 @@ That method must write all the fields available in the current version of the cl
 and types. Node.js client uses the `write` method of the serializer to extract a schema out of the object, hence any conditional
 code that may or may not run depending on the object in that method might result in an undefined behavior.
 
-### 4.1.4. Generic Record Representation
+### 4.1.5. Generic Record Representation
 
 Compact serialized objects can also be represented by a GenericRecord. A GenericRecord is the representation of some object
 when the client does not have the serializer/configuration to construct it. For example, if you read a compact object and
@@ -962,13 +972,13 @@ For more information, you can check
 [the related page](https://docs.hazelcast.com/hazelcast/latest/clusters/accessing-domain-objects) in Hazelcast reference
 documentation.
 
-### 4.1.5. SQL Support
+### 4.1.6. SQL Support
 
 Compact serialized objects can be used in SQL statements, provided that a mapping is created, similar to other serialization
 formats. See [Compact Object mappings section](https://docs.hazelcast.com/hazelcast/latest/sql/mapping-to-maps#compact-objects)
 in Hazelcast reference manual to learn more.
 
-### 4.1.6. Limitations
+### 4.1.7. Limitations
 
 APIs with lazy deserialization, e.g `ReadOnlyLazyList` may throw `HazelcastSerializationError` in case a compact object is read
 and its schema is not known by the client. This is due to a technical limitation. If the schema is fetched by the client
