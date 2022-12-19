@@ -667,4 +667,11 @@ exports.waitForConnectionCount = async (client, connectionCount) => {
         expect(getConnectionsFn().length).to.be.equal(connectionCount);
     });
 };
+/**
+ * This function converts hours to seconds
+ */
+exports.getTimeOffsetByHour = (hour) => {
+    const timeOffset = hour * 60 * 60;
+    return timeOffset;
+};
 

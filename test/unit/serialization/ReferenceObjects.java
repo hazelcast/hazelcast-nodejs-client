@@ -79,6 +79,7 @@ class ReferenceObjects {
     static int anInt = 56789;
     static long aLong = -50992225L;
     static String aString;
+    static String anSqlString = "this > 5 AND this < 100";
     static UUID aUUID = new UUID(aLong, anInt);
     static String aSmallString = "😊 Hello Приве́т नमस्ते שָׁלוֹם";
 
@@ -120,12 +121,6 @@ class ReferenceObjects {
             anInnerPortable, null,
             aCustomStreamSerializable,
             aCustomByteArraySerializable, aData);
-    static APortable aPortable = new APortable(
-            aBoolean, aByte, aChar, aDouble, aShort, aFloat, anInt, aLong, aSmallString, anInnerPortable,
-            booleans, bytes, chars, doubles, shorts, floats, ints, longs, strings, portables,
-            anIdentifiedDataSerializable,
-            aCustomStreamSerializable,
-            aCustomByteArraySerializable, aData);
 
     static Date aDate;
 
@@ -148,6 +143,14 @@ class ReferenceObjects {
 
     static BigInteger aBigInteger = new BigInteger("1314432323232411");
     static BigDecimal aBigDecimal = new BigDecimal(31231);
+    static APortable aPortable = new APortable(
+            aBoolean, aByte, aChar, aDouble, aShort, aFloat, anInt, aLong, anSqlString, aBigDecimal,
+            aLocalDate, aLocalTime, aLocalDateTime, aOffsetDateTime, anInnerPortable,
+            booleans, bytes, chars, doubles, shorts, floats, ints, longs, strings, portables,
+            anIdentifiedDataSerializable,
+            aCustomStreamSerializable,
+            aCustomByteArraySerializable, aData);
+
     static Class aClass = BigDecimal.class;
 
     static Object[] objects = {anInnerPortable, aNullObject, aBigDecimal, aShort};
