@@ -422,7 +422,9 @@ describe('ConfigBuilderValidationTest', function () {
             },
             {
                 property: 'hazelcast.logging.level',
-                validValues: ['OFF', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'],
+                validValues: ['OFF', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE',
+                              'OfF', 'ErRoR', 'WarN', 'iNfO', 'DeBuG', 'TrAcE',
+                              'off', 'error', 'warn', 'info', 'debug', 'trace'],
                 invalidValues: [1, 1.11, null, undefined, [], {}, true, 'someOtherString']
             },
             {
