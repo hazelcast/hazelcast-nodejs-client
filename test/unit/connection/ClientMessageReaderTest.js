@@ -101,8 +101,7 @@ describe('OldClientMessageReaderTest', function () {
     });
 });
 
-describe('ClientMessageReaderTest', function () {
-
+describe('ClientMessageReaderTest', function() {
     let reader;
 
     function createFrameWithRandomBytes(length) {
