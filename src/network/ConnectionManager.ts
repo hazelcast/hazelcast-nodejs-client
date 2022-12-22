@@ -120,11 +120,11 @@ export enum ClientState {
 }
 
 interface ClientForConnectionManager {
-    onClusterChange(): void;
+    onTryToConnectNextCluster(): void;
 
     sendStateToCluster(): Promise<void>;
 
-    onClusterRestart(): void;
+    onConnectionToNewCluster(): void;
 
     shutdown(): Promise<void>;
 }
@@ -446,7 +446,7 @@ export class ConnectionManager extends EventEmitter {
     }
 
     private cleanupAndTryNextCluster(nextCtx: CandidateClusterContext): Promise<boolean> {
-        this.client.onClusterChange();
+        this.client.onTryToConnectNextCluster();
         this.logger.info('ConnectionManager', 'Trying to connect to next cluster: '
             + nextCtx.clusterName);
         this.switchingToNextCluster = true;
@@ -830,6 +830,7 @@ export class ConnectionManager extends EventEmitter {
         connection.setConnectedServerVersion(response.serverHazelcastVersion);
         connection.setRemoteAddress(response.address);
         connection.setRemoteUuid(response.memberUuid);
+        connection.setClusterUuid(response.clusterId);
 
         const existingConnection = this.connectionRegistry.getConnection(response.memberUuid);
         if (existingConnection != null) {
@@ -845,7 +846,7 @@ export class ConnectionManager extends EventEmitter {
             this.checkConnectionStateOnClusterIdChange(connection);
             this.logger.warn('ConnectionManager', 'Switching from current cluster: '
                 + this.clusterId + ' to new cluster: ' + newClusterId);
-            this.client.onClusterRestart();
+            this.client.onConnectionToNewCluster();
         }
         const connectionsEmpty = this.connectionRegistry.isEmpty();
         this.connectionRegistry.setConnection(response.memberUuid, connection);

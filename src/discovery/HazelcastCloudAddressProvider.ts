@@ -20,6 +20,7 @@ import {AddressProvider} from '../connection/AddressProvider';
 import {ILogger} from '../logging/ILogger';
 import {AddressImpl, Addresses} from '../core/Address';
 import {createAddressFromString} from '../util/AddressUtil';
+import { MemberImpl } from '../core';
 
 /** @internal */
 export class HazelcastCloudAddressProvider implements AddressProvider {
@@ -68,6 +69,10 @@ export class HazelcastCloudAddressProvider implements AddressProvider {
                     return null;
                 }
             });
+    }
+
+    translateMemberAddress(member: MemberImpl): AddressImpl {
+        return member.getAddress();
     }
 
     refresh(): Promise<void> {

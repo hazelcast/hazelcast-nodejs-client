@@ -15,6 +15,7 @@
  */
 /** @ignore *//** */
 
+import { MemberImpl } from '../core';
 import {AddressImpl, Addresses} from '../core/Address';
 
 /**
@@ -37,5 +38,11 @@ export interface AddressProvider {
      * @return new address if given address is known, otherwise return null
      */
     translate(address: AddressImpl): Promise<AddressImpl>;
+
+    /**
+     * Implementations of this will handle returning the public address of the
+     * member if necessary.
+    */
+    translateMemberAddress(member: MemberImpl): AddressImpl;
 
 }

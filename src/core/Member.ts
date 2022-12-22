@@ -97,4 +97,8 @@ export class MemberImpl implements Member {
         }
         return id;
     }
+
+    getAddress(): AddressImpl {
+        return this.address;
+    }
 }

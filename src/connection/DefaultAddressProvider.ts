@@ -19,6 +19,7 @@ import {AddressProvider} from './AddressProvider';
 import {ClientNetworkConfigImpl} from '../config/ClientNetworkConfig';
 import {AddressImpl, Addresses} from '../core/Address';
 import {getSocketAddresses} from '../util/AddressUtil';
+import { MemberImpl } from '../core';
 
 /**
  * Default address provider of Hazelcast.
@@ -47,5 +48,10 @@ export class DefaultAddressProvider implements AddressProvider {
 
     translate(address: AddressImpl): Promise<AddressImpl> {
         return Promise.resolve(address);
+    }
+
+    translateMemberAddress(member: MemberImpl): AddressImpl {
+        // TODO: will be implemented
+        return member.getAddress();
     }
 }
