@@ -251,7 +251,7 @@ export class ClusterService implements Cluster {
         }
 
         for (const member of currentMembers) {
-            if (clusterUuid !== this.memberListSnapshot.clusterUuid) {
+            if (this.memberListSnapshot.clusterUuid.equals(clusterUuid)) {
                 if (!deadMembers.delete(member.id())) {
                     newMembers.push(member);
                 }
