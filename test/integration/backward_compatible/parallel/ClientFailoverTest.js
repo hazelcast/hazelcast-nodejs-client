@@ -209,7 +209,7 @@ describe('ClientFailoverTest - enterprise', function () {
 
         expect(getErr).to.be.undefined;
         expect(client.getCluster().getMembers()).to.have.lengthOf(1);
-        expect(client.getCluster().getMembers()[0].uuid.toString()).to.be.equal(member2.uuid);
+        expect(client.getCluster().getMembers()[0].uuid.toString()).to.be.equal(member1.uuid);
     });
 
     it('should reject with offline error when retrying read ops while switching in async mode', async function () {
