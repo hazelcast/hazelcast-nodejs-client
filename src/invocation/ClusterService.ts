@@ -176,9 +176,9 @@ export class ClusterService implements Cluster {
 
     handleMembersViewEvent(
         connectionRegistry: ConnectionRegistry,
+        clusterUuid: UUID,
         memberListVersion: number,
-        memberInfos: MemberInfo[],
-        clusterUuid: UUID
+        memberInfos: MemberInfo[]
     ): void {
         if (this.memberListSnapshot.version == INITIAL_MEMBER_LIST_VERSION) {
             //this means this is the first time client connected to cluster/cluster has changed(blue/green)

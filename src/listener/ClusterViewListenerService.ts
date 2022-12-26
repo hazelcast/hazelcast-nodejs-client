@@ -99,7 +99,7 @@ export class ClusterViewListenerService {
         return (clientMessage: ClientMessage): void => {
             ClientAddClusterViewListenerCodec.handle(clientMessage,
                 this.clusterService.handleMembersViewEvent.bind(
-                    this.clusterService, this.connectionManager.getConnectionRegistry(), 0, [], connection.getClusterUuid()
+                    this.clusterService, this.connectionManager.getConnectionRegistry(), connection.getClusterUuid()
                 ),
                 (version: number, partitions: Array<[UUID, number[]]>) => {
                     this.partitionService.handlePartitionViewEvent(connection, partitions, version);
