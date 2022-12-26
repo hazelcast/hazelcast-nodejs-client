@@ -680,7 +680,7 @@ exports.calculateServerVersionFromString = (versionString) => {
  * This function will wait for the connections count to be equal to given parameter (connectionCount).
  */
 exports.waitForConnectionCount = async (client, connectionCount) => {
-    const getConnectionsFn = await exports.getClientConnections(client);
+    const getConnectionsFn = await exports.getClientConnectionsFn(client);
     await this.assertTrueEventually(async () => {
         expect(getConnectionsFn().length).to.be.equal(connectionCount);
     });
@@ -689,7 +689,7 @@ exports.waitForConnectionCount = async (client, connectionCount) => {
 /**
  * Returns client getConnectionsFn according to client version
  */
-exports.getClientConnections = async (client) => {
+exports.getClientConnectionsFn = async (client) => {
     let getConnectionsFn;
     if (this.isClientVersionAtLeast('4.2')) {
         const clientRegistry = client.connectionRegistry;

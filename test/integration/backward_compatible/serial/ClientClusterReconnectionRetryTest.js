@@ -70,7 +70,7 @@ describe('ClientClusterReconnectionRetryTest', function () {
         // after disconnection, client will not try to reconnect
         fnGetOrConnectToMember.callCount.should.be.eq(callCountFnGetOrConnectToMember);
         await RC.startMember(cluster.id);
-        const clientConnectionsFn = await TestUtil.getClientConnections(client);
+        const clientConnectionsFn = await TestUtil.getClientConnectionsFn(client);
         await TestUtil.assertTrueAllTheTime(async () => {
             expect(clientConnectionsFn().length).to.be.equal(0);
         }, 100, ASSERTION_MILLISECONDS);
