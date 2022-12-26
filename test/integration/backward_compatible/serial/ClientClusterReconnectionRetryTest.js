@@ -62,13 +62,13 @@ describe('ClientClusterReconnectionRetryTest', function () {
         expect(client.getConnectionManager().getConnectionRegistry().getClientState()
                 == ClientState.DISCONNECTED_FROM_CLUSTER).to.be.eq(true);
         const callCountFnGetOrConnectToMember = fnGetOrConnectToMember.callCount;
-        // getOrConnectToMember function call count will be stable
-        // after disconnection, client will not try to reconnect
-        fnGetOrConnectToMember.callCount.should.be.eq(callCountFnGetOrConnectToMember);
-
         // Wait a bit more to make it more likely that the first reconnection
         // attempt is made before we restart the instance
         await TestUtil.promiseLater(ASSERTION_MILLISECONDS, () => { });
+
+        // getOrConnectToMember function call count will be stable
+        // after disconnection, client will not try to reconnect
+        fnGetOrConnectToMember.callCount.should.be.eq(callCountFnGetOrConnectToMember);
         await RC.startMember(cluster.id);
         const clientConnectionsFn = await TestUtil.getClientConnections(client);
         await TestUtil.assertTrueAllTheTime(async () => {
