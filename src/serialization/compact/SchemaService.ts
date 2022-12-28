@@ -111,11 +111,6 @@ export class SchemaService {
             this.schemas.set(schemaId.toString(), schema);
             return;
         }
-        if (!existingSchema.equals(schema)) {
-            throw new IllegalStateError(
-                `Schema with schemaId ${schemaId} already exists. existing schema: ${existingSchema} new schema: ${schema}`
-            );
-        }
     }
 
     sendAllSchemas(): Promise<void> {
