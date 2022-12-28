@@ -21,6 +21,9 @@ const expect = chai.expect;
 
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
+const { MemberInfo } = require('../../../../lib/core/MemberInfo');
+const { AddressImpl } = require('../../../../');
+const { UuidUtil } = require('../../../../lib/util/UuidUtil');
 
 describe('ClusterServiceTest', function () {
     let cluster;
@@ -141,5 +144,53 @@ describe('ClusterServiceTest', function () {
         client.getCluster().removeMembershipListener(id);
 
         setTimeout(done, 3000);
+    });
+});
+
+describe('ClusterServiceTest_JavaPorted', function () {
+    let cluster;
+    let member1;
+    let client;
+
+    const testFactory = new TestUtil.TestFactory();
+
+    beforeEach(async function () {
+        cluster = await testFactory.createClusterForParallelTests();
+        member1 = await RC.startMember(cluster.id);
+        client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id,
+            properties: {
+                'hazelcast.client.heartbeat.interval': 1000,
+                'hazelcast.client.heartbeat.timeout': 5000
+            }
+        }, member1);
+    });
+
+    afterEach(async function () {
+        await testFactory.shutdownAll();
+    });
+
+    function createMember(host, port) {
+        const address = new AddressImpl(host, port);
+        const memberUUID = UuidUtil.generate();
+        return new MemberInfo(address, memberUUID, new Map(), false, null, false, null);
+    }
+
+    it('testMemberAdded', async function () {
+        const members = [];
+        const membershipListener = {
+            memberAdded: (event) => {
+                members.push(event.member);
+            }
+        };
+        client.getCluster().addMembershipListener(membershipListener);
+        await RC.startMember(cluster.id);
+
+        const member = createMember('127.0.0.1', 5701);
+        const clusterUUID = UuidUtil.generate();
+        client.getCluster().handleMembersViewEvent(client.connectionRegistry, clusterUUID, 2, [member]);
+        const memberInfo = createMember('127.0.0.2', 5701);
+        client.getCluster().handleMembersViewEvent(client.connectionRegistry, clusterUUID, 3, [member, memberInfo]);
+        expect(client.getCluster().getMembers().length).to.be.equal(2);
     });
 });
