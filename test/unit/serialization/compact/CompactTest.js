@@ -42,11 +42,18 @@ const {
 const Long = require('long');
 const { CompactGenericRecordImpl } = require('../../../../lib/serialization/generic_record/CompactGenericRecord');
 const { GenericRecords, HazelcastSerializationError, IllegalArgumentError } = require('../../../../lib');
-const { Fields } = require('../../../../lib/serialization/generic_record');
+const { Fields, FieldKind } = require('../../../../lib/serialization/generic_record');
+const { DefaultCompactWriter } = require('../../../../lib/serialization/compact/DefaultCompactWriter');
 const TestUtil = require('../../../TestUtil');
+const sinon = require('sinon');
+const sandbox = sinon.createSandbox();
 
 describe('CompactTest', function () {
     let serializationService;
+
+    afterEach(async function () {
+        sandbox.restore();
+    });
 
     it('should work with all fields', async function () {
         const bundle = createSerializationService(
@@ -99,6 +106,32 @@ describe('CompactTest', function () {
         object.should.be.instanceof(CompactGenericRecordImpl);
         object.getInt32('age').should.be.eq(30);
         (object.getInt64('id').eq(Long.ONE)).should.be.true;
+    });
+
+    it('should throw HazelcastSerializationError when field is undefined', async function () {
+        sandbox.replace(DefaultCompactWriter.prototype, 'getFieldByName', () => {
+            return undefined;
+        });
+        const {serializationService, schemaService: schemaService1} = createSerializationService([new EmployeeSerializer()]);
+        const employee = new Employee(30, Long.ONE); 
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            await serialize(serializationService, schemaService1, employee);
+        });
+        error.should.be.instanceOf(HazelcastSerializationError);
+        error.message.includes('Invalid field name').should.be.true;
+    });
+
+    it('should throw HazelcastSerializationError when invalid field type', async function () {
+        sandbox.replace(DefaultCompactWriter.prototype, 'getFieldByName', () => {
+            return { fieldName: 'foo', kind: FieldKind.INT64 };
+        });
+        const {serializationService, schemaService: schemaService1} = createSerializationService([new EmployeeSerializer()]);
+        const employee = new Employee(30, Long.ONE); 
+        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
+            await serialize(serializationService, schemaService1, employee);
+        });
+        error.should.be.instanceOf(HazelcastSerializationError);
+        error.message.includes('Invalid field type').should.be.true;
     });
 
     it('should work with evolved schema when field added', async function () {

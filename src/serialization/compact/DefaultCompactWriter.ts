@@ -394,8 +394,12 @@ export class DefaultCompactWriter implements CompactWriter {
         this.fieldOffsets[index] = fieldPosition;
     }
 
+    private getFieldByName(fieldName: string) {
+        return this.schema.fieldDefinitionMap.get(fieldName);
+    }
+
     private checkFieldDefinition(fieldName: string, fieldKind: FieldKind) : FieldDescriptor {
-        const field = this.schema.fieldDefinitionMap.get(fieldName);
+        const field = this.getFieldByName(fieldName);
         if (field === undefined) {
             throw new HazelcastSerializationError(`Invalid field name: ${fieldName} for ${this.schema}`);
         }
