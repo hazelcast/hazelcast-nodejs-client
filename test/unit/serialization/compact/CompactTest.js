@@ -113,7 +113,7 @@ describe('CompactTest', function () {
             return undefined;
         });
         const {serializationService, schemaService: schemaService1} = createSerializationService([new EmployeeSerializer()]);
-        const employee = new Employee(30, Long.ONE); 
+        const employee = new Employee(30, Long.ONE);
         const error = await TestUtil.getRejectionReasonOrThrow(async () => {
             await serialize(serializationService, schemaService1, employee);
         });
@@ -126,7 +126,7 @@ describe('CompactTest', function () {
             return { fieldName: 'foo', kind: FieldKind.INT64 };
         });
         const {serializationService, schemaService: schemaService1} = createSerializationService([new EmployeeSerializer()]);
-        const employee = new Employee(30, Long.ONE); 
+        const employee = new Employee(30, Long.ONE);
         const error = await TestUtil.getRejectionReasonOrThrow(async () => {
             await serialize(serializationService, schemaService1, employee);
         });
