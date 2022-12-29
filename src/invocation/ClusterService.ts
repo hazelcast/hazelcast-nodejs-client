@@ -174,6 +174,11 @@ export class ClusterService implements Cluster {
             });
     }
 
+    // for test usage
+    getMemberListVersion(): number {
+        return this.memberListSnapshot.version;
+    }
+
     handleMembersViewEvent(
         connectionRegistry: ConnectionRegistry,
         clusterUuid: UUID,
