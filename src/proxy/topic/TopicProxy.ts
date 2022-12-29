@@ -1,6 +1,6 @@
 import {ITopic} from '../ITopic';
 import {Message, MessageListener} from '../MessageListener';
-import {AddressImpl, HazelcastError, Member, UUID} from '../../core';
+import {AddressImpl, HazelcastError, UUID} from '../../core';
 import {TopicAddMessageListenerCodec} from '../../codec/TopicAddMessageListenerCodec';
 import {TopicRemoveMessageListenerCodec} from '../../codec/TopicRemoveMessageListenerCodec';
 import { ListenerMessageCodec} from '../../listener/ListenerMessageCodec';
@@ -8,12 +8,8 @@ import {ClientMessage} from '../../protocol/ClientMessage';
 import {assertNotNull} from '../../util/Util';
 import {PartitionSpecificProxy} from '../PartitionSpecificProxy';
 import {TopicPublishCodec} from '../../codec/TopicPublishCodec';
-import {HazelcastClient} from '../../HazelcastClient';
 import Long = require('long');
 import {Data} from '../../serialization';
-import {EntryEvent} from '../EntryListener';
-import {EventType} from '../EventType';
-import {ILogger} from '../../logging';
 import {ClientConfig, ClientConfigImpl} from '../../config';
 import {ProxyManager} from '../ProxyManager';
 import {PartitionService} from '../../PartitionService';
@@ -31,6 +27,7 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
 
     private readonly overloadPolicy: TopicOverloadPolicy;
     private readonly localAddress: AddressImpl;
+
 
     constructor(
         serviceName: string,
@@ -69,7 +66,8 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
         const messageData = this.toData(message);
         const request = TopicPublishCodec.encodeRequest(this.name, messageData);
         const partitionId = this.partitionService.getPartitionId(messageData);
-        return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, ()=>{}, request);
+        return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, () => {
+        }, request);
     }
 
     publishAll(messages: any[]): Promise<void> {
@@ -77,7 +75,8 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
         const messageDataList = this.toData(messages);
         const request = TopicPublishCodec.encodeRequest(this.name, messageDataList);
         const partitionId = this.partitionService.getPartitionId(messageDataList);
-        return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, ()=>{}, request);
+        return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, () => {
+        }, request);
     }
 
     addListener(listener: MessageListener<E>): Promise<string> {
@@ -106,39 +105,41 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
             decodeAddResponse(msg: ClientMessage): UUID {
                 return TopicAddMessageListenerCodec.decodeResponse(msg);
             },
-            encodeRemoveRequest(listenerId: UUID): ClientMessage {
-                return TopicAddMessageListenerCodec.encodeRequest(name, listenerId);
+            encodeRemoveRequest(): ClientMessage {
+                return TopicAddMessageListenerCodec.encodeRequest(name, super.localOnly);
             },
         };
     }
-     removeListener(listenerId: string): Promise<boolean> {
+
+    removeListener(listenerId: string): Promise<boolean> {
         return this.listenerService.deregisterListener(listenerId);
     }
 
     addMessageListener(listener: MessageListener<E>): string {
         throw new HazelcastError('This method is not supported for Topic. ' +
-                                        'Try to use addListener instead.');
+            'Try to use addListener instead.');
     }
 
     removeMessageListener(listenerId: string): boolean {
         throw new HazelcastError('This method is not supported for Topic. ' +
-                                        'Try to use removeListener instead.');
-    }
-
-    private createListenerMessageCodec(): ListenerMessageCodec {
-        return {
-            encodeAddRequest(): ClientMessage {
-                return TopicAddMessageListenerCodec.encodeRequest(super.name, super.localOnly);
-            },
-            decodeAddResponse(msg: ClientMessage): UUID {
-                return TopicAddMessageListenerCodec.decodeResponse(msg);
-            },
-            encodeRemoveRequest(): ClientMessage {
-                return TopicRemoveMessageListenerCodec.encodeRequest(super.name, super.listenerId);
-            },
-        };
+            'Try to use removeListener instead.');
     }
 }
+
+//     private createListenerMessageCodec(): ListenerMessageCodec {
+//         return {
+//             encodeAddRequest(): ClientMessage {
+//                 return TopicAddMessageListenerCodec.encodeRequest(super.name, super.localOnly);
+//             },
+//             decodeAddResponse(msg: ClientMessage): UUID {
+//                 return TopicAddMessageListenerCodec.decodeResponse(msg);
+//             },
+//             encodeRemoveRequest(): ClientMessage {
+//                 return TopicRemoveMessageListenerCodec.encodeRequest(super.name, super.listenerId);
+//             },
+//         };
+//     }
+// }
 
 //
 // class TopicEvent {
