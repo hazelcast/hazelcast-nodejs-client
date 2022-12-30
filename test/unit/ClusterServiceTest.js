@@ -32,7 +32,7 @@ describe('ClientClusterServiceImplTest', function () {
     let loggerStub;
     let clusterFailoverServiceStub;
     let clusterService;
-    beforeEach(async function () {
+    beforeEach(function () {
         loggerStub = sandbox.stub(DefaultLogger.prototype);
         clusterFailoverServiceStub = {
             current: () => {
@@ -49,7 +49,7 @@ describe('ClientClusterServiceImplTest', function () {
         };
     });
 
-    afterEach(async function () {
+    afterEach(function () {
         sandbox.restore();
     });
 
@@ -59,7 +59,7 @@ describe('ClientClusterServiceImplTest', function () {
         return new MemberInfo(address, memberUUID, new Map(), liteMember, '', false, null);
     }
 
-    it('testMemberAdded', async function () {
+    it('testMemberAdded', function () {
         const members = [];
         const membershipListener = {
             memberAdded: (event) => {
@@ -80,7 +80,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(members).to.eql([memberInfo]);
     });
 
-    it('testMemberRemoved', async function () {
+    it('testMemberRemoved', function () {
         const members = [];
 
         const memberInfo = createMember({host:'127.0.0.1', port:5701, uuid:null, liteMember:false});
@@ -99,7 +99,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(members).to.eql([memberInfo]);
     });
 
-    it('testInitialMembershipListener_AfterInitialListArrives', async function () {
+    it('testInitialMembershipListener_AfterInitialListArrives', function () {
         let initCounter = 0;
         const memberInfo = createMember({host:'127.0.0.1', port:5701, uuid:null, liteMember:false});
         const clusterUUID = UuidUtil.generate();
@@ -116,7 +116,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(initCounter).to.be.equal(1);
     });
 
-    it('testInitialMembershipListener_BeforeInitialListArrives', async function () {
+    it('testInitialMembershipListener_BeforeInitialListArrives', function () {
         let initCounter = 0;
 
         const membershipListener = {
@@ -133,7 +133,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(initCounter).to.be.equal(1);
     });
 
-    it('testFireOnlyIncrementalEvents_AfterClusterRestart', async function () {
+    it('testFireOnlyIncrementalEvents_AfterClusterRestart', function () {
         let initCounter = 0;
         const addedMembers = [];
         const removedMembers = [];
@@ -164,7 +164,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(removedMembers).to.eql([removedMemberInfo]);
     });
 
-    it('testFireOnlyInitialEvent_AfterClusterChange', async function () {
+    it('testFireOnlyInitialEvent_AfterClusterChange', function () {
         let initCounter = 0;
         let addedCount = 0;
         let removedCount = 0;
@@ -194,7 +194,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(removedCount).to.be.equal(0);
     });
 
-    it('testDontFire_WhenReconnectToSameCluster', async function () {
+    it('testDontFire_WhenReconnectToSameCluster', function () {
         let initCounter = 0;
         let addedCount = 0;
         let removedCount = 0;
@@ -225,7 +225,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(removedCount).to.be.equal(0);
     });
 
-    it('testFireEvents_WhenAddressOfTheMembersChanges', async function () {
+    it('testFireEvents_WhenAddressOfTheMembersChanges', function () {
         let initCounter = 0;
         const addedMembers = [];
         const removedMembers = [];
@@ -262,7 +262,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(removedMembers).to.eql([removedMember1, removedMember2]);
     });
 
-    it('testFireEvents_WhenAddressAndUuidsDoesNotChange', async function () {
+    it('testFireEvents_WhenAddressAndUuidsDoesNotChange', function () {
         let initCounter = 0;
         const addedMembers = [];
         const removedMembers = [];
@@ -295,7 +295,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(removedMembers).to.eql([member1, member2]);
     });
 
-    it('testDontServeEmptyMemberList_DuringClusterRestart', async function () {
+    it('testDontServeEmptyMemberList_DuringClusterRestart', function () {
         const member1 = createMember({host:'127.0.0.1', port:5701, uuid:null, liteMember:false});
         clusterService.handleMembersViewEvent(UuidUtil.generate(), 1, [member1]);
         expect(clusterService.getMembers().length).to.be.equal(1);
@@ -310,7 +310,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(clusterService.getMembers().length).to.be.equal(1);
     });
 
-    it('testDontServeEmptyMemberList_DuringClusterChange', async function () {
+    it('testDontServeEmptyMemberList_DuringClusterChange', function () {
         const member1 = createMember({host:'127.0.0.1', port:5701, uuid:null, liteMember:false});
         clusterService.handleMembersViewEvent(UuidUtil.generate(), 1, [member1]);
         expect(clusterService.getMembers().length).to.be.equal(1);
@@ -325,7 +325,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(clusterService.getMembers().length).to.be.equal(1);
     });
 
-    it('testListenersFromConfigWorking', async function () {
+    it('testListenersFromConfigWorking', function () {
         const addedMembers = [];
         const membershipListener = {
             memberAdded: (event) => {
@@ -345,7 +345,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(addedMembers).to.eql([addedMemberInfo]);
     });
 
-    it('testRemoveListener', async function () {
+    it('testRemoveListener', function () {
         let addedCount = 0;
         const membershipListener = {
             memberAdded: () => {
@@ -366,11 +366,11 @@ describe('ClientClusterServiceImplTest', function () {
         expect(addedCount).to.be.equal(0);
     });
 
-    it('testRemoveNonExistingListener', async function () {
+    it('testRemoveNonExistingListener', function () {
         expect(clusterService.removeMembershipListener(UuidUtil.generate())).to.be.false;
     });
 
-    it('testGetMember', async function () {
+    it('testGetMember', function () {
         const masterMember = createMember({host:'127.0.0.1', port:5701, uuid:null, liteMember:false});
         const member2Uuid = UuidUtil.generate();
         const member2 = createMember({host:'127.0.0.2', port:5701, uuid:member2Uuid, liteMember:false});
@@ -379,7 +379,7 @@ describe('ClientClusterServiceImplTest', function () {
         expect(member2).to.eql(receivedMember);
     });
 
-    it('testGetMembers', async function () {
+    it('testGetMembers', function () {
         const masterMember = createMember({host:'127.0.0.1', port:5701, uuid:null, liteMember:false});
         const liteMember = createMember({host:'127.0.0.2', port:5701, uuid:null, liteMember:true});
         const dataMember = createMember({host:'127.0.0.3', port:5701, uuid:null, liteMember:false});
@@ -392,5 +392,13 @@ describe('ClientClusterServiceImplTest', function () {
         expect([masterMember, dataMember]).to.eql(clusterService.getMembers((selector) => {
             return !selector.liteMember;
         }));
+    });
+
+    it('testWaitInitialMembership', async function () {
+        const masterMember = createMember({host:'127.0.0.1', port:5701, uuid:null, liteMember:false});
+        const liteMember = createMember({host:'127.0.0.2', port:5701, uuid:null, liteMember:true});
+        const member = createMember({host:'127.0.0.3', port:5701, uuid:null, liteMember:false});
+        clusterService.handleMembersViewEvent(UuidUtil.generate(), 1, [masterMember, liteMember, member]);
+        await clusterService.waitForInitialMemberList();
     });
 });
