@@ -101,7 +101,7 @@ export class Schema {
     getFields() : IterableIterator<FieldDescriptor> {
         return this.fieldDefinitionMap.values();
     }
-
+    
     private hasSameFields(other: Schema): boolean {
         if (other.fieldDefinitionMap.size !== this.fieldDefinitionMap.size) {
             return false;

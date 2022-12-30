@@ -58,4 +58,22 @@ describe('SchemaTest', function () {
             bitPositionSoFar += 1;
         }
     });
+
+    it('should return true when compare same FieldDescriptor', function() {
+        const field1 = new FieldDescriptor('SameField', FieldKind.INT32);
+        const field2 = new FieldDescriptor('SameField', FieldKind.INT32);
+        chai.expect(field1.equals(field2)).to.be.true;
+    });
+
+    it('should return false when compare different name FieldDescriptor', function() {
+        const field1 = new FieldDescriptor('SameField', FieldKind.INT32);
+        const field2 = new FieldDescriptor('SameField2', FieldKind.INT32);
+        chai.expect(field1.equals(field2)).to.be.false;
+    });
+
+    it('should return false when compare different kind FieldDescriptor', function() {
+        const field1 = new FieldDescriptor('SameField', FieldKind.INT32);
+        const field2 = new FieldDescriptor('SameField', FieldKind.INT64);
+        chai.expect(field1.equals(field2)).to.be.false;
+    });
 });
