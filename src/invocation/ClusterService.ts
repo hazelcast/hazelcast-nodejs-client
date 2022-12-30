@@ -38,7 +38,6 @@ import {
 } from '../core';
 import {MemberInfo} from '../core/MemberInfo';
 import {ClusterFailoverService} from '../ClusterFailoverService';
-import {ConnectionRegistry} from '../network/ConnectionRegistry';
 
 class MemberListSnapshot {
     constructor(
@@ -53,8 +52,7 @@ class MemberListSnapshot {
  * Initial list version is used at the start and also after cluster has changed with blue-green deployment feature.
  * In both cases, we need to fire InitialMembershipEvent.
  */
-const INITIAL_MEMBER_LIST_VERSION = -1;
-const EMPTY_SNAPSHOT = new MemberListSnapshot(INITIAL_MEMBER_LIST_VERSION, new Map<string, MemberImpl>(), [], null);
+export const INITIAL_MEMBER_LIST_VERSION = -1;
 const INITIAL_MEMBERS_TIMEOUT_IN_MILLIS = 120 * 1000; // 120 seconds
 
 
@@ -67,7 +65,7 @@ export class ClusterService implements Cluster {
     private readonly listeners: Map<string, MembershipListener> = new Map();
     private readonly translateToAddressProvider: TranslateAddressProvider;
     private initialListFetched = deferredPromise<void>();
-    private memberListSnapshot = EMPTY_SNAPSHOT;
+    private memberListSnapshot = new MemberListSnapshot(INITIAL_MEMBER_LIST_VERSION, new Map<string, MemberImpl>(), [], null);
 
     constructor(
         clientConfig: ClientConfig,
@@ -141,7 +139,7 @@ export class ClusterService implements Cluster {
     }
 
     onClusterConnect(): void {
-        this.logger.debug('ClusterService', 'Resetting the member list version.');
+        this.logger.trace('ClusterService', 'Resetting the member list version.');
         // This check is necessary so in order not to override changing cluster information when:
         // - registering cluster view listener back to the new cluster.
         // - on authentication response when cluster uuid change is detected.
@@ -157,7 +155,8 @@ export class ClusterService implements Cluster {
     }
 
     onTryToConnectNextCluster(): void {
-        this.logger.debug('ClusterService', 'Resetting the cluster snapshot.');
+        this.logger.trace('ClusterService', 'Resetting the cluster snapshot.');
+        this.initialListFetched = deferredPromise<void>();
         this.memberListSnapshot = 
                 new MemberListSnapshot(   
                     INITIAL_MEMBER_LIST_VERSION, 
@@ -180,12 +179,12 @@ export class ClusterService implements Cluster {
     }
 
     handleMembersViewEvent(
-        connectionRegistry: ConnectionRegistry,
         clusterUuid: UUID,
         memberListVersion: number,
         memberInfos: MemberInfo[]
     ): void {
-        if (this.memberListSnapshot.version == INITIAL_MEMBER_LIST_VERSION) {
+        const clusterViewSnapshot = this.memberListSnapshot;
+        if (clusterViewSnapshot.version == INITIAL_MEMBER_LIST_VERSION) {
             //this means this is the first time client connected to cluster/cluster has changed(blue/green)
             this.applyInitialState(memberListVersion, memberInfos, clusterUuid)
             .then(this.initialListFetched.resolve)
@@ -195,13 +194,13 @@ export class ClusterService implements Cluster {
             return;
         }
 
-        if (memberListVersion > this.memberListSnapshot.version) {
-            const previousClusterUuid = this.memberListSnapshot.clusterUuid;
-            const prevMembers = this.memberListSnapshot.memberList;
+        if (memberListVersion > clusterViewSnapshot.version) {
+            const previousClusterUuid = clusterViewSnapshot.clusterUuid;
+            const prevMembers = clusterViewSnapshot.memberList;
             const snapshot = ClusterService.createSnapshot(memberListVersion, memberInfos, clusterUuid);
             this.memberListSnapshot = snapshot;
             const currentMembers = snapshot.memberList;
-            const events = this.detectMembershipEvents(prevMembers, currentMembers, previousClusterUuid, connectionRegistry);
+            const events = this.detectMembershipEvents(prevMembers, currentMembers, previousClusterUuid);
             this.fireEvents(events);
         }
     }
@@ -245,8 +244,7 @@ export class ClusterService implements Cluster {
     private detectMembershipEvents(
         prevMembers: MemberImpl[],
         currentMembers: MemberImpl[],
-        clusterUuid: UUID,
-        connectionRegistry: ConnectionRegistry
+        clusterUuid: UUID
     ): MembershipEvent[] {
         const newMembers = new Array<MemberImpl>();
 
@@ -260,12 +258,13 @@ export class ClusterService implements Cluster {
                 if (!deadMembers.delete(member.id())) {
                     newMembers.push(member);
                 }
-            }
-            else {
+            } else {
+                // if cluster uuid is not same, then we will not try to match the current members to previous members
+                // As a result all previous members are dead and all current members are new members
                 newMembers.push(member);
             }
         }
-        
+
         const events = new Array<MembershipEvent>(deadMembers.size + newMembers.length);
         let index = 0;
 
