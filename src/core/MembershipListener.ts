@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Cluster } from './Cluster';
 import {Member} from './Member';
 
 /**
@@ -82,9 +83,11 @@ export interface MembershipListener {
 export class InitialMembershipEvent {
 
     members: Member[];
+    cluster: Cluster;
 
     /** @internal */
-    constructor(members: Member[]) {
+    constructor(cluster: Cluster, members: Member[]) {
+        this.cluster = cluster;
         this.members = members;
     }
 }

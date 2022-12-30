@@ -339,6 +339,7 @@ export class FragmentedClientMessageHandler {
 export class Connection {
 
     private remoteUuid: UUID;
+    private clusterUuid: UUID;
     private readonly localAddress: AddressImpl;
     private lastReadTimeMillis: number;
     private lastWriteTimeMillis: number;
@@ -496,6 +497,14 @@ export class Connection {
             }
             this.incrementBytesReadFn(buffer.length);
         });
+    }
+
+    setClusterUuid(uuid: UUID): void {
+        this.clusterUuid = uuid;
+    }
+
+    getClusterUuid(): UUID { 
+        return this.clusterUuid;
     }
 
     private logClose(): void {
