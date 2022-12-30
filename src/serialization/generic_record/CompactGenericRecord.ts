@@ -372,10 +372,6 @@ export class CompactGenericRecordImpl implements GenericRecord {
             return new BigDecimal(obj.unscaledValue, obj.scale);
         }
 
-        if (obj instanceof BigDecimal) {
-            return new BigDecimal(obj.unscaledValue, obj.scale);
-        }
-
         let v: any;
         const cloned: any = Array.isArray(obj) ? [] : {};
         for (const k in obj) {
