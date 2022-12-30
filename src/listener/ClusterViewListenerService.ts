@@ -71,9 +71,9 @@ export class ClusterViewListenerService {
         const invocation = new Invocation(this.invocationService, request);
         invocation.connection = connection;
         invocation.eventHandler = handler;
-
+        
+        this.clusterService.onClusterConnect();
         this.logger.trace('ClusterViewListenerService', `Register attempt of cluster view handler to ${connection}`);
-        this.clusterService.clearMemberListVersion();
         this.invocationService.invokeUrgent(invocation)
             .then(() => {
                 this.logger.trace('ClusterViewListenerService', `Registered cluster view handler to ${connection}`);
@@ -100,7 +100,7 @@ export class ClusterViewListenerService {
         return (clientMessage: ClientMessage): void => {
             ClientAddClusterViewListenerCodec.handle(clientMessage,
                 this.clusterService.handleMembersViewEvent.bind(
-                    this.clusterService, this.connectionManager.getConnectionRegistry()
+                    this.clusterService, connection.getClusterUuid()
                 ),
                 (version: number, partitions: Array<[UUID, number[]]>) => {
                     this.partitionService.handlePartitionViewEvent(connection, partitions, version);

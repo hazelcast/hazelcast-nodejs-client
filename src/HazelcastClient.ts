@@ -569,11 +569,11 @@ export class HazelcastClient {
     }
 
     /** @internal */
-    onClusterRestart(): void {
+    onConnectionToNewCluster(): void {
         this.getLoggingService().getLogger()
             .info('HazelcastClient', 'Clearing local state of the client, because of a cluster restart.');
         this.nearCacheManager.clearAllNearCaches();
-        this.clusterService.clearMemberList(this.connectionRegistry);
+        this.clusterService.onClusterConnect();
     }
 
     /** @internal */
@@ -584,13 +584,13 @@ export class HazelcastClient {
     }
 
     /** @internal */
-    onClusterChange(): void {
+    onTryToConnectNextCluster(): void {
         this.getLoggingService().getLogger()
             .info('HazelcastClient', 'Resetting local state of the client, because of a cluster change.');
         // clear near caches
         this.nearCacheManager.clearAllNearCaches();
-        // clear the member lists
-        this.clusterService.reset();
+        // reset the member list version
+        this.clusterService.onTryToConnectNextCluster();
         // clear partition service
         this.partitionService.reset();
         // close all the connections, consequently waiting invocations get TargetDisconnectedError;

@@ -33,6 +33,8 @@ import {
     Addresses,
     MemberImpl,
     IOError,
+    MembershipEvent,
+    MembershipListener
 } from '../core';
 import {lookupPublicAddress} from '../core/MemberInfo';
 import {Connection} from './Connection';
@@ -112,7 +114,7 @@ export enum ClientState {
     /**
      * When the client closes the last connection to the cluster it
      * currently connected to, it switches to this state.
-     * 
+     *
      * In this state, reconnectToMembersTask is not allowed to
      * attempt connecting to last known member list.
      */
@@ -120,11 +122,11 @@ export enum ClientState {
 }
 
 interface ClientForConnectionManager {
-    onClusterChange(): void;
+    onTryToConnectNextCluster(): void;
 
     sendStateToCluster(): Promise<void>;
 
-    onClusterRestart(): void;
+    onConnectionToNewCluster(): void;
 
     shutdown(): Promise<void>;
 }
@@ -133,7 +135,7 @@ interface ClientForConnectionManager {
  * Maintains connections between the client and the members.
  * @internal
  */
-export class ConnectionManager extends EventEmitter {
+export class ConnectionManager extends EventEmitter implements MembershipListener {
 
     private active = false;
     private connectionIdCounter = 0;
@@ -197,6 +199,7 @@ export class ConnectionManager extends EventEmitter {
         this.reconnectMode = connectionStrategyConfig.reconnectMode;
         this.totalBytesWritten = 0;
         this.totalBytesRead = 0;
+        this.clusterService.addMembershipListener(this);
     }
 
     isActive() : boolean {
@@ -446,7 +449,7 @@ export class ConnectionManager extends EventEmitter {
     }
 
     private cleanupAndTryNextCluster(nextCtx: CandidateClusterContext): Promise<boolean> {
-        this.client.onClusterChange();
+        this.client.onTryToConnectNextCluster();
         this.logger.info('ConnectionManager', 'Trying to connect to next cluster: '
             + nextCtx.clusterName);
         this.switchingToNextCluster = true;
@@ -830,6 +833,7 @@ export class ConnectionManager extends EventEmitter {
         connection.setConnectedServerVersion(response.serverHazelcastVersion);
         connection.setRemoteAddress(response.address);
         connection.setRemoteUuid(response.memberUuid);
+        connection.setClusterUuid(response.clusterId);
 
         const existingConnection = this.connectionRegistry.getConnection(response.memberUuid);
         if (existingConnection != null) {
@@ -845,7 +849,7 @@ export class ConnectionManager extends EventEmitter {
             this.checkConnectionStateOnClusterIdChange(connection);
             this.logger.warn('ConnectionManager', 'Switching from current cluster: '
                 + this.clusterId + ' to new cluster: ' + newClusterId);
-            this.client.onClusterRestart();
+            this.client.onConnectionToNewCluster();
         }
         const connectionsEmpty = this.connectionRegistry.isEmpty();
         this.connectionRegistry.setConnection(response.memberUuid, connection);
@@ -1012,5 +1016,17 @@ export class ConnectionManager extends EventEmitter {
 
     getTotalBytesRead(): number {
         return this.totalBytesRead;
+    }
+
+    memberAdded(event: MembershipEvent): void {}
+
+    memberRemoved(event: MembershipEvent): void {
+        const member = event.member;
+        const connection = this.connectionRegistry.getConnection(member.uuid);
+        if (connection !== undefined) {
+            connection.close(null,
+                    new TargetDisconnectedError('The client has closed the connection to this member,'
+                            + ' after receiving a member left event from the cluster. ' + connection));
+        }
     }
 }
