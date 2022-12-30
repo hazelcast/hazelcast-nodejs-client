@@ -33,6 +33,8 @@ import {
     Addresses,
     MemberImpl,
     IOError,
+    MembershipEvent,
+    MembershipListener
 } from '../core';
 import {lookupPublicAddress} from '../core/MemberInfo';
 import {Connection} from './Connection';
@@ -133,7 +135,7 @@ interface ClientForConnectionManager {
  * Maintains connections between the client and the members.
  * @internal
  */
-export class ConnectionManager extends EventEmitter {
+export class ConnectionManager extends EventEmitter implements MembershipListener {
 
     private active = false;
     private connectionIdCounter = 0;
@@ -197,6 +199,7 @@ export class ConnectionManager extends EventEmitter {
         this.reconnectMode = connectionStrategyConfig.reconnectMode;
         this.totalBytesWritten = 0;
         this.totalBytesRead = 0;
+        this.clusterService.addMembershipListener(this);
     }
 
     isActive() : boolean {
@@ -1013,5 +1016,17 @@ export class ConnectionManager extends EventEmitter {
 
     getTotalBytesRead(): number {
         return this.totalBytesRead;
+    }
+
+    memberAdded(event: MembershipEvent): void {}
+
+    memberRemoved(event: MembershipEvent): void {
+        const member = event.member;
+        const connection = this.connectionRegistry.getConnection(member.uuid);
+        if (connection !== null) {
+            connection.close(null,
+                    new TargetDisconnectedError('The client has closed the connection to this member,'
+                            + ' after receiving a member left event from the cluster. ' + connection));
+        }
     }
 }
