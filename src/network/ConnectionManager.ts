@@ -114,7 +114,7 @@ export enum ClientState {
     /**
      * When the client closes the last connection to the cluster it
      * currently connected to, it switches to this state.
-     * 
+     *
      * In this state, reconnectToMembersTask is not allowed to
      * attempt connecting to last known member list.
      */
@@ -1023,7 +1023,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
     memberRemoved(event: MembershipEvent): void {
         const member = event.member;
         const connection = this.connectionRegistry.getConnection(member.uuid);
-        if (connection !== null) {
+        if (connection !== undefined) {
             connection.close(null,
                     new TargetDisconnectedError('The client has closed the connection to this member,'
                             + ' after receiving a member left event from the cluster. ' + connection));
