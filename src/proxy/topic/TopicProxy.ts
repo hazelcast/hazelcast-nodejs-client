@@ -64,19 +64,15 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
         assertNotNull(message);
 
         const messageData = this.toData(message);
-        const request = TopicPublishCodec.encodeRequest(this.name, messageData);
-        const partitionId = this.partitionService.getPartitionId(messageData);
-        return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, () => {
-        }, request);
+        const partitionId = this.partitionService.getPartitionId(messageData);return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, () => {}, messageData);
     }
 
     publishAll(messages: any[]): Promise<void> {
         assertNotNull(messages);
         const messageDataList = this.toData(messages);
-        const request = TopicPublishCodec.encodeRequest(this.name, messageDataList);
         const partitionId = this.partitionService.getPartitionId(messageDataList);
         return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, () => {
-        }, request);
+        }, messageDataList);
     }
 
     addListener(listener: MessageListener<E>): Promise<string> {
@@ -125,73 +121,3 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
             'Try to use removeListener instead.');
     }
 }
-
-//     private createListenerMessageCodec(): ListenerMessageCodec {
-//         return {
-//             encodeAddRequest(): ClientMessage {
-//                 return TopicAddMessageListenerCodec.encodeRequest(super.name, super.localOnly);
-//             },
-//             decodeAddResponse(msg: ClientMessage): UUID {
-//                 return TopicAddMessageListenerCodec.decodeResponse(msg);
-//             },
-//             encodeRemoveRequest(): ClientMessage {
-//                 return TopicRemoveMessageListenerCodec.encodeRequest(super.name, super.listenerId);
-//             },
-//         };
-//     }
-// }
-
-//
-// class TopicEvent {
-//     name: string;
-//
-//     numberOfAffectedEntries: number;
-//
-//     member: Member;
-//
-//     constructor(name: string, numberOfAffectedEntries: number, member: Member) {
-//         this.name = name;
-//         this.numberOfAffectedEntries = numberOfAffectedEntries;
-//         this.member = member;
-//     }
-// }
-//
-// class DataAwareMessage extends Message<Object> {
-//
-//     messageData: Data;
-//     serializationService: SerializationService;
-//
-//     serialVersionUID = 1;
-//
-//     constructor(messageData: Data, publishTime: Long, publishingMember: Member, serializationService: SerializationService) {
-//         super();
-//         this.serializationService = serializationService;
-//         this.messageData = messageData;
-//     }
-//
-//     getMessageObject(): Object {
-//         if (this.messageObject == null && this.messageData != null) {
-//             this.messageObject = this.serializationService.toObject(this.messageData);
-//         }
-//         return this.messageObject;
-//     }
-//
-//     getMessageData(): Data {
-//         return this.messageData;
-//     }
-// }
-//
-// class TopicMessage<E> {
-//
-//     name: string;
-//     message: E;
-//     publishTime: Long;
-//     publishingMember: Member;
-//
-//     constructor(name: string, message: E, publishTime: Long, publishingMember: Member) {
-//         this.name = name;
-//         this.message = message;
-//         this.publishTime = publishTime;
-//         this.publishingMember = publishingMember;
-//     }
-// }
