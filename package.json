@@ -1,7 +1,7 @@
 {
     "name": "hazelcast-client",
     "version": "5.2.0",
-    "description": "Hazelcast - open source In-Memory Data Grid - client for Node.js",
+    "description": "Hazelcast - a real time stream processing platform - Node.js Client",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "files": [
@@ -72,11 +72,12 @@
     },
     "keywords": [
         "hazelcast",
-        "nodejs",
+        "real-time",
+        "stream processing",
         "node",
-        "client",
-        "data",
-        "grid"
+        "nodejs",
+        "node.js",
+        "client"
     ],
     "license": "Apache-2.0",
     "bugs": {
