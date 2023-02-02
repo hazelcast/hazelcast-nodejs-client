@@ -47,17 +47,12 @@ describe('LazyDeserializationCompactTest', function() {
     }
 
     before(async function() {
-        TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
+        const {isCompactCompatible, isCompactStableInServer} = await TestUtil.getCompactCompatibilityInfo();
+        if (!isCompactCompatible) {
             this.skip();
         }
-        // Compact serialization 5.2 server is not compatible with clients older than 5.2
-        if (comparisonValueForServerVersion520 >= 0 && !TestUtil.isClientVersionAtLeast('5.2.0')) {
-            this.skip();
-        }
-        // Compact serialization 5.2 server configuration changes
-        if (comparisonValueForServerVersion520 < 0) {
+        // If compact is beta, use the beta compact server configuration.
+        if (!isCompactStableInServer) {
             COMPACT_ENABLED_ZERO_CONFIG_XML = COMPACT_ENABLED_ZERO_CONFIG_XML
             .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
         }

@@ -1,6 +1,6 @@
 {
     "name": "hazelcast-client",
-    "version": "5.2.0",
+    "version": "5.3.0",
     "description": "Hazelcast - a real-time stream processing platform - Node.js Client",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",

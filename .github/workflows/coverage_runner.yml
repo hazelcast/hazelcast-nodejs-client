@@ -87,20 +87,20 @@ jobs:
 
           - name: Publish results to Codecov for PR coming from hazelcast organization
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'pull_request_target' }}
-            uses: codecov/codecov-action@v1
+            uses: codecov/codecov-action@v3
             with:
               files: coverage/lcov.info
               override_pr: ${{ github.event.pull_request.number }}
 
           - name: Publish results to Codecov for Push
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'push' }}
-            uses: codecov/codecov-action@v1
+            uses: codecov/codecov-action@v3
             with:
               files: coverage/lcov.info
 
           - name: Publish result to Codecov for PR coming from community
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'workflow_dispatch' }}
-            uses: codecov/codecov-action@v1
+            uses: codecov/codecov-action@v3
             with:
               files: coverage/lcov.info
               override_pr: ${{ github.event.inputs.pr_number }}
