@@ -263,9 +263,7 @@ exports.getCompactCompatibilityInfo = async function () {
             isCompactCompatible: false
         };
     }
-    // Compact serialization is stable in 5.2 server.
     const isCompactStableInServer = await exports.compareServerVersionWithRC(RC, compactStableInVersion) >= 0;
-    // Compact serialization is stable 5.2 client.
     const isCompactStableInClient = exports.isClientVersionAtLeast(compactStableInVersion);
     // Beta compact is not compatible with stable compact.
     const isCompactCompatible = isCompactStableInServer === isCompactStableInClient;
