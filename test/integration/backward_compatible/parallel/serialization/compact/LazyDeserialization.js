@@ -48,7 +48,7 @@ describe('LazyDeserializationCompactTest', function() {
 
     before(async function() {
         const {isCompactCompatible, isCompactStableInServer} = await TestUtil.getCompactCompatibilityInfo();
-        if (isCompactCompatible) {
+        if (!isCompactCompatible) {
             this.skip();
         }
         // If compact is beta, use the beta compact server configuration.
