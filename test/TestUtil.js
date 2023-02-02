@@ -251,7 +251,7 @@ exports.getCompactCompatibilityInfo = async function () {
     const compactAddedInVersion = '5.1.0';
     const compactStableInVersion = '5.2.0';
 
-    // Compact should exists in both server and client to be compatible.
+    // Compact should exist in both server and client to be compatible.
     const compactExistsForServer = await exports.compareServerVersionWithRC(RC, compactAddedInVersion) >= 0;
     const compactExistsForClient = exports.isClientVersionAtLeast(compactAddedInVersion);
     const compactExistsForBoth = compactExistsForServer && compactExistsForClient;
@@ -263,18 +263,13 @@ exports.getCompactCompatibilityInfo = async function () {
             isCompactCompatible: false
         };
     }
-
-    // Compact serialization 5.2 and newer server is not compatible with clients older than 5.2
-    const comparisonValueForServerVersion520 = await exports.compareServerVersionWithRC(RC, compactStableInVersion);
-    const isCompactStableInServer = comparisonValueForServerVersion520 >= 0;
-
-    // Compact serialization 5.2 and newer clients are not compatible with servers older than 5.2
+    // Compact serialization is stable in 5.2 server.
+    const isCompactStableInServer = await exports.compareServerVersionWithRC(RC, compactStableInVersion) >= 0;
+    // Compact serialization is stable 5.2 client.
     const isCompactStableInClient = exports.isClientVersionAtLeast(compactStableInVersion);
-
     // Beta compact is not compatible with stable compact.
-    const isNotCompactCompatible = (isCompactStableInServer && !isCompactStableInClient) ||
-            (!isCompactStableInServer && isCompactStableInClient);
-    return {isCompactStableInServer, isCompactStableInClient, isCompactCompatible: !isNotCompactCompatible};
+    const isCompactCompatible = isCompactStableInServer === isCompactStableInClient;
+    return {isCompactStableInServer, isCompactStableInClient, isCompactCompatible};
 };
 
 exports.isClientVersionAtLeast = function(version) {
