@@ -258,7 +258,8 @@ exports.getCompactCompatibilityInfo = async function () {
 
     if (!compactExistsForBoth) {
         return {
-            isCompactStableForServer: false,
+            isCompactStableInClient: false,
+            isCompactStableInServer: false,
             isCompactCompatible: false
         };
     }
