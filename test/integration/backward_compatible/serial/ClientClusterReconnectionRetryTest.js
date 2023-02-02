@@ -34,8 +34,9 @@ describe('ClientClusterReconnectionRetryTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(function() {
-        TestUtil.markClientVersionAtLeast('5.3.0');
-        ClientState, ConnectionManager = require('../../../../lib/network/ConnectionManager');
+        TestUtil.markClientVersionAtLeast(this, '5.3.0');
+        ClientState = require('../../../../lib/network/ConnectionManager').ClientState;
+        ConnectionManager = require('../../../../lib/network/ConnectionManager').ConnectionManager;
     });
 
     afterEach(async function () {
