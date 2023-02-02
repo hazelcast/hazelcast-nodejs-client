@@ -195,6 +195,7 @@ describe('CompactPublicAPIsTest', function () {
             this.skip();
         }
         employee = new CompactUtil.Employee(1, Long.ONE);
+        // Change server config to be the beta compact config
         if (!isCompactStableInServer) {
             CLUSTER_CONFIG_XML = CLUSTER_CONFIG_XML
             .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
