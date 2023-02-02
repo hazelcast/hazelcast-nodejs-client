@@ -37,8 +37,7 @@ describe('NearCachedMapTest', function () {
             let member;
 
             before(async function () {
-                TestUtil.markClientVersionAtLeast(this, '5.1');
-                const isCompactCompatible = await TestUtil.isCompactCompatible();
+                const {isCompactCompatible} = await TestUtil.getCompactCompatibilityInfo();
                 if (!isCompactCompatible) {
                     this.skip();
                 }

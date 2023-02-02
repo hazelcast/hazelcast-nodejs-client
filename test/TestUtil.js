@@ -247,15 +247,33 @@ exports.compareServerVersionWithRC = async function (rc, version) {
     return rcServerVersion - comparedVersion;
 };
 
-exports.isCompactCompatible = async function () {
-    const comparisonValueForServerVersion520 = await exports.compareServerVersionWithRC(RC, '5.2.0');
-    const isClientVersionAtLeast520 = exports.isClientVersionAtLeast('5.2.0');
+exports.getCompactCompatibilityInfo = async function () {
+    const compactAddedInVersion = '5.1.0';
+    const compactStableInVersion = '5.2.0';
+
+    // Compact should exists in both server and client to be compatible.
+    const compactExistsForServer = await exports.compareServerVersionWithRC(RC, compactAddedInVersion) >= 0;
+    const compactExistsForClient = exports.isClientVersionAtLeast(compactAddedInVersion);
+    const compactExistsForBoth = compactExistsForServer && compactExistsForClient;
+
+    if (!compactExistsForBoth) {
+        return {
+            isCompactStableForServer: false,
+            isCompactCompatible: false
+        };
+    }
+
     // Compact serialization 5.2 and newer server is not compatible with clients older than 5.2
+    const comparisonValueForServerVersion520 = await exports.compareServerVersionWithRC(RC, compactStableInVersion);
+    const isCompactStableInServer = comparisonValueForServerVersion520 >= 0;
+
     // Compact serialization 5.2 and newer clients are not compatible with servers older than 5.2
-    const isCompactCompatible =
-        !((comparisonValueForServerVersion520 >= 0 && !isClientVersionAtLeast520) ||
-            (comparisonValueForServerVersion520 < 0 && isClientVersionAtLeast520));
-    return isCompactCompatible;
+    const isCompactStableInClient = exports.isClientVersionAtLeast(compactStableInVersion);
+
+    // Beta compact is not compatible with stable compact.
+    const isNotCompactCompatible = (isCompactStableInServer && !isCompactStableInClient) ||
+            (!isCompactStableInServer && isCompactStableInClient);
+    return {isCompactStableInServer, isCompactStableInClient, isCompactCompatible: !isNotCompactCompatible};
 };
 
 exports.isClientVersionAtLeast = function(version) {

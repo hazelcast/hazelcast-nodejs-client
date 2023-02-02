@@ -83,23 +83,23 @@ describe('SQLDataTypeTest', function () {
     };
 
     before(async function () {
-        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
-        isCompactCompatible = await TestUtil.isCompactCompatible();
+        const compactCompatibilityInfo = await TestUtil.getCompactCompatibilityInfo();
+        isCompactCompatible = compactCompatibilityInfo.isCompactCompatible;
 
         serverVersionNewerThanFive = await TestUtil.compareServerVersionWithRC(RC, '5.0') >= 0;
-        const serverVersionNewerThanFivePointOne = await TestUtil.compareServerVersionWithRC(RC, '5.1') >= 0;
 
-        // Compact serialization 5.2 server configuration changes
-        if (comparisonValueForServerVersion520 < 0) {
+        // If compact is in beta in server, use beta config instead.
+        if (!compactCompatibilityInfo.isCompactStableInServer) {
             const JET_ENABLED_WITH_COMPACT_CONFIG_BETA =
             fs.readFileSync(path.join(__dirname, 'jet_enabled_with_compact_beta.xml'), 'utf8');
             JET_ENABLED_WITH_COMPACT_CONFIG = JET_ENABLED_WITH_COMPACT_CONFIG_BETA;
         }
         let CLUSTER_CONFIG;
         // Don't use compact enabled config if not compatible, we will skip the compact test anyway.
-        if (serverVersionNewerThanFivePointOne && isCompactCompatible) {
+        if (isCompactCompatible) {
             CLUSTER_CONFIG = JET_ENABLED_WITH_COMPACT_CONFIG;
         } else if (serverVersionNewerThanFive) {
+            // In 5.0 and above, we need to explicitly enable jet for SQL to work.
             CLUSTER_CONFIG = JET_ENABLED_CONFIG;
         } else {
             CLUSTER_CONFIG = null;
