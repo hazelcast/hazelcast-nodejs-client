@@ -18,7 +18,6 @@
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { expect } = require('chai');
-const { ClientState, ConnectionManager } = require('../../../../lib/network/ConnectionManager');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 
@@ -28,10 +27,16 @@ const sandbox = sinon.createSandbox();
 describe('ClientClusterReconnectionRetryTest', function () {
     let cluster;
     let client;
+    let ClientState, ConnectionManager;
     const ASSERTION_MILLISECONDS = 30000;
     const INT32_MAX_VALUE = Math.pow(2, 31) - 1;
 
     const testFactory = new TestUtil.TestFactory();
+
+    before(function() {
+        TestUtil.markClientVersionAtLeast('5.3.0');
+        ClientState, ConnectionManager = require('../../../../lib/network/ConnectionManager');
+    });
 
     afterEach(async function () {
         await testFactory.shutdownAll();
