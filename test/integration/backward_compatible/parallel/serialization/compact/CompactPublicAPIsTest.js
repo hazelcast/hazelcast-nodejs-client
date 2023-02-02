@@ -189,19 +189,14 @@ describe('CompactPublicAPIsTest', function () {
     const pagingPredicate = Predicates.paging(new CompactPredicate(), 1);
 
     before(async function () {
-        TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
-        const isCompactCompatible = await TestUtil.isCompactCompatible();
+        const {isCompactStableInServer, isCompactCompatible} = await TestUtil.getCompactCompatibilityInfo();
         if (!isCompactCompatible) {
             skipped = true;
             this.skip();
         }
         employee = new CompactUtil.Employee(1, Long.ONE);
-        if ((await TestUtil.compareServerVersionWithRC(RC, '5.1.0')) < 0) {
-            skipped = true;
-            this.skip();
-        }
-        if (comparisonValueForServerVersion520 < 0) {
+        // Change server config to be the beta compact config
+        if (!isCompactStableInServer) {
             CLUSTER_CONFIG_XML = CLUSTER_CONFIG_XML
             .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
         }

@@ -43,8 +43,7 @@ describe('PartitionServiceTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        const isCompactCompatible = await TestUtil.isCompactCompatible();
+        const {isCompactCompatible} = await TestUtil.getCompactCompatibilityInfo();
         if (!isCompactCompatible) {
             this.skip();
         }
@@ -58,7 +57,6 @@ describe('PartitionServiceTest', function () {
                 }
             }
         }, member);
-        TestUtil.markServerVersionAtLeast(this, client, '5.1.0');
     });
 
     after(async function () {

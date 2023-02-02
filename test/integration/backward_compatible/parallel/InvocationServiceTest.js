@@ -52,9 +52,9 @@ describe('ClientInvocationServiceImplTest', function () {
     };
 
     before(async function () {
-        TestUtil.markClientVersionAtLeast(this, '5.2.0');
-        // Server version should not be lower than 5.2 for compact serialization tests
-        if (await TestUtil.compareServerVersionWithRC(RC, '5.2.0') < 0) {
+        const {isCompactCompatible, isCompactStableInServer, isCompactStableInClient} =
+            await TestUtil.getCompactCompatibilityInfo();
+        if (!isCompactCompatible || !isCompactStableInServer || !isCompactStableInClient) {
             this.skip();
         }
     });

@@ -48,13 +48,12 @@ describe('CompactRestartTest', function() {
     }
 
     before(async function () {
-        TestUtil.markClientVersionAtLeast(this, '5.1.0');
-        const comparisonValueForServerVersion520 = await TestUtil.compareServerVersionWithRC(RC, '5.2.0');
-        const isCompactCompatible = await TestUtil.isCompactCompatible();
+        const {isCompactCompatible, isCompactStableInServer} = await TestUtil.getCompactCompatibilityInfo();
         if (!isCompactCompatible) {
             this.skip();
         }
-        if (comparisonValueForServerVersion520 < 0) {
+        // Change compact server configuration to beta configuration if it is beta.
+        if (!isCompactStableInServer) {
             COMPACT_ENABLED_ZERO_CONFIG_XML = COMPACT_ENABLED_ZERO_CONFIG_XML
             .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
         }
