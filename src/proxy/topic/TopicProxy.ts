@@ -2,7 +2,6 @@ import {ITopic} from '../ITopic';
 import {Message, MessageListener} from '../MessageListener';
 import {AddressImpl, HazelcastError, UUID} from '../../core';
 import {TopicAddMessageListenerCodec} from '../../codec/TopicAddMessageListenerCodec';
-import {TopicRemoveMessageListenerCodec} from '../../codec/TopicRemoveMessageListenerCodec';
 import { ListenerMessageCodec} from '../../listener/ListenerMessageCodec';
 import {ClientMessage} from '../../protocol/ClientMessage';
 import {assertNotNull} from '../../util/Util';
@@ -64,7 +63,8 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
         assertNotNull(message);
 
         const messageData = this.toData(message);
-        const partitionId = this.partitionService.getPartitionId(messageData);return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, () => {}, messageData);
+        const partitionId = this.partitionService.getPartitionId(messageData);
+        return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, () => {}, messageData);
     }
 
     publishAll(messages: any[]): Promise<void> {
