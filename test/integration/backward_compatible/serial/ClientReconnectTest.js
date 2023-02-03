@@ -20,7 +20,6 @@ const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
-const { ConnectionManager } = require('../../../../lib/network/ConnectionManager');
 
 /**
  * Basic tests for reconnection to cluster scenarios.
@@ -42,6 +41,8 @@ describe('ClientReconnectTest', function () {
 
     it('should send the client state to the cluster after reconnections, ' +
         +'regardless it is connected back to possibly the same cluster with the same id or not.', async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.2.0');
+        const { ConnectionManager } = require('../../../../lib/network/ConnectionManager');
         const fakeInitializeClientOnCluster = sandbox.replace(
             ConnectionManager.prototype,
             'initializeClientOnCluster',
