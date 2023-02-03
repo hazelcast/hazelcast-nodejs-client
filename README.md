@@ -20,10 +20,22 @@
 
 ---
 
-[Hazelcast](https://hazelcast.com/) is an open-source distributed in-memory data store and computation platform that
-provides a wide variety of distributed data structures and concurrency primitives.
+## What is Hazelcast?
 
-Hazelcast Node.js client is a way to communicate to Hazelcast clusters and access the cluster data.
+[Hazelcast](https://hazelcast.com/) is a distributed computation and storage platform for consistently low-latency querying,
+aggregation and stateful computation against event streams and traditional data sources. It allows you to quickly build
+resource-efficient, real-time applications. You can deploy it at any scale from small edge devices to a large cluster of
+cloud instances.
+
+A cluster of Hazelcast nodes share both the data storage and computational load which can dynamically scale up and down.
+When you add new nodes to the cluster, the data is automatically rebalanced across the cluster, and currently running
+computational tasks (known as jobs) snapshot their state and scale with processing guarantees.
+
+For more info, check out Hazelcast [repository](https://github.com/hazelcast/hazelcast).
+
+## What is Hazelcast Node.js Client?
+
+Hazelcast Node.js client is a way to communicate to Hazelcast clusters and access the cluster data via Node.js.
 The client provides a Promise-based API with a builtin support for native JavaScript objects.
 
 ## Installation
