@@ -17,7 +17,13 @@
 
 import * as Long from 'long';
 import {OverflowPolicy} from '../OverflowPolicy';
-import {AddressImpl, HazelcastError, SchemaNotReplicatedError, TopicOverloadError} from '../../core';
+import {
+    AddressImpl,
+    HazelcastError,
+    IllegalArgumentError,
+    SchemaNotReplicatedError,
+    TopicOverloadError
+} from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
 import {UuidUtil} from '../../util/UuidUtil';
 import {
@@ -152,58 +158,60 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     }
 
     publishAll(messages: any[]): Promise<void> {
-        const reliableTopicMessages: ReliableTopicMessage[] = [];
+        const capacity = messages.length;
+        const reliableTopicMessages: Array<ReliableTopicMessage> = Array<ReliableTopicMessage>(capacity);
         assertNotNull(messages);
+
+        for(let message in messages) {
+            assertNotNull(messages)
+        }
 
         try {
             for (const message of messages) {
                 const reliableTopicMessage = new ReliableTopicMessage();
                 reliableTopicMessage.payload = this.serializationService.toData(message);
                 reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
-                reliableTopicMessage.publisherAddress = this.localAddress;
                 reliableTopicMessages.push(reliableTopicMessage);
             }
             switch (this.overloadPolicy) {
                 case TopicOverloadPolicy.ERROR:
-                    for (const reliableTopicMessage of reliableTopicMessages) {
-                        this.addWithError(reliableTopicMessage);
-                    }
+                    this.addMessagesOrFail(reliableTopicMessages).then(() => {
+                        return;
+                    });
                     break;
                 case TopicOverloadPolicy.DISCARD_NEWEST:
-                    for (const reliableTopicMessage of reliableTopicMessages) {
-                        this.addOrDiscard(reliableTopicMessage);
-                    }
+                    this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.OVERWRITE).then(() => {
+                        return;
+                    });
                     break;
                 case TopicOverloadPolicy.DISCARD_OLDEST:
-                    for (const reliableTopicMessage of reliableTopicMessages) {
-                        this.addOrOverwrite(reliableTopicMessage);
-                    }
+                    this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.FAIL).then(() => {
+                        return;
+                    });
                     break;
                 case TopicOverloadPolicy.BLOCK:
-                    for (const reliableTopicMessage of reliableTopicMessages) {
-                        this.addWithBackoff(reliableTopicMessage);
-                    }
+                    this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.FAIL).then(() => {
+                        return;
+                    });
                     break;
                 default:
-                    throw new RangeError('Unknown overload policy');
+                    throw new IllegalArgumentError('Unknown overload policy');
             }
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.publishAll(messages));
             }
-            throw e;
+            throw new HazelcastError(e + 'Failed to publish these messages' + messages + 'to topic' + this.name);
         }
         return Promise.resolve();
     }
 
     addListener(listener: MessageListener<E>): Promise<string> {
-        throw new HazelcastError('This method is not supported for Reliable Topic.' +
-                                        ' Use addMessageListener instead.');
+        return Promise.resolve(this.addMessageListener(listener));
     }
 
     removeListener(listenerId: string): Promise<boolean> {
-        throw new HazelcastError('This method is not supported for Reliable Topic.' +
-                                        ' Use removeMessageListener instead.');
+        return Promise.resolve(this.removeMessageListener(listenerId));
     }
 
     public getRingbuffer(): Ringbuffer<ReliableTopicMessage> {
@@ -258,6 +266,25 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
                 deferred.resolve();
             }
         }).catch(deferred.reject);
+    }
+
+    // async function _addMessagesOrFail(self, messages) {
+    //     try {
+    //         const sequenceId = await self._ringbuffer.addAll(messages, OVERFLOW_POLICY_FAIL);
+    //         if (sequenceId === -1) {
+    //             throw new Error(`Failed to publish messages on topic ${self.name}.`);
+    //         }
+    //     } catch (error) {
+    //         throw error;
+    //     }
+    // }
+
+    private addMessagesOrFail(messages: ReliableTopicMessage[]): Promise<void> {
+        return this.ringbuffer.addAll(messages, OverflowPolicy.FAIL).then((sequenceId: Long) => {
+            if (sequenceId.toNumber() === -1) {
+                throw new TopicOverloadError(`Failed to publish messages on topic ${this.name}.`);
+            }
+        });
     }
 
 }

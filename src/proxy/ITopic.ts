@@ -22,7 +22,7 @@ import {MessageListener} from './MessageListener';
  * delivered to multiple subscribers, which is also known as a publish/subscribe
  * (pub/sub) messaging model. Publish and subscriptions are cluster-wide.
  *
- * This interface stand for reliable topic, i.e. it uses a Ringbuffer to store
+ * This interface stand for topic and reliable topic. Reliable uses a Ringbuffer to store
  * events. The events in the Ringbuffer are replicated, so they won't get
  * lost when a node goes down.
  *
@@ -39,12 +39,12 @@ export interface ITopic<E> extends DistributedObject {
      * More than one message listener can be added on one instance.
      *
      * This method is for only Reliable Topic since this is a sync method.
-     * When this method is called from Topic, it throws HazelcastError.
+     * When this method is called from Topic, it throws {@link HazelcastError}.
      * Check addListener method for using with Topic.
      *
      * @param listener the MessageListener to add
      * @return registration ID
-     * @throws HazelcastError if it is used from Topic
+     * @throws {HazelcastError} if it is used from Topic
      */
     addMessageListener(listener: MessageListener<E>): string;
 
@@ -54,12 +54,12 @@ export interface ITopic<E> extends DistributedObject {
      * If the given listener already removed, this method does nothing.
      *
      * This method is for only Reliable Topic.
-     * When this method is called from Topic, it throws HazelcastError.
+     * When this method is called from Topic, it throws {@link HazelcastError}.
      * Check removeListener method for using with Topic.
      *
      * @param listenerId listener registration ID
      * @return `true` if registration is removed, `false` otherwise
-     * @throws HazelcastError if it is used from Topic
+     * @throws {HazelcastError} if it is used from Topic
      */
     removeMessageListener(listenerId: string): boolean;
 
@@ -74,7 +74,7 @@ export interface ITopic<E> extends DistributedObject {
      * Publishes all messages to all subscribers of this topic.
      *
      * @param messages the messages to publish to all subscribers of this topic
-     * @throws TopicOverloadException if the consumer is too slow
+     * @throws {TopicOverloadError} if the consumer is too slow
  *                                      (only works in combination with reliable topic)
      */
     publishAll(messages: any[]): Promise<void>;
@@ -86,12 +86,12 @@ export interface ITopic<E> extends DistributedObject {
      * More than one message listener can be added on one instance.
      *
      * This method is for only Topic since this is an async method.
-     * When this method is called from Reliable Topic, it throws HazelcastError.
+     * When this method is called from Reliable Topic, it throws {@link HazelcastError}.
      * Check addMessageListener method for using with Reliable Topic.
      *
      * @param listener the MessageListener to add
      * @return registration ID
-     * @throws HazelcastError if it is used from Reliable Topic
+     * @throws {HazelcastError} if it is used from Reliable Topic
      */
     addListener(listener: MessageListener<E>): Promise<string>;
 
@@ -101,11 +101,11 @@ export interface ITopic<E> extends DistributedObject {
      * If the given listener already removed, this method does nothing.
      *
      * This method is for only Topic.
-     * When this method is called from Reliable Topic, it throws Hazelcast Error.
+     * When this method is called from Reliable Topic, it throws {@link HazelcastError}.
      *
      * @param listenerId listener registration ID
      * @return `true` if registration is removed, `false` otherwise
-     * @throws HazelcastError if it is used from Reliable Topic
+     * @throws {HazelcastError} if it is used from Reliable Topic
      */
     removeListener(listenerId: string): Promise<boolean>;
 }

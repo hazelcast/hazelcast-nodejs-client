@@ -189,4 +189,39 @@ describe('ReliableTopicTest', function () {
         const obj = clientOne.getSerializationService().toObject(item.payload);
         expect(obj).to.equal(11);
     });
+
+    it('writes and reads messages using async methods', async function () {
+        const topic = await clientOne.getReliableTopic('async');
+
+        await topic.addListener((message) => {});
+
+        await topic.publish('test');
+
+        const ringbuffer = topic.getRingbuffer();
+        const seq = await ringbuffer.tailSequence();
+        const item = await ringbuffer.readOne(seq);
+        const obj = clientOne.getSerializationService().toObject(item.payload);
+        expect(obj).to.equal('test');
+    });
+
+    it('should not receive messages after listener is removed by async removeListener', async function () {
+
+        const topic = await clientOne.getReliableTopic('asyncRemove');
+        let receivedMessages = 0;
+        const id = await topic.addListener(() => {
+            receivedMessages++;
+            if (receivedMessages > 2) {
+                throw new Error('Kept receiving messages after message listener is removed.');
+            }
+        });
+
+        await topic.publish({ 'value0': 'foo0' });
+        await topic.publish({ 'value1': 'foo1' });
+        await topic.removeListener(id);
+        await topic.publish({ 'value2': 'foo2' });
+        await topic.publish({ 'value3': 'foo3' });
+        await topic.publish({ 'value4': 'foo4' });
+        await topic.publish({ 'value5': 'foo5' });
+        await TestUtil.promiseWaitMilliseconds(500);
+    });
 });

@@ -20,18 +20,13 @@ import {ConnectionRegistry} from '../../network/ConnectionRegistry';
 import {SchemaService} from '../../serialization/compact/SchemaService';
 import {Connection} from '../../network/Connection';
 import {TopicOverloadPolicy} from '../TopicOverloadPolicy';
+import {TopicPublishAllCodec} from '../../codec/TopicPublishAllCodec';
 
 export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
-
-
-    private readonly overloadPolicy: TopicOverloadPolicy;
-    private readonly localAddress: AddressImpl;
-
 
     constructor(
         serviceName: string,
         name: string,
-        clientConfig: ClientConfig,
         proxyManager: ProxyManager,
         partitionService: PartitionService,
         invocationService: InvocationService,
@@ -53,25 +48,23 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
             connectionRegistry,
             schemaService
         );
-        const connection: Connection = this.connectionRegistry.getRandomConnection();
-        this.localAddress = connection != null ? connection.getLocalAddress() : null;
-        const config = (clientConfig as ClientConfigImpl).getReliableTopicConfig(name);
-        this.overloadPolicy = config.overloadPolicy;
     }
 
     publish(message: E): Promise<void> {
         assertNotNull(message);
 
         const messageData = this.toData(message);
-        const partitionId = this.partitionService.getPartitionId(messageData);
-        return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, () => {}, messageData);
+        return this.encodeInvoke(TopicPublishCodec, () => {}, messageData);
     }
 
     publishAll(messages: any[]): Promise<void> {
         assertNotNull(messages);
+        for (const message of messages) {
+            assertNotNull(message);
+        }
         const messageDataList = this.toData(messages);
         const partitionId = this.partitionService.getPartitionId(messageDataList);
-        return this.encodeInvokeOnPartition(TopicPublishCodec, partitionId, () => {
+        return this.encodeInvoke(TopicPublishAllCodec, () => {}, () => {
         }, messageDataList);
     }
 
@@ -113,11 +106,11 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
 
     addMessageListener(listener: MessageListener<E>): string {
         throw new HazelcastError('This method is not supported for Topic. ' +
-            'Try to use addListener instead.');
+            'Use addListener instead.');
     }
 
     removeMessageListener(listenerId: string): boolean {
         throw new HazelcastError('This method is not supported for Topic. ' +
-            'Try to use removeListener instead.');
+            'Use removeListener instead.');
     }
 }

@@ -56,7 +56,7 @@ describe('TopicTest', function () {
         const collector = new Collector();
 
         setTimeout(() => {
-            expect(collector.events.length).to.be(1);
+            expect(collector.events.length).to.be.equal(1);
             const event = collector.events[0];
             expect(event.message).to.be('item-value');
             expect(event.publish_time).to.be.above(0);
@@ -117,6 +117,33 @@ describe('TopicTest', function () {
         });
 
         const messages = ['message 1', 'message 2', 'message 3'];
+        await topic.publishAll(messages);
+
+        await new Promise((resolve, reject) => {
+            const interval = setInterval(() => {
+                if (count === messages.length) {
+                    clearInterval(interval);
+                    expect(receivedValues).to.have.members(messages);
+                    resolve();
+                }
+            }, 100);
+            setTimeout(() => {
+                clearInterval(interval);
+                reject(new Error('Timed out while waiting for messages to be published'));
+            }, 5000);
+        });
+    });
+
+    it('tests publishAll with null', async function() {
+        let count = 0;
+        const receivedValues = [];
+
+        await topic.addListener((message) => {
+            count++;
+            receivedValues.push(message.messageObject);
+        });
+
+        const messages = [1, null, 3];
         await topic.publishAll(messages);
 
         await new Promise((resolve, reject) => {

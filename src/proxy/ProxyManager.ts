@@ -240,7 +240,6 @@ export class ProxyManager {
             localProxy = new TopicProxy(
                 serviceName,
                 name,
-                this.clientConfig,
                 this,
                 this.partitionService,
                 this.invocationService,
