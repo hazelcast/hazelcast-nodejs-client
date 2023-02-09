@@ -42,6 +42,8 @@ export interface ITopic<E> extends DistributedObject {
      * When this method is called from Topic, it throws {@link HazelcastError}.
      * Check addListener method for using with Topic.
      *
+     * `addMessageListener` is @deprecated since 5.3. Use {@link addListener} instead.
+     *
      * @param listener the MessageListener to add
      * @return registration ID
      * @throws {HazelcastError} if it is used from Topic
@@ -56,6 +58,8 @@ export interface ITopic<E> extends DistributedObject {
      * This method is for only Reliable Topic.
      * When this method is called from Topic, it throws {@link HazelcastError}.
      * Check removeListener method for using with Topic.
+     *
+     * `removeMessageListener` is @deprecated since 5.3. Use {@link removeListener} instead.
      *
      * @param listenerId listener registration ID
      * @return `true` if registration is removed, `false` otherwise
@@ -85,13 +89,8 @@ export interface ITopic<E> extends DistributedObject {
      *
      * More than one message listener can be added on one instance.
      *
-     * This method is for only Topic since this is an async method.
-     * When this method is called from Reliable Topic, it throws {@link HazelcastError}.
-     * Check addMessageListener method for using with Reliable Topic.
-     *
      * @param listener the MessageListener to add
      * @return registration ID
-     * @throws {HazelcastError} if it is used from Reliable Topic
      */
     addListener(listener: MessageListener<E>): Promise<string>;
 
@@ -100,12 +99,8 @@ export interface ITopic<E> extends DistributedObject {
      *
      * If the given listener already removed, this method does nothing.
      *
-     * This method is for only Topic.
-     * When this method is called from Reliable Topic, it throws {@link HazelcastError}.
-     *
      * @param listenerId listener registration ID
-     * @return `true` if registration is removed, `false` otherwise
-     * @throws {HazelcastError} if it is used from Reliable Topic
+     * @return `true` if registration is removed, `false` otherwise.
      */
     removeListener(listenerId: string): Promise<boolean>;
 }

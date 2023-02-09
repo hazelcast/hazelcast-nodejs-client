@@ -193,7 +193,7 @@ describe('ReliableTopicTest', function () {
     it('writes and reads messages using async methods', async function () {
         const topic = await clientOne.getReliableTopic('async');
 
-        await topic.addListener((message) => {});
+        await topic.addListener(() => {});
 
         await topic.publish('test');
 
@@ -205,7 +205,6 @@ describe('ReliableTopicTest', function () {
     });
 
     it('should not receive messages after listener is removed by async removeListener', async function () {
-
         const topic = await clientOne.getReliableTopic('asyncRemove');
         let receivedMessages = 0;
         const id = await topic.addListener(() => {

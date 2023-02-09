@@ -160,10 +160,10 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     publishAll(messages: any[]): Promise<void> {
         const capacity = messages.length;
         const reliableTopicMessages: Array<ReliableTopicMessage> = Array<ReliableTopicMessage>(capacity);
-        assertNotNull(messages);
 
-        for(let message in messages) {
-            assertNotNull(messages)
+        assertNotNull(messages);
+        for (const message in messages) {
+            assertNotNull(message);
         }
 
         try {
@@ -190,7 +190,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
                     });
                     break;
                 case TopicOverloadPolicy.BLOCK:
-                    this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.FAIL).then(() => {
+                    this.addAndBlock(reliableTopicMessages, 100).then(() => {
                         return;
                     });
                     break;
@@ -268,17 +268,6 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         }).catch(deferred.reject);
     }
 
-    // async function _addMessagesOrFail(self, messages) {
-    //     try {
-    //         const sequenceId = await self._ringbuffer.addAll(messages, OVERFLOW_POLICY_FAIL);
-    //         if (sequenceId === -1) {
-    //             throw new Error(`Failed to publish messages on topic ${self.name}.`);
-    //         }
-    //     } catch (error) {
-    //         throw error;
-    //     }
-    // }
-
     private addMessagesOrFail(messages: ReliableTopicMessage[]): Promise<void> {
         return this.ringbuffer.addAll(messages, OverflowPolicy.FAIL).then((sequenceId: Long) => {
             if (sequenceId.toNumber() === -1) {
@@ -287,4 +276,14 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         });
     }
 
+    private addAndBlock(messages: ReliableTopicMessage[], pauseMillis: number): Promise<void> {
+        this.ringbuffer.addAll(messages, OverflowPolicy.FAIL).then((id: Long) => {
+            if (id.toNumber() === -1) {
+                setTimeout(() => {
+                    this.addAndBlock(messages, Math.min(pauseMillis * 2, 2000));
+                }, pauseMillis);
+            }
+        });
+        return Promise.resolve();
+    }
 }

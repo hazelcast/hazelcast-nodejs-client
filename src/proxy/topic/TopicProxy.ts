@@ -1,6 +1,6 @@
 import {ITopic} from '../ITopic';
 import {Message, MessageListener} from '../MessageListener';
-import {AddressImpl, HazelcastError, UUID} from '../../core';
+import {HazelcastError, UUID} from '../../core';
 import {TopicAddMessageListenerCodec} from '../../codec/TopicAddMessageListenerCodec';
 import { ListenerMessageCodec} from '../../listener/ListenerMessageCodec';
 import {ClientMessage} from '../../protocol/ClientMessage';
@@ -9,7 +9,6 @@ import {PartitionSpecificProxy} from '../PartitionSpecificProxy';
 import {TopicPublishCodec} from '../../codec/TopicPublishCodec';
 import Long = require('long');
 import {Data} from '../../serialization';
-import {ClientConfig, ClientConfigImpl} from '../../config';
 import {ProxyManager} from '../ProxyManager';
 import {PartitionService} from '../../PartitionService';
 import {InvocationService} from '../../invocation/InvocationService';
@@ -18,8 +17,6 @@ import {ListenerService} from '../../listener/ListenerService';
 import {ClusterService} from '../../invocation/ClusterService';
 import {ConnectionRegistry} from '../../network/ConnectionRegistry';
 import {SchemaService} from '../../serialization/compact/SchemaService';
-import {Connection} from '../../network/Connection';
-import {TopicOverloadPolicy} from '../TopicOverloadPolicy';
 import {TopicPublishAllCodec} from '../../codec/TopicPublishAllCodec';
 
 export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
@@ -63,7 +60,6 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
             assertNotNull(message);
         }
         const messageDataList = this.toData(messages);
-        const partitionId = this.partitionService.getPartitionId(messageDataList);
         return this.encodeInvoke(TopicPublishAllCodec, () => {}, () => {
         }, messageDataList);
     }
