@@ -18,6 +18,7 @@
 const expect = require('chai').expect;
 const TestUtil = require('../../../../TestUtil');
 const RC = require('../../../RC');
+const {AssertionError} = require("chai");
 
 describe('TopicTest', function () {
     let client;
@@ -26,6 +27,7 @@ describe('TopicTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
+        // TestUtil.markClientVersionAtLeast(this, '5.3')
         const cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForParallelTests({
@@ -41,27 +43,51 @@ describe('TopicTest', function () {
         return topic.destroy();
     });
 
+    // def test_add_listener(self):
+    // collector = event_collector()
+    // self.topic.add_listener(on_message=collector)
+    // self.topic.publish("item-value")
+    //
+    // def assert_event():
+    // self.assertEqual(len(collector.events), 1)
+    // event = collector.events[0]
+    // self.assertEqual(event.message, "item-value")
+    // self.assertGreater(event.publish_time, 0)
+    //
+    // self.assertTrueEventually(assert_event, 5)
+
     it('tests listener', async function () {
+
         class Collector {
             constructor() {
                 this.events = [];
             }
-
             onMessage(event) {
-                event.publish_time = Date.now();
                 this.events.push(event);
             }
         }
 
         const collector = new Collector();
+        await topic.addListener(collector.onMessage.bind(collector));
+        await topic.publish('item-value');
 
-        setTimeout(() => {
-            expect(collector.events.length).to.be.equal(1);
-            const event = collector.events[0];
-            expect(event.message).to.be('item-value');
-            expect(event.publish_time).to.be.above(0);
-        }, 5000);
+        await new Promise((resolve, reject) => {
+            const interval = setInterval(() => {
+                if (collector.events.length === 1) {
+                    clearInterval(interval);
+                    const event = collector.events[0];
+                    expect(event.messageObject).to.equal('item-value');
+                    expect(event.publishingTime).to.exist;
+                    if (event.publishingTime) {
+                        expect(event.publishingTime.toNumber()).to.be.greaterThan(0);
+                    }
+                    resolve();
+                }
+            }, 100);
+        });
+
     });
+
 
     it('removes listener', async function() {
         class Collector {
@@ -96,14 +122,9 @@ describe('TopicTest', function () {
         const message = 'message';
         await topic.publish(message);
 
-        await new Promise((resolve) => {
-            const interval = setInterval(() => {
-                if (count === 1) {
-                    clearInterval(interval);
-                    expect(receivedValues).to.deep.equal([message]);
-                    resolve();
-                }
-            }, 100);
+        await TestUtil.assertTrueEventually(async () => {
+            expect(count).to.equal(1);
+            expect(receivedValues).to.deep.equal([message]);
         });
     });
 
@@ -119,45 +140,24 @@ describe('TopicTest', function () {
         const messages = ['message 1', 'message 2', 'message 3'];
         await topic.publishAll(messages);
 
-        await new Promise((resolve, reject) => {
-            const interval = setInterval(() => {
-                if (count === messages.length) {
-                    clearInterval(interval);
-                    expect(receivedValues).to.have.members(messages);
-                    resolve();
-                }
-            }, 100);
-            setTimeout(() => {
-                clearInterval(interval);
-                reject(new Error('Timed out while waiting for messages to be published'));
-            }, 5000);
+        await TestUtil.assertTrueEventually(async () => {
+            expect(count).to.equal(messages.length);
+            expect(receivedValues).to.have.members(messages);
         });
     });
 
-    it('tests publishAll with null', async function() {
-        let count = 0;
-        const receivedValues = [];
-
-        await topic.addListener((message) => {
-            count++;
-            receivedValues.push(message.messageObject);
-        });
-
+    it('tests publishAll with one null element in an array', async function() {
         const messages = [1, null, 3];
-        await topic.publishAll(messages);
+        await expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
+    });
 
-        await new Promise((resolve, reject) => {
-            const interval = setInterval(() => {
-                if (count === messages.length) {
-                    clearInterval(interval);
-                    expect(receivedValues).to.have.members(messages);
-                    resolve();
-                }
-            }, 100);
-            setTimeout(() => {
-                clearInterval(interval);
-                reject(new Error('Timed out while waiting for messages to be published'));
-            }, 5000);
-        });
+    it('tests publishAll with null array', async function() {
+        const messages = null;
+        await expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
+    });
+
+    it('tests publishAll with null elements array', async function() {
+        const messages = [null, null, null];
+        await expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
     });
 });

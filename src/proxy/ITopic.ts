@@ -17,12 +17,13 @@
 import {DistributedObject} from '../core';
 import {MessageListener} from './MessageListener';
 
+
 /**
  * Hazelcast provides distribution mechanism for publishing messages that are
  * delivered to multiple subscribers, which is also known as a publish/subscribe
  * (pub/sub) messaging model. Publish and subscriptions are cluster-wide.
  *
- * This interface stand for topic and reliable topic. Reliable uses a Ringbuffer to store
+ * This interface stand for topic and reliable topic. Reliable Topic uses a Ringbuffer to store
  * events. The events in the Ringbuffer are replicated, so they won't get
  * lost when a node goes down.
  *
@@ -40,13 +41,13 @@ export interface ITopic<E> extends DistributedObject {
      *
      * This method is for only Reliable Topic since this is a sync method.
      * When this method is called from Topic, it throws {@link HazelcastError}.
-     * Check addListener method for using with Topic.
+     * Check {@link addListener} method for using with Topic.
      *
-     * `addMessageListener` is @deprecated since 5.3. Use {@link addListener} instead.
+     * @deprecated `addMessageListener` is deprecated since 5.3. Use {@link addListener} instead.
      *
      * @param listener the MessageListener to add
      * @return registration ID
-     * @throws {HazelcastError} if it is used from Topic
+     * @throws {@link HazelcastError} if it is used from Topic
      */
     addMessageListener(listener: MessageListener<E>): string;
 
@@ -59,11 +60,11 @@ export interface ITopic<E> extends DistributedObject {
      * When this method is called from Topic, it throws {@link HazelcastError}.
      * Check removeListener method for using with Topic.
      *
-     * `removeMessageListener` is @deprecated since 5.3. Use {@link removeListener} instead.
+     * @deprecated `removeMessageListener` is deprecated since 5.3. Use {@link removeListener} instead.
      *
      * @param listenerId listener registration ID
      * @return `true` if registration is removed, `false` otherwise
-     * @throws {HazelcastError} if it is used from Topic
+     * @throws {@link HazelcastError} if it is used from Topic
      */
     removeMessageListener(listenerId: string): boolean;
 
@@ -78,7 +79,7 @@ export interface ITopic<E> extends DistributedObject {
      * Publishes all messages to all subscribers of this topic.
      *
      * @param messages the messages to publish to all subscribers of this topic
-     * @throws {TopicOverloadError} if the consumer is too slow
+     * @throws {@link TopicOverloadError} if the consumer is too slow
  *                                      (only works in combination with reliable topic)
      */
     publishAll(messages: any[]): Promise<void>;

@@ -160,12 +160,11 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     publishAll(messages: any[]): Promise<void> {
         const capacity = messages.length;
         const reliableTopicMessages: Array<ReliableTopicMessage> = Array<ReliableTopicMessage>(capacity);
-
         assertNotNull(messages);
-        for (const message in messages) {
+        for (const message of messages) {
             assertNotNull(message);
         }
-
+        const deferred = deferredPromise<void>();
         try {
             for (const message of messages) {
                 const reliableTopicMessage = new ReliableTopicMessage();
@@ -175,35 +174,23 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             }
             switch (this.overloadPolicy) {
                 case TopicOverloadPolicy.ERROR:
-                    this.addMessagesOrFail(reliableTopicMessages).then(() => {
-                        return;
-                    });
-                    break;
+                    return this.addMessagesOrFail(reliableTopicMessages);
                 case TopicOverloadPolicy.DISCARD_NEWEST:
-                    this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.OVERWRITE).then(() => {
-                        return;
-                    });
-                    break;
+                    return this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.OVERWRITE).then(() => {});
                 case TopicOverloadPolicy.DISCARD_OLDEST:
-                    this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.FAIL).then(() => {
-                        return;
-                    });
-                    break;
+                    return this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.FAIL).then(() => {});
                 case TopicOverloadPolicy.BLOCK:
-                    this.addAndBlock(reliableTopicMessages, 100).then(() => {
-                        return;
-                    });
+                    this.addAndBlock(deferred, reliableTopicMessages, TOPIC_INITIAL_BACKOFF);
                     break;
                 default:
-                    throw new IllegalArgumentError('Unknown overload policy');
+                    return Promise.reject(new IllegalArgumentError('Unknown overload policy'));
             }
         } catch (e) {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.publishAll(messages));
             }
-            throw new HazelcastError(e + 'Failed to publish these messages' + messages + 'to topic' + this.name);
+            return Promise.reject(new HazelcastError(e + 'Failed to publish these messages ' + messages + ' to topic ' + this.name));
         }
-        return Promise.resolve();
     }
 
     addListener(listener: MessageListener<E>): Promise<string> {
@@ -276,14 +263,15 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         });
     }
 
-    private addAndBlock(messages: ReliableTopicMessage[], pauseMillis: number): Promise<void> {
+    private addAndBlock(returnPromise: DeferredPromise<void>, messages: ReliableTopicMessage[], pauseMillis: number): void {
         this.ringbuffer.addAll(messages, OverflowPolicy.FAIL).then((id: Long) => {
             if (id.toNumber() === -1) {
                 setTimeout(() => {
-                    this.addAndBlock(messages, Math.min(pauseMillis * 2, 2000));
+                    this.addAndBlock(returnPromise, messages, Math.min(pauseMillis * 2, 2000));
                 }, pauseMillis);
+            } else {
+                returnPromise.resolve();
             }
-        });
-        return Promise.resolve();
+        }).catch(returnPromise.reject);
     }
 }
