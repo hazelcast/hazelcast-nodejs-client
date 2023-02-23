@@ -43,19 +43,6 @@ describe('TopicTest', function () {
         return topic.destroy();
     });
 
-    // def test_add_listener(self):
-    // collector = event_collector()
-    // self.topic.add_listener(on_message=collector)
-    // self.topic.publish("item-value")
-    //
-    // def assert_event():
-    // self.assertEqual(len(collector.events), 1)
-    // event = collector.events[0]
-    // self.assertEqual(event.message, "item-value")
-    // self.assertGreater(event.publish_time, 0)
-    //
-    // self.assertTrueEventually(assert_event, 5)
-
     it('tests listener', async function () {
 
         class Collector {
