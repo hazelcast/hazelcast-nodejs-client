@@ -18,7 +18,6 @@
 const expect = require('chai').expect;
 const TestUtil = require('../../../../TestUtil');
 const RC = require('../../../RC');
-const {AssertionError} = require("chai");
 
 describe('TopicTest', function () {
     let client;
@@ -44,7 +43,6 @@ describe('TopicTest', function () {
     });
 
     it('tests listener', async function () {
-
         class Collector {
             constructor() {
                 this.events = [];
@@ -58,7 +56,7 @@ describe('TopicTest', function () {
         await topic.addListener(collector.onMessage.bind(collector));
         await topic.publish('item-value');
 
-        await new Promise((resolve, reject) => {
+        await new Promise((resolve) => {
             const interval = setInterval(() => {
                 if (collector.events.length === 1) {
                     clearInterval(interval);
@@ -72,9 +70,7 @@ describe('TopicTest', function () {
                 }
             }, 100);
         });
-
     });
-
 
     it('removes listener', async function() {
         class Collector {

@@ -189,7 +189,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             if (e instanceof SchemaNotReplicatedError) {
                 return this.registerSchema(e.schema, e.clazz).then(() => this.publishAll(messages));
             }
-            return Promise.reject(new HazelcastError(e + 'Failed to publish these messages ' + messages + ' to topic ' + this.name));
+            return Promise.reject(new HazelcastError(e + 'Failed to publish these messages ' + messages +
+                                                                                            ' to topic ' + this.name));
         }
     }
 
