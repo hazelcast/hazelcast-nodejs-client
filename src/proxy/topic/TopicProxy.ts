@@ -109,8 +109,8 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
             decodeAddResponse(msg: ClientMessage): UUID {
                 return TopicAddMessageListenerCodec.decodeResponse(msg);
             },
-            encodeRemoveRequest(): ClientMessage {
-                return TopicRemoveMessageListenerCodec.encodeRequest(name, super.localOnly);
+            encodeRemoveRequest(registrationID: UUID): ClientMessage {
+                return TopicRemoveMessageListenerCodec.encodeRequest(name, registrationID);
             },
         };
     }

@@ -166,11 +166,11 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         }
         const deferred = deferredPromise<void>();
         try {
-            for (const message of messages) {
+            for (let i = 0; i < capacity; i++) {
                 const reliableTopicMessage = new ReliableTopicMessage();
-                reliableTopicMessage.payload = this.serializationService.toData(message);
+                reliableTopicMessage.payload = this.serializationService.toData(messages[i]);
                 reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
-                reliableTopicMessages.push(reliableTopicMessage);
+                reliableTopicMessages[i] = reliableTopicMessage;
             }
             switch (this.overloadPolicy) {
                 case TopicOverloadPolicy.ERROR:
