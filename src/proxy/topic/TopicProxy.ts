@@ -35,6 +35,7 @@ import {ClusterService} from '../../invocation/ClusterService';
 import {ConnectionRegistry} from '../../network/ConnectionRegistry';
 import {SchemaService} from '../../serialization/compact/SchemaService';
 import {TopicPublishAllCodec} from '../../codec/TopicPublishAllCodec';
+import {TopicRemoveMessageListenerCodec} from '../../codec/TopicRemoveMessageListenerCodec';
 
 /** @internal */
 export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
@@ -78,8 +79,7 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
             assertNotNull(message);
         }
         const messageDataList = this.toData(messages);
-        return this.encodeInvoke(TopicPublishAllCodec, () => {}, () => {},
-            messageDataList);
+        return this.encodeInvoke(TopicPublishAllCodec, () => {}, messageDataList);
     }
 
     addListener(listener: MessageListener<E>): Promise<string> {
@@ -110,7 +110,7 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
                 return TopicAddMessageListenerCodec.decodeResponse(msg);
             },
             encodeRemoveRequest(): ClientMessage {
-                return TopicAddMessageListenerCodec.encodeRequest(name, super.localOnly);
+                return TopicRemoveMessageListenerCodec.encodeRequest(name, super.localOnly);
             },
         };
     }
