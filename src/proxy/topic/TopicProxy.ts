@@ -78,7 +78,7 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
         for (const message of messages) {
             assertNotNull(message);
         }
-        const messageDataList = this.toData(messages);
+        const messageDataList = this.serializeList(messages);
         return this.encodeInvoke(TopicPublishAllCodec, () => {}, messageDataList);
     }
 
