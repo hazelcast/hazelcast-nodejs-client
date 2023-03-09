@@ -170,15 +170,16 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
                 const reliableTopicMessage = new ReliableTopicMessage();
                 reliableTopicMessage.payload = this.serializationService.toData(messages[i]);
                 reliableTopicMessage.publishTime = Long.fromNumber(Date.now());
+                reliableTopicMessage.publisherAddress = null;
                 reliableTopicMessages[i] = reliableTopicMessage;
             }
             switch (this.overloadPolicy) {
                 case TopicOverloadPolicy.ERROR:
                     return this.addMessagesOrFail(reliableTopicMessages);
                 case TopicOverloadPolicy.DISCARD_NEWEST:
-                    return this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.OVERWRITE).then(() => {});
-                case TopicOverloadPolicy.DISCARD_OLDEST:
                     return this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.FAIL).then(() => {});
+                case TopicOverloadPolicy.DISCARD_OLDEST:
+                    return this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.OVERWRITE).then(() => {});
                 case TopicOverloadPolicy.BLOCK:
                     this.addAndBlock(deferred, reliableTopicMessages, TOPIC_INITIAL_BACKOFF);
                     break;
