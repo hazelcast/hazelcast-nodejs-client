@@ -20,7 +20,7 @@ const fs = require('fs');
 const Long = require('long');
 
 const RC = require('../../../RC');
-const { TopicOverloadPolicy } = require('../../../../../lib');
+const { TopicOverloadPolicy, TopicOverloadError} = require('../../../../../lib');
 const { ReliableTopicMessage } = require('../../../../../lib/proxy/topic/ReliableTopicMessage');
 const TestUtil = require('../../../../TestUtil');
 
@@ -205,9 +205,9 @@ describe('ReliableTopicTest', function () {
         const seq = await ringbuffer.tailSequence();
         const item = await ringbuffer.readOne(seq);
         const obj = clientOne.getSerializationService().toObject(item.payload);
-        expect(obj).to.equal(CAPACITY);
+        expect(obj).to.equal(CAPACITY-1);
 
-        const readCount = await ringbuffer.readCount();
+        const readCount = await ringbuffer.size();
         expect(readCount.toNumber()).to.equal(CAPACITY);
 
         const items = await ringbuffer.readMany(seq.sub(1), CAPACITY, CAPACITY);
@@ -232,10 +232,10 @@ describe('ReliableTopicTest', function () {
         const obj = clientOne.getSerializationService().toObject(item.payload);
         expect(obj).to.equal(CAPACITY);
 
-        const readCount = await ringbuffer.readCount();
+        const readCount = await ringbuffer.size();
         expect(readCount.toNumber()).to.equal(CAPACITY);
 
-        const items = await ringbuffer.readMany(seq.sub(1), CAPACITY, CAPACITY);
+        const items = await ringbuffer.readMany(seq.sub(1), CAPACITY, 2*CAPACITY);
         const objects = items.map((item) => clientOne.getSerializationService().toObject(item.payload));
         expect(objects).to.deep.equal(itemList2);
     });
@@ -266,20 +266,6 @@ describe('ReliableTopicTest', function () {
         expect(objects).to.deep.equal(itemList2);
     });
 
-    // def test_publish_all_with_error_policy(self):
-    // topic = self.get_topic("error")
-    //
-    // collector = event_collector()
-    // topic.add_listener(collector)
-    //
-    // topic.publish_all(range(CAPACITY))
-    //
-    // with self.assertRaises(TopicOverloadError):
-    // topic.publish_all(range(CAPACITY, 2 * CAPACITY))
-    //
-    // self.assertTrueEventually(lambda: self.assertEqual(CAPACITY, len(collector.events)))
-    // self.assertEqual(list(range(CAPACITY)), self.get_ringbuffer_data(topic))
-
     it('tests publishAll with ERROR policy', async function () {
         const topic = await clientOne.getReliableTopic('error');
         const ringbuffer = topic.getRingbuffer();
@@ -294,8 +280,7 @@ describe('ReliableTopicTest', function () {
         try {
             await topic.publishAll(itemList2);
             expect.fail();
-        }
-        catch (e) {
+        } catch (e) {
             expect(e).to.be.instanceOf(TopicOverloadError);
         }
 
