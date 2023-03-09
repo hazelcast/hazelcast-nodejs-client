@@ -196,33 +196,8 @@ describe('ReliableTopicTest', function () {
 
         const CAPACITY = 10;
 
-        const itemList1 = [...Array(CAPACITY).keys()];
-        const itemList2 = [...Array(CAPACITY).keys()].map((i) => i + CAPACITY);
-
-        await topic.publishAll(itemList1);
-        await topic.publishAll(itemList2);
-
-        const seq = await ringbuffer.tailSequence();
-        const item = await ringbuffer.readOne(seq);
-        const obj = clientOne.getSerializationService().toObject(item.payload);
-        expect(obj).to.equal(CAPACITY-1);
-
-        const readCount = await ringbuffer.size();
-        expect(readCount.toNumber()).to.equal(CAPACITY);
-
-        const items = await ringbuffer.readMany(seq.sub(1), CAPACITY, CAPACITY);
-        const objects = items.map((item) => clientOne.getSerializationService().toObject(item.payload));
-        expect(objects).to.deep.equal(itemList2);
-    });
-
-    it('tests publishAll with DISCARD_OLDEST policy', async function () {
-        const topic = await clientOne.getReliableTopic('overwrite');
-        const ringbuffer = topic.getRingbuffer();
-
-        const CAPACITY = 10;
-
-        const itemList1 = [...Array(CAPACITY).keys()];
-        const itemList2 = [...Array(CAPACITY).keys()].map((i) => i + CAPACITY);
+        const itemList1 = [...Array(CAPACITY).keys()].map(i => i + 1);
+        const itemList2 = [...Array(CAPACITY).keys()].map((i) => i + CAPACITY + 1);
 
         await topic.publishAll(itemList1);
         await topic.publishAll(itemList2);
@@ -235,8 +210,41 @@ describe('ReliableTopicTest', function () {
         const readCount = await ringbuffer.size();
         expect(readCount.toNumber()).to.equal(CAPACITY);
 
-        const items = await ringbuffer.readMany(seq.sub(1), CAPACITY, 2*CAPACITY);
-        const objects = items.map((item) => clientOne.getSerializationService().toObject(item.payload));
+        const head = await ringbuffer.headSequence();
+        const items = await ringbuffer.readMany(head, CAPACITY, 2 * CAPACITY);
+        const objects = [];
+        for (let i = 0; i < CAPACITY; i++) {
+            objects.push(clientOne.getSerializationService().toObject(items[i].payload));
+        }
+        expect(objects).to.deep.equal(itemList2);
+    });
+
+    it('tests publishAll with DISCARD_OLDEST policy', async function () {
+        const topic = await clientOne.getReliableTopic('overwrite');
+        const ringbuffer = topic.getRingbuffer();
+
+        const CAPACITY = 10;
+
+        const itemList1 = [...Array(CAPACITY).keys()].map(i => i + 1);
+        const itemList2 = [...Array(CAPACITY).keys()].map((i) => i + CAPACITY + 1);
+
+        await topic.publishAll(itemList1);
+        await topic.publishAll(itemList2);
+
+        const seq = await ringbuffer.tailSequence();
+        const item = await ringbuffer.readOne(seq);
+        const obj = clientOne.getSerializationService().toObject(item.payload);
+        expect(obj).to.equal(2 * CAPACITY);
+
+        const readCount = await ringbuffer.size();
+        expect(readCount.toNumber()).to.equal(CAPACITY);
+
+        const head = await ringbuffer.headSequence();
+        const items = await ringbuffer.readMany(head, CAPACITY, 2 * CAPACITY);
+        const objects = [];
+        for (let i = 0; i < CAPACITY; i++) {
+            objects.push(clientOne.getSerializationService().toObject(items[i].payload));
+        }
         expect(objects).to.deep.equal(itemList2);
     });
 
@@ -246,8 +254,8 @@ describe('ReliableTopicTest', function () {
 
         const CAPACITY = 10;
 
-        const itemList1 = [...Array(CAPACITY).keys()];
-        const itemList2 = [...Array(CAPACITY).keys()].map((i) => i + CAPACITY);
+        const itemList1 = [...Array(CAPACITY).keys()].map(i => i + 1);
+        const itemList2 = [...Array(CAPACITY).keys()].map((i) => i + CAPACITY + 1);
 
         await topic.publishAll(itemList1);
 
@@ -257,12 +265,15 @@ describe('ReliableTopicTest', function () {
 
         expect(timePassed).to.be.greaterThan(2000);
 
-        const seq = await ringbuffer.tailSequence();
-        const readCount = await ringbuffer.readCount();
+        const readCount = await ringbuffer.size();
         expect(readCount.toNumber()).to.equal(CAPACITY);
 
-        const items = await ringbuffer.readMany(seq.sub(1), CAPACITY, CAPACITY);
-        const objects = items.map((item) => clientOne.getSerializationService().toObject(item.payload));
+        const head = await ringbuffer.headSequence();
+        const items = await ringbuffer.readMany(head, CAPACITY, CAPACITY);
+        const objects = [];
+        for (let i = 0; i < CAPACITY; i++) {
+            objects.push(clientOne.getSerializationService().toObject(items[i].payload));
+        }
         expect(objects).to.deep.equal(itemList2);
     });
 
@@ -272,24 +283,26 @@ describe('ReliableTopicTest', function () {
 
         const CAPACITY = 10;
 
-        const itemList1 = [...Array(CAPACITY).keys()];
-        const itemList2 = [...Array(CAPACITY).keys()].map((i) => i + CAPACITY);
+        const itemList1 = [...Array(CAPACITY).keys()].map(i => i + 1);
+        const itemList2 = [...Array(CAPACITY).keys()].map((i) => i + CAPACITY + 1);
 
         await topic.publishAll(itemList1);
 
         try {
             await topic.publishAll(itemList2);
-            expect.fail();
         } catch (e) {
             expect(e).to.be.instanceOf(TopicOverloadError);
         }
 
-        const readCount = await ringbuffer.readCount();
-        expect(readCount.toNumber()).to.equal(CAPACITY);
+        const readCount = await ringbuffer.size();
+        expect(readCount.toNumber()).to.equal(2 * CAPACITY);
 
-        const seq = await ringbuffer.tailSequence();
-        const items = await ringbuffer.readMany(seq.sub(1), CAPACITY, CAPACITY);
-        const objects = items.map((item) => clientOne.getSerializationService().toObject(item.payload));
+        const seq = await ringbuffer.headSequence();
+        const items = await ringbuffer.readMany(seq, CAPACITY, 2 * CAPACITY);
+        const objects = [];
+        for (let i = 0; i < CAPACITY; i++) {
+            objects.push(clientOne.getSerializationService().toObject(items[i].payload));
+        }
         expect(objects).to.deep.equal(itemList1);
     });
 });
