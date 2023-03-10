@@ -18,7 +18,7 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://www.hazelcast.com/schema/config
            http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
-    <ringbuffer name="blocking">
+    <ringbuffer name="block">
         <time-to-live-seconds>3</time-to-live-seconds>
         <capacity>10</capacity>
     </ringbuffer>
@@ -36,6 +36,11 @@
     <ringbuffer name="overwrite">
         <time-to-live-seconds>120</time-to-live-seconds>
         <capacity>10</capacity>
+    </ringbuffer>
+
+    <ringbuffer name="error">
+        <capacity>10</capacity>
+        <time-to-live-seconds>120</time-to-live-seconds>
     </ringbuffer>
 
     <network>
