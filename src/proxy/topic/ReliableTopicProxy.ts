@@ -182,7 +182,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
                     return this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.OVERWRITE).then(() => {});
                 case TopicOverloadPolicy.BLOCK:
                     this.addAndBlock(deferred, reliableTopicMessages, TOPIC_INITIAL_BACKOFF);
-                    return;
+                    return deferred.promise;
                 default:
                     return Promise.reject(new IllegalArgumentError('Unknown overload policy'));
             }
