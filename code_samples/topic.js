@@ -21,7 +21,7 @@ const { Client } = require('hazelcast-client');
     const client = await Client.newHazelcastClient();
     const topic = await client.getTopic('my-distributed-topic');
 
-    topic.addMessageListener((message) => {
+    topic.addListener((message) => {
         console.log('Received message:\n', message);
         // shut down the client once the message is received
         client.shutdown().catch((err) => {
@@ -30,8 +30,7 @@ const { Client } = require('hazelcast-client');
     });
 
     await topic.publish('Hello to distributed world');
-
-} )().catch(err => {
+})().catch(err => {
     console.error('Error occurred:', err);
     process.exit(1);
 });
