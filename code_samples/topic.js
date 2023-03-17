@@ -25,12 +25,12 @@ const { Client } = require('hazelcast-client');
         console.log('Received message:\n', message);
         // shut down the client once the message is received
         client.shutdown().catch((err) => {
-            console.error('Failed to shut down the client:', err);
+            console.error('Failed to shut down the client: ', err);
         });
     });
 
     await topic.publish('Hello to distributed world');
 })().catch(err => {
-    console.error('Error occurred:', err);
+    console.error('Error occurred: ', err);
     process.exit(1);
 });
