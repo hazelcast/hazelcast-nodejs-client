@@ -50,9 +50,9 @@ import {Connection} from '../../network/Connection';
 import {SchemaService} from '../../serialization/compact/SchemaService';
 
 /** @internal */
-export const TOPIC_INITIAL_BACKOFF = 100;
+export const TOPIC_INITIAL_BACKOFF_MS = 100;
 /** @internal */
-export const TOPIC_MAX_BACKOFF = 2000;
+export const TOPIC_MAX_BACKOFF_MS = 2000;
 
 /** @internal */
 export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
@@ -181,7 +181,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
                 case TopicOverloadPolicy.DISCARD_OLDEST:
                     return this.ringbuffer.addAll(reliableTopicMessages, OverflowPolicy.OVERWRITE).then(() => {});
                 case TopicOverloadPolicy.BLOCK:
-                    this.addAndBlock(deferred, reliableTopicMessages, TOPIC_INITIAL_BACKOFF);
+                    this.addAndBlock(deferred, reliableTopicMessages, TOPIC_INITIAL_BACKOFF_MS);
                     return deferred.promise;
                 default:
                     return Promise.reject(new IllegalArgumentError('Unknown overload policy'));
@@ -239,7 +239,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
 
     private addWithBackoff(reliableTopicMessage: ReliableTopicMessage): Promise<void> {
         const deferred = deferredPromise<void>();
-        this.trySendMessage(reliableTopicMessage, TOPIC_INITIAL_BACKOFF, deferred);
+        this.trySendMessage(reliableTopicMessage, TOPIC_INITIAL_BACKOFF_MS, deferred);
         return deferred.promise;
     }
 
@@ -247,8 +247,8 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         this.ringbuffer.add(message, OverflowPolicy.FAIL).then((seq: Long) => {
             if (seq.toNumber() === -1) {
                 let newDelay = delay *= 2;
-                if (newDelay > TOPIC_MAX_BACKOFF) {
-                    newDelay = TOPIC_MAX_BACKOFF;
+                if (newDelay > TOPIC_MAX_BACKOFF_MS) {
+                    newDelay = TOPIC_MAX_BACKOFF_MS;
                 }
                 this.trySendMessage(message, newDelay, deferred);
             } else {
