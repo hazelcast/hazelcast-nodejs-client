@@ -26,7 +26,7 @@ describe('TopicTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
-        // TestUtil.markClientVersionAtLeast(this, '5.3')
+        TestUtil.markClientVersionAtLeast(this, '5.3');
         const cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForParallelTests({
