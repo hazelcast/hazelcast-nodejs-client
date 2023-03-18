@@ -23,7 +23,7 @@ import {MessageListener} from './MessageListener';
  * delivered to multiple subscribers, which is also known as a publish/subscribe
  * (pub/sub) messaging model. Publish and subscriptions are cluster-wide.
  *
- * This interface stand for topic and reliable topic. Reliable Topic uses a Ringbuffer to store
+ * This interface stand for Topic and ReliableTopic. ReliableTopic uses a Ringbuffer to store
  * events. The events in the Ringbuffer are replicated, so they won't get
  * lost when a node goes down.
  *
