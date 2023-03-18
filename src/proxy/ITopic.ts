@@ -35,7 +35,7 @@ export interface ITopic<E> extends DistributedObject {
 
     /**
      * Subscribes to this topic. When a message is published,
-     * the given MessageListener is called.
+     * the given {@link MessageListener} is called.
      *
      * More than one message listener can be added on one instance.
      *
@@ -58,7 +58,7 @@ export interface ITopic<E> extends DistributedObject {
      *
      * This method is for only Reliable Topic.
      * When this method is called from Topic, it throws {@link HazelcastError}.
-     * Check removeListener method for using with Topic.
+     * Check {@link removeListener} method for using with Topic.
      *
      * @deprecated `removeMessageListener` is deprecated since 5.3. Use {@link removeListener} instead.
      *
@@ -86,7 +86,7 @@ export interface ITopic<E> extends DistributedObject {
 
     /**
      * Subscribes to this topic. When a message is published,
-     * the given MessageListener is called.
+     * the given {@link MessageListener} is called with the message.
      *
      * More than one message listener can be added on one instance.
      *
@@ -96,9 +96,9 @@ export interface ITopic<E> extends DistributedObject {
     addListener(listener: MessageListener<E>): Promise<string>;
 
     /**
-     * Stops receiving messages for the given message listener.
+     * Stops receiving messages for the message listener with the given id.
      *
-     * If the given listener already removed, this method does nothing.
+     * If the listener is already removed, this method does nothing.
      *
      * @param listenerId listener registration ID
      * @return `true` if registration is removed, `false` otherwise.
