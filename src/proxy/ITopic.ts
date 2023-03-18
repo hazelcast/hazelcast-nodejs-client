@@ -76,11 +76,12 @@ export interface ITopic<E> extends DistributedObject {
     publish(message: E): Promise<void>;
 
     /**
-     * Publishes all messages to all subscribers of this topic.
+     * Publishes all messages to all subscribers of this topic. The returned promise is
+     * rejected with {@link HazelcastError} if the messages cannot be published in ReliableTopic.
      *
      * @param messages the messages to publish to all subscribers of this topic
      * @throws {@link TopicOverloadError} if the consumer is too slow
- *                                      (only works in combination with reliable topic)
+     *                                      (only works in combination with reliable topic)
      */
     publishAll(messages: any[]): Promise<void>;
 
