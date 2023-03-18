@@ -18,12 +18,12 @@ import * as Long from 'long';
 import {Address} from '../core';
 
 /**
- * Message listener for Reliable Topic.
+ * Message listener for ITopic.
  */
 export type MessageListener<E> = (message: Message<E>) => void;
 
 /**
- * Message of Reliable Topic.
+ * Message of ITopic.
  */
 export class Message<T> {
 
