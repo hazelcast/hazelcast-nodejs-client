@@ -269,7 +269,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         this.ringbuffer.addAll(messages, OverflowPolicy.FAIL).then((id: Long) => {
             if (id.toNumber() === -1) {
                 setTimeout(() => {
-                    this.addAndBlock(returnPromise, messages, Math.min(pauseMillis * 2, 2000));
+                    this.addAndBlock(returnPromise, messages, Math.min(pauseMillis * 2, TOPIC_MAX_BACKOFF_MS));
                 }, pauseMillis);
             } else {
                 returnPromise.resolve();
