@@ -15,11 +15,11 @@
  */
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
 const TestUtil = require('../../../../TestUtil');
 const RC = require('../../../RC');
 
-describe('ClientTopicTest', function () {
+describe('TopicTest', function () {
     let client;
     let topic;
 
@@ -89,7 +89,7 @@ describe('ClientTopicTest', function () {
         await topic.publish('item-value');
 
         setTimeout(() => {
-            expect(collector.events.length).to.be(0);
+            expect(collector.events.length).to.equal(0);
         }, 5000);
     });
 
