@@ -101,24 +101,16 @@ describe('ReliableTopicTest', function () {
 
     it('writes and reads messages with addListener method', async function () {
         const topicName = 't' + Math.random();
-        let topicOne;
-        let topicTwo;
-
-        try {
-            topicOne = await clientOne.getReliableTopic(topicName);
-            topicTwo = await clientTwo.getReliableTopic(topicName);
-
-            topicTwo.addListener(async (msg) => {
-                if (msg.messageObject['value'] === 'foo') {
-                    return;
-                }
-            });
-
-            await new Promise(resolve => setTimeout(resolve, 500));
-            await topicOne.publish({ 'value': 'foo' });
-        } catch (error) {
-            done(error);
-        }
+        const topicOne = await clientOne.getReliableTopic(topicName);
+        const topicTwo = await clientTwo.getReliableTopic(topicName);
+        await topicTwo.addListener(async (msg) => {
+            if (msg.messageObject['value'] !== 'foo') {
+                throw new Error('Message received does not match expected value.');
+            }
+        });
+        setTimeout(() => {
+            topicOne.publish({ 'value': 'foo' });
+        }, 500);
     });
 
     it('removed message listener does not receive items after removal', function (done) {
@@ -151,35 +143,31 @@ describe('ReliableTopicTest', function () {
         }).catch(done);
     });
 
-    it('removed message listener does not receive items after removal with addListener and removeListener methods', async () => {
+    it('removed message listener does not receive items after removal with new added methods', async function() {
         const topicName = 't' + Math.random();
-        let topicOne;
-        let topicTwo;
-        try {
-            topicOne = await clientOne.getReliableTopic(topicName);
-            topicTwo = await clientTwo.getReliableTopic(topicName);
-            let receivedMessages = 0;
-            const callback = () => {
-                receivedMessages++;
-                if (receivedMessages > 2) {
-                    done(new Error('Kept receiving messages after message listener is removed.'));
-                }
-            };
-            const id = topicTwo.addListener(callback);
+        const topicOne = await clientOne.getReliableTopic(topicName);
+        const topicTwo = await clientTwo.getReliableTopic(topicName);
+        let receivedMessages = 0;
+        const callback = () => {
+            receivedMessages++;
+            if (receivedMessages > 2) {
+                throw new Error('Kept receiving messages after message listener is removed.');
+            }
+        };
+        const id = await topicTwo.addListener(callback);
 
-            topicOne.publish({ 'value0': 'foo0' });
-            topicOne.publish({ 'value1': 'foo1' });
+        topicOne.publish({ 'value0': 'foo0' });
+        topicOne.publish({ 'value1': 'foo1' });
+        setTimeout(() => {
+            topicTwo.removeListener(id);
+            topicOne.publish({ 'value2': 'foo2' });
+            topicOne.publish({ 'value3': 'foo3' });
+            topicOne.publish({ 'value4': 'foo4' });
+            topicOne.publish({ 'value5': 'foo5' });
             setTimeout(() => {
-                topicTwo.removeListener(id);
-                topicOne.publish({ 'value2': 'foo2' });
-                topicOne.publish({ 'value3': 'foo3' });
-                topicOne.publish({ 'value4': 'foo4' });
-                topicOne.publish({ 'value5': 'foo5' });
-                setTimeout(done, 500);
+                // Test passes
             }, 500);
-        } catch (error) {
-            done(error);
-        }
+        }, 500);
     });
 
     it('blocks when there is no more space', async function () {
