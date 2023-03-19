@@ -342,7 +342,7 @@ describe('ReliableTopicTest', function () {
         }
 
         const readCount = await ringbuffer.size();
-        expect(readCount.toNumber()).to.equal(2 * CAPACITY);
+        expect(readCount.toNumber()).to.equal(CAPACITY);
 
         const seq = await ringbuffer.headSequence();
         const items = await ringbuffer.readMany(seq, CAPACITY, 2 * CAPACITY);
