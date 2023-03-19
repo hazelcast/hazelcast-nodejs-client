@@ -19,7 +19,7 @@ const expect = require('chai').expect;
 const TestUtil = require('../../../../TestUtil');
 const RC = require('../../../RC');
 
-describe('TopicTest', function () {
+describe('ClientTopicTest', function () {
     let client;
     let topic;
 
@@ -131,16 +131,16 @@ describe('TopicTest', function () {
 
     it('tests publishAll with one null element in an array', async function() {
         const messages = [1, null, 3];
-        await expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
+        expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
     });
 
     it('tests publishAll with null array', async function() {
         const messages = null;
-        await expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
+        expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
     });
 
     it('tests publishAll with null elements array', async function() {
         const messages = [null, null, null];
-        await expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
+        expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
     });
 });
