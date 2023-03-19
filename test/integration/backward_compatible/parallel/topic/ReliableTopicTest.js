@@ -171,7 +171,7 @@ describe('ReliableTopicTest', function () {
     });
 
     it('blocks when there is no more space', async function () {
-        const topic = await clientOne.getReliableTopic('blocking');
+        const topic = await clientOne.getReliableTopic('block');
         const ringbuffer = topic.getRingbuffer();
 
         const capacity = await ringbuffer.capacity();
@@ -186,10 +186,9 @@ describe('ReliableTopicTest', function () {
         // Here we check that the call was indeed blocking
         // until the TTL of the first inserted entry has passed
         const elapsed = Date.now() - startTime;
-        // Commented to see if there is another error, gonna uncomment later
-        // if (elapsed <= 2000) {
-        //     throw new Error('Message was published too fast, expected at least a 2 second delay, got: ' + elapsed);
-        // }
+        if (elapsed <= 2000) {
+            throw new Error('Message was published too fast, expected at least a 2 second delay, got: ' + elapsed);
+        }
     });
 
     it('continues operating when stale sequence is reached', function (done) {
