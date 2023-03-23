@@ -111,7 +111,8 @@ describe('ReliableTopicTest', function () {
                 resolve();
             });
         });
-        topicOne.publish({ 'value': 'foo' });
+        topicOne.publish({'value': 'foo'});
+        await TestUtil.promiseWaitMilliseconds(500);
 
         await deferredPromise;
     });
