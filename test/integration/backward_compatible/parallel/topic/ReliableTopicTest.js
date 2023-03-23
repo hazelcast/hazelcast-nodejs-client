@@ -147,7 +147,7 @@ describe('ReliableTopicTest', function () {
     });
 
     it('removed message listener does not receive items after removal with removeListener', async function() {
-        const topicName = 't' + Math.random();
+        const topicName = TestUtil.randomString(8)
         const topicOne = await clientOne.getReliableTopic(topicName);
         const topicTwo = await clientTwo.getReliableTopic(topicName);
         let receivedMessages = 0;
