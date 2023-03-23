@@ -19,7 +19,7 @@ const { expect } = require('chai');
 const TestUtil = require('../../../../TestUtil');
 const RC = require('../../../RC');
 
-describe('TopicTest', function () {
+describe('ClientTopicTest', function () {
     let client;
     let topic;
 
@@ -42,7 +42,7 @@ describe('TopicTest', function () {
         return topic.destroy();
     });
 
-    it('tests listener', async function () {
+    it('testListener', async function () {
         class Collector {
             constructor() {
                 this.events = [];
@@ -72,7 +72,7 @@ describe('TopicTest', function () {
         });
     });
 
-    it('removes listener', async function() {
+    it('testRemoveListener', async function() {
         class Collector {
             constructor() {
                 this.events = [];
@@ -93,7 +93,7 @@ describe('TopicTest', function () {
         }, 5000);
     });
 
-    it('tests publish', async function () {
+    it('testPublishAsync', async function () {
         let count = 0;
         const receivedValues = [];
 
@@ -111,7 +111,7 @@ describe('TopicTest', function () {
         });
     });
 
-    it('tests publishAll', async function() {
+    it('testPublishAllAsync', async function() {
         let count = 0;
         const receivedValues = [];
 
@@ -129,18 +129,14 @@ describe('TopicTest', function () {
         });
     });
 
-    it('tests publishAll with one null element in an array', async function() {
-        const messages = [1, null, 3];
+    it('testPublishAllException', async function() {
+        let messages = [1, null, 3];
         expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
-    });
 
-    it('tests publishAll with null array', async function() {
-        const messages = null;
+        messages = null;
         expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
-    });
 
-    it('tests publishAll with null elements array', async function() {
-        const messages = [null, null, null];
+        messages = [null, null, null];
         expect(() => topic.publishAll(messages)).to.throw('Non null value expected.');
     });
 });

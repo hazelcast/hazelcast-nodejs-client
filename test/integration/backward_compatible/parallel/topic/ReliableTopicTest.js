@@ -100,17 +100,20 @@ describe('ReliableTopicTest', function () {
     });
 
     it('writes and reads messages with addListener method', async function () {
-        const topicName = 't' + Math.random();
+        const topicName = TestUtil.randomString(8)
         const topicOne = await clientOne.getReliableTopic(topicName);
         const topicTwo = await clientTwo.getReliableTopic(topicName);
-        await topicTwo.addListener(async (msg) => {
-            if (msg.messageObject['value'] !== 'foo') {
-                throw new Error('Message received does not match expected value.');
-            }
+        const deferredPromise = new Promise((resolve) => {
+            topicTwo.addListener(async (msg) => {
+                if (msg.messageObject['value'] !== 'foo') {
+                    throw new Error('Message received does not match expected value.');
+                }
+                resolve();
+            });
         });
-        setTimeout(() => {
-            topicOne.publish({ 'value': 'foo' });
-        }, 500);
+        topicOne.publish({ 'value': 'foo' });
+
+        await deferredPromise;
     });
 
     it('removed message listener does not receive items after removal', function (done) {
@@ -143,7 +146,7 @@ describe('ReliableTopicTest', function () {
         }).catch(done);
     });
 
-    it('removed message listener does not receive items after removal with new added methods', async function() {
+    it('removed message listener does not receive items after removal with removeListener', async function() {
         const topicName = 't' + Math.random();
         const topicOne = await clientOne.getReliableTopic(topicName);
         const topicTwo = await clientTwo.getReliableTopic(topicName);
@@ -158,16 +161,14 @@ describe('ReliableTopicTest', function () {
 
         topicOne.publish({ 'value0': 'foo0' });
         topicOne.publish({ 'value1': 'foo1' });
-        setTimeout(() => {
-            topicTwo.removeListener(id);
-            topicOne.publish({ 'value2': 'foo2' });
-            topicOne.publish({ 'value3': 'foo3' });
-            topicOne.publish({ 'value4': 'foo4' });
-            topicOne.publish({ 'value5': 'foo5' });
-            setTimeout(() => {
-                // Test passes
-            }, 500);
-        }, 500);
+
+        topicTwo.removeListener(id);
+        topicOne.publish({ 'value2': 'foo2' });
+        topicOne.publish({ 'value3': 'foo3' });
+        topicOne.publish({ 'value4': 'foo4' });
+        topicOne.publish({ 'value5': 'foo5' });
+
+        await TestUtil.promiseWaitMilliseconds(500);
     });
 
     it('blocks when there is no more space', async function () {
