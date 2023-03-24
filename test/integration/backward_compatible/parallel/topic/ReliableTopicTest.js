@@ -239,7 +239,7 @@ describe('ReliableTopicTest', function () {
         expect(obj).to.equal(11);
     });
 
-    it('tests publishAll with DISCARD_NEWEST policy', async function () {
+    it('whenDiscardNewest_whenNoSpace_all', async function () {
         const topic = await clientOne.getReliableTopic('discard');
         const ringbuffer = topic.getRingbuffer();
 
@@ -268,7 +268,7 @@ describe('ReliableTopicTest', function () {
         expect(objects).to.deep.equal(itemList1);
     });
 
-    it('tests publishAll with DISCARD_OLDEST policy', async function () {
+    it('whenDiscardOldest_whenNoSpace_all', async function () {
         const topic = await clientOne.getReliableTopic('overwrite');
         const ringbuffer = topic.getRingbuffer();
 
@@ -297,7 +297,7 @@ describe('ReliableTopicTest', function () {
         expect(objects).to.deep.equal(itemList2);
     });
 
-    it('tests publishAll with BLOCK policy', async function () {
+    it('whenBlock_whenNoSpace_all', async function () {
         const topic = await clientOne.getReliableTopic('block');
         const ringbuffer = topic.getRingbuffer();
 
@@ -326,7 +326,7 @@ describe('ReliableTopicTest', function () {
         expect(objects).to.deep.equal(itemList2);
     });
 
-    it('tests publishAll with ERROR policy', async function () {
+    it('whenError_andNoSpace_all', async function () {
         const topic = await clientOne.getReliableTopic('error');
         const ringbuffer = topic.getRingbuffer();
 
