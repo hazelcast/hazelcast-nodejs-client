@@ -558,7 +558,7 @@ exports.TestFactory = class TestFactory {
     }
 
     // Creates a new Hazelcast client for a parallel test with given config and registers it to clients set
-    async newHazelcastClientForParallelTests(clientConfig, memberOrMemberList) {
+    async newHazelcastClientForParallelTests(clientConfig = undefined, memberOrMemberList) {
         // Add cluster member config for parallel tests.
         this._addClusterMembersToConfig(clientConfig, memberOrMemberList);
         return await this._createClient(clientConfig);

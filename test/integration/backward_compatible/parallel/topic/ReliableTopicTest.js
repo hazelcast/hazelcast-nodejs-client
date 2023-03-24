@@ -23,13 +23,13 @@ const RC = require('../../../RC');
 const { TopicOverloadPolicy, TopicOverloadError} = require('../../../../../lib');
 const { ReliableTopicMessage } = require('../../../../../lib/proxy/topic/ReliableTopicMessage');
 const TestUtil = require('../../../../TestUtil');
+const Util = require('../../../../../lib/util/Util');
+const testFactory = new TestUtil.TestFactory();
 
 describe('ReliableTopicTest', function () {
     let cluster;
     let clientOne;
     let clientTwo;
-
-    const testFactory = new TestUtil.TestFactory();
 
     function createConfig(clusterName, port) {
         return {
@@ -97,24 +97,6 @@ describe('ReliableTopicTest', function () {
                 topicOne.publish({ 'value': 'foo' });
             }, 500);
         }).catch(done);
-    });
-
-    it('writes and reads messages with addListener method', async function () {
-        const topicName = TestUtil.randomString(8)
-        const topicOne = await clientOne.getReliableTopic(topicName);
-        const topicTwo = await clientTwo.getReliableTopic(topicName);
-        const deferredPromise = new Promise((resolve) => {
-            topicTwo.addListener(async (msg) => {
-                if (msg.messageObject['value'] !== 'foo') {
-                    throw new Error('Message received does not match expected value.');
-                }
-                resolve();
-            });
-        });
-        topicOne.publish({'value': 'foo'});
-        await TestUtil.promiseWaitMilliseconds(500);
-
-        await deferredPromise;
     });
 
     it('removed message listener does not receive items after removal', function (done) {
@@ -353,5 +335,43 @@ describe('ReliableTopicTest', function () {
             objects.push(clientOne.getSerializationService().toObject(items.get(i).payload));
         }
         expect(objects).to.deep.equal(itemList1);
+    });
+});
+
+describe('ClientReliableTopicTest', function () {
+    let cluster;
+    let client;
+
+    before(async function () {
+        const memberConfig = fs.readFileSync(__dirname + '/hazelcast_topic.xml', 'utf8');
+        cluster = await testFactory.createClusterForParallelTests(null, memberConfig);
+        const member = await RC.startMember(cluster.id);
+        client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id
+        }, member);
+    });
+
+    after(async function () {
+        await testFactory.shutdownAll();
+    });
+
+    it('testListener', async function () {
+        const topic = await client.getReliableTopic(TestUtil.randomString(8));
+        const messageCount = 10;
+        const deferredPromise = Util.deferredPromise();
+
+        let counter = 0;
+        await topic.addListener(() => {
+            counter++;
+            if (counter === messageCount) {
+                deferredPromise.resolve();
+            }
+        });
+
+        for (let i = 0; i < 10; i++) {
+            await topic.publish(i);
+        }
+
+        await deferredPromise.promise;
     });
 });
