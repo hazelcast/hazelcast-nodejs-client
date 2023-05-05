@@ -24,41 +24,36 @@ const Long = require('long');
 const { Lang } = require('../../../../remote_controller/remote_controller_types');
 const CompactUtil = require('./CompactUtil');
 
-describe('CompactSerializersLiveTest', function () {
-    before(async function () {
-        const {isCompactCompatible, isCompactStableInServer} = await TestUtil.getCompactCompatibilityInfo();
-        if (!isCompactCompatible) {
-            this.skip();
-        }
-        // Revert 5.2 Compact serialization server configuration changes
-        if (!isCompactStableInServer) {
-            COMPACT_ENABLED_ZERO_CONFIG_XML = COMPACT_ENABLED_ZERO_CONFIG_XML
-            .replace('<compact-serialization/>', '<compact-serialization enabled="true"/>');
-            COMPACT_ENABLED_WITH_SERIALIZER_XML = COMPACT_ENABLED_WITH_SERIALIZER_XML_BETA;
-        }
-    });
-
-    const testFactory = new TestUtil.TestFactory();
-
-    let COMPACT_ENABLED_ZERO_CONFIG_XML = `
+const COMPACT_ENABLED_ZERO_CONFIG_XML_BETA = `
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/config
-            http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
+            http://www.hazelcast.com/schema/config/hazelcast-config-5.1.xsd">
             <network>
                 <port>0</port>
             </network>
             <serialization>
-                <compact-serialization/>
+                <compact-serialization enabled="true"/>
             </serialization>
         </hazelcast>
     `;
 
-    const COMPACT_ENABLED_WITH_SERIALIZER_XML_BETA = `
+const COMPACT_ENABLED_ZERO_CONFIG_XML = `
+        <hazelcast xmlns="http://www.hazelcast.com/schema/config"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.hazelcast.com/schema/config
+            http://www.hazelcast.com/schema/config/hazelcast-config-5.2.xsd">
+            <network>
+                <port>0</port>
+            </network>
+        </hazelcast>
+    `;
+
+const COMPACT_ENABLED_WITH_SERIALIZER_XML_BETA = `
             <hazelcast xmlns="http://www.hazelcast.com/schema/config"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
+                http://www.hazelcast.com/schema/config/hazelcast-config-5.1.xsd">
                 <network>
                     <port>0</port>
                 </network>
@@ -75,11 +70,11 @@ describe('CompactSerializersLiveTest', function () {
             </hazelcast>
         `;
 
-    let COMPACT_ENABLED_WITH_SERIALIZER_XML = `
+const COMPACT_ENABLED_WITH_SERIALIZER_XML = `
             <hazelcast xmlns="http://www.hazelcast.com/schema/config"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xsi:schemaLocation="http://www.hazelcast.com/schema/config
-                http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
+                http://www.hazelcast.com/schema/config/hazelcast-config-5.2.xsd">
                 <network>
                     <port>0</port>
                 </network>
@@ -93,76 +88,97 @@ describe('CompactSerializersLiveTest', function () {
             </hazelcast>
         `;
 
-    [
-        {name: 'Explicit config', config: COMPACT_ENABLED_WITH_SERIALIZER_XML},
-        {name: 'Zero config', config: COMPACT_ENABLED_ZERO_CONFIG_XML}
-    ].forEach(({name, config}) => {
-        describe(`CompactSerializers with config: ${name}`, function () {
-            let cluster;
-            let client;
-            let mapName;
+[true, false].forEach(useZeroConfig => {
+    describe(`CompactSerializersLiveTest with ${useZeroConfig ? 'zero config' : 'explicit serializer'}`, function () {
+        const testFactory = new TestUtil.TestFactory();
+        let clusterConfig;
 
-            before(async function () {
-                cluster = await testFactory.createClusterForParallelTests(undefined, config);
-                const member = await RC.startMember(cluster.id);
-                client = await testFactory.newHazelcastClientForParallelTests({
-                    clusterName: cluster.id,
-                    serialization: {
-                        compact: {
-                            serializers: [new CompactUtil.EmployeeDTOSerializer()]
+        before(async function () {
+            const {isCompactCompatible, isCompactStableInServer} = await TestUtil.getCompactCompatibilityInfo();
+            if (!isCompactCompatible) {
+                this.skip();
+            }
+
+            if (isCompactStableInServer) {
+                if (useZeroConfig) {
+                    clusterConfig = COMPACT_ENABLED_ZERO_CONFIG_XML;
+                } else {
+                    clusterConfig = COMPACT_ENABLED_WITH_SERIALIZER_XML;
+                }
+            } else {
+                if (useZeroConfig) {
+                    clusterConfig = COMPACT_ENABLED_ZERO_CONFIG_XML_BETA;
+                } else {
+                    clusterConfig = COMPACT_ENABLED_WITH_SERIALIZER_XML_BETA;
+                }
+            }
+        });
+
+        describe('CompactSerializers', function () {
+                let cluster;
+                let client;
+                let mapName;
+
+                before(async function () {
+                    cluster = await testFactory.createClusterForParallelTests(undefined, clusterConfig);
+                    const member = await RC.startMember(cluster.id);
+                    client = await testFactory.newHazelcastClientForParallelTests({
+                        clusterName: cluster.id,
+                        serialization: {
+                            compact: {
+                                serializers: [new CompactUtil.EmployeeDTOSerializer()]
+                            }
                         }
-                    }
-                }, member);
-                mapName = TestUtil.randomString(10);
-            });
+                    }, member);
+                    mapName = TestUtil.randomString(10);
+                });
 
-            after(async function () {
-                await testFactory.shutdownAll();
-            });
+                after(async function () {
+                    await testFactory.shutdownAll();
+                });
 
-            it('should read server side compact data', async function() {
-                const expectedAge = 23;
-                const expectedId = 456;
+                it('should read server side compact data', async function() {
+                    const expectedAge = 23;
+                    const expectedId = 456;
 
-                const script = `
+                    const script = `
                     var EmployeeDTO = Java.type('example.serialization.EmployeeDTO');
                     var map = instance_0.getMap("${mapName}");
                     map.set(1.0, new EmployeeDTO(${expectedAge}, ${expectedId}));
                 `;
-                await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
-                const map = await client.getMap(mapName);
-                const value = await map.get(1);
-                // Test result can be changed by configuration
-                if (name == 'Zero config') {
-                    value.should.be.instanceof(CompactUtil.EmployeeDTO);
-                    value.age.should.be.equal(expectedAge);
-                    value.id.equals(expectedId).should.be.true;
-                } else {
-                    value.schema.typeName.should.be.equal('employee');
-                    value.getInt32('age').should.be.equal(expectedAge);
-                    value.getInt64('id').equals(expectedId).should.be.true;
-                }
-            });
+                    await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                    const map = await client.getMap(mapName);
+                    const value = await map.get(1);
+                    // Test result can be changed by configuration
+                    if (useZeroConfig) {
+                        value.should.be.instanceof(CompactUtil.EmployeeDTO);
+                        value.age.should.be.equal(expectedAge);
+                        value.id.equals(expectedId).should.be.true;
+                    } else {
+                        value.schema.typeName.should.be.equal('employee');
+                        value.getInt32('age').should.be.equal(expectedAge);
+                        value.getInt64('id').equals(expectedId).should.be.true;
+                    }
+                });
 
-            it('should write correct data', async function() {
-                const expectedAge = 23;
-                const expectedId = Long.fromNumber(456);
+                it('should write correct data', async function() {
+                    const expectedAge = 23;
+                    const expectedId = Long.fromNumber(456);
 
-                const map = await client.getMap(mapName);
-                await map.set(1, new CompactUtil.EmployeeDTO(expectedAge, expectedId));
+                    const map = await client.getMap(mapName);
+                    await map.set(1, new CompactUtil.EmployeeDTO(expectedAge, expectedId));
 
-                const script = `
+                    const script = `
                     var map = instance_0.getMap("${mapName}");
                     var value = map.get(1.0);
                     result = value.getClass().getName() + value.age.toString() + value.id.toString();
                 `;
-                const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
+                    const response = await RC.executeOnController(cluster.id, script, Lang.JAVASCRIPT);
 
-                const resultString = response.result.toString();
-                // due to class loader, server gets the class object itself not generic record
-                resultString.should.be.eq('example.serialization.EmployeeDTO23456');
+                    const resultString = response.result.toString();
+                    // due to class loader, server gets the class object itself not generic record
+                    resultString.should.be.eq('example.serialization.EmployeeDTO23456');
+                });
             });
-        });
     });
 });
-
