@@ -60,7 +60,7 @@ const COMPACT_ENABLED_WITH_SERIALIZER_XML_BETA = `
                 <serialization>
                     <compact-serialization enabled="true">
                             <registered-classes>
-                                <class type-name="example.serialization.EmployeeDTO"
+                                <class type-name="employee"
                                             serializer="example.serialization.EmployeeDTOSerializer">
                                     example.serialization.EmployeeDTO
                                 </class>
