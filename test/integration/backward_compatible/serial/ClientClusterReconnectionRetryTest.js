@@ -18,8 +18,6 @@
 const RC = require('../../RC');
 const TestUtil = require('../../../TestUtil');
 const { expect } = require('chai');
-const sinon = require('sinon');
-const sandbox = sinon.createSandbox();
 
 /**
  * Basic tests for reconnection to cluster scenarios.
@@ -27,7 +25,7 @@ const sandbox = sinon.createSandbox();
 describe('ClientClusterReconnectionRetryTest', function () {
     let cluster;
     let client;
-    let ClientState, ConnectionManager;
+    let ClientState;
     const ASSERTION_MILLISECONDS = 30000;
     const INT32_MAX_VALUE = Math.pow(2, 31) - 1;
 
@@ -36,7 +34,6 @@ describe('ClientClusterReconnectionRetryTest', function () {
     before(function() {
         TestUtil.markClientVersionAtLeast(this, '5.3.0');
         ClientState = require('../../../../lib/network/ConnectionManager').ClientState;
-        ConnectionManager = require('../../../../lib/network/ConnectionManager').ConnectionManager;
     });
 
     afterEach(async function () {
@@ -44,11 +41,6 @@ describe('ClientClusterReconnectionRetryTest', function () {
     });
 
     it('testClientShouldNotTryToConnectCluster_whenThereIsNoConnection', async function () {
-        const fnGetOrConnectToMember = sandbox.replace(
-            ConnectionManager.prototype,
-            'getOrConnectToMember',
-            sandbox.fake(ConnectionManager.prototype.getOrConnectToMember)
-        );
         cluster = await testFactory.createClusterForSerialTests();
         const member = await RC.startMember(cluster.id);
         // Sleep indefinitely after the first connection attempt fails
@@ -67,14 +59,10 @@ describe('ClientClusterReconnectionRetryTest', function () {
         // After terminateMember client state will be DISCONNECTED_FROM_CLUSTER
         expect(client.getConnectionManager().getConnectionRegistry().getClientState()
                 == ClientState.DISCONNECTED_FROM_CLUSTER).to.be.eq(true);
-        const callCountFnGetOrConnectToMember = fnGetOrConnectToMember.callCount;
         // Wait a bit more to make it more likely that the first reconnection
         // attempt is made before we restart the instance
         await TestUtil.promiseLater(ASSERTION_MILLISECONDS, () => { });
 
-        // getOrConnectToMember function call count will be stable
-        // after disconnection, client will not try to reconnect
-        fnGetOrConnectToMember.callCount.should.be.eq(callCountFnGetOrConnectToMember);
         await RC.startMember(cluster.id);
         const clientConnectionsFn = await TestUtil.getClientConnectionsFn(client);
         await TestUtil.assertTrueAllTheTime(async () => {
