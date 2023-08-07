@@ -46,7 +46,7 @@ const downloadRC = () => {
                 '-q',
                 'dependency:get',
                 '-Dtransitive=false',
-                `-DrepoUrl=${SNAPSHOT_REPO}`,
+                `-DremoteRepositories=${SNAPSHOT_REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}`,
                 `-Ddest=hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar`
             ], {
@@ -69,7 +69,7 @@ const downloadRC = () => {
                 '-q',
                 'dependency:get',
                 '-Dtransitive=false',
-                `-DrepoUrl=${TEST_REPO}`,
+                `-DremoteRepositories=${TEST_REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast:${HAZELCAST_TEST_VERSION}:jar:tests`,
                 `-Ddest=hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar`
             ], {
@@ -91,7 +91,7 @@ const downloadRC = () => {
             '-q',
             'dependency:get',
             '-Dtransitive=false',
-            `-DrepoUrl=${REPO}`,
+            `-DremoteRepositories=${REPO}`,
             `-Dartifact=com.hazelcast:hazelcast-sql:${HAZELCAST_VERSION}`,
             `-Ddest=hazelcast-sql-${HAZELCAST_VERSION}.jar`
         ], {
@@ -115,7 +115,7 @@ const downloadRC = () => {
                 '-q',
                 'dependency:get',
                 '-Dtransitive=false',
-                `-DrepoUrl=${ENTERPRISE_REPO}`,
+                `-DremoteRepositories=${ENTERPRISE_REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}`,
                 `-Ddest=hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar`
             ], {
@@ -138,7 +138,7 @@ const downloadRC = () => {
                 '-q',
                 'dependency:get',
                 '-Dtransitive=false',
-                `-DrepoUrl=${REPO}`,
+                `-DremoteRepositories=${REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast:${HAZELCAST_VERSION}`,
                 `-Ddest=hazelcast-${HAZELCAST_VERSION}.jar`
             ], {
