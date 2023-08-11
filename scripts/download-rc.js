@@ -44,7 +44,7 @@ const downloadRC = () => {
         const subprocess = spawnSync('mvn',
             [
                 '-q',
-                'org.apache.maven.plugins:maven-dependency-plugin:3.6.0:get',
+                'org.apache.maven.plugins:maven-dependency-plugin:2.10:get',
                 '-Dtransitive=false',
                 `-DremoteRepositories=${SNAPSHOT_REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}`,
@@ -67,7 +67,7 @@ const downloadRC = () => {
         const subprocess = spawnSync('mvn',
             [
                 '-q',
-                'org.apache.maven.plugins:maven-dependency-plugin:3.6.0:get',
+                'org.apache.maven.plugins:maven-dependency-plugin:2.10:get',
                 '-Dtransitive=false',
                 `-DremoteRepositories=${TEST_REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast:${HAZELCAST_TEST_VERSION}:jar:tests`,
@@ -89,7 +89,7 @@ const downloadRC = () => {
         console.log(`Downloading: hazelcast sql jar com.hazelcast:hazelcast-sql:${HAZELCAST_VERSION}`);
         const subprocess = spawnSync('mvn', [
             '-q',
-            'org.apache.maven.plugins:maven-dependency-plugin:3.6.0:get',
+            'org.apache.maven.plugins:maven-dependency-plugin:2.10:get',
             '-Dtransitive=false',
             `-DremoteRepositories=${REPO}`,
             `-Dartifact=com.hazelcast:hazelcast-sql:${HAZELCAST_VERSION}`,
@@ -113,7 +113,7 @@ const downloadRC = () => {
                 + `com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}`);
             const subprocess = spawnSync('mvn', [
                 '-q',
-                'org.apache.maven.plugins:maven-dependency-plugin:3.6.0:get',
+                'org.apache.maven.plugins:maven-dependency-plugin:2.10:get',
                 '-Dtransitive=false',
                 `-DremoteRepositories=${ENTERPRISE_REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}`,
@@ -136,7 +136,7 @@ const downloadRC = () => {
             console.log(`Downloading: hazelcast jar com.hazelcast:hazelcast:${HAZELCAST_VERSION}`);
             const subprocess = spawnSync('mvn', [
                 '-q',
-                'org.apache.maven.plugins:maven-dependency-plugin:3.6.0:get',
+                'org.apache.maven.plugins:maven-dependency-plugin:2.10:get',
                 '-Dtransitive=false',
                 `-DremoteRepositories=${REPO}`,
                 `-Dartifact=com.hazelcast:hazelcast:${HAZELCAST_VERSION}`,
