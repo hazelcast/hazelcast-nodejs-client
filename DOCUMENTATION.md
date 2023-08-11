@@ -1431,10 +1431,10 @@ authentication feature which allows the Node.js clients also to have their priva
 to have their certificate authorities so that the members can know which clients they can trust. See the
 [Mutual Authentication section](#913-mutual-authentication).
 
-## 5.6. Enabling Hazelcast Cloud Discovery
+## 5.6. Enabling Hazelcast  Discovery
 
 Hazelcast Node.js client can discover and connect to Hazelcast clusters running on
-[Hazelcast Cloud](https://cloud.hazelcast.com/). For this, provide authentication information as `clusterName` and enable cloud
+[Hazelcast Cloud](https://viridian.hazelcast.com/). For this, provide authentication information as `clusterName` and enable cloud
 discovery by setting your `discoveryToken` as shown below.
 
 ```javascript
