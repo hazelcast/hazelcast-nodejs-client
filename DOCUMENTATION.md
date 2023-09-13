@@ -1434,7 +1434,7 @@ to have their certificate authorities so that the members can know which clients
 ## 5.6. Enabling Hazelcast Discovery
 
 Hazelcast Node.js client can discover and connect to Hazelcast clusters running on
-[Hazelcast Cloud](https://viridian.hazelcast.com/). For this, provide authentication information as `clusterName` and enable cloud
+[Hazelcast Viridian](https://viridian.hazelcast.com/). For this, provide authentication information as `clusterName` and enable cloud
 discovery by setting your `discoveryToken` as shown below.
 
 ```javascript
