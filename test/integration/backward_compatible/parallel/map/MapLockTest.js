@@ -50,6 +50,9 @@ describe('MapLockTest', function () {
         while (attempt++ < MAX_ATTEMPTS) {
             for (let i = 0; i < DEFAULT_PARTITION_COUNT; i++) {
                 const uuid = partitionService.getPartitionOwner(i);
+                if (uuid === null || uuid === undefined) {
+                    continue;
+                }
                 if (uuid.toString() === member.uuid) {
                     return;
                 }
