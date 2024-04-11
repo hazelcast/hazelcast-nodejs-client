@@ -151,8 +151,6 @@ You can use the following channels for your questions and development/usage issu
 * [Complete documentation](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/DOCUMENTATION.md)
 * [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client)
 * [Slack](https://slack.hazelcast.com)
-* [Google Groups](https://groups.google.com/forum/#!forum/hazelcast)
-* [Stack Overflow](https://stackoverflow.com/questions/tagged/hazelcast)
 
 ## Contributing
 
