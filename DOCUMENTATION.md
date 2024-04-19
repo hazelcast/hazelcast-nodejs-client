@@ -4477,8 +4477,6 @@ You can use the following channels for your questions and development/usage issu
 
 * This repository by opening an issue.
 * [Slack](https://slack.hazelcast.com)
-* [Google Groups](https://groups.google.com/forum/#!forum/hazelcast)
-* [Stack Overflow](https://stackoverflow.com/questions/tagged/hazelcast)
 
 # 12. Contributing
 
