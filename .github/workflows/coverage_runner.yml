@@ -46,7 +46,7 @@ jobs:
           - name: Setup Node.js
             uses: actions/setup-node@v4
             with:
-                node-version: lts
+                node-version: lts/*
 
           - name: Checkout code for PR
             if: github.event_name == 'pull_request_target'

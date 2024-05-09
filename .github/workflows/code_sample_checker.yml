@@ -18,7 +18,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: lts
+                  node-version: lts/*
             - name: Checkout code
               uses: actions/checkout@v2
             - name: Install dependencies and compile client
