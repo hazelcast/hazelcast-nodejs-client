@@ -42,10 +42,11 @@ jobs:
             uses: actions/setup-java@v1
             with:
                 java-version: 17
+
           - name: Setup Node.js
-            uses: actions/setup-node@v2
+            uses: actions/setup-node@v4
             with:
-                node-version: 10
+                node-version: lts
 
           - name: Checkout code for PR
             if: github.event_name == 'pull_request_target'
@@ -78,6 +79,11 @@ jobs:
             run: |
                 npm install
                 npm run compile
+
+          - name: Setup Node.js
+            uses: actions/setup-node@v4
+            with:
+                node-version: 10
 
           - name: Run all tests
             env:
