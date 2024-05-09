@@ -4,7 +4,7 @@
         "node": true,
         "es2017": true
     },
-    "extends": "eslint:recommended",
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
     "rules": {
         "arrow-spacing": [
             "warn",
@@ -93,7 +93,9 @@
             ]
         }],
         "space-in-parens": "error",
-        "curly": "error"
+        "curly": "error",
+        "@typescript-eslint/no-duplicate-enum-values": "off",
+        "@typescript-eslint/no-var-requires": "off"
     },
     "parserOptions": {
         "ecmaVersion": 2018
@@ -120,10 +122,12 @@
                 "mocha/prefer-arrow-callback": ["error", {
                     "allowNamedFunctions": true
                 }],
-                "padded-blocks": ["error", "never"]
+                "padded-blocks": ["error", "never"],
+                "@typescript-eslint/no-unused-vars": "off"
             },
             "parserOptions": {
-                "ecmaVersion": 11
+                "ecmaVersion": 11,
+                "sourceType": "commonjs"
             }
         },
         {
@@ -133,6 +137,22 @@
             },
             "parserOptions": {
                 "ecmaVersion": 11
+            }
+        },
+        {
+            "files": ["scripts/**", "benchmark/**"],
+            "parserOptions": {
+                "sourceType": "commonjs"
+            }
+        },
+        {
+            "files": ["code_samples/**/*"],
+            "env": {
+                "es2020": true
+            },
+            "parserOptions": {
+                "ecmaVersion": 11,
+                "sourceType": "commonjs"
             }
         }
     ]

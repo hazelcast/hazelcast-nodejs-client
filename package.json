@@ -9,8 +9,8 @@
         "lib/**/*.d.ts"
     ],
     "dependencies": {
-        "@types/long": "5.2.3",
-        "long": "5.2.3"
+        "@types/long": "4.0.0",
+        "long": "4.0.0"
     },
     "devDependencies": {
         "@istanbuljs/nyc-config-typescript": "~1.0.2",
@@ -19,7 +19,7 @@
         "@typescript-eslint/parser": "~v7.8.0",
         "chai": "~4.3.6",
         "chai-as-promised": "~7.1.1",
-        "eslint": "~9.2.0",
+        "eslint": "~8.56.0",
         "eslint-plugin-mocha": "~9.0.0",
         "husky": "~6.0.0",
         "jsonschema": "~1.4.0",
