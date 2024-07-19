@@ -181,6 +181,24 @@ exports.markEnterprise = function (_this) {
     }
 };
 
+exports.markCPAvailable = async function(_this) {
+    // 5.5>= OS does not have CP anymore.
+    const cpSubsystemNotAvailable = (await exports.compareServerVersionWithRC(RC, '5.5')) >= 0 && exports.isCommunity();
+    if (cpSubsystemNotAvailable) {
+        _this.skip();
+    }
+};
+
+exports.isCommunity = function () {
+    // the following two env vars are set in compat test suite
+    return process.env.SERVER_TYPE === 'enterprise' || process.env.HZ_TYPE === 'enterprise';
+};
+
+exports.isEnterprise = function () {
+    // the following two env vars are set in compat test suite
+    return process.env.SERVER_TYPE === 'oss' || process.env.HZ_TYPE === 'oss';
+};
+
 exports.getRandomConnection = function(client) {
     if (Object.prototype.hasOwnProperty.call(client, 'connectionRegistry')) {
         return client.connectionRegistry.getRandomConnection();

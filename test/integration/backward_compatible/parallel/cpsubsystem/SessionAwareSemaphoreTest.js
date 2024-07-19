@@ -40,6 +40,7 @@ describe('SessionAwareSemaphoreTest', function () {
     }
 
     before(async function () {
+        await TestUtil.markCPAvailable();
         cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'));
         const members = await Promise.all([
