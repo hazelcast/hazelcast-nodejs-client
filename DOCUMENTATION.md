@@ -2828,7 +2828,7 @@ Now you need to configure the `hazelcast.xml` to add your factory as shown below
 
 In this example, the code that runs on the entries is implemented in Java on the server side. The client side entry processor is
 used to specify which entry processor should be called. For more details about the Java implementation of the entry processor,
-see the [Entry Processor section](https://docs.hazelcast.com/hazelcast/latest/computing/entry-processor) in the Hazelcast
+see the [Entry Processor section](https://docs.hazelcast.com/hazelcast/latest/data-structures/entry-processor) in the Hazelcast
 Reference Manual.
 
 After the above implementations and configuration are done and you start the server where your library is added to its
