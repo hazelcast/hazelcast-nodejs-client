@@ -19,13 +19,13 @@ jobs:
                   java-version: 17
                   distribution: temurin
             - name: Setup Node.js
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.nodejs_version }}
             - name: Checkout code
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
             - name: Checkout to test artifacts
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
               with:
                 repository: hazelcast/private-test-artifacts
                 path: certs
