@@ -14,11 +14,17 @@ jobs:
                 nodejs_version: [ 10, 18 ]
             fail-fast: false
         steps:
-            - name: Setup Java
-              uses: actions/setup-java@v2
+            - name: Checkout code
+              uses: actions/checkout@v4
               with:
-                  java-version: 8
-                  distribution: temurin
+                  ref: ${{ matrix.branch }}
+            - name: Read Java Config
+              run: cat .github/java-config.env >> $GITHUB_ENV
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                java-version: ${{ env.JAVA_VERSION }}
+                distribution: ${{ env.JAVA_DISTRIBUTION }}
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
@@ -26,10 +32,6 @@ jobs:
             - name: Disable line ending conversion of git
               if: ${{ matrix.os == 'windows-latest'}}
               run: git config --global core.autocrlf false
-            - name: Checkout code
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ matrix.branch }}
             - name: Install dependencies and compile client
               run: |
                   npm install

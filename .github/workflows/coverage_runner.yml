@@ -38,15 +38,6 @@ jobs:
               os: [ ubuntu-latest, windows-latest ]
 
       steps:
-          - name: Setup Java
-            uses: actions/setup-java@v1
-            with:
-                java-version: 17
-          - name: Setup Node.js
-            uses: actions/setup-node@v4
-            with:
-                node-version: 10
-
           - name: Checkout code for PR
             if: github.event_name == 'pull_request_target'
             uses: actions/checkout@v4
@@ -62,6 +53,18 @@ jobs:
             uses: actions/checkout@v4
             with:
               ref: refs/pull/${{ github.event.inputs.pr_number }}/merge
+
+          - name: Read Java Config
+            run: cat .github/java-config.env >> $GITHUB_ENV
+          - name: Setup Java
+            uses: actions/setup-java@v4
+            with:
+              java-version: ${{ env.JAVA_VERSION }}
+              distribution: ${{ env.JAVA_DISTRIBUTION }}
+          - name: Setup Node.js
+            uses: actions/setup-node@v4
+            with:
+                node-version: 10
 
           - name: Checkout to test artifacts
             uses: actions/checkout@v4
