@@ -11,6 +11,8 @@ jobs:
                 os: [ ubuntu-latest, windows-latest ]
 
         steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
             - name: Read Java Config
               run: cat .github/java-config.env >> $GITHUB_ENV
             - name: Setup Java
@@ -22,8 +24,6 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 10
-            - name: Checkout code
-              uses: actions/checkout@v4
             - name: Install dependencies and compile client
               run: |
                   npm install

@@ -13,6 +13,8 @@ jobs:
                 nodejs_version: [ 10, 18 ]
             fail-fast: false
         steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
             - name: Read Java Config
               run: cat .github/java-config.env >> $GITHUB_ENV
             - name: Setup Java
@@ -24,8 +26,6 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.nodejs_version }}
-            - name: Checkout code
-              uses: actions/checkout@v4
             - name: Checkout to test artifacts
               uses: actions/checkout@v4
               with:

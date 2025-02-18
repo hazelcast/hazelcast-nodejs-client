@@ -14,6 +14,10 @@ jobs:
                 nodejs_version: [ 10, 18 ]
             fail-fast: false
         steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ matrix.branch }}
             - name: Read Java Config
               run: cat .github/java-config.env >> $GITHUB_ENV
             - name: Setup Java
@@ -28,10 +32,6 @@ jobs:
             - name: Disable line ending conversion of git
               if: ${{ matrix.os == 'windows-latest'}}
               run: git config --global core.autocrlf false
-            - name: Checkout code
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ matrix.branch }}
             - name: Install dependencies and compile client
               run: |
                   npm install
