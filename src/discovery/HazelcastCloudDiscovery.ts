@@ -26,7 +26,7 @@ import {HazelcastError} from '../core';
 
 /**
  * Discovery service that discovers nodes via hazelcast.cloud
- * https://api.viridian.hazelcast.com/cluster/discovery?token=<TOKEN>
+ * https://api.cloud.hazelcast.com/cluster/discovery?token=<TOKEN>
  * @internal
  */
 export class HazelcastCloudDiscovery {
