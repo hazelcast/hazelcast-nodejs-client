@@ -18,11 +18,16 @@ jobs:
       - name: Get supported Node.js versions
         id: get_versions
         run: |
+          # Look for versions that are:
+          # - Currently supported
+          # - That are LTS
+          # - Within LTS date range (i.e. not future LTS)
           NODE_VERSIONS=$(curl --silent https://raw.githubusercontent.com/nodejs/Release/main/schedule.json | jq --compact-output '
               def today: now | strftime("%Y-%m-%d");
               to_entries
-              | map(select(.value.end > today))
+              | map(select(.value.end > today and .value.lts != null and .value.lts < today))
               | [.[0].key, .[-1].key]
+              | unique
           ')
 
           echo "node-versions=${NODE_VERSIONS}" >> ${GITHUB_OUTPUT}
