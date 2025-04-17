@@ -8,15 +8,19 @@ on:
     pull_request:
 
 jobs:
+    node-versions:
+      uses: ./.github/workflows/get-supported-node-versions.yml
+
     check-code-quality:
         name: Check code quality
         runs-on: ubuntu-latest
+        needs: node-versions
 
         steps:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 12
+                  node-version: ${{ needs.node-versions.outputs.default-version }}
             - name: Checkout code
               uses: actions/checkout@v4
             - name: Install dependencies
