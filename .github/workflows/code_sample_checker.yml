@@ -2,9 +2,13 @@ name: Code sample checker
 on: pull_request
 
 jobs:
+    node-versions:
+      uses: ./.github/workflows/get-supported-node-versions.yml
+
     test-code-samples:
         name: Check code samples
         runs-on: ${{matrix.os}}
+        needs: node-versions
 
         strategy:
             matrix:
@@ -23,7 +27,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 10
+                  node-version: ${{ needs.node-versions.outputs.default-version }}
             - name: Install dependencies and compile client
               run: |
                   npm install
