@@ -43,7 +43,7 @@ const downloadRC = () => {
             + HAZELCAST_RC_VERSION);
         const subprocess = spawnSync('mvn',
             [
-                '-q',
+                '-X',
                 'org.apache.maven.plugins:maven-dependency-plugin:2.10:get',
                 '-Dtransitive=false',
                 `-DremoteRepositories=${SNAPSHOT_REPO}`,
