@@ -55,6 +55,7 @@ jobs:
               ref: refs/pull/${{ github.event.inputs.pr_number }}/merge
 
           - name: Read Java Config
+            shell: bash
             run: cat .github/java-config.env >> $GITHUB_ENV
           - name: Setup Java
             uses: actions/setup-java@v4
