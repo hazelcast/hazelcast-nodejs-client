@@ -97,23 +97,29 @@ jobs:
 
           - name: Publish results to Codecov for PR coming from hazelcast organization
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'pull_request_target' }}
-            uses: codecov/codecov-action@v3
+            uses: codecov/codecov-action@v5
             with:
+              token: ${{ secrets.CODECOV_TOKEN }}
               files: coverage/lcov.info
               override_pr: ${{ github.event.pull_request.number }}
+              fail_ci_if_error: true
 
           - name: Publish results to Codecov for Push
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'push' }}
-            uses: codecov/codecov-action@v3
+            uses: codecov/codecov-action@v5
             with:
+              token: ${{ secrets.CODECOV_TOKEN }}
               files: coverage/lcov.info
+              fail_ci_if_error: true
 
           - name: Publish result to Codecov for PR coming from community
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'workflow_dispatch' }}
-            uses: codecov/codecov-action@v3
+            uses: codecov/codecov-action@v5
             with:
+              token: ${{ secrets.CODECOV_TOKEN }}
               files: coverage/lcov.info
               override_pr: ${{ github.event.inputs.pr_number }}
+              fail_ci_if_error: true
 
           - name: Upload remote controller logs if test run fails
             uses: actions/upload-artifact@v4
