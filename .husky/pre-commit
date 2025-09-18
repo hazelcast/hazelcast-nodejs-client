@@ -1,6 +1,9 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm run compile
-npm run lint
-npm run validate-user-code
+# See https://github.com/typicode/husky/issues/1072#issuecomment-1784006332
+npm_exec=$([[ $OS == "Windows_NT" ]] && echo "npm.cmd" || echo "npm")
+
+"${npm_exec}" run compile
+"${npm_exec}" run lint
+"${npm_exec}" run validate-user-code
