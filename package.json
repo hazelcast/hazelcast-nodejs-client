@@ -21,7 +21,7 @@
         "chai-as-promised": "~7.1.1",
         "eslint": "~8.28.0",
         "eslint-plugin-mocha": "~9.0.0",
-        "husky": "~6.0.0",
+        "husky": "~9.1.7",
         "jsonschema": "~1.5.0",
         "markdown-link-check": "~3.13.7",
         "markdownlint-cli": "~0.32.2",
