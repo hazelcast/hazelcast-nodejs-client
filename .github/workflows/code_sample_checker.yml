@@ -36,3 +36,12 @@ jobs:
             - name: Check code samples
               run: |
                   npm run check-code-samples
+
+            - name: Upload remote controller logs if test run fails
+              uses: actions/upload-artifact@v4
+              if: failure()
+              with:
+                  name: rc-logs-${{ matrix.os }}
+                  path: |
+                      rc_stderr.log
+                      rc_stdout.log
