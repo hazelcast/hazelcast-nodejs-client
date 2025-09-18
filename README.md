@@ -22,7 +22,7 @@
 
 ## What is Hazelcast?
 
-[Hazelcast](https://hazelcast.com/) is a distributed computation and storage platform for consistently low-latency querying,
+[Hazelcast](https://hazelcast.com/) is aPR builder test and storage platform for consistently low-latency querying,
 aggregation and stateful computation against event streams and traditional data sources. It allows you to quickly build
 resource-efficient, real-time applications. You can deploy it at any scale from small edge devices to a large cluster of
 cloud instances.
