@@ -6,7 +6,7 @@ const HAZELCAST_VERSION = HZ_VERSION;
 const HAZELCAST_ENTERPRISE_VERSION = HZ_VERSION;
 const HAZELCAST_RC_VERSION = '0.8-SNAPSHOT';
 const SNAPSHOT_REPO = 'https://oss.sonatype.org/content/repositories/snapshots';
-const RELEASE_REPO = 'http://repo.maven.apache.org/maven2';
+const RELEASE_REPO = 'https://repo.maven.apache.org/maven2';
 const ENTERPRISE_RELEASE_REPO = 'https://repository.hazelcast.com/release/';
 const ENTERPRISE_SNAPSHOT_REPO = 'https://repository.hazelcast.com/snapshot/';
 
