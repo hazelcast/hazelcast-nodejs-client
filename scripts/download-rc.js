@@ -33,7 +33,7 @@ const downloadRC = () => {
         TEST_REPO = RELEASE_REPO;
     }
 
-    downloadArtifact(SNAPSHOT_REPO, 'hazelcast-remote-controller', HAZELCAST_RC_VERSION);
+    downloadArtifact(ENTERPRISE_SNAPSHOT_REPO, 'hazelcast-remote-controller', HAZELCAST_RC_VERSION);
     downloadArtifact(TEST_REPO, 'hazelcast', HAZELCAST_TEST_VERSION, HAZELCAST_TEST_VERSION, 'tests');
     downloadArtifact(REPO, 'hazelcast-sql', HAZELCAST_VERSION);
 
