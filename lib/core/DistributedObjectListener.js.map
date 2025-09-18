@@ -1,0 +1,1 @@
+{"version":3,"file":"DistributedObjectListener.js","sourceRoot":"","sources":["../../src/core/DistributedObjectListener.ts"],"names":[],"mappings":";AAAA;;;;;;;;;;;;;;GAcG;;;AAQH;;;GAGG;AACH,MAAa,sBAAsB;IAiB/B,YAAY,SAAiB,EAAE,WAAmB,EAAE,UAAkB;QAClE,IAAI,CAAC,SAAS,GAAG,SAAS,CAAC;QAC3B,IAAI,CAAC,WAAW,GAAG,WAAW,CAAC;QAC/B,IAAI,CAAC,UAAU,GAAG,UAAU,CAAC;IACjC,CAAC;CAEJ;AAvBD,wDAuBC"}

@@ -1,7 +1,0 @@
-{
-    "network": {
-        "hazelcastCloud": {
-            "discoveryToken": null
-        }
-    }
-}

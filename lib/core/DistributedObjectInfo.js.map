@@ -1,0 +1,1 @@
+{"version":3,"file":"DistributedObjectInfo.js","sourceRoot":"","sources":["../../src/core/DistributedObjectInfo.ts"],"names":[],"mappings":";AAAA;;;;;;;;;;;;;;GAcG;AACH,cAAc,CAAA,MAAM;;;AAEpB,gBAAgB;AAChB,MAAa,qBAAqB;IAI9B,YAAY,WAAmB,EAAE,IAAY;QACzC,IAAI,CAAC,WAAW,GAAG,WAAW,CAAC;QAC/B,IAAI,CAAC,IAAI,GAAG,IAAI,CAAC;IACrB,CAAC;CACJ;AARD,sDAQC"}

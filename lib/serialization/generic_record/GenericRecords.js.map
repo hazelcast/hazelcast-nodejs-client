@@ -1,0 +1,1 @@
+{"version":3,"file":"GenericRecords.js","sourceRoot":"","sources":["../../../src/serialization/generic_record/GenericRecords.ts"],"names":[],"mappings":";;;AAgBA,iEAAgE;AAGhE;;;;GAIG;AACH,MAAa,cAAc;IACvB;;;;;;;;;OASG;IACH,MAAM,CAAC,OAAO,CACV,QAAgB,EAChB,MAAS,EACT,MAA6E;QAE7E,OAAO,IAAI,+CAAwB,CAAC,QAAQ,EAAE,MAAM,EAAE,MAAM,CAAC,CAAC;IAClE,CAAC;CACJ;AAlBD,wCAkBC"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"ListCNLongCodec.js","sourceRoot":"","sources":["../../../src/codec/builtin/ListCNLongCodec.ts"],"names":[],"mappings":";;;AAEA,iEAA4D;AAC5D,kDAA6C;AAC7C,6DAAwD;AAExD,gBAAgB;AAChB,MAAa,eAAe;IACxB,MAAM,CAAC,MAAM,CAAC,aAA4B;QACtC,OAAO,2CAAoB,CAAC,MAAM,CAAC,aAAa,CAAC,SAAS,EAAE,EAAE,mBAAQ,CAAC,kBAAkB,EAAE,uCAAkB,CAAC,UAAU,CAAC,CAAC;IAC9H,CAAC;CACJ;AAJD,0CAIC"}
