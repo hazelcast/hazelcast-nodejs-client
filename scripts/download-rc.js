@@ -44,7 +44,7 @@ const downloadRC = () => {
     }
 
     function downloadArtifact(repo, artifactId, version, classifier = '') {
-        const filename = classifier ? `hazelcast-${version}-${classifier}.jar` : `hazelcast-${version}.jar`;
+        const filename = classifier ? `${artifactId}-${version}-${classifier}.jar` : `hazelcast-${version}.jar`;
         let artifact = `com.hazelcast:${artifactId}:${version}:jar`;
         if (classifier) {
             artifact += `:${classifier}`;
