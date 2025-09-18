@@ -34,7 +34,7 @@ const downloadRC = () => {
     }
 
     downloadArtifact(ENTERPRISE_SNAPSHOT_REPO, 'hazelcast-remote-controller', HAZELCAST_RC_VERSION);
-    downloadArtifact(TEST_REPO, 'hazelcast', HAZELCAST_TEST_VERSION, HAZELCAST_TEST_VERSION, 'tests');
+    downloadArtifact(TEST_REPO, 'hazelcast', HAZELCAST_TEST_VERSION, 'tests');
     downloadArtifact(REPO, 'hazelcast-sql', HAZELCAST_VERSION);
 
     if (process.env.HAZELCAST_ENTERPRISE_KEY) {
@@ -45,7 +45,7 @@ const downloadRC = () => {
 
     function downloadArtifact(repo, artifactId, version, classifier = '') {
         const filename = classifier ? `hazelcast-${version}-${classifier}.jar` : `hazelcast-${version}.jar`;
-        let artifact = `com.hazelcast:${artifactId}:${version}:jar`;
+        let artifact = `com.hazelcast:${artifactId}:${version}`;
         if (classifier) {
             artifact += `:${classifier}`;
         }
