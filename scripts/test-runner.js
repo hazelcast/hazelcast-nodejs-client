@@ -68,7 +68,7 @@ const getRC = () => {
 };
 
 const startRC = async () => {
-    console.log('Starting Hazelcast Remote Controller ... oss ...');
+    console.log('Starting Hazelcast Remote Controller ...');
     if (ON_WINDOWS) {
         const outFD = fs.openSync('rc_stdout.log', 'w');
         const errFD = fs.openSync('rc_stderr.log', 'w');

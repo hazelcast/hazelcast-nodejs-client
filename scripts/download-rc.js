@@ -60,7 +60,7 @@ const downloadRC = () => {
                 '-Dtransitive=false',
                 `-DremoteRepositories=${repo}`,
                 `-Dartifact=${artifact}`,
-                `-Ddest=hazelcast-${filename}`
+                `-Ddest=${filename}`
             ], {
                 stdio: 'inherit',
                 shell: os.platform() === 'win32'
