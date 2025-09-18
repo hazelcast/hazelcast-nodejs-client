@@ -39,7 +39,7 @@
   * [5.3. Enabling Redo Operation](#53-enabling-redo-operation)
   * [5.4. Setting Connection Timeout](#54-setting-connection-timeout)
   * [5.5. Enabling Client TLS/SSL](#55-enabling-client-tlsssl)
-  * [5.6. Enabling Hazelcast Viridian Discovery](#56-enabling-hazelcast-viridian-discovery)
+  * [5.6. Enabling Hazelcast Cloud Discovery](#56-enabling-hazelcast-cloud-discovery)
   * [5.7. Configuring Backup Acknowledgment](#57-configuring-backup-acknowledgment)
   * [5.8. External Client Public Address Discovery](#58-external-client-public-address-discovery)
 * [6. Client Connection Strategy](#6-client-connection-strategy)
@@ -1431,10 +1431,10 @@ authentication feature which allows the Node.js clients also to have their priva
 to have their certificate authorities so that the members can know which clients they can trust. See the
 [Mutual Authentication section](#913-mutual-authentication).
 
-## 5.6. Enabling Hazelcast Viridian Discovery
+## 5.6. Enabling Hazelcast Cloud Discovery
 
 Hazelcast Node.js client can discover and connect to Hazelcast clusters running on
-[Hazelcast Viridian](https://viridian.hazelcast.com/). For this, provide authentication information as `clusterName` and enable cloud
+[Hazelcast Cloud](https://cloud.hazelcast.com/). For this, provide authentication information as `clusterName` and enable cloud
 discovery by setting your `discoveryToken` as shown below.
 
 ```javascript
