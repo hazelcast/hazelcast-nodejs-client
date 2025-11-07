@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://github.com/hazelcast/hazelcast-nodejs-client/">
-        <img class="center" src="https://hazelcast.com/files/brand-images/logo/hazelcast-logo.svg" alt="logo">
+        <img src="https://hazelcast.com/files/brand-images/logo/hazelcast-logo.svg" alt="logo">
     </a>
     <h2 align="center">Hazelcast Node.js Client</h2>
 </p>
