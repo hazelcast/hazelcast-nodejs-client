@@ -2,25 +2,33 @@ name: Code sample checker
 on: pull_request
 
 jobs:
+    node-versions:
+      uses: ./.github/workflows/get-supported-node-versions.yml
+
     test-code-samples:
         name: Check code samples
         runs-on: ${{matrix.os}}
+        needs: node-versions
 
         strategy:
             matrix:
                 os: [ ubuntu-latest, windows-latest ]
 
         steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Read Java Config
+              shell: bash
+              run: cat .github/java-config.env >> $GITHUB_ENV
             - name: Setup Java
               uses: actions/setup-java@v4
               with:
-                  java-version: 17
+                java-version: ${{ env.JAVA_VERSION }}
+                distribution: ${{ env.JAVA_DISTRIBUTION }}
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 10
-            - name: Checkout code
-              uses: actions/checkout@v4
+                  node-version: ${{ needs.node-versions.outputs.default-version }}
             - name: Install dependencies and compile client
               run: |
                   npm install
@@ -28,3 +36,12 @@ jobs:
             - name: Check code samples
               run: |
                   npm run check-code-samples
+
+            - name: Upload remote controller logs if test run fails
+              uses: actions/upload-artifact@v4
+              if: failure()
+              with:
+                  name: rc-logs-${{ matrix.os }}
+                  path: |
+                      rc_stderr.log
+                      rc_stdout.log

@@ -39,7 +39,7 @@
   * [5.3. Enabling Redo Operation](#53-enabling-redo-operation)
   * [5.4. Setting Connection Timeout](#54-setting-connection-timeout)
   * [5.5. Enabling Client TLS/SSL](#55-enabling-client-tlsssl)
-  * [5.6. Enabling Hazelcast Viridian Discovery](#56-enabling-hazelcast-viridian-discovery)
+  * [5.6. Enabling Hazelcast Cloud Discovery](#56-enabling-hazelcast-cloud-discovery)
   * [5.7. Configuring Backup Acknowledgment](#57-configuring-backup-acknowledgment)
   * [5.8. External Client Public Address Discovery](#58-external-client-public-address-discovery)
 * [6. Client Connection Strategy](#6-client-connection-strategy)
@@ -699,19 +699,19 @@ When Hazelcast Node.js client serializes an object:
 
 4. If the above check fails, then it checks if it is an instance of one of the default types (see above default types).
 
-5. If the above check fails, then it looks for a user-specified [Custom Serialization](#43-custom-serialization).
+5. If the above check fails, then it looks for a user-specified [Custom Serialization](#44-custom-serialization).
 
-6. If the above check fails, it will use the registered [Global Serialization](#44-global-serialization) if one exists.
+6. If the above check fails, it will use the registered [Global Serialization](#45-global-serialization) if one exists.
 
 7. If the above check fails, then the Node.js client uses `JSON Serialization` by default.
 
 However, `JSON Serialization` may not be the best way of serialization in terms of performance and interoperability between
 the clients in different languages. If you want the serialization to work faster or you use the clients in different languages,
 Hazelcast offers its own native serialization methods, such as
-[`IdentifiedDataSerializable` Serialization](#41-identifieddataserializable-serialization) and
-[`Portable` Serialization](#42-portable-serialization).
+[`IdentifiedDataSerializable` Serialization](#42-identifieddataserializable-serialization) and
+[`Portable` Serialization](#43-portable-serialization).
 
-Or, if you want to use your own serialization method, you can use [Custom Serialization](#43-custom-serialization).
+Or, if you want to use your own serialization method, you can use [Custom Serialization](#44-custom-serialization).
 
 > **NOTE: Hazelcast Node.js client is a TypeScript-based project but JavaScript does not have interfaces. Therefore, some
 > interfaces are given to the user by using the TypeScript files that have `.ts` extension. In this guide, implementing an
@@ -1431,10 +1431,10 @@ authentication feature which allows the Node.js clients also to have their priva
 to have their certificate authorities so that the members can know which clients they can trust. See the
 [Mutual Authentication section](#913-mutual-authentication).
 
-## 5.6. Enabling Hazelcast Viridian Discovery
+## 5.6. Enabling Hazelcast Cloud Discovery
 
 Hazelcast Node.js client can discover and connect to Hazelcast clusters running on
-[Hazelcast Viridian](https://viridian.hazelcast.com/). For this, provide authentication information as `clusterName` and enable cloud
+[Hazelcast Cloud](https://cloud.hazelcast.com/). For this, provide authentication information as `clusterName` and enable cloud
 discovery by setting your `discoveryToken` as shown below.
 
 ```javascript
@@ -3567,7 +3567,7 @@ results of your query are ready, they are parsed from JSON strings and returned 
 
 For the purposes of your application, you may want to get rid of the parsing and just work with the raw JSON strings using
 `HazelcastJsonValue` objects. Then, you can configure your client to do so as described in the
-[JSON Serialization](#45-json-serialization) section.
+[JSON Serialization](#46-json-serialization) section.
 
 ```javascript
 const client = await Client.newHazelcastClient({

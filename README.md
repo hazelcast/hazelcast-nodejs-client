@@ -138,7 +138,7 @@ Refer to [the documentation](DOCUMENTATION.md) to learn more about supported con
 * Cluster-wide unique ID generator, called **FlakeIdGenerator**
 * Distributed, CRDT based counter, called **PNCounter**
 * Distributed concurrency primitives from CP Subsystem such as **FencedLock**, **Semaphore**, **AtomicLong**
-* Integration with [Hazelcast Viridian](https://viridian.hazelcast.com/)
+* Integration with [Hazelcast Cloud](https://cloud.hazelcast.com/)
 * Support for serverless and traditional web service architectures with **Unisocket** and **Smart** operation modes
 * Ability to listen client lifecycle, cluster state and distributed data structure events
 * and [many more](https://hazelcast.com/clients/node-js/#client-features).
