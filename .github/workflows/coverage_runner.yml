@@ -38,6 +38,8 @@ jobs:
         - node-versions
       if: github.event_name == 'push' || needs.check_for_membership.outputs.check-result == 'true' || github.event_name == 'workflow_dispatch'
       runs-on: ${{ matrix.os }}
+      permissions:
+        id-token: write
       strategy:
           matrix:
               os: [ ubuntu-latest, windows-latest ]
@@ -99,7 +101,7 @@ jobs:
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'pull_request_target' }}
             uses: codecov/codecov-action@v5
             with:
-              token: ${{ secrets.CODECOV_TOKEN }}
+              use_oidc: true
               files: coverage/lcov.info
               override_pr: ${{ github.event.pull_request.number }}
               fail_ci_if_error: true
@@ -108,7 +110,7 @@ jobs:
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'push' }}
             uses: codecov/codecov-action@v5
             with:
-              token: ${{ secrets.CODECOV_TOKEN }}
+              use_oidc: true
               files: coverage/lcov.info
               fail_ci_if_error: true
 
@@ -116,7 +118,7 @@ jobs:
             if: ${{ matrix.os == 'ubuntu-latest' && github.event_name == 'workflow_dispatch' }}
             uses: codecov/codecov-action@v5
             with:
-              token: ${{ secrets.CODECOV_TOKEN }}
+              use_oidc: true
               files: coverage/lcov.info
               override_pr: ${{ github.event.inputs.pr_number }}
               fail_ci_if_error: true
