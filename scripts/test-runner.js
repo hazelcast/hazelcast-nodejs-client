@@ -1,17 +1,8 @@
 'use strict';
 const fs = require('fs');
 const os = require('os');
-const net = require('net');
 const {spawnSync, spawn} = require('child_process');
 const codeSampleChecker = require('./code-sample-checker');
-
-const {
-    HAZELCAST_RC_VERSION,
-    HAZELCAST_TEST_VERSION,
-    HAZELCAST_ENTERPRISE_VERSION,
-    HAZELCAST_VERSION,
-    downloadRC
-} = require('./download-rc.js');
 
 const DEV_CLUSTER_CONFIG = `
     <hazelcast xmlns="http://www.hazelcast.com/schema/config"
@@ -23,8 +14,6 @@ const DEV_CLUSTER_CONFIG = `
     </hazelcast>
 `;
 const ON_WINDOWS = os.platform() === 'win32';
-const HAZELCAST_ENTERPRISE_KEY = process.env.HAZELCAST_ENTERPRISE_KEY ? process.env.HAZELCAST_ENTERPRISE_KEY : '';
-const PATH_SEPARATOR = ON_WINDOWS ? ';' : ':';
 
 let cluster; // We create a cluster for checking code samples
 
@@ -33,95 +22,10 @@ let testType;
 let rcProcess;
 let testProcess;
 let runTests = true;
-let CLASSPATH = `hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar${PATH_SEPARATOR}`
-              + `hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar${PATH_SEPARATOR}`
-              + `hazelcast-sql-${HAZELCAST_VERSION}.jar${PATH_SEPARATOR}`;
-
-if (HAZELCAST_ENTERPRISE_KEY) {
-    CLASSPATH = `hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar${PATH_SEPARATOR}`
-              + `certs.jar${PATH_SEPARATOR}`
-              + CLASSPATH;
-} else {
-    CLASSPATH = `hazelcast-${HAZELCAST_VERSION}.jar${PATH_SEPARATOR}${CLASSPATH}`;
-}
-
-const isAddressReachable = (host, port, timeoutMs) => {
-    return new Promise((resolve) => {
-        const socket = new net.Socket();
-        socket.setTimeout(timeoutMs);
-        const onError = () => {
-            socket.destroy();
-            resolve(false);
-        };
-        socket.once('error', onError);
-        socket.once('timeout', onError);
-        socket.connect(port, host, () => {
-            socket.end();
-            resolve(true);
-        });
-    });
-};
 
 // Import lazily to defer side affect of the import (connection attempt to 9701)
 const getRC = () => {
     return require('../test/integration/RC');
-};
-
-const startRC = async () => {
-    console.log('Starting Hazelcast Remote Controller ...');
-    if (ON_WINDOWS) {
-        const outFD = fs.openSync('rc_stdout.log', 'w');
-        const errFD = fs.openSync('rc_stderr.log', 'w');
-        rcProcess = spawn('java', [
-            `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
-            '-cp',
-            CLASSPATH,
-            'com.hazelcast.remotecontroller.Main'
-        ], {
-            stdio: [
-                'ignore',
-                outFD,
-                errFD
-            ]
-        });
-        rcProcess.on('close', () => {
-            fs.closeSync(outFD);
-            fs.closeSync(errFD);
-        });
-    } else {
-        const outFD = fs.openSync('rc_stdout.log', 'w');
-        const errFD = fs.openSync('rc_stderr.log', 'w');
-        rcProcess = spawn('java', [
-            `-Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY}`,
-            '-cp',
-            CLASSPATH,
-            'com.hazelcast.remotecontroller.Main'
-        ], {
-            stdio: [
-                'ignore',
-                outFD,
-                errFD
-            ]
-        });
-        rcProcess.on('close', () => {
-            fs.closeSync(outFD);
-            fs.closeSync(errFD);
-        });
-    }
-
-    console.log('Please wait for Hazelcast Remote Controller to start ...');
-
-    const retryCount = 100;
-
-    for (let i = 0; i < retryCount; i++) {
-        console.log('Trying to connect to Hazelcast Remote Controller (127.0.0.1:9701)...');
-        const addressReachable = await isAddressReachable('127.0.0.1', 9701, 5000);
-        if (addressReachable) {
-            return;
-        }
-        await new Promise(r => setTimeout(r, 1000));
-    }
-    throw `Could not reach to Hazelcast Remote Controller (127.0.0.1:9701) after trying ${retryCount} times.`;
 };
 
 const shutdown = async () => {
@@ -229,19 +133,11 @@ if (testType === 'unit') {
     process.exit(subprocess.status);
 }
 
-// For other tests, download rc files if needed.
-try {
-    downloadRC();
-} catch (err) {
-    console.log('An error occurred downloading remote controller:');
-    throw err;
-}
-
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 process.on('SIGHUP', shutdown);
 
-startRC().then(async () => {
+(async () => {
     console.log('Hazelcast Remote Controller is started!');
     if (runTests) {
         console.log(`Running ${testType}, Command: ${testCommand}`);
@@ -265,7 +161,7 @@ startRC().then(async () => {
             process.exit(exitCode);
         }
     }
-}).catch(err => {
+})().catch(err => {
     console.log('Could not start Hazelcast Remote Controller due to an error:');
     throw err;
 });
