@@ -87,7 +87,7 @@ jobs:
                     HAZELCAST_ENTERPRISE_KEY,CN/HZ_LICENSE_KEY
 
           - name: Checkout to certificates
-            uses: actions/checkout@v3
+            uses: actions/checkout@v4
             with:
                 repository: hazelcast/private-test-artifacts
                 path: certs
