@@ -326,7 +326,10 @@ export class DefaultCompactWriter implements CompactWriter {
             }
         } else if (dataLength < SHORT_OFFSET_READER_RANGE) {
             for (const offset of offsets) {
-                this.out.writeShort(offset);
+                // Convert to signed 16-bit representation for values > 32767
+                // The reader will convert back using offset & 0xFFFF
+                const signedOffset = offset > 32767 ? offset - 65536 : offset;
+                this.out.writeShort(signedOffset);
             }
         } else {
             for (const offset of offsets) {

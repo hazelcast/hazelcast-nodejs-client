@@ -48,6 +48,57 @@ const TestUtil = require('../../../TestUtil');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 
+// Class and serializer for testing large arrays with offsets > 32767
+class LargeStringItem {
+    constructor(data) {
+        this.data = data;
+    }
+}
+
+class LargeStringItemSerializer {
+    getClass() {
+        return LargeStringItem;
+    }
+
+    getTypeName() {
+        return 'LargeStringItem';
+    }
+
+    read(reader) {
+        const data = reader.readString('data');
+        return new LargeStringItem(data);
+    }
+
+    write(writer, value) {
+        writer.writeString('data', value.data);
+    }
+}
+
+class LargeArrayContainer {
+    constructor(items) {
+        this.items = items;
+    }
+}
+
+class LargeArrayContainerSerializer {
+    getClass() {
+        return LargeArrayContainer;
+    }
+
+    getTypeName() {
+        return 'LargeArrayContainer';
+    }
+
+    read(reader) {
+        const items = reader.readArrayOfCompact('items');
+        return new LargeArrayContainer(items);
+    }
+
+    write(writer, value) {
+        writer.writeArrayOfCompact('items', value.items);
+    }
+}
+
 describe('CompactTest', function () {
     let serializationService;
 
@@ -305,5 +356,41 @@ describe('CompactTest', function () {
         });
         error.should.be.instanceOf(IllegalArgumentError);
         error.message.includes('Compact serializer for the class').should.be.true;
+    });
+
+    it('should handle array of compact with offsets exceeding signed short max (32767)', async function() {
+        // This test reproduces a bug where writeOffsets uses writeShort (signed 16-bit)
+        // but offset values can exceed 32767 when dataLength is between 255 and 65535.
+        // The bug causes RangeError: value out of range for signed int16.
+
+        const {serializationService, schemaService} = createSerializationService(
+            [new LargeStringItemSerializer(), new LargeArrayContainerSerializer()]
+        );
+
+        // Create items with large strings so that offsets exceed 32767 bytes
+        // Each item is ~5KB. With 8 items:
+        // - Item 7's offset = 7 * 5000 = 35000 > 32767 (signed short max)
+        // - Total data = 8 * 5000 = 40000 < 65535 (so SHORT_OFFSET encoding is used)
+        // This triggers the bug where writeShort fails for values > 32767.
+        const itemSize = 5000;
+        const itemCount = 8;
+
+        const largeString = 'x'.repeat(itemSize);
+        const items = [];
+        for (let i = 0; i < itemCount; i++) {
+            items.push(new LargeStringItem(largeString));
+        }
+
+        const container = new LargeArrayContainer(items);
+
+        // This should not throw RangeError for offset values > 32767
+        const data = await serialize(serializationService, schemaService, container);
+
+        // Verify round-trip works correctly
+        const deserialized = serializationService.toObject(data);
+        deserialized.items.length.should.equal(itemCount);
+        for (let i = 0; i < itemCount; i++) {
+            deserialized.items[i].data.should.equal(largeString);
+        }
     });
 });
