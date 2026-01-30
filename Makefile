@@ -4,7 +4,7 @@ build:
 	npm run compile
 
 lint:
-	npm lint
+	npm run lint
 
 test: build lint
 	npm test
