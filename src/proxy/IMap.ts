@@ -343,6 +343,10 @@ export interface IMap<K, V> extends DistributedObject {
      * Releases the lock for the specified key regardless of the owner.
      * This operation always unlocks the key.
      *
+     * **Warning:** This method should be used with caution.
+     * It releases the lock even if it was acquired by another client.
+     * That can lead to data inconsistencies if not used properly.
+     *
      * @param key the key of the map entry
      * @throws AssertionError if `key` is `null`
      */
@@ -350,6 +354,8 @@ export interface IMap<K, V> extends DistributedObject {
 
     /**
      * Checks whether given key is locked.
+     *
+     * This method returns `true` if the key is locked by any client.
      *
      * @param key the key of the map entry
      * @throws AssertionError if `key` is `null`
@@ -372,6 +378,10 @@ export interface IMap<K, V> extends DistributedObject {
      * lock multiple times. If the lock was acquired multiple times, then `unlock()`
      * method must be called the same amount of times, otherwise the lock will
      * remain unavailable.
+     *
+     * **Important:**
+     * In the Node.js client, all lock operations from the same client instance share the same lock ownership.
+     * This differs from the Java client where each thread has separate lock ownership.
      *
      * @param key the key of the map entry
      * @param leaseTime lock is automatically unlocked after `leaseTime`
@@ -541,6 +551,9 @@ export interface IMap<K, V> extends DistributedObject {
      * the lock multiple times. If the lock was acquired multiple times, then
      * `unlock()` method must be called the same amount of times, otherwise the
      * lock will remain unavailable.
+     *
+     * **Important:**
+     * In the Node.js client, all lock operations from the same client instance share the same lock ownership.
      *
      * @param key the key of the map entry
      * @param timeout server waits for `timeout` milliseconds to acquire
