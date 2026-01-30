@@ -665,11 +665,11 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
         }, this.connectionTimeoutMillis);
 
         socket.once('secureConnect', () => {
-            clearInterval(connectTimeoutTimer);
+            clearTimeout(connectTimeoutTimer);
             connectionResolver.resolve(socket);
         });
         socket.once('error', (err) => {
-            clearInterval(connectTimeoutTimer);
+            clearTimeout(connectTimeoutTimer);
             connectionResolver.reject(err);
         });
 

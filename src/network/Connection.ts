@@ -62,6 +62,7 @@ export class PipelinedWriter extends Writer {
     private canWrite = true;
     // reusable buffer for coalescing
     private readonly coalesceBuf: Buffer;
+    private readonly drainListener: () => void;
 
     constructor(
         private readonly socket: net.Socket,
@@ -72,11 +73,13 @@ export class PipelinedWriter extends Writer {
         super();
         this.coalesceBuf = Buffer.allocUnsafe(threshold);
 
-        // write queued items on drain event
-        socket.on('drain', () => {
+        this.drainListener = () => {
             this.canWrite = true;
             this.schedule();
-        });
+        }
+
+        // write queued items on drain event
+        socket.on('drain', this.drainListener);
     }
 
     write(message: ClientMessage, resolver: DeferredPromise<void>): void {
@@ -94,6 +97,7 @@ export class PipelinedWriter extends Writer {
         }
         this.error = this.makeIOError(error);
         this.canWrite = false;
+        this.socket.off('drain', this.drainListener);
         // If we pass an error to destroy, an unhandled error will be thrown because we don't handle the error event
         // So we don't pass anything to the socket. It is internal anyway.
         this.socket.destroy();
@@ -214,6 +218,8 @@ export class DirectWriter extends Writer {
     }
 
     close(cause: Error): void {
+        // Remove all listeners from this emitter
+        this.removeAllListeners('write');
         this.socket.destroy();
     }
 }
@@ -351,6 +357,8 @@ export class Connection {
     private readonly writer: Writer;
     private readonly reader: ClientMessageReader;
     private readonly fragmentedMessageHandler: FragmentedClientMessageHandler;
+    private dataListener: ((buffer: Buffer) => void) | null = null;
+    private writeListener: (() => void) | null = null;
 
     constructor(
         private readonly connectionManager: ConnectionManager,
@@ -374,9 +382,10 @@ export class Connection {
         this.connectedServerVersion = BuildInfo.UNKNOWN_VERSION_ID;
         this.writer = enablePipelining ? new PipelinedWriter(this.socket, pipeliningThreshold, this.incrementBytesWrittenFn)
             : new DirectWriter(this.socket, this.incrementBytesWrittenFn);
-        this.writer.on('write', () => {
+        this.writeListener = () => {
             this.lastWriteTimeMillis = Date.now();
-        });
+        }
+        this.writer.on('write', this.writeListener);
         this.reader = new ClientMessageReader();
         this.fragmentedMessageHandler = new FragmentedClientMessageHandler(this.logger);
     }
@@ -437,9 +446,26 @@ export class Connection {
 
         this.logClose();
 
+        // Remove socket listeners before closing
+        this.removeListeners();
+
         this.writer.close(this.closedCause ? this.closedCause : new Error(reason ? reason : 'Connection closed'));
 
         this.connectionManager.onConnectionClose(this);
+    }
+
+    /**
+     * Removes all registered listeners from the socket and writer.
+     */
+    private removeListeners(): void {
+        if (this.dataListener !== null) {
+            this.socket.off('data', this.dataListener);
+            this.dataListener = null;
+        }
+        if (this.writeListener !== null) {
+            this.writer.off('write', this.writeListener);
+            this.writeListener = null;
+        }
     }
 
     isAlive(): boolean {
@@ -483,7 +509,7 @@ export class Connection {
      * @param callback
      */
     registerResponseCallback(callback: ClientMessageHandler): void {
-        this.socket.on('data', (buffer: Buffer) => {
+        this.dataListener = (buffer: Buffer) => {
             this.lastReadTimeMillis = Date.now();
             this.reader.append(buffer);
             let clientMessage = this.reader.read();
@@ -496,14 +522,15 @@ export class Connection {
                 clientMessage = this.reader.read();
             }
             this.incrementBytesReadFn(buffer.length);
-        });
+        }
+        this.socket.on('data', this.dataListener);
     }
 
     setClusterUuid(uuid: UUID): void {
         this.clusterUuid = uuid;
     }
 
-    getClusterUuid(): UUID { 
+    getClusterUuid(): UUID {
         return this.clusterUuid;
     }
 

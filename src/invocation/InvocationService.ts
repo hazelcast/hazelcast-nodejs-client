@@ -684,6 +684,7 @@ export class InvocationService {
                 + invocation.request.getCorrelationId() + ') reached its deadline.', error));
             return true;
         }
+        return false;
     }
 
     private registerInvocation(invocation: Invocation): void {
@@ -703,7 +704,7 @@ export class InvocationService {
     deregisterInvocation(correlationId: number): void {
         this.pending.delete(correlationId);
     }
-    
+
     /**
      * Returns `true` if we need to check the urgent invocations, by
      * examining the local registry of the schema service.
@@ -743,7 +744,7 @@ export class InvocationService {
             + 'data and it is not safe to invoke it when the client is not '
             + 'yet initialized on the cluster');
         }
-        
+
         return null;
     }
 }
