@@ -109,6 +109,7 @@ jobs:
                   ./rcd-ubuntu-latest -version $HZ_VERSION -no-simple-server &
                   # wait for a bit for RCD to download artifacts
                   sleep 10
+                  # make sure to run the coverage in the same step with RCD
                   npm run coverage
 
             - name: Run all tests (Windows)
@@ -122,4 +123,5 @@ jobs:
                   echo "RCD Log:"
                   cat rcd-stdout.log
                   cat rcd-stderr.log
+                  # make sure to run the coverage in the same step with RCD
                   npm run coverage
