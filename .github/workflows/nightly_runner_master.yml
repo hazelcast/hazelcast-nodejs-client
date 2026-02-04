@@ -8,47 +8,120 @@ jobs:
       uses: ./.github/workflows/get-supported-node-versions.yml
 
     run-tests:
-        runs-on: ${{ matrix.os }}
-        needs: node-versions
         name: Run tests of master on ${{ matrix.os }} with Node ${{ matrix.nodejs_version }}
+        needs:
+            - node-versions
+        runs-on: ${{ matrix.os }}
+        permissions:
+            id-token: write
         strategy:
             matrix:
                 os: [ ubuntu-latest, windows-latest ]
                 nodejs_version: ${{ fromJSON(needs.node-versions.outputs.node-versions) }}
+                hz_version: [ "5.6.0" ]
             fail-fast: false
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+
             - name: Read Java Config
               shell: bash
               run: cat .github/java-config.env >> $GITHUB_ENV
+
             - name: Setup Java
               uses: actions/setup-java@v4
               with:
                 java-version: ${{ env.JAVA_VERSION }}
                 distribution: ${{ env.JAVA_DISTRIBUTION }}
+
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: ${{ matrix.nodejs_version }}
-            - name: Checkout to test artifacts
+                  node-version: ${{ needs.node-versions.outputs.default-version }}
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v5
+              with:
+                  role-to-assume: ${{ secrets.AWS_HAZELCAST_OIDC_GITHUB_ACTIONS_ROLE_ARN }}
+                  aws-region: 'us-east-1'
+
+            - name: Get Secrets
+              uses: aws-actions/aws-secretsmanager-get-secrets@v2
+              with:
+                  secret-ids: |
+                      HAZELCAST_ENTERPRISE_KEY,CN/HZ_LICENSE_KEY
+
+            - name: Checkout to certificates
               uses: actions/checkout@v4
               with:
-                repository: hazelcast/private-test-artifacts
-                path: certs
-                ref: data
-                token: ${{ secrets.GH_TOKEN }}
+                  repository: hazelcast/private-test-artifacts
+                  path: certs
+                  ref: data
+                  token: ${{ secrets.GH_TOKEN }}
+
             - name: Copy certificates JAR to destination with the appropriate name
               run: |
-                cp ${{ github.workspace }}/certs/certs.jar ${{ github.workspace }}/certs.jar
-                unzip -p ${{ github.workspace }}/certs.jar com/hazelcast/nio/ssl/letsencrypt.jks > test/integration/backward_compatible/parallel/ssl/keystore.jks
+                  cp ${{ github.workspace }}/certs/certs.jar ${{ github.workspace }}/certs.jar
+                  unzip -p ${{ github.workspace }}/certs.jar com/hazelcast/nio/ssl/letsencrypt.jks > test/integration/backward_compatible/parallel/ssl/keystore.jks
+
+            - name: Create the test jar with certificates (Linux)
+              if: matrix.os == 'ubuntu-latest'
+              working-directory: certs
+              run: |
+                  zip -r -j certs.jar $GITHUB_WORKSPACE/test/integration/backward_compatible/parallel/ssl/*.pem
+                  cp certs.jar ../hazelcast-enterprise-${{ matrix.hz_version }}-tests.jar
+
+            - name: Create the test jar with certificates (Windows)
+              if: matrix.os == 'windows-latest'
+              working-directory: certs
+              run: |
+                  $compress = @{
+                    Path = "../test/integration/backward_compatible/parallel/ssl/*.pem"
+                    CompressionLevel = "Fastest"
+                    DestinationPath = "certs.jar"
+                  }
+                  Compress-Archive -Update @compress
+                  cp certs.jar ../hazelcast-enterprise-${{ matrix.hz_version }}-tests.jar
+
+            - name: Download RCD (Linux)
+              if: matrix.os == 'ubuntu-latest'
+              shell: bash
+              run: |
+                  wget -q https://client-rcd-download.s3.us-east-2.amazonaws.com/rcd-ubuntu-latest
+
+            - name: Download RCD (Windows)
+              if: matrix.os == 'windows-latest'
+              run: |
+                  $ProgressPreference = 'SilentlyContinue'
+                  Invoke-WebRequest https://client-rcd-download.s3.us-east-2.amazonaws.com/rcd-windows-latest.exe -OutFile rcd-windows-latest.exe
+
             - name: Install dependencies and compile client
               run: |
                   npm install
                   npm run compile
-            - name: Validate User Code
-              run: npm run validate-user-code
-            - name: Run tests
+
+            - name: Run all tests (Linux)
+              if: matrix.os == 'ubuntu-latest'
               env:
-                  HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-              run: npm run test
+                  HZ_VERSION: ${{ matrix.hz_version }}
+              run: |
+                  chmod +x rcd-ubuntu-latest
+                  ./rcd-ubuntu-latest -version $HZ_VERSION -no-simple-server &
+                  # wait for a bit for RCD to download artifacts
+                  sleep 10
+                  # make sure to run the coverage in the same step with RCD
+                  npm run coverage
+
+            - name: Run all tests (Windows)
+              if: matrix.os == 'windows-latest'
+              env:
+                  HZ_VERSION: ${{ matrix.hz_version }}
+              run: |
+                  Start-Process -FilePath .\rcd-windows-latest -ArgumentList '-version', $Env:HZ_VERSION, '-no-simple-server' -RedirectStandardOutput rcd-stdout.log  -RedirectStandardError rcd-stderr.log
+                  # wait for a bit for RCD to download artifacts
+                  sleep 10
+                  echo "RCD Log:"
+                  cat rcd-stdout.log
+                  cat rcd-stderr.log
+                  # make sure to run the coverage in the same step with RCD
+                  npm run coverage
