@@ -255,7 +255,9 @@ describe('CompactPublicAPIsTest', function () {
         multimap = await client.getMultiMap(name);
         replicatedMap = await client.getReplicatedMap(name);
         list = await client.getList(name);
-        atomicReference = await client.getCPSubsystem().getAtomicReference(name);
+        if (TestUtil.isEnterprise()) {
+            atomicReference = await client.getCPSubsystem().getAtomicReference(name);
+        }
         queue = await client.getQueue(name);
         set = await client.getSet(name);
         topic = await client.getReliableTopic(name);
@@ -274,7 +276,9 @@ describe('CompactPublicAPIsTest', function () {
         await multimap.destroy();
         await replicatedMap.destroy();
         await list.destroy();
-        await atomicReference.destroy();
+        if (TestUtil.isEnterprise()) {
+            await atomicReference.destroy();
+        }
         await queue.destroy();
         await set.destroy();
         await topic.destroy();
@@ -933,6 +937,10 @@ describe('CompactPublicAPIsTest', function () {
     });
 
     describe('AtomicReference', function () {
+        before(function() {
+            TestUtil.markEnterprise(this);
+        });
+
         it('compareAndSet', async function () {
             const fn = atomicReference.compareAndSet.bind(atomicReference, OUTER_INSTANCE, employee);
             await fn();

@@ -159,24 +159,20 @@ exports.fillMap = function (map, size = 10, keyPrefix = 'key', valuePrefix = 'va
     return map.putAll(entries);
 };
 
+exports.isEnterprise = function() {
+    return !!process.env.HAZELCAST_ENTERPRISE_KEY;
+}
+
 exports.markCommunity = function (_this) {
     // the following two env vars are set in compat test suite
-    if (process.env.SERVER_TYPE === 'enterprise' || process.env.HZ_TYPE === 'enterprise') {
-        _this.skip();
-    }
-
-    if (process.env.HAZELCAST_ENTERPRISE_KEY) {
+    if (exports.isEnterprise()) {
         _this.skip();
     }
 };
 
 exports.markEnterprise = function (_this) {
     // the following two env vars are set in compat test suite
-    if (process.env.SERVER_TYPE === 'oss' || process.env.HZ_TYPE === 'oss') {
-        _this.skip();
-    }
-
-    if (!process.env.HAZELCAST_ENTERPRISE_KEY) {
+    if (!exports.isEnterprise()) {
         _this.skip();
     }
 };
