@@ -68,6 +68,10 @@ describe('FencedLockTest', function () {
     }
 
     before(async function () {
+        TestUtil.markEnterprise(this);
+        if (!TestUtil.isEnterprise()) {
+            return;
+        }
         cluster = await testFactory.createClusterForParallelTests(null,
             fs.readFileSync(__dirname + '/hazelcast_cpsubsystem.xml', 'utf8'));
         members = await Promise.all([
