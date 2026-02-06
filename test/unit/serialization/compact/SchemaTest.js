@@ -27,7 +27,9 @@ describe('SchemaTest', function () {
         const boolCount = 100;
         const boolFields = new Array(100);
         for (let i = 0; i < boolCount; i++) {
-            boolFields[i] = new FieldDescriptor(i.toString(), FieldKind.BOOLEAN);
+            // the fields are sorted by name, so have to append 0 for numbers < 10
+            const name = i >= 10? i.toString() : '0' + i.toString();
+            boolFields[i] = new FieldDescriptor(name, FieldKind.BOOLEAN);
         }
 
         const fields = [

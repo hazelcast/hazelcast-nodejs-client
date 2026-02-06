@@ -212,14 +212,12 @@ export class SchemaWriter implements CompactWriter {
                 'Field with the name ' + field.fieldName + ' already exists'
             );
         }
-            
+
         this.fieldNames.add(field.fieldName);
         this.fields.push(field);
     }
 
     build() : Schema {
-        return new Schema(this.typeName, this.fields.sort((field1, field2) => {
-            return field1.fieldName > field2.fieldName ? 1 : -1;
-        }));
+        return new Schema(this.typeName, this.fields);
     }
 }

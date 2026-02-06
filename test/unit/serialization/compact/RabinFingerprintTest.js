@@ -19,6 +19,10 @@ const chai = require('chai');
 const Long = require('long');
 const { RabinFingerprint64, INIT } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const { SchemaWriter } = require('../../../../lib/serialization/compact/SchemaWriter');
+const {Schema} = require('../../../../lib/serialization/compact/Schema');
+const {FieldDescriptor} = require('../../../../lib/serialization/generic_record/FieldDescriptor');
+const {FieldKind} = require('../../../../lib/serialization/generic_record/FieldKind');
+
 chai.should();
 
 describe('RabinFingerprintTest', function () {
@@ -87,5 +91,20 @@ describe('RabinFingerprintTest', function () {
         writer.writeArrayOfTimestamp('times', []);
         const schema = writer.build();
         schema.schemaId.eq(Long.fromString('3662264393229655598')).should.be.true;
+    });
+
+    it('should compute the same fingerprint for equivalent schemas regardless of the field order', function () {
+        const schema1 = new Schema('my-schema', [
+            new FieldDescriptor('field-1', FieldKind.ARRAY_OF_DATE),
+            new FieldDescriptor('field-2', FieldKind.ARRAY_OF_DATE),
+        ]);
+        const fp1 = RabinFingerprint64.ofSchema(schema1);
+
+        const schema2 = new Schema('my-schema', [
+            new FieldDescriptor('field-2', FieldKind.ARRAY_OF_DATE),
+            new FieldDescriptor('field-1', FieldKind.ARRAY_OF_DATE),
+        ]);
+        const fp2 = RabinFingerprint64.ofSchema(schema2);
+        fp1.eq(fp2).should.be.true;
     });
 });
