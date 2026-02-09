@@ -37,9 +37,13 @@ export class Schema {
     constructor(typeName: string, fields: FieldDescriptor[]) {
         this.typeName = typeName;
         this.fields = fields;
-        this.fieldDefinitionMap = new Map<string, FieldDescriptor>();
+        this.fields.sort((field1, field2) => {
+            return field1.fieldName > field2.fieldName ? 1 : -1;
+        })
 
-        for (const field of fields) {
+        this.fieldDefinitionMap = new Map<string, FieldDescriptor>();
+        for (const field of this.fields) {
+            // map entries are sorted by insertion order
             this.fieldDefinitionMap.set(field.fieldName, field);
         }
 
@@ -101,7 +105,7 @@ export class Schema {
     getFields() : IterableIterator<FieldDescriptor> {
         return this.fieldDefinitionMap.values();
     }
-    
+
     private hasSameFields(other: Schema): boolean {
         if (other.fieldDefinitionMap.size !== this.fieldDefinitionMap.size) {
             return false;
