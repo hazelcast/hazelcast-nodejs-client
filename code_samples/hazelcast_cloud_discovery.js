@@ -47,7 +47,7 @@ Copy the following files from Hazelcast Cloud to the same directory as this file
                         }
                     }
                 },
-                clusterName: 'nodejs-test',
+                clusterName: 'CLUSTERNAME-HERE',
             }
         );
         console.log('Connection Successful!');
