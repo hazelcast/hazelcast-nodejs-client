@@ -23,5 +23,6 @@ jobs:
                   rm -rf node_modules
                   rm -rf coverage
                   rm -rf docs
+                  npm install
                   npm run compile
                   npm publish
