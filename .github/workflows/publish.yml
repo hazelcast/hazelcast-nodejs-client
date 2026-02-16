@@ -19,6 +19,9 @@ jobs:
                   node-version: '22'
                   registry-url: 'https://registry.npmjs.org'
 
-            - run: npm ci
-            - run: npm run compile
-            - run: npm publish
+            - run: |
+                  rm -rf node_modules
+                  rm -rf coverage
+                  rm -rf docs
+                  npm run compile
+                  npm publish
