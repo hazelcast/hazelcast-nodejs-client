@@ -25,7 +25,7 @@ jobs:
         uses: hazelcast/hazelcast-tpm/membership@main
         with:
           member-name: ${{ github.actor }}
-          token: ${{ github.token }}
+          token: ${{ secrets.GH_TOKEN }}
 
   node-versions:
     uses: ./.github/workflows/get-supported-node-versions.yml
