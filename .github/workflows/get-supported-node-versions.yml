@@ -22,7 +22,7 @@ jobs:
           # - Currently supported
           # - That are LTS
           # - Within LTS date range (i.e. not future LTS)
-          NODE_VERSIONS=$(curl --fail --silent https://raw.githubusercontent.com/nodejs/Release/main/schedule.json | jq --compact-output '
+          NODE_VERSIONS=$(curl --fail --retry 5 --retry-all-errors --show-error --silent https://raw.githubusercontent.com/nodejs/Release/main/schedule.json | jq --compact-output '
               def today: now | strftime("%Y-%m-%d");
               to_entries
               | map(select(.value.end > today and .value.lts != null and .value.lts < today))
