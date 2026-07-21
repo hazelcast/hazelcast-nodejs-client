@@ -697,7 +697,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 dataEntryView.cost, dataEntryView.creationTime, dataEntryView.expirationTime, dataEntryView.hits,
                 dataEntryView.lastAccessTime, dataEntryView.lastStoredTime, dataEntryView.lastUpdateTime,
                 dataEntryView.version, dataEntryView.ttl, response.maxIdle);
-        }, keyData, 0);
+        }, keyData, getLockID());
     }
 
     addIndex(indexConfig: IndexConfig): Promise<void> {
@@ -717,8 +717,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
             throw e;
         }
-        return this.encodeInvokeOnKeyWithTimeout(
-            Number.MAX_SAFE_INTEGER, MapTryLockCodec, keyData, MapTryLockCodec.decodeResponse, keyData, 0, leaseTime, timeout, 0
+        return this.encodeInvokeOnKeyWithTimeout(Number.MAX_SAFE_INTEGER,
+            MapTryLockCodec, keyData, MapTryLockCodec.decodeResponse, keyData, getLockID(), leaseTime, timeout, 0
         );
     }
 
@@ -785,7 +785,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     protected containsKeyInternal(keyData: Data): Promise<boolean> {
-        return this.encodeInvokeOnKey(MapContainsKeyCodec, keyData, MapContainsKeyCodec.decodeResponse, keyData, 0);
+        return this.encodeInvokeOnKey(MapContainsKeyCodec, keyData, MapContainsKeyCodec.decodeResponse, keyData, getLockID());
     }
 
     protected putInternal(keyData: Data,

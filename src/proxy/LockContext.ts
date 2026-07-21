@@ -6,14 +6,17 @@ const lockContextStorage = new AsyncLocalStorage();
 let lockID = Long.ZERO
 
 export class LockContext {
-    static async run(f: any) {
+    static async run(f: () => Promise<void>) {
         lockID = lockID.add(1);
         await lockContextStorage.run(lockID, f);
     }
 }
 
-export function getLockID() {
+export function getLockID(): Long {
     const lid = lockContextStorage.getStore();
-    return lid || Long.ZERO;
+    if (lid) {
+        return lid as Long;
+    }
+    return Long.ZERO;
 }
 

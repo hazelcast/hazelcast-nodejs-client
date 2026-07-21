@@ -19,7 +19,7 @@ const { expect } = require('chai');
 
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
-const {LockContext} = require('../../../../../src/proxy/LockContext');
+const {LockContext} = require('../../../../..');
 
 /**
  * Verifies lock operations behavior in advanced scenarios.
@@ -123,29 +123,41 @@ describe('MapLockTest', function () {
         });
     });
 
-    it('should prevent data races using lock context', async function() {
-        const target = 1000;
-        console.log('Connection Successful!');
-        const map = await client.getMap('counters');
-        await map.put('counter', 0);
+    it('should prevent data races when using lock context', async function() {
+        const concurrency = 100;
+        const target = concurrency;
+        const key = 'k1';
+        const map = await client.getMap('lock-test');
+        await map.put(key, 0);
 
-        await Promise.all(
-            Array.from({ length: 10 }, async () => {
-                await LockContext.run(async () => {
-                    for (let i = 0; i < 1; i++) {
-                        await map.lock('counter');
-                        try {
-                            const v = await map.get('counter');
-                            await map.put('counter', v + 1);
-                        } finally {
-                            await map.unlock('counter');
-                        }
-                    }
-                });
-            })
-        );
-        const v = await map.get('counter');
-        console.log('v:', v);
+        async function f() {
+            await LockContext.run(async () => {
+                await map.lock(key);
+                try {
+                    const v = await map.get(key);
+                    await map.put(key, v + 1);
+                } finally {
+                    await map.unlock(key);
+                }
+            });
+        }
+
+        const tasks = Array.from({length: concurrency}, f);
+        await Promise.all(tasks);
+        const v = await map.get(key);
         expect(v).eq(target);
+    });
+
+    it('should be possible to nest lock contexts', async function() {
+        // Need to import LockContext again so the same AsyncLocalStorage is used with both LockContext and getLockID
+        const {LockContext} = require('../../../../../src/proxy/LockContext');
+        const {getLockID} = require('../../../../../src/proxy/LockContext');
+        await LockContext.run(async () => {
+            const lid1 = getLockID();
+            await LockContext.run(async () => {
+                const lid2 = getLockID();
+                expect(lid1).not.eq(lid2);
+            });
+        });
     });
 });
