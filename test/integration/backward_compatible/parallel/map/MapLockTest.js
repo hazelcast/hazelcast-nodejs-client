@@ -19,6 +19,7 @@ const { expect } = require('chai');
 
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
+const {LockContext} = require('../../../../../src/proxy/LockContext');
 
 /**
  * Verifies lock operations behavior in advanced scenarios.
@@ -120,5 +121,31 @@ describe('MapLockTest', function () {
         await TestUtil.assertTrueEventually(async () => {
             expect(done).to.be.true;
         });
+    });
+
+    it('should prevent data races using lock context', async function() {
+        const target = 1000;
+        console.log('Connection Successful!');
+        const map = await client.getMap('counters');
+        await map.put('counter', 0);
+
+        await Promise.all(
+            Array.from({ length: 10 }, async () => {
+                await LockContext.run(async () => {
+                    for (let i = 0; i < 1; i++) {
+                        await map.lock('counter');
+                        try {
+                            const v = await map.get('counter');
+                            await map.put('counter', v + 1);
+                        } finally {
+                            await map.unlock('counter');
+                        }
+                    }
+                });
+            })
+        );
+        const v = await map.get('counter');
+        console.log('v:', v);
+        expect(v).eq(target);
     });
 });

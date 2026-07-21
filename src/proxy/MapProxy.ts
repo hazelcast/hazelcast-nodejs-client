@@ -92,6 +92,7 @@ import {MapEntriesWithPagingPredicateCodec} from '../codec/MapEntriesWithPagingP
 import * as Long from 'long';
 import {SchemaNotReplicatedError} from '../core';
 import {MapRemoveAllCodec} from '../codec/MapRemoveAllCodec';
+import {getLockID} from './LockContext';
 
 type EntryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number,
                           uuid: UUID, numberOfAffectedEntries: number) => void;
@@ -515,7 +516,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             throw e;
         }
         return this.encodeInvokeOnKeyWithTimeout(
-            Number.MAX_SAFE_INTEGER, MapLockCodec, keyData, () => {}, keyData, 0, leaseTime, 0
+            Number.MAX_SAFE_INTEGER, MapLockCodec, keyData, () => {}, keyData, getLockID(), leaseTime, 0
         );
     }
 
@@ -544,7 +545,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             }
             throw e;
         }
-        return this.encodeInvokeOnKey(MapUnlockCodec, keyData, () => {}, keyData, 0, 0);
+        return this.encodeInvokeOnKey(MapUnlockCodec, keyData, () => {}, keyData, getLockID(), 0);
     }
 
     forceUnlock(key: K): Promise<void> {
@@ -797,10 +798,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         };
         if (maxIdle !== undefined) {
             return this.encodeInvokeOnKey(MapPutWithMaxIdleCodec,
-                keyData, handler, keyData, valueData, 0, ttl, maxIdle);
+                keyData, handler, keyData, valueData, getLockID(), ttl, maxIdle);
         } else {
             return this.encodeInvokeOnKey(MapPutCodec,
-                keyData, handler, keyData, valueData, 0, ttl);
+                keyData, handler, keyData, valueData, getLockID(), ttl);
         }
     }
 
@@ -809,10 +810,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     protected getInternal(keyData: Data): Promise<V> {
+        const lid = getLockID();
         return this.encodeInvokeOnKey(MapGetCodec, keyData, (clientMessage: ClientMessage) => {
             const response = MapGetCodec.decodeResponse(clientMessage);
             return this.toObject(response);
-        }, keyData, 0);
+        }, keyData, lid);
     }
 
     protected removeInternal(keyData: Data, valueData: Data | undefined): Promise<V | boolean> {
@@ -820,10 +822,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
             return this.encodeInvokeOnKey(MapRemoveCodec, keyData, (clientMessage) => {
                 const response = MapRemoveCodec.decodeResponse(clientMessage);
                 return this.toObject(response);
-            }, keyData, 0)
+            }, keyData, getLockID())
         } else {
             return this.encodeInvokeOnKey(
-                MapRemoveIfSameCodec, keyData, MapRemoveIfSameCodec.decodeResponse, keyData, valueData, 0
+                MapRemoveIfSameCodec, keyData, MapRemoveIfSameCodec.decodeResponse, keyData, valueData, getLockID()
             );
         }
     }
@@ -864,11 +866,11 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
     }
 
     protected deleteInternal(keyData: Data): Promise<void> {
-        return this.encodeInvokeOnKey(MapDeleteCodec, keyData, () => {}, keyData, 0);
+        return this.encodeInvokeOnKey(MapDeleteCodec, keyData, () => {}, keyData, getLockID());
     }
 
     protected evictInternal(keyData: Data): Promise<boolean> {
-        return this.encodeInvokeOnKey(MapEvictCodec, keyData, MapEvictCodec.decodeResponse, keyData, 0);
+        return this.encodeInvokeOnKey(MapEvictCodec, keyData, MapEvictCodec.decodeResponse, keyData, getLockID());
     }
 
     protected putIfAbsentInternal(keyData: Data,
@@ -882,10 +884,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
         if (maxIdle !== undefined) {
             return this.encodeInvokeOnKey(MapPutIfAbsentWithMaxIdleCodec,
-                keyData, handler, keyData, valueData, 0, ttl, maxIdle);
+                keyData, handler, keyData, valueData, getLockID(), ttl, maxIdle);
         } else {
             return this.encodeInvokeOnKey(MapPutIfAbsentCodec,
-                keyData, handler, keyData, valueData, 0, ttl);
+                keyData, handler, keyData, valueData, getLockID(), ttl);
         }
     }
 
@@ -895,10 +897,10 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                                    maxIdle?: number | Long): Promise<void> {
         if (maxIdle !== undefined) {
             return this.encodeInvokeOnKey(MapPutTransientWithMaxIdleCodec,
-                keyData, () => {}, keyData, valueData, 0, ttl, maxIdle);
+                keyData, () => {}, keyData, valueData, getLockID(), ttl, maxIdle);
         } else {
             return this.encodeInvokeOnKey(MapPutTransientCodec,
-                keyData, () => {}, keyData, valueData, 0, ttl)
+                keyData, () => {}, keyData, valueData, getLockID(), ttl)
         }
     }
 
@@ -906,12 +908,12 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         return this.encodeInvokeOnKey(MapReplaceCodec, keyData, (clientMessage) => {
             const response = MapReplaceCodec.decodeResponse(clientMessage);
             return this.toObject(response);
-        }, keyData, newValueData, 0);
+        }, keyData, newValueData, getLockID());
     }
 
     protected replaceIfSameInternal(keyData: Data, oldValueData: Data, newValueData: Data): Promise<boolean> {
         return this.encodeInvokeOnKey(
-            MapReplaceIfSameCodec, keyData, MapReplaceIfSameCodec.decodeResponse, keyData, oldValueData, newValueData, 0
+            MapReplaceIfSameCodec, keyData, MapReplaceIfSameCodec.decodeResponse, keyData, oldValueData, newValueData, getLockID()
         );
     }
 
@@ -921,19 +923,21 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                           maxIdle?: number | Long): Promise<void> {
         if (maxIdle !== undefined) {
             return this.encodeInvokeOnKey(MapSetWithMaxIdleCodec,
-                keyData, () => {}, keyData, valueData, 0, ttl, maxIdle);
+                keyData, () => {}, keyData, valueData, getLockID(), ttl, maxIdle);
         } else {
             return this.encodeInvokeOnKey(MapSetCodec,
-                keyData, () => {}, keyData, valueData, 0, ttl);
+                keyData, () => {}, keyData, valueData, getLockID(), ttl);
         }
     }
 
     protected tryPutInternal(keyData: Data, valueData: Data, timeout: number): Promise<boolean> {
-        return this.encodeInvokeOnKey(MapTryPutCodec, keyData, MapTryPutCodec.decodeResponse, keyData, valueData, 0, timeout);
+        return this.encodeInvokeOnKey(MapTryPutCodec,
+            keyData, MapTryPutCodec.decodeResponse, keyData, valueData, getLockID(), timeout);
     }
 
     protected tryRemoveInternal(keyData: Data, timeout: number): Promise<boolean> {
-        return this.encodeInvokeOnKey(MapTryRemoveCodec, keyData, MapTryRemoveCodec.decodeResponse, keyData, 0, timeout);
+        return this.encodeInvokeOnKey(MapTryRemoveCodec,
+            keyData, MapTryRemoveCodec.decodeResponse, keyData, getLockID(), timeout);
     }
 
     protected setTtlInternal(keyData: Data, ttl: number): Promise<boolean> {
