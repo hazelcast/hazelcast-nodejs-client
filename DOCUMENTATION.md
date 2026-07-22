@@ -1803,6 +1803,70 @@ Hazelcast Map uses `MapListener` to listen to the events that occur when the ent
 evicted/removed from the Map. See the [Map Listener section](#8521-map-listener) for information on how to create a map
 listener object and register it.
 
+`IMap` provides an entry locking mechanism: [Locking Maps](https://docs.hazelcast.com/hazelcast/5.7/data-structures/locking-maps).
+You can lock and unlock entries via the `Map.lock` and `Map.unlock` methods respectively.
+Here is an example:
+```javascript
+await map.lock('key');
+// no other client instance can access the entry
+try {
+    await map.set('key', 'some-value');
+}
+finally {
+    // the entry can be used by other client instances
+    map.unlock('key');
+}
+```
+
+The lock is always reentrant for the same client, which may cause data races.
+Consider the following example:
+```javascript
+const client = await Client.newHazelcastClient();
+const key = 'k1';
+const map = await client.getMap('my-map');
+await map.put(key, 0);
+
+async function task() {
+    // each task runs concurrently
+    await map.lock(key);
+    try {
+        const value = await map.get(key);
+        await map.put(key, value + 1);
+    } finally {
+        await map.unlock(key);
+    }
+}
+
+// 100 concurrent tasks
+const tasks = Array.from({length: 100}, task);
+await Promise.all(tasks);
+const value = await map.get(key);
+console.log('value:', value);
+
+await client.shutdown();
+```
+
+Although the expected value is `100`, the actual value is `1`, since there is a data race.
+In order to prevent the race, execute the lock related code in `LockContext.run`:
+```javascript
+// updated task function
+async function task() {
+    // each task runs concurrently
+    // create a lock context to prevent race
+    await LockContext.run(async () => {
+        await map.lock(key);
+        try {
+            const value = await map.get(key);
+            await map.put(key, value + 1);
+        } finally {
+            await map.unlock(key);
+        }
+    });
+}
+```
+
+With that change the data race is prevented, and the expected value `100` is printed.
+
 ### 8.4.2. Using MultiMap
 
 Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details,
@@ -1830,6 +1894,9 @@ await multiMap.remove('my-key', 'value2');
 Hazelcast MultiMap uses `EntryListener` to listen to the events that occur when the entries are added to or removed from the
 MultiMap. See the [Entry Listener section](#8522-entry-listener) for information on how to create an entry listener object and
 register it.
+
+`MultiMap` supports locks, similarly to `IMap`.
+See [Using Map](#841-using-map).
 
 ### 8.4.3. Using Replicated Map
 
