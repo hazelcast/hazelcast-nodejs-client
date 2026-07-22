@@ -142,7 +142,7 @@ jobs:
                 chmod +x rcd-ubuntu-latest
                 ./rcd-ubuntu-latest -version $HZ_VERSION -no-simple-server &
                 # wait for a bit for RCD to download artifacts
-                sleep 10
+                node test/waitport.mjs
                 npm run coverage
 
           - name: Run all tests (Windows)
@@ -152,7 +152,7 @@ jobs:
             run: |
                 Start-Process -FilePath .\rcd-windows-latest -ArgumentList '-version', $Env:HZ_VERSION, '-no-simple-server' -RedirectStandardOutput rcd-stdout.log  -RedirectStandardError rcd-stderr.log
                 # wait for a bit for RCD to download artifacts
-                sleep 10
+                node test/waitport.mjs
                 echo "RCD Log:"
                 cat rcd-stdout.log
                 cat rcd-stderr.log
