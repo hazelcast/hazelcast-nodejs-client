@@ -95,7 +95,7 @@ jobs:
 
           - name: Copy certificates JAR to destination with the appropriate name
             run: |
-                cp $GITHUB_WORKSPACE/certs/certs.jar $GITHUB_WORKSPACE/hazelcast-enterprise-${{ matrix.version }}-tests.jar
+                cp ${{ github.workspace }}/certs/certs.jar ${{ github.workspace }}/hazelcast-enterprise-${{ matrix.version }}-tests.jar
 
 #          - name: Create the test jar with certificates (Linux)
 #            if: matrix.os == 'ubuntu-latest'
