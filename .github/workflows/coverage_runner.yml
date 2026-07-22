@@ -142,6 +142,9 @@ jobs:
                 chmod +x rcd-ubuntu-latest
                 ./rcd-ubuntu-latest -version $HZ_VERSION -no-simple-server &
                 # wait for a bit for RCD to download artifacts
+                ls
+                echo "==="
+                ls test/waitport.mjs
                 node test/waitport.mjs
                 npm run coverage
 
