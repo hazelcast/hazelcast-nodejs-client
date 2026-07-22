@@ -97,25 +97,6 @@ jobs:
             run: |
                 cp ${{ github.workspace }}/certs/certs.jar ${{ github.workspace }}/hazelcast-enterprise-${{ matrix.hz_version }}-tests.jar
 
-#          - name: Create the test jar with certificates (Linux)
-#            if: matrix.os == 'ubuntu-latest'
-#            working-directory: certs
-#            run: |
-#                zip -r -j certs.jar $GITHUB_WORKSPACE/test/integration/backward_compatible/parallel/ssl/*.pem
-#                cp certs.jar ../hazelcast-enterprise-${{ matrix.hz_version }}-tests.jar
-#
-#          - name: Create the test jar with certificates (Windows)
-#            if: matrix.os == 'windows-latest'
-#            working-directory: certs
-#            run: |
-#                $compress = @{
-#                  Path = "../test/integration/backward_compatible/parallel/ssl/*.pem"
-#                  CompressionLevel = "Fastest"
-#                  DestinationPath = "certs.jar"
-#                }
-#                Compress-Archive -Update @compress
-#                cp certs.jar ../hazelcast-enterprise-${{ matrix.hz_version }}-tests.jar
-
           - name: Download RCD (Linux)
             if: matrix.os == 'ubuntu-latest'
             shell: bash
