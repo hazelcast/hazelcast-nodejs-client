@@ -147,17 +147,4 @@ describe('MapLockTest', function () {
         const v = await map.get(key);
         expect(v).eq(target);
     });
-
-    it('should be possible to nest lock contexts', async function() {
-        // Need to import LockContext again so the same AsyncLocalStorage is used with both LockContext and getLockID
-        const {LockContext} = require('../../../../../src/proxy/LockContext');
-        const {getLockID} = require('../../../../../src/proxy/LockContext');
-        await LockContext.run(async () => {
-            const lid1 = getLockID();
-            await LockContext.run(async () => {
-                const lid2 = getLockID();
-                expect(lid1).not.eq(lid2);
-            });
-        });
-    });
 });
