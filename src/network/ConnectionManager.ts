@@ -941,7 +941,8 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
         const tokenCredentials = securityConfig.token;
         if (tokenCredentials != null) {
             const token = tokenCredentials.token;
-            const encoding = tokenCredentials.encoding;
+            // cast the encoding to BufferEncoding to make TypeScript happy
+            const encoding = (tokenCredentials.encoding.toLowerCase() as unknown) as BufferEncoding;
             payload = Buffer.from(token, encoding);
         } else {
             // If we are this far, we ruled out the possibility of credentials being

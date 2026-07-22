@@ -4473,10 +4473,9 @@ Test script automatically downloads `hazelcast-remote-controller` and Hazelcast.
 
 # 11. Getting Help
 
-You can use the following channels for your questions and development/usage issues:
+You can use the following channel for your questions and development/usage issues:
 
 * This repository by opening an issue.
-* [Slack](https://slack.hazelcast.com)
 
 # 12. Contributing
 
@@ -4489,6 +4488,6 @@ you can always open a pull request on this repository for your other requests su
 
 # 14. Copyright
 
-Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+Copyright (c) 2008-2026, Hazelcast, Inc. All Rights Reserved.
 
 Visit [www.hazelcast.com](http://www.hazelcast.com) for more information.

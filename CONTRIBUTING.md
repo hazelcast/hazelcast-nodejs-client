@@ -13,9 +13,6 @@ There are multiple ways to contribute:
 Note that you don't need to be a developer to help us.
 Contributions that improve the documentation are always appreciated.
 
-If you feel yourself in need of assistance, please reach us directly via [Slack](https://slack.hazelcast.com/).
-We have a separate [channel](https://hazelcastcommunity.slack.com/archives/C01PP55A667) for the Node.js client.
-
 ## Issue Reports
 
 Thanks for reporting your issue.

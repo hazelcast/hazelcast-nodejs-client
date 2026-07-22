@@ -18,7 +18,7 @@
 const { expect } = require('chai');
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
-const {LockContext} = require("../../../../../lib");
+const {LockContext} = require('../../../../../lib');
 
 describe('MultiMapProxyLockTest', function () {
     let clientOne;

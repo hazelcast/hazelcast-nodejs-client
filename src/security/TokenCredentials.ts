@@ -31,16 +31,16 @@ export interface TokenCredentials {
      * Encoding that should be used to decode the token.
      * Defaults to {@link TokenEncoding.ASCII}.
      */
-    encoding?: BufferEncoding,
+    encoding?: TokenEncoding,
 }
 
 /** @internal */
 export class TokenCredentialsImpl implements TokenCredentials {
     token: string;
-    encoding: BufferEncoding;
+    encoding: TokenEncoding;
 
-    constructor(token: string, encoding = 'ascii') {
+    constructor(token: string, encoding = TokenEncoding.ASCII) {
         this.token = token;
-        this.encoding = encoding as BufferEncoding;
+        this.encoding = encoding;
     }
 }

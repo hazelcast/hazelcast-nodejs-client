@@ -9,9 +9,6 @@
     <a href="https://www.npmjs.com/package/hazelcast-client">
         <img src="https://img.shields.io/npm/v/hazelcast-client" alt="NPM version">
     </a>
-    <a href="https://slack.hazelcast.com">
-        <img src="https://img.shields.io/badge/slack-chat-green.svg" alt="Chat on Slack">
-    </a>
     <a href="https://twitter.com/Hazelcast">
         <!-- markdownlint-disable-next-line MD013 -->
         <img src="https://img.shields.io/twitter/follow/Hazelcast.svg?style=flat-square&colorA=1da1f2&colorB=&label=Follow%20on%20Twitter" alt="Follow on Twitter">
@@ -150,7 +147,6 @@ You can use the following channels for your questions and development/usage issu
 * [GitHub repository](https://github.com/hazelcast/hazelcast-nodejs-client)
 * [Complete documentation](https://github.com/hazelcast/hazelcast-nodejs-client/blob/master/DOCUMENTATION.md)
 * [API documentation](http://hazelcast.github.io/hazelcast-nodejs-client)
-* [Slack](https://slack.hazelcast.com)
 
 ## Contributing
 
