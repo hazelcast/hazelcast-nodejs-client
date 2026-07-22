@@ -42,7 +42,7 @@ jobs:
       strategy:
           matrix:
               os: [ ubuntu-latest, windows-latest ]
-              hz_version: [ "5.6.0" ]
+              hz_version: [ "5.7.0" ]
       steps:
           - name: Checkout code for PR
             if: github.event_name == 'pull_request_target'
@@ -95,27 +95,7 @@ jobs:
 
           - name: Copy certificates JAR to destination with the appropriate name
             run: |
-              cp ${{ github.workspace }}/certs/certs.jar ${{ github.workspace }}/certs.jar
-              unzip -p ${{ github.workspace }}/certs.jar com/hazelcast/nio/ssl/letsencrypt.jks > test/integration/backward_compatible/parallel/ssl/keystore.jks
-
-          - name: Create the test jar with certificates (Linux)
-            if: matrix.os == 'ubuntu-latest'
-            working-directory: certs
-            run: |
-                zip -r -j certs.jar $GITHUB_WORKSPACE/test/integration/backward_compatible/parallel/ssl/*.pem
-                cp certs.jar ../hazelcast-enterprise-${{ matrix.hz_version }}-tests.jar
-
-          - name: Create the test jar with certificates (Windows)
-            if: matrix.os == 'windows-latest'
-            working-directory: certs
-            run: |
-                $compress = @{
-                  Path = "../test/integration/backward_compatible/parallel/ssl/*.pem"
-                  CompressionLevel = "Fastest"
-                  DestinationPath = "certs.jar"
-                }
-                Compress-Archive -Update @compress
-                cp certs.jar ../hazelcast-enterprise-${{ matrix.hz_version }}-tests.jar
+                cp ${{ github.workspace }}/certs/certs.jar ${{ github.workspace }}/hazelcast-enterprise-${{ matrix.hz_version }}-tests.jar
 
           - name: Download RCD (Linux)
             if: matrix.os == 'ubuntu-latest'
@@ -142,7 +122,7 @@ jobs:
                 chmod +x rcd-ubuntu-latest
                 ./rcd-ubuntu-latest -version $HZ_VERSION -no-simple-server &
                 # wait for a bit for RCD to download artifacts
-                sleep 10
+                node test/waitport.mjs
                 npm run coverage
 
           - name: Run all tests (Windows)
@@ -152,7 +132,7 @@ jobs:
             run: |
                 Start-Process -FilePath .\rcd-windows-latest -ArgumentList '-version', $Env:HZ_VERSION, '-no-simple-server' -RedirectStandardOutput rcd-stdout.log  -RedirectStandardError rcd-stderr.log
                 # wait for a bit for RCD to download artifacts
-                sleep 10
+                node test/waitport.mjs
                 echo "RCD Log:"
                 cat rcd-stdout.log
                 cat rcd-stderr.log
