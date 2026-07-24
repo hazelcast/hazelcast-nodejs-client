@@ -161,7 +161,7 @@ exports.fillMap = function (map, size = 10, keyPrefix = 'key', valuePrefix = 'va
 
 exports.isEnterprise = function() {
     return !!process.env.HAZELCAST_ENTERPRISE_KEY;
-}
+};
 
 exports.markCommunity = function (_this) {
     // the following two env vars are set in compat test suite

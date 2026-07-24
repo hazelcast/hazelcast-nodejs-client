@@ -18,6 +18,7 @@
 const { expect } = require('chai');
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
+const {LockContext} = require('../../../../../lib');
 
 describe('MultiMapProxyLockTest', function () {
     let clientOne;
@@ -120,5 +121,32 @@ describe('MultiMapProxyLockTest', function () {
         await mapOne.forceUnlock(1);
         locked = await mapOne.isLocked(1);
         expect(locked).to.be.false;
+    });
+
+    it('should prevent data races when using lock context', async function() {
+        const concurrency = 100;
+        const target = Array.from({length: concurrency}, (_, i) => i);
+        const key = 'k1';
+        const map = await clientOne.getMultiMap('lock-test');
+        await map.clear();
+
+        async function f() {
+            await LockContext.run(async () => {
+                await map.lock(key);
+                try {
+                    const v = await map.get(key);
+                    const va = v.toArray();
+                    await map.put(key, va.length);
+                } finally {
+                    await map.unlock(key);
+                }
+            });
+        }
+
+        const tasks = Array.from({length: concurrency}, f);
+        await Promise.all(tasks);
+        const v = await map.get(key);
+        const va = v.toArray().sort((a, b) => a - b);
+        expect(va).deep.eq(target);
     });
 });

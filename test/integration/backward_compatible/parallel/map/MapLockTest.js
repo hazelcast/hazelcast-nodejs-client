@@ -19,6 +19,7 @@ const { expect } = require('chai');
 
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
+const {LockContext} = require('../../../../..');
 
 /**
  * Verifies lock operations behavior in advanced scenarios.
@@ -120,5 +121,30 @@ describe('MapLockTest', function () {
         await TestUtil.assertTrueEventually(async () => {
             expect(done).to.be.true;
         });
+    });
+
+    it('should prevent data races when using lock context', async function() {
+        const concurrency = 100;
+        const target = concurrency;
+        const key = 'k1';
+        const map = await client.getMap('lock-test');
+        await map.put(key, 0);
+
+        async function f() {
+            await LockContext.run(async () => {
+                await map.lock(key);
+                try {
+                    const v = await map.get(key);
+                    await map.put(key, v + 1);
+                } finally {
+                    await map.unlock(key);
+                }
+            });
+        }
+
+        const tasks = Array.from({length: concurrency}, f);
+        await Promise.all(tasks);
+        const v = await map.get(key);
+        expect(v).eq(target);
     });
 });

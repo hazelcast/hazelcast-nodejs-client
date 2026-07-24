@@ -382,6 +382,7 @@ export interface IMap<K, V> extends DistributedObject {
      * **Important:**
      * In the Node.js client, all lock operations from the same client instance share the same lock ownership.
      * This differs from the Java client where each thread has separate lock ownership.
+     * Use `LockContext.run` method to limit the lock ownership in concurrent code.
      *
      * @param key the key of the map entry
      * @param leaseTime lock is automatically unlocked after `leaseTime`
@@ -554,6 +555,7 @@ export interface IMap<K, V> extends DistributedObject {
      *
      * **Important:**
      * In the Node.js client, all lock operations from the same client instance share the same lock ownership.
+     * Use `LockContext.run` method to limit the lock ownership in concurrent code.
      *
      * @param key the key of the map entry
      * @param timeout server waits for `timeout` milliseconds to acquire
