@@ -231,7 +231,7 @@ describe('MapLockContextTest', function () {
             clusterName: cluster.id
         }, member);
 
-        const mapName = 'reentrant-lock-test' + TestUtil.randomString(10)
+        const mapName = 'reentrant-lock-test' + TestUtil.randomString(10);
         const map = await client.getMap(mapName);
         const map2 = await client2.getMap(mapName);
 
