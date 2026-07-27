@@ -94,10 +94,10 @@ describe('MapLockTest', function () {
         let done = false;
         const keyOwner = await RC.startMember(cluster.id);
         const clientTwo = await testFactory.newHazelcastClientForParallelTests({
-                clusterName: cluster.id,
-                properties: {
-                    ['hazelcast.client.invocation.timeout.millis']: INVOCATION_TIMEOUT_FOR_TWO
-                }
+            clusterName: cluster.id,
+            properties: {
+                ['hazelcast.client.invocation.timeout.millis']: INVOCATION_TIMEOUT_FOR_TWO
+            }
         }, [member, keyOwner]);
         await waitForNewPartitionTable(client, keyOwner);
         const key = generateKeyOwnedBy(client, keyOwner);
@@ -121,6 +121,29 @@ describe('MapLockTest', function () {
         await TestUtil.assertTrueEventually(async () => {
             expect(done).to.be.true;
         });
+    });
+});
+
+/**
+ * Verifies Map LockContext.
+ */
+describe('MapLockContextTest', function () {
+    const testFactory = new TestUtil.TestFactory();
+    let cluster;
+    let client;
+    let member;
+
+    before(async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.7');
+        cluster = await testFactory.createClusterForParallelTests();
+        member = await RC.startMember(cluster.id);
+        client = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id
+        }, member);
+    });
+
+    after(async function () {
+        await testFactory.shutdownAll();
     });
 
     it('should prevent data races when using lock context', async function() {
@@ -147,4 +170,84 @@ describe('MapLockTest', function () {
         const v = await map.get(key);
         expect(v).eq(target);
     });
+
+    it('should be able to lock and unlock in the same LockContext', async function() {
+        const key = 'k1';
+        const map = await client.getMap('reentrant-lock-test' + TestUtil.randomString(10));
+
+        async function f() {
+            await LockContext.run(async () => {
+                await map.lock(key);
+                await map.lock(key);
+                await map.unlock(key);
+                await map.unlock(key);
+            });
+        }
+        const tasks = Array.from({length: 10}, f);
+        await Promise.all(tasks);
+    });
+
+    it('should be able to lock and unlock in the same LockContext using the same Map proxy', async function() {
+        const key = 'k1';
+        const map = await client.getMap('reentrant-lock-test' + TestUtil.randomString(10));
+        const map2 = await client.getMap('reentrant-lock-test' + TestUtil.randomString(10));
+
+        async function f() {
+            await LockContext.run(async () => {
+                await map.lock(key);
+                await map2.lock(key);
+                await map2.unlock(key);
+                await map.unlock(key);
+            });
+        }
+        const tasks = Array.from({length: 10}, f);
+        await Promise.all(tasks);
+    });
+
+    it('should be able to use different Map proxies from different clients in the same LockContext', async function() {
+        const key = 'k1';
+        const client2 = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id
+        }, member);
+
+        const map = await client.getMap('reentrant-lock-test' + TestUtil.randomString(10));
+        const map2 = await client2.getMap('reentrant-lock-test2' + TestUtil.randomString(10));
+
+        async function f() {
+            await LockContext.run(async () => {
+                await map.lock(key);
+                await map2.lock(key);
+                await map2.unlock(key);
+                await map.unlock(key);
+            });
+        }
+        const tasks = Array.from({length: 10}, f);
+        await Promise.all(tasks);
+    });
+
+    it('is not possible to use the same Map from different clients in the same LockContext', async function() {
+        const key = 'k1';
+        const client2 = await testFactory.newHazelcastClientForParallelTests({
+            clusterName: cluster.id
+        }, member);
+
+        const mapName = 'reentrant-lock-test' + TestUtil.randomString(10)
+        const map = await client.getMap(mapName);
+        const map2 = await client2.getMap(mapName);
+
+        async function f() {
+            await LockContext.run(async () => {
+                try {
+                    await map.lock(key);
+                    const res = await map2.tryLock(key);
+                    expect(res).equal(false);
+                } finally {
+                    await map.unlock(key);
+                }
+            });
+        }
+        const tasks = Array.from({length: 10}, f);
+        await Promise.all(tasks);
+    });
 });
+
