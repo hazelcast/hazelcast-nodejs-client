@@ -103,22 +103,25 @@ describe('ReliableTopicTest', function () {
         }).then((topic) => {
             topicTwo = topic;
             let receivedMessages = 0;
-            const id = topicTwo.addMessageListener(() => {
+            let id = null;
+            topicTwo.addMessageListener(() => {
                 receivedMessages++;
                 if (receivedMessages > 2) {
                     done(new Error('Kept receiving messages after message listener is removed.'));
                 }
+            }).then((listenerId) => {
+                id = listenerId;
             });
-
             topicOne.publish({ 'value0': 'foo0' });
             topicOne.publish({ 'value1': 'foo1' });
             setTimeout(() => {
-                topicTwo.removeMessageListener(id);
-                topicOne.publish({ 'value2': 'foo2' });
-                topicOne.publish({ 'value3': 'foo3' });
-                topicOne.publish({ 'value4': 'foo4' });
-                topicOne.publish({ 'value5': 'foo5' });
-                setTimeout(done, 500);
+                topicTwo.removeMessageListener(id).then(() => {
+                    topicOne.publish({ 'value2': 'foo2' });
+                    topicOne.publish({ 'value3': 'foo3' });
+                    topicOne.publish({ 'value4': 'foo4' });
+                    topicOne.publish({ 'value5': 'foo5' });
+                    setTimeout(done, 500);
+                });
             }, 500);
         }).catch(done);
     });
