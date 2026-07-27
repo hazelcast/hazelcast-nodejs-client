@@ -122,12 +122,31 @@ describe('MultiMapProxyLockTest', function () {
         locked = await mapOne.isLocked(1);
         expect(locked).to.be.false;
     });
+});
+
+describe('MultiMapProxyLockContextTest', function () {
+    let client;
+    const testFactory = new TestUtil.TestFactory();
+
+    before(async function () {
+        TestUtil.markClientVersionAtLeast(this, '5.7');
+        const cluster = await testFactory.createClusterForParallelTests();
+        const member = await RC.startMember(cluster.id);
+        const cfg = {
+            clusterName: cluster.id
+        };
+        client = await testFactory.newHazelcastClientForParallelTests(cfg, member);
+    });
+
+    after(async function () {
+        await testFactory.shutdownAll();
+    });
 
     it('should prevent data races when using lock context', async function() {
         const concurrency = 100;
         const target = Array.from({length: concurrency}, (_, i) => i);
         const key = 'k1';
-        const map = await clientOne.getMultiMap('lock-test');
+        const map = await client.getMultiMap('lock-test');
         await map.clear();
 
         async function f() {
