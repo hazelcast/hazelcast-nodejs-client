@@ -29,6 +29,7 @@ import {ReplicatedMapProxy} from './ReplicatedMapProxy';
 import {RingbufferProxy} from './ringbuffer/RingbufferProxy';
 import {SetProxy} from './SetProxy';
 import {ReliableTopicProxy} from './topic/ReliableTopicProxy';
+import {TopicProxy} from './topic/TopicProxy';
 import {deferredPromise} from '../util/Util';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
@@ -68,6 +69,7 @@ export class ProxyManager {
     public static readonly FLAKEID_SERVICE: string = 'hz:impl:flakeIdGeneratorService';
     public static readonly PNCOUNTER_SERVICE: string = 'hz:impl:PNCounterService';
     public static readonly RELIABLETOPIC_SERVICE: string = 'hz:impl:reliableTopicService';
+    public static readonly TOPIC_SERVICE: string = 'hz:impl:topicService';
 
     public readonly service: { [serviceName: string]: any } = {};
     private readonly proxies = new Map<string, Promise<DistributedObject>>();
@@ -98,6 +100,7 @@ export class ProxyManager {
         this.service[ProxyManager.FLAKEID_SERVICE] = FlakeIdGeneratorProxy;
         this.service[ProxyManager.PNCOUNTER_SERVICE] = PNCounterProxy;
         this.service[ProxyManager.RELIABLETOPIC_SERVICE] = ReliableTopicProxy;
+        this.service[ProxyManager.TOPIC_SERVICE] = TopicProxy;
     }
 
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): Promise<DistributedObject> {

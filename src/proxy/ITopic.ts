@@ -41,7 +41,7 @@ export interface ITopic<E> extends DistributedObject {
      * @param listener the MessageListener to add
      * @return registration ID
      */
-    addMessageListener(listener: MessageListener<E>): string;
+    addMessageListener(listener: MessageListener<E>): Promise<string>;
 
     /**
      * Stops receiving messages for the given message listener.
@@ -51,7 +51,7 @@ export interface ITopic<E> extends DistributedObject {
      * @param listenerId listener registration ID
      * @return `true` if registration is removed, `false` otherwise
      */
-    removeMessageListener(listenerId: string): boolean;
+    removeMessageListener(listenerId: string): Promise<boolean>;
 
     /**
      * Publishes the message to all subscribers of this topic.

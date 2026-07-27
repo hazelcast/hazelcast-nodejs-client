@@ -403,6 +403,13 @@ export class HazelcastClient {
     }
 
     /**
+     * Returns a distributed Topic instance with the given name.
+     */
+    getTopic<E>(name: string): Promise<ITopic<E>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.TOPIC_SERVICE) as Promise<ITopic<E>>;
+    }
+
+    /**
      * Returns the distributed Replicated Map instance with given name.
      */
     getReplicatedMap<K, V>(name: string): Promise<ReplicatedMap<K, V>> {

@@ -161,7 +161,7 @@ describe('CompactPublicAPIsTest', function () {
     let member;
     let client;
     let map, multimap, list, atomicReference,
-        queue, set, topic, nearCachedMap1, nearCachedMap2,
+        queue, set, reliableTopic, topic, nearCachedMap1, nearCachedMap2,
         replicatedMap, ringBuffer;
     let employee;
     let SchemaNotReplicatedError;
@@ -172,7 +172,7 @@ describe('CompactPublicAPIsTest', function () {
         <hazelcast xmlns="http://www.hazelcast.com/schema/config"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/config
-            http://www.hazelcast.com/schema/config/hazelcast-config-5.0.xsd">
+            http://www.hazelcast.com/schema/config/hazelcast-config-5.7.xsd">
             <network>
                 <port>0</port>
             </network>
@@ -260,7 +260,8 @@ describe('CompactPublicAPIsTest', function () {
         }
         queue = await client.getQueue(name);
         set = await client.getSet(name);
-        topic = await client.getReliableTopic(name);
+        reliableTopic = await client.getReliableTopic(name);
+        topic = await client.getTopic(name);
         ringBuffer = await client.getRingbuffer(name);
         compactSerializerUsed = false;
     });
@@ -281,6 +282,7 @@ describe('CompactPublicAPIsTest', function () {
         }
         await queue.destroy();
         await set.destroy();
+        await reliableTopic.destroy();
         await topic.destroy();
         await ringBuffer.destroy();
         await testFactory.shutdownAllClients();
@@ -1067,6 +1069,14 @@ describe('CompactPublicAPIsTest', function () {
     });
 
     describe('ReliableTopic', function () {
+        it('publish', async function () {
+            const fn = reliableTopic.publish.bind(reliableTopic, OUTER_INSTANCE);
+            await fn();
+            shouldThrowSerializationErrors(client, fn);
+        });
+    });
+
+    describe('Topic', function () {
         it('publish', async function () {
             const fn = topic.publish.bind(topic, OUTER_INSTANCE);
             await fn();
