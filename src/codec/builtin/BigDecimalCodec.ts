@@ -17,7 +17,7 @@ export class BigDecimalCodec {
         return new BigDecimal(bufferToBigInt(body), scale);
     }
 
-    static decodeNullable(clientMessage: ClientMessage): BigDecimal {
+    static decodeNullable(clientMessage: ClientMessage): BigDecimal | null {
         return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : BigDecimalCodec.decode(clientMessage);
     }
 }

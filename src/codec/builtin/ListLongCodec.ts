@@ -15,7 +15,7 @@
  */
 
 import {ClientMessage, Frame} from '../../protocol/ClientMessage';
-import * as Long from 'long';
+import Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
 

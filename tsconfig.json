@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "declaration": true,
-        "module": "commonjs",
-        "moduleResolution": "node",
+        "module": "node16",
+        "moduleResolution": "node16",
         "noImplicitAny": true,
         "alwaysStrict": true,
         "strictBindCallApply": true,
@@ -10,10 +10,14 @@
         "noImplicitThis": true,
         "target": "es2018",
         "outDir": "lib",
+        "rootDir": "src",
         "preserveConstEnums": true,
         "lib": [
             "es2018",
             "es2020.bigint"
+        ],
+        "types": [
+            "node"
         ],
         "removeComments": false,
         "sourceMap": true,

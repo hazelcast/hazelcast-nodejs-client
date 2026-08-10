@@ -33,7 +33,7 @@ export class CodecUtil {
         }
     }
 
-    static encodeNullable<T>(clientMessage: ClientMessage, value: T, encoder: (msg: ClientMessage, val: T) => void): void {
+    static encodeNullable<T>(clientMessage: ClientMessage, value: T | null, encoder: (msg: ClientMessage, val: T) => void): void {
         if (value == null) {
             clientMessage.addFrame(NULL_FRAME.copy());
         } else {
@@ -41,7 +41,7 @@ export class CodecUtil {
         }
     }
 
-    static decodeNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T {
+    static decodeNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T | null {
         return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : decoder(clientMessage);
     }
 
