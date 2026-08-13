@@ -25,10 +25,10 @@ export class StackTraceElement implements ServerErrorStackElement {
     fileName: string;
     lineNumber: number;
 
-    constructor(className: string, methodName: string, fileName: string, lineNumber: number) {
+    constructor(className: string, methodName: string, fileName: string | null, lineNumber: number) {
         this.className = className;
         this.methodName = methodName;
-        this.fileName = fileName;
+        this.fileName = fileName === null? '' : fileName;
         this.lineNumber = lineNumber;
     }
 }

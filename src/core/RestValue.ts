@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
-import {DataInput, DataOutput} from '../serialization/Data';
+import {IdentifiedDataSerializable} from '../serialization';
+import {DataInput, DataOutput} from '../serialization';
 
 /** @internal */
 export const REST_VALUE_FACTORY_ID = -25;
@@ -30,11 +30,11 @@ export class RestValue implements IdentifiedDataSerializable {
     /**
      * Wrapped value.
      */
-    value: string;
+    value: string | null = null;
     /**
      * HTTP Content-Type specified for the value.
      */
-    contentType: string;
+    contentType: string | null = null;
     /** @ignore */
     factoryId = REST_VALUE_FACTORY_ID;
     /** @ignore */
@@ -54,7 +54,7 @@ export class RestValue implements IdentifiedDataSerializable {
 }
 
 /** @internal */
-export function restValueFactory(classId: number): IdentifiedDataSerializable {
+export function restValueFactory(classId: number): IdentifiedDataSerializable | null {
     if (classId === REST_VALUE_CLASS_ID) {
         return new RestValue();
     }

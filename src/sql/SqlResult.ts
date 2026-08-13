@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as Long from 'long';
+import Long from 'long';
 
 import {SqlRow, SqlRowImpl} from './SqlRow';
-import {SqlRowMetadata} from './SqlRowMetadata';
+import {SqlRowMetadata, SqlRowMetadataImpl} from './SqlRowMetadata';
 import {SqlPage} from './SqlPage';
 import {SqlServiceImpl} from './SqlService';
 import {Connection} from '../network/Connection';
@@ -130,15 +130,15 @@ export interface SqlResult extends AsyncIterable<SqlRowType> {
 /** @internal */
 export class SqlResultImpl implements SqlResult {
     /** Update count received as a result of SQL execution. See {@link SqlExpectedResultType} */
-    updateCount: Long;
+    updateCount: Long = Long.ZERO;
 
     private currentPage: SqlPage | null;
 
     /* The number of rows in current page */
-    private currentRowCount: number;
+    private currentRowCount = 0;
 
     /* Current row position in current page */
-    private currentPosition: number;
+    private currentPosition = 0;
 
     /* Set to true when the last page is received */
     private last: boolean;
@@ -146,12 +146,12 @@ export class SqlResultImpl implements SqlResult {
     /**
      * Deferred promise that resolves to an SqlPage when current fetch request is completed.
      */
-    private fetchDeferred: DeferredPromise<SqlPage>;
+    private fetchDeferred?: DeferredPromise<SqlPage>;
 
     /**
      * Deferred promise that resolves when current close request is completed.
      */
-    private closeDeferred: DeferredPromise<void>;
+    private closeDeferred: DeferredPromise<void> | null = null;
 
     /**
      * Whether the result is closed or not. The result is closed if an update count or the last page is received.
@@ -182,7 +182,7 @@ export class SqlResultImpl implements SqlResult {
     }
 
     /** This symbol is needed to be included to be an async iterable */
-    [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType, SqlRowType> {
+    [Symbol.asyncIterator](): AsyncIterator<SqlRowType, SqlRowType | undefined> {
         const nextFn = this.next.bind(this);
         return {
             next: nextFn
@@ -231,9 +231,9 @@ export class SqlResultImpl implements SqlResult {
         this.fetchDeferred.reject(error);
         // Send the close request.
         this.sqlService.close(this.connection, this.queryId).then(() => {
-            this.closeDeferred.resolve();
+            this.closeDeferred?.resolve();
         }).catch(err => {
-            this.closeDeferred.reject(this.sqlService.rethrow(err, this.connection));
+            this.closeDeferred?.reject(this.sqlService.rethrow(err, this.connection));
         });
 
         this.closed = true;
@@ -269,19 +269,21 @@ export class SqlResultImpl implements SqlResult {
      * @returns the current row.
      */
     private getCurrentRow(): SqlRowType {
+        const columnCount = this.currentPage?.getColumnCount() || 0;
         if (this.returnRawResult) { // Return SqlRow
-            const columnCount = this.currentPage.getColumnCount();
             const values = new Array(columnCount);
             for (let i = 0; i < columnCount; i++) {
-                values[i] = this.currentPage.getValue(this.currentPosition, i);
+                values[i] = this.currentPage?.getValue(this.currentPosition, i);
             }
             // Deserialization happens lazily while getting the object.
-            return new SqlRowImpl(values, this.rowMetadata, this.deserializeFn);
+            return new SqlRowImpl(values, this.rowMetadata || new SqlRowMetadataImpl([]), this.deserializeFn);
         } else { // Return objects
             const result: SqlRowAsObject = {};
-            for (let i = 0; i < this.currentPage.getColumnCount(); i++) {
-                const columnMetadata = this.rowMetadata.getColumn(i);
-                result[columnMetadata.name] = this.deserializeFn(this.currentPage.getValue(this.currentPosition, i), false);
+            for (let i = 0; i < columnCount; i++) {
+                const columnMetadata = this.rowMetadata?.getColumn(i);
+                if (columnMetadata) {
+                    result[columnMetadata.name] = this.deserializeFn(this.currentPage?.getValue(this.currentPosition, i), false);
+                }
             }
             return result;
         }
@@ -296,7 +298,9 @@ export class SqlResultImpl implements SqlResult {
     onExecuteResponse(rowMetadata: SqlRowMetadata | null, rowPage: SqlPage | null, updateCount: Long) {
         if (rowMetadata !== null) { // Result that includes rows
             this.rowMetadata = rowMetadata;
-            this.onNextPage(rowPage);
+            if (rowPage) {
+                this.onNextPage(rowPage);
+            }
             this.updateCount = Long.fromInt(-1);
         } else { // Result that includes update count
             this.updateCount = updateCount;
@@ -321,10 +325,13 @@ export class SqlResultImpl implements SqlResult {
         this.fetchDeferred = deferredPromise<SqlPage>();
 
         this.sqlService.fetch(this.connection, this.queryId, this.cursorBufferSize).then(sqlPage => {
-            this.fetchDeferred.resolve(sqlPage);
+            if (sqlPage === null) {
+                return;
+            }
+            this.fetchDeferred?.resolve(sqlPage);
             this.fetchDeferred = undefined; // Set fetchDeferred to undefined to be able to fetch again
         }).catch(err => {
-            this.fetchDeferred.reject(this.sqlService.rethrow(err, this.connection));
+            this.fetchDeferred?.reject(this.sqlService.rethrow(err, this.connection));
         });
 
         return this.fetchDeferred.promise;

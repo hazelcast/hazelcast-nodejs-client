@@ -39,9 +39,6 @@ export class ClassDefinitionContext {
     }
 
     register(classDefinition: ClassDefinition): ClassDefinition {
-        if (classDefinition === null) {
-            return null;
-        }
         if (classDefinition.getFactoryId() !== this.factoryId) {
             throw new HazelcastSerializationError(`This factory's number is ${this.factoryId}.
             Intended factory id is ${classDefinition.getFactoryId()}`);

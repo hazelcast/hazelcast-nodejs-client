@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {RaftGroupId} from './RaftGroupId';
 import {
     IllegalStateError,
@@ -29,7 +29,7 @@ import {
 import {CPSessionCloseSessionCodec} from '../../codec/CPSessionCloseSessionCodec';
 import {CPSessionHeartbeatSessionCodec} from '../../codec/CPSessionHeartbeatSessionCodec';
 import {CPSessionGenerateThreadIdCodec} from '../../codec/CPSessionGenerateThreadIdCodec';
-import {ILogger} from '../../logging/ILogger';
+import {ILogger} from '../../logging';
 import {
     scheduleWithRepetition,
     cancelRepetitionTask,
@@ -89,7 +89,7 @@ export class CPSessionManager {
     private readonly sessions: Map<string, SessionState> = new Map();
     // group id to in-flight create session requests map
     private readonly inFlightCreateSessionRequests: Map<string, Promise<SessionState>> = new Map();
-    private heartbeatTask: Task;
+    private heartbeatTask?: Task;
     private isShutdown = false;
 
     constructor(

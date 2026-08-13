@@ -90,7 +90,7 @@ export class PortableContext {
             }
             builder.addField(new FieldDefinition(i, name, type, fieldVersion, fieldFactoryId, fieldClassId));
         }
-        let classDefinition = builder.build();
+        let classDefinition: ClassDefinition | null = builder.build();
         if (register) {
             classDefinition = this.registerClassDefinition(classDefinition);
         }
@@ -109,7 +109,7 @@ export class PortableContext {
         return cd;
     }
 
-    lookupClassDefinition(factoryId: number, classId: number, version: number): ClassDefinition {
+    lookupClassDefinition(factoryId: number, classId: number, version: number): ClassDefinition | null {
         const factory = this.classDefContext[factoryId];
         if (factory == null) {
             return null;

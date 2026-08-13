@@ -15,8 +15,8 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
-import * as Long from 'long';
+import assert from 'assert';
+import Long from 'long';
 import {BitsUtil} from '../util/BitsUtil';
 import {Data, DataInput, DataOutput, PositionalDataOutput} from './Data';
 import {HeapData, HEAP_DATA_OVERHEAD} from './HeapData';
@@ -51,7 +51,7 @@ export class ObjectDataOutput implements DataOutput {
 
     position(newPosition?: number): number {
         const oldPos = this.pos;
-        if (Number.isInteger(newPosition)) {
+        if (newPosition !== undefined) {
             this.pos = newPosition;
         }
         return oldPos;
@@ -202,12 +202,12 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     writeString(val: string | null): void {
-        const len = (val != null) ? Buffer.byteLength(val, 'utf8') : BitsUtil.NULL_ARRAY_LENGTH;
-        this.writeInt(len);
-        if (len === BitsUtil.NULL_ARRAY_LENGTH) {
+        if (val === null) {
+            this.writeInt(BitsUtil.NULL_ARRAY_LENGTH)
             return;
         }
-
+        const len = Buffer.byteLength(val, 'utf8');
+        this.writeInt(len);
         this.ensureAvailable(len);
         this.buffer.write(val, this.pos, this.pos + len, 'utf8');
         this.pos += len;
@@ -240,12 +240,13 @@ export class ObjectDataOutput implements DataOutput {
     }
 
     private writeArray(func: (val: any) => void, arr: any[] | null): void {
-        const len = (arr != null) ? arr.length : BitsUtil.NULL_ARRAY_LENGTH;
-        this.writeInt(len);
-        if (len > 0) {
-            const boundFunc = func.bind(this);
-            arr.forEach(boundFunc);
+        if (arr === null) {
+            this.writeInt(BitsUtil.NULL_ARRAY_LENGTH);
+            return;
         }
+        this.writeInt(arr.length);
+        const boundFunc = func.bind(this);
+        arr.forEach(boundFunc);
     }
 }
 
@@ -343,7 +344,7 @@ export class ObjectDataInput implements DataInput {
 
     position(newPosition?: number): number {
         const oldPos = this.pos;
-        if (Number.isInteger(newPosition)) {
+        if (newPosition !== undefined && Number.isInteger(newPosition)) {
             this.pos = newPosition;
         }
         return oldPos;
@@ -418,8 +419,7 @@ export class ObjectDataInput implements DataInput {
 
     readData(): Data | null {
         const bytes = this.readByteArray();
-        const data: Data = bytes === null ? null : new HeapData(Buffer.from(bytes));
-        return data;
+        return bytes === null ? null : new HeapData(Buffer.from(bytes));
     }
 
     readDouble(pos?: number): number {
@@ -528,10 +528,10 @@ export class ObjectDataInput implements DataInput {
 
     readString(pos?: number): string | null {
         const len = this.readInt(pos);
-        const readPos = ObjectDataInput.addOrUndefined(pos, 4) || this.pos;
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
             return null;
         }
+        const readPos = (pos === undefined)? this.pos : pos + 4;
         const result = this.buffer.toString('utf8', readPos, readPos + len);
         if (pos === undefined) {
             this.pos += len;
@@ -592,13 +592,5 @@ export class ObjectDataInput implements DataInput {
     private assertAvailable(numOfBytes: number, pos: number = this.pos): void {
         assert(pos >= 0);
         assert(pos + numOfBytes <= this.buffer.length);
-    }
-
-    private static addOrUndefined(base: number, adder: number): number {
-        if (base === undefined) {
-            return undefined;
-        } else {
-            return base + adder;
-        }
     }
 }

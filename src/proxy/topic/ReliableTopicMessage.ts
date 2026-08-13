@@ -15,9 +15,9 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
-import {Data, DataInput, DataOutput} from '../../serialization/Data';
-import {IdentifiedDataSerializable} from '../../serialization/Serializable';
+import Long from 'long';
+import {Data, DataInput, DataOutput} from '../../serialization';
+import {IdentifiedDataSerializable} from '../../serialization';
 import {AddressImpl} from '../../core';
 
 /** @internal */
@@ -30,9 +30,9 @@ export class ReliableTopicMessage implements IdentifiedDataSerializable {
 
     factoryId = RELIABLE_TOPIC_MESSAGE_FACTORY_ID;
     classId = RELIABLE_TOPIC_CLASS_ID;
-    publishTime: Long;
-    publisherAddress: AddressImpl;
-    payload: Data;
+    publishTime: Long = Long.ZERO;
+    publisherAddress: AddressImpl | null = null;
+    payload: Data | null = null;
 
     readData(input: DataInput): any {
         this.publishTime = input.readLong();
@@ -48,7 +48,7 @@ export class ReliableTopicMessage implements IdentifiedDataSerializable {
 }
 
 /** @internal */
-export function reliableTopicMessageFactory(classId: number): IdentifiedDataSerializable {
+export function reliableTopicMessageFactory(classId: number): IdentifiedDataSerializable | null {
     if (classId === RELIABLE_TOPIC_CLASS_ID) {
         return new ReliableTopicMessage();
     }

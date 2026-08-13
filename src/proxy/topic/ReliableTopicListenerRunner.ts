@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {ReadResultSet} from '../../';
+import {AddressImpl, ReadResultSet} from '../../';
 import {
     OperationTimeoutError,
     ClientNotActiveError,
@@ -26,7 +26,7 @@ import {Ringbuffer} from '../Ringbuffer';
 import {ReliableTopicMessage} from './ReliableTopicMessage';
 import {ReliableTopicProxy} from './ReliableTopicProxy';
 import {Message, MessageListener} from '../MessageListener';
-import {ILogger} from '../../logging/ILogger';
+import {ILogger} from '../../logging';
 
 /** @internal */
 export class ReliableTopicListenerRunner<E> {
@@ -77,11 +77,13 @@ export class ReliableTopicListenerRunner<E> {
                 }
 
                 for (let i = 0; i < result.size(); i++) {
-                    const msg = new Message<E>();
                     const item = result.get(i);
-                    msg.messageObject = this.serializationService.toObject(item.payload);
-                    msg.publisher = item.publisherAddress;
-                    msg.publishingTime = item.publishTime;
+                    if (item === undefined) {
+                        continue;
+                    }
+                    const messageObject = this.serializationService.toObject(item.payload);
+                    const address = item.publisherAddress || new AddressImpl();
+                    const msg = new Message<E>(messageObject, address, item.publishTime);
                     process.nextTick(this.listener, msg);
                 }
 

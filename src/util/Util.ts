@@ -15,8 +15,8 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
-import * as Long from 'long';
+import assert from 'assert';
+import Long from 'long';
 import * as Path from 'path';
 import {IllegalStateError, MemberImpl} from '../core';
 import {MemberVersion} from '../core/MemberVersion';
@@ -148,7 +148,7 @@ export function tryGetStringOrNull(val: any): string {
 }
 
 /** @internal */
-export function getStringOrUndefined(val: any): string {
+export function getStringOrUndefined(val: any): string | undefined {
     try {
         return tryGetString(val);
     } catch (e) {
@@ -157,7 +157,7 @@ export function getStringOrUndefined(val: any): string {
 }
 
 /** @internal */
-export function getBooleanOrUndefined(val: any): boolean {
+export function getBooleanOrUndefined(val: any): boolean | undefined {
     try {
         return tryGetBoolean(val);
     } catch (e) {
@@ -166,7 +166,8 @@ export function getBooleanOrUndefined(val: any): boolean {
 }
 
 /** @internal */
-export function tryGetEnum<T>(enumClass: any | { [index: string]: number }, str: string): T {
+export function tryGetEnum<T>(enumClass: any | { [index: string]: number }, str?: string): T {
+    str = str || 'UNKNOWN';
     const result = enumClass[str.toUpperCase()];
     if (result == null) {
         throw new TypeError(str + ' is not a member of the enum ' + enumClass);
@@ -193,8 +194,8 @@ export function randomInt(upperBound: number): number {
 
 /** @internal */
 export class Task {
-    timeoutId: NodeJS.Timeout;
-    intervalId: NodeJS.Timeout;
+    timeoutId?: NodeJS.Timeout;
+    intervalId?: NodeJS.Timeout;
 }
 
 /** @internal */
@@ -340,16 +341,18 @@ export function memberOfLargerSameVersionGroup(members: MemberImpl[]): MemberImp
         return null;
     }
 
+    const nullVersion = new MemberVersion(0, 0, 0);
     let count: number;
     let version: MemberVersion;
 
     if (count0 > count1 || count0 === count1
-        && BuildInfo.calculateMemberVersion(version0) > BuildInfo.calculateMemberVersion(version1)) {
+        && BuildInfo.calculateMemberVersion(version0 || nullVersion)
+        > BuildInfo.calculateMemberVersion(version1 || nullVersion)) {
         count = count0;
-        version = version0;
+        version = version0 || nullVersion;
     } else {
         count = count1;
-        version = version1;
+        version = version1 || nullVersion;
     }
 
     // otherwise return a random member from the larger group
@@ -362,4 +365,5 @@ export function memberOfLargerSameVersionGroup(members: MemberImpl[]): MemberImp
             }
         }
     }
+    return null;
 }

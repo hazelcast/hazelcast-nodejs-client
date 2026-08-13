@@ -22,10 +22,10 @@ export class ErrorHolder {
 
     errorCode: number;
     className: string;
-    message: string;
+    message: string | null;
     stackTraceElements: StackTraceElement[];
 
-    constructor(errorCode: number, className: string, message: string, stackTraceElements: StackTraceElement[]) {
+    constructor(errorCode: number, className: string, message: string | null, stackTraceElements: StackTraceElement[]) {
         this.errorCode = errorCode;
         this.className = className;
         this.message = message;

@@ -32,7 +32,11 @@ class ReadOnlyLazyListIterator<T> implements Iterator<T> {
      */
     next(): IteratorResult<T> {
         if (this.index < this.list.size()) {
-            return {done: false, value: this.list.get(this.index++)};
+            const value = this.list.get(this.index++);
+            if (value === undefined) {
+                return {done: true, value: undefined};
+            }
+            return {done: false, value: value};
         } else {
             return {done: true, value: undefined};
         }
@@ -62,7 +66,7 @@ export class ReadOnlyLazyList<T> {
      * @throws {@link HazelcastSerializationError} if the object to be returned is a compact object whose schema is not known
      * @returns element
      */
-    get(index: number): T {
+    get(index: number): T | undefined {
         const dataOrObject = this.internalArray[index];
         if (dataOrObject == null) {
             return undefined;

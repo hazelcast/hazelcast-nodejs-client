@@ -15,10 +15,10 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
-import {UUID} from '../core/UUID';
+import Long from 'long';
+import {UUID} from '../core';
 import {PartitionService} from '../PartitionService';
-import {Data} from '../serialization/Data';
+import {Data} from '../serialization';
 import {MetadataContainer} from './MetadataContainer';
 import {NearCache} from './NearCache';
 
@@ -60,7 +60,7 @@ export class RepairingHandler {
         }
     }
 
-    handle(key: Data, sourceUuid: UUID, partitionUuid: UUID, sequence: Long): void {
+    handle(key: Data | null, sourceUuid: UUID, partitionUuid: UUID, sequence: Long): void {
         // apply invalidation if it's not originated by local member/client (because local
         // Near Caches are invalidated immediately there is no need to invalidate them twice)
         if (!this.localUuid.equals(sourceUuid)) {
@@ -124,7 +124,7 @@ export class RepairingHandler {
         return this.name;
     }
 
-    private getPartitionIdOrDefault(key: Data): number {
+    private getPartitionIdOrDefault(key: Data | null): number {
         if (key != null) {
             return this.partitionService.getPartitionId(key);
         } else {

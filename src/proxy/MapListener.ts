@@ -47,9 +47,9 @@ export class MapEvent {
     /**
      * The member that fired this event.
      */
-    member: Member;
+    member?: Member;
 
-    constructor(name: string, numberOfAffectedEntries: number, member: Member) {
+    constructor(name: string, numberOfAffectedEntries: number, member?: Member) {
         this.name = name;
         this.numberOfAffectedEntries = numberOfAffectedEntries;
         this.member = member;

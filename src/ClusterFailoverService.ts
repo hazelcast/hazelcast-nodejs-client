@@ -135,17 +135,17 @@ export class ClusterFailoverServiceBuilder {
         }
 
         const cloudAddressProvider = this.initCloudAddressProvider(config);
-        if (cloudAddressProvider != null) {
+        if (cloudAddressProvider) {
             return cloudAddressProvider;
         }
 
         return new DefaultAddressProvider(networkConfig);
     }
 
-    private initCloudAddressProvider(config: ClientConfigImpl): HazelcastCloudAddressProvider {
+    private initCloudAddressProvider(config: ClientConfigImpl): HazelcastCloudAddressProvider | null {
         const cloudConfig = config.network.hazelcastCloud;
         const discoveryToken = cloudConfig.discoveryToken;
-        if (discoveryToken != null) {
+        if (discoveryToken) {
             const urlEndpoint = HazelcastCloudDiscovery.createUrlEndpoint(config.properties, discoveryToken);
             return new HazelcastCloudAddressProvider(
                 urlEndpoint, ClusterFailoverServiceBuilder.getConnectionTimeoutMillis(config), this.loggingService.getLogger());

@@ -27,7 +27,7 @@ export interface SSLOptionsFactory {
      *
      * @param properties `properties` configuration option
      */
-    init(properties: Properties): Promise<void>;
+    init(properties?: Properties): Promise<void>;
 
     /**
      * Called after the client initialization to create the `options`

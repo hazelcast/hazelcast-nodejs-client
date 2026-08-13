@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
+import Long from 'long';
 import {EntryListener} from './EntryListener';
 import {
     DistributedObject,

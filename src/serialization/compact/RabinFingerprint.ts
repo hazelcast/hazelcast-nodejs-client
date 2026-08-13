@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {Schema} from './Schema';
-import * as Long from 'long';
+import Long from 'long';
 import {Buffer} from 'buffer';
 
 export const INIT =  Long.fromString('0xc15d213aa4d7a795', false, 16);

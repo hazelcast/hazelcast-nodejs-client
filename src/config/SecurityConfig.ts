@@ -41,6 +41,6 @@ export interface SecurityConfig {
 /** @internal */
 export class SecurityConfigImpl implements SecurityConfig {
     usernamePassword = new UsernamePasswordCredentialsImpl(null, null);
-    token: TokenCredentialsImpl = null;
-    custom: any = null;
+    token?: TokenCredentialsImpl;
+    custom?: any;
 }

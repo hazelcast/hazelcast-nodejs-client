@@ -15,17 +15,17 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
-import {MapGetAllCodec} from './../codec/MapGetAllCodec';
+import {MapGetAllCodec} from '../codec/MapGetAllCodec';
 import {EventType} from './EventType';
-import {UUID} from '../core/UUID';
+import {UUID} from '../core';
 import {PartitionService, PartitionServiceImpl} from '../PartitionService';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {NearCache} from '../nearcache/NearCache';
 import {StaleReadDetectorImpl} from '../nearcache/StaleReadDetector';
-import {Data} from '../serialization/Data';
+import {Data} from '../serialization';
 import {MapProxy} from './MapProxy';
 import {ClientMessage, ClientMessageHandler} from '../protocol/ClientMessage';
 import {NearCacheManager} from '../nearcache/NearCacheManager';
@@ -44,7 +44,7 @@ import {SchemaNotFoundError, Predicate} from '../core';
 export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     private nearCache: NearCache;
-    private invalidationListenerId: string;
+    private invalidationListenerId = '';
     private readonly nearCacheManager: NearCacheManager;
     private readonly getRepairingTask: () => RepairingTask;
 
@@ -114,7 +114,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
     protected deleteInternal(keyData: Data): Promise<void> {
         this.nearCache.invalidate(keyData);
         return super.deleteInternal(keyData)
-            .then<void>(() => this.invalidateCacheEntryAndReturn(keyData));
+            .then<void>(() => this.invalidateCacheEntryByKeyAndReturn(keyData));
     }
 
     protected evictInternal(key: Data): Promise<boolean> {
@@ -151,7 +151,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
                                    ttl: number | Long = -1,
                                    maxIdle?: number | Long): Promise<void> {
         return super.putTransientInternal(keyData, valueData, ttl, maxIdle)
-            .then<void>(() => this.invalidateCacheEntryAndReturn(keyData));
+            .then<void>(() => this.invalidateCacheEntryByKeyAndReturn(keyData));
     }
 
     protected executeOnKeyInternal(keyData: Data, proData: Data): Promise<V> {
@@ -209,8 +209,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
         for (const partition in partitionsToKeys) {
             partitionPromises.push(
                 this.encodeInvokeOnPartition(MapGetAllCodec, Number(partition), (clientMessage: ClientMessage) : any => {
-                const getAllResponse = MapGetAllCodec.decodeResponse(clientMessage);
-                return getAllResponse;
+                return MapGetAllCodec.decodeResponse(clientMessage);
             }, partitionsToKeys[partition]));
         }
         const deserializeEntry = (entry: [Data, Data]) : [any, any] => {
@@ -300,7 +299,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
                           ttl: number | Long = -1,
                           maxIdle?: number | Long): Promise<void> {
         return super.setInternal(keyData, valueData, ttl, maxIdle)
-            .then<void>(() => this.invalidateCacheEntryAndReturn(keyData));
+            .then<void>(() => this.invalidateCacheEntryByKeyAndReturn(keyData));
     }
 
     protected tryPutInternal(keyData: Data, valueData: Data, timeout: number): Promise<boolean> {
@@ -315,10 +314,17 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
 
     private removeNearCacheInvalidationListener(): Promise<boolean> {
         this.getRepairingTask().deregisterHandler(this.name);
-        return this.listenerService.deregisterListener(this.invalidationListenerId);
+        if (this.invalidationListenerId) {
+            return this.listenerService.deregisterListener(this.invalidationListenerId);
+        }
+        return Promise.resolve(false);
     }
 
-    private invalidateCacheEntryAndReturn<T>(keyData: Data, retVal?: T): T {
+    private invalidateCacheEntryByKeyAndReturn(keyData: Data) {
+        this.nearCache.invalidate(keyData);
+    }
+
+    private invalidateCacheEntryAndReturn<T>(keyData: Data, retVal: T): T {
         this.nearCache.invalidate(keyData);
         return retVal;
     }
@@ -360,7 +366,7 @@ export class NearCachedMapProxy<K, V> extends MapProxy<K, V> {
                 repairingHandler, this.partitionService as PartitionServiceImpl);
             this.nearCache.setStaleReadDetector(staleReadDetector);
 
-            const handle = (key: Data, sourceUuid: UUID, partitionUuid: UUID, sequence: Long) => {
+            const handle = (key: Data | null, sourceUuid: UUID, partitionUuid: UUID, sequence: Long) => {
                 repairingHandler.handle(key, sourceUuid, partitionUuid, sequence);
             };
             const handleBatch = (keys: Data[], sourceUuids: UUID[], partititonUuids: UUID[], sequences: Long[]) => {

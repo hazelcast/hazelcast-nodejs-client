@@ -46,7 +46,11 @@ export class CodecUtil {
     }
 
     static nextFrameIsDataStructureEndFrame(clientMessage: ClientMessage): boolean {
-        return clientMessage.peekNextFrame().isEndFrame();
+        const frame = clientMessage.peekNextFrame();
+        if (!frame) {
+            throw new RangeError('next frame is null');
+        }
+        return frame.isEndFrame();
     }
 
     /**
@@ -55,7 +59,11 @@ export class CodecUtil {
      * by calling {@link ClientMessage.nextFrame} once to skip the {@link NULL_FRAME}.
      */
     static nextFrameIsNullFrame(clientMessage: ClientMessage): boolean {
-        const isNull = clientMessage.peekNextFrame().isNullFrame();
+        const frame = clientMessage.peekNextFrame();
+        if (!frame) {
+            throw new RangeError('next frame is null')
+        }
+        const isNull = frame.isNullFrame();
         if (isNull) {
             clientMessage.nextFrame();
         }

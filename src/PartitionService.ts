@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ILogger} from './logging/ILogger';
+import {ILogger} from './logging';
 import {Connection} from './network/Connection';
 import {ClientOfflineError, HazelcastSerializationError, SchemaNotReplicatedError, UUID} from './core';
 import {SerializationService} from './serialization/SerializationService';
@@ -31,7 +31,7 @@ export interface PartitionService {
      * @return UUID of the owner of the partition
      *         or `undefined` if a partition is not assigned yet
      */
-    getPartitionOwner(partitionId: number): UUID;
+    getPartitionOwner(partitionId: number): UUID | undefined;
 
     /**
      * Returns partition count of the connected cluster.
@@ -54,7 +54,7 @@ export interface PartitionService {
 }
 
 class PartitionTable {
-    connection: Connection;
+    connection?: Connection;
     partitionStateVersion = -1;
     partitions = new Map<number, UUID>();
 }
@@ -91,7 +91,7 @@ export class PartitionServiceImpl implements PartitionService {
         this.partitionTable.partitions = newPartitions;
     }
 
-    getPartitionOwner(partitionId: number): UUID {
+    getPartitionOwner(partitionId: number): UUID | undefined {
         return this.getPartitions().get(partitionId);
     }
 
@@ -118,6 +118,7 @@ export class PartitionServiceImpl implements PartitionService {
                         , e
                     );
                 }
+                throw e;
             }
         }
         return Math.abs(partitionHash) % this.partitionCount;
@@ -174,7 +175,7 @@ export class PartitionServiceImpl implements PartitionService {
             return false;
         }
 
-        if (!connection.equals(current.connection)) {
+        if (!current.connection || !connection.equals(current.connection)) {
             this.logger.trace('PartitionService', 'Event coming from a new connection. Old connection: ' + current.connection
                 + ', new connection ' + connection);
             return true;

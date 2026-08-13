@@ -24,12 +24,12 @@ export interface ItemListener<E> {
     /**
      * Triggered when an item is added.
      */
-    itemAdded?: ItemEventListener<E>;
+    itemAdded?: ItemEventListener<E | null>;
 
     /**
      * Triggered when an item is removed.
      */
-    itemRemoved?: ItemEventListener<E>;
+    itemRemoved?: ItemEventListener<E | null>;
 
 }
 

@@ -24,17 +24,17 @@ import {
     LocalTime,
     OffsetDateTime,
 } from '../../core';
-import * as Long from 'long';
-import {GenericRecord} from '../generic_record/GenericRecord';
+import Long from 'long';
+import {GenericRecord} from '../generic_record';
 import {CompactStreamSerializer} from './CompactStreamSerializer';
 import {PositionalObjectDataOutput} from '../ObjectData';
 import {Schema} from './Schema';
 import {BitsUtil} from '../../util/BitsUtil';
-import {FieldKind} from '../generic_record/FieldKind';
+import {FieldKind} from '../generic_record';
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
 import {IOUtil} from '../../util/IOUtil';
 import {BYTE_OFFSET_READER_RANGE, NULL_OFFSET, SHORT_OFFSET_READER_RANGE} from './OffsetConstants';
-import {CompactGenericRecordImpl} from '../generic_record/CompactGenericRecord';
+import {CompactGenericRecordImpl} from '../generic_record';
 
 /**
  *
@@ -45,7 +45,7 @@ import {CompactGenericRecordImpl} from '../generic_record/CompactGenericRecord';
  */
 export class DefaultCompactWriter implements CompactWriter {
     private readonly dataStartPosition : number;
-    private readonly fieldOffsets: Array<number> | null;
+    private readonly fieldOffsets: Array<number>;
 
     constructor(
         private readonly serializer: CompactStreamSerializer,
@@ -58,7 +58,7 @@ export class DefaultCompactWriter implements CompactWriter {
             // Skip for length and primitives
             this.out.writeZeroBytes(schema.fixedSizeFieldsLength + BitsUtil.INT_SIZE_IN_BYTES);
         } else {
-            this.fieldOffsets = null;
+            this.fieldOffsets = [];
             this.dataStartPosition = out.position();
             // Skip for primitives. No need to write data length, when there is no variable-size fields.
             out.writeZeroBytes(schema.fixedSizeFieldsLength);
@@ -293,13 +293,13 @@ export class DefaultCompactWriter implements CompactWriter {
         });
     }
 
-    writeGenericRecord(fieldName: string, value: GenericRecord): void {
+    writeGenericRecord(fieldName: string, value: GenericRecord | null): void {
         return this.writeVariableSizeField(fieldName, FieldKind.COMPACT, value, (out, value) => {
             return this.serializer.writeGenericRecord(out, value as CompactGenericRecordImpl);
         });
     }
 
-    writeArrayOfGenericRecord(fieldName: string, value: GenericRecord[]) : void {
+    writeArrayOfGenericRecord(fieldName: string, value: Array<GenericRecord|null> | null) : void {
         const singleSchemaCompactArrayItemChecker = new SingleSchemaCompactArrayItemChecker();
         return this.writeArrayOfVariableSizes(fieldName, FieldKind.ARRAY_OF_COMPACT, value, (out, value) => {
             singleSchemaCompactArrayItemChecker.check(value);
@@ -355,7 +355,7 @@ export class DefaultCompactWriter implements CompactWriter {
     private writeArrayOfVariableSizes<T>(
         fieldName: string,
         fieldKind: FieldKind,
-        values: T[] | null,
+        values: Array<T|null> | null,
         writeFn: (out: PositionalObjectDataOutput, value: T) => void
     ) : void {
         if (values === null) {
@@ -371,9 +371,10 @@ export class DefaultCompactWriter implements CompactWriter {
         const offset = this.out.position();
         const offsets = new Array<number>(itemCount);
         for (let i = 0; i < itemCount; i++) {
-            if (values[i] !== null) {
+            const value = values[i];
+            if (value !== null) {
                 offsets[i] = this.out.position() - offset;
-                writeFn(this.out, values[i]);
+                writeFn(this.out, value);
             } else {
                 offsets[i] = NULL_OFFSET;
             }
@@ -418,6 +419,7 @@ export class DefaultCompactWriter implements CompactWriter {
     }
 
     private static writeBooleanBits(out: PositionalObjectDataOutput, booleans: boolean[] | null) : void {
+        booleans = booleans || [];
         const length = booleans.length;
         out.writeInt(length);
         let position = out.position();
@@ -442,16 +444,19 @@ export class DefaultCompactWriter implements CompactWriter {
  * a single type.
  */
 export class SingleTypeCompactArrayItemChecker<T> {
-    
+
     // eslint-disable-next-line @typescript-eslint/ban-types
-    private clazz: Function;
-    
+    private clazz: Function | null = null;
+
     public check(value: T): void {
         if (value === undefined) {
             throw new HazelcastSerializationError('The value undefined can not be used in an Array of Compact value.');
         }
+        if (value === null) {
+            throw new HazelcastSerializationError('The value null can not be used in an Array of Compact value.');
+        }
         if (value.constructor === undefined) {
-            throw new HazelcastSerializationError('While checking if all elements in a compact array are of same type, ' 
+            throw new HazelcastSerializationError('While checking if all elements in a compact array are of same type, '
             + 'encountered with a value with undefined contructor. Can not continue with single type checking.');
         }
         const clazzType = value.constructor;
@@ -472,7 +477,7 @@ export class SingleTypeCompactArrayItemChecker<T> {
  */
 export class SingleSchemaCompactArrayItemChecker {
 
-    private schema: Schema;
+    private schema: Schema | null = null;
 
     public check(value: GenericRecord): void {
         const record: CompactGenericRecordImpl = value as CompactGenericRecordImpl;
@@ -480,12 +485,12 @@ export class SingleSchemaCompactArrayItemChecker {
         if (this.schema == null) {
             this.schema = schema;
         }
-        
+
         if (!this.schema.schemaId.equals(schema.schemaId)) {
             throw new HazelcastSerializationError('It is not allowed to '
                     + 'serialize an array of Compact serializable '
                     + 'GenericRecord objects containing different schemas. '
-                    + 'Expected array item schema: ' + this.schema 
+                    + 'Expected array item schema: ' + this.schema
                     + ', current schema: ' + schema);
         }
     }

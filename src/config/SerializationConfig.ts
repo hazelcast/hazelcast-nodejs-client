@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {IdentifiedDataSerializableFactory, CustomSerializable} from '../serialization/Serializable';
-import {PortableFactory} from '../serialization/Portable';
-import {Serializer} from '../serialization/Serializable';
+import {IdentifiedDataSerializableFactory, CustomSerializable} from '../serialization';
+import {PortableFactory} from '../serialization';
+import {Serializer} from '../serialization';
 import {JsonStringDeserializationPolicy} from './JsonStringDeserializationPolicy';
 import {CompactSerializationConfig, CompactSerializationConfigImpl} from './CompactSerializationConfig';
 
@@ -94,6 +94,6 @@ export class SerializationConfigImpl implements SerializationConfig {
     portableVersion = 0;
     customSerializers: Array<Serializer<CustomSerializable>> = [];
     compact = new CompactSerializationConfigImpl();
-    globalSerializer: Serializer = null;
+    globalSerializer?: Serializer = undefined;
     jsonStringDeserializationPolicy: JsonStringDeserializationPolicy = JsonStringDeserializationPolicy.EAGER;
 }

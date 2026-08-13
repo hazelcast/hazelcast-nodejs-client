@@ -15,12 +15,12 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import * as Util from '../util/Util';
 import {AGGREGATOR_FACTORY_ID} from '../aggregation/AggregatorConstants';
-import {aggregatorFactory} from '../aggregation/Aggregator';
+import {aggregatorFactory} from '../aggregation';
 import {CLUSTER_DATA_FACTORY_ID, clusterDataFactory} from './ClusterDataFactory';
-import {SerializationConfigImpl} from '../config/SerializationConfig';
+import {SerializationConfigImpl} from '../config';
 import {
     RELIABLE_TOPIC_MESSAGE_FACTORY_ID,
     reliableTopicMessageFactory,
@@ -68,8 +68,8 @@ import {DATA_OFFSET, HeapData} from './HeapData';
 import {ObjectDataInput, PositionalObjectDataOutput} from './ObjectData';
 import {PortableSerializer} from './portable/PortableSerializer';
 import {PREDICATE_FACTORY_ID, predicateFactory} from './DefaultPredicates';
-import {JsonStringDeserializationPolicy} from '../config/JsonStringDeserializationPolicy';
-import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core/RestValue';
+import {JsonStringDeserializationPolicy} from '../config';
+import {REST_VALUE_FACTORY_ID, restValueFactory} from '../core';
 import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
@@ -84,7 +84,7 @@ export interface SerializationService {
 
     toData(object: any, partitioningStrategy?: any): Data;
 
-    toObject(data: Data): any;
+    toObject(data: Data | null): any;
 
     writeObject(out: DataOutput, object: any): void;
 
@@ -120,7 +120,7 @@ export class SerializationServiceV1 implements SerializationService {
     // Some of the types do not have equivalent class on Nodejs (Byte, Short, Null and etc.), so we need to use
     // unique values for these types as a Symbol (defined in @SerializationSymbols).
     // For these types we use unique Symbol as a key value.
-    private readonly typeKeyToSerializersMap : Map<TypeKey, [Serializer, Serializer]>;
+    private readonly typeKeyToSerializersMap : Map<TypeKey, [Serializer, Serializer | null]>;
     private readonly compactStreamSerializer: CompactStreamSerializer;
     private readonly portableSerializer: PortableSerializer;
     private readonly identifiedSerializer: IdentifiedDataSerializableSerializer;
@@ -178,7 +178,7 @@ export class SerializationServiceV1 implements SerializationService {
         return new HeapData(dataOutput.toBuffer());
     }
 
-    toObject(data: Data): any {
+    toObject(data: Data | null): any {
         if (data == null) {
             return data;
         }
@@ -247,7 +247,7 @@ export class SerializationServiceV1 implements SerializationService {
         if (obj === undefined) {
             throw new RangeError('undefined cannot be serialized.');
         }
-        let serializer: Serializer = null;
+        let serializer: Serializer | null = null;
         if (obj === null) {
             serializer = this.findSerializerByType(SerializationSymbols.NULL_SYMBOL, false);
         }
@@ -312,7 +312,7 @@ export class SerializationServiceV1 implements SerializationService {
         return this.findSerializerByType(obj[0].constructor, true);
     }
 
-    private lookupCustomSerializer(obj: any): Serializer {
+    private lookupCustomSerializer(obj: any): Serializer | null {
         // Note: What about arrays of custom serializable objects?
         if (SerializationServiceV1.isCustomSerializable(obj)) {
             // We can also use findSerializerByType with Symbol.for. It should not matter.
@@ -321,7 +321,7 @@ export class SerializationServiceV1 implements SerializationService {
         return null;
     }
 
-    private lookupGlobalSerializer(): Serializer {
+    private lookupGlobalSerializer(): Serializer | null {
         return this.findSerializerByType(SerializationSymbols.GLOBAL_SYMBOL, false);
     }
 

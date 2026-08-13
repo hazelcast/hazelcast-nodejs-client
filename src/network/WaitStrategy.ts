@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {ILogger} from '../logging/ILogger';
+import {ILogger} from '../logging';
 import {delayedPromise} from '../util/Util';
 
 /** @internal */
@@ -27,10 +27,10 @@ export class WaitStrategy {
     private readonly jitter: number;
     private readonly clusterConnectTimeoutMillis: number;
     private logger: ILogger;
-    private attempt: number;
-    private currentBackoffMillis: number;
+    private attempt = 0;
+    private currentBackoffMillis = 0;
     private readonly clusterConnectTimeoutText: string; // to pretty print infinite timeout
-    private clusterConnectAttemptBegin: number;
+    private clusterConnectAttemptBegin = 0;
 
     constructor(initialBackoffMillis: number,
                 maxBackoffMillis: number,

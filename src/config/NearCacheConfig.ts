@@ -77,7 +77,7 @@ export class NearCacheConfigImpl implements NearCacheConfig {
     /**
      * Name of the IMap backed by the Near Cache.
      */
-    name: string;
+    name = '';
     invalidateOnChange = true;
     maxIdleSeconds = 0;
     inMemoryFormat = InMemoryFormat.BINARY;

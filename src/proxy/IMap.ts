@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
+import Long from 'long';
 import {Aggregator} from '../aggregation/Aggregator';
 import {SimpleEntryView} from '../core/SimpleEntryView';
 import {MapListener} from './MapListener';
@@ -542,7 +542,7 @@ export interface IMap<K, V> extends DistributedObject {
      * @param key the key of the map entry
      * @throws AssertionError if `key` is `null`
      */
-    getEntryView(key: K): Promise<SimpleEntryView<K, V>>;
+    getEntryView(key: K): Promise<SimpleEntryView<K, V> | null>;
 
     /**
      * Tries to acquire the lock for the specified key.

@@ -123,7 +123,7 @@ export class HazelcastClient {
     /** @internal */
     private readonly clusterViewListenerService: ClusterViewListenerService;
     /** @internal */
-    private mapRepairingTask: RepairingTask;
+    private mapRepairingTask?: RepairingTask;
     /** @internal */
     private readonly connectionRegistry: ConnectionRegistryImpl;
     /** @internal */
@@ -135,15 +135,15 @@ export class HazelcastClient {
 
     /** @internal */
     constructor(config?: ClientConfigImpl, failoverConfig?: ClientFailoverConfigImpl) {
-        if (config != null) {
+        if (config) {
             this.config = config;
         } else {
-            this.config = failoverConfig.clientConfigs[0];
+            this.config = failoverConfig?.clientConfigs[0] || new ClientConfigImpl();
         }
         this.loadBalancer = this.initLoadBalancer();
         this.failoverConfig = failoverConfig;
         this.errorFactory = new ClientErrorFactory();
-        this.loggingService = new LoggingService(this.config.customLogger,
+        this.loggingService = new LoggingService(this.config.customLogger || null,
             this.config.properties['hazelcast.logging.level'] as string);
         const logger = this.loggingService.getLogger();
         this.schemaService = new SchemaService(
@@ -167,10 +167,10 @@ export class HazelcastClient {
             logger
         );
         this.clusterFailoverService = HazelcastClient.initClusterFailoverService(
-            this.failoverConfig,
             this.config,
             this.lifecycleService,
-            this.loggingService
+            this.loggingService,
+            this.failoverConfig,
         );
         this.clusterService = new ClusterService(
             this.config,
@@ -283,7 +283,7 @@ export class HazelcastClient {
     static newHazelcastFailoverClient(failoverConfig?: ClientFailoverConfig): Promise<HazelcastClient> {
         const configBuilder = new FailoverConfigBuilder(failoverConfig);
         const effectiveConfig = configBuilder.build();
-        const client = new HazelcastClient(null, effectiveConfig);
+        const client = new HazelcastClient(undefined, effectiveConfig);
         return client.init();
     }
 
@@ -298,8 +298,8 @@ export class HazelcastClient {
      * Gathers information of this local client.
      */
     getLocalEndpoint(): ClientInfo {
-        const connection: Connection = this.connectionRegistry.getRandomConnection();
-        const localAddress = connection != null ? connection.getLocalAddress() : null;
+        const connection: Connection | null = this.connectionRegistry.getRandomConnection();
+        const localAddress = connection?.getLocalAddress();
         const info = new ClientInfo();
         info.uuid = this.connectionManager.getClientUuid();
         info.localAddress = localAddress;
@@ -643,7 +643,7 @@ export class HazelcastClient {
     /** @internal */
     private initLoadBalancer(): LoadBalancer {
         let lb = this.config.loadBalancer.customLoadBalancer;
-        if (lb == null) {
+        if (!lb) {
             if (this.config.loadBalancer.type === LoadBalancerType.ROUND_ROBIN) {
                 lb = new RoundRobinLB();
             } else if (this.config.loadBalancer.type === LoadBalancerType.RANDOM) {
@@ -658,10 +658,10 @@ export class HazelcastClient {
 
     /** @internal */
     private static initClusterFailoverService(
-        failoverConfig: ClientFailoverConfigImpl,
         config: ClientConfigImpl,
         lifecycleService: LifecycleService,
-        loggingService: LoggingService
+        loggingService: LoggingService,
+        failoverConfig?: ClientFailoverConfigImpl,
     ): ClusterFailoverService {
         let tryCount: number;
         let clientConfigs: ClientConfigImpl[];

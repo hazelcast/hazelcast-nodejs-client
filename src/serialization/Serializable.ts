@@ -31,7 +31,7 @@ export interface Serializer<T = any> {
      *
      * @param input input data reader
      */
-    read(input: DataInput): T;
+    read(input: DataInput): T | null;
 
     /**
      * Serializes an object into binary data.
@@ -83,7 +83,7 @@ export interface IdentifiedDataSerializable {
  * @param classId class id
  * @returns object for further initialization
  */
-export type IdentifiedDataSerializableFactory = (classId: number) => IdentifiedDataSerializable;
+export type IdentifiedDataSerializableFactory = (classId: number) => IdentifiedDataSerializable | null;
 
 /**
  * Interface for objects with custom serialization support.

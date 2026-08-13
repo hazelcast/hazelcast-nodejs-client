@@ -43,7 +43,7 @@ export class IndexUtil {
      */
     static validateAndNormalize(mapName: string, config: IndexConfig): InternalIndexConfig {
         // Validate attributes
-        const originalAttributeNames = config.attributes;
+        const originalAttributeNames = config.attributes || [];
 
         if (originalAttributeNames.length === 0) {
             throw new TypeError('Index must have at least one attribute: ' + config);
@@ -64,7 +64,7 @@ export class IndexUtil {
         const normalizedAttributeNames = new Array<string>(originalAttributeNames.length);
         for (let i = 0; i < originalAttributeNames.length; i++) {
             let originalAttributeName = originalAttributeNames[i];
-            this.validateAttribute(config.name, originalAttributeName);
+            this.validateAttribute(config.name || null, originalAttributeName);
 
             originalAttributeName = originalAttributeName.trim();
             const normalizedAttributeName = this.canonicalizeAttribute(originalAttributeName);
@@ -88,21 +88,23 @@ export class IndexUtil {
         }
 
         // Construct final index
-        let name = config.name;
+        let name = (config.name === undefined)? null : config.name;
         if (name != null && name.trim().length === 0) {
             name = null;
         }
 
         const normalizedConfig = this.buildNormalizedConfig(mapName, type, name, normalizedAttributeNames);
         if (type === IndexType.BITMAP) {
-            let uniqueKey = config.bitmapIndexOptions.uniqueKey;
+            let uniqueKey = config.bitmapIndexOptions?.uniqueKey || null;
 
-            this.validateAttribute(config.name, uniqueKey);
+            this.validateAttribute(name, uniqueKey);
             uniqueKey = this.canonicalizeAttribute(uniqueKey);
 
-            normalizedConfig.bitmapIndexOptions.uniqueKey = uniqueKey;
-            normalizedConfig.bitmapIndexOptions.uniqueKeyTransformation =
-                tryGetEnum(UniqueKeyTransformation, config.bitmapIndexOptions.uniqueKeyTransformation);
+            if (normalizedConfig.bitmapIndexOptions) {
+                normalizedConfig.bitmapIndexOptions.uniqueKey = uniqueKey;
+                normalizedConfig.bitmapIndexOptions.uniqueKeyTransformation =
+                    tryGetEnum(UniqueKeyTransformation, config.bitmapIndexOptions?.uniqueKeyTransformation);
+            }
         }
         return normalizedConfig;
     }
@@ -113,7 +115,8 @@ export class IndexUtil {
      * @param indexName Index name.
      * @param attributeName Attribute name.
      */
-    static validateAttribute(indexName: string, attributeName: string): void {
+    static validateAttribute(indexName: string | null, attributeName: string | null): void {
+        indexName = indexName || '(unspecified)'
         if (attributeName == null) {
             throw new TypeError('Attribute name cannot be null: ' + indexName);
         }
@@ -134,13 +137,16 @@ export class IndexUtil {
      * @param attribute the attribute to canonicalize.
      * @return the canonical attribute representation.
      */
-    static canonicalizeAttribute(attribute: string): string {
+    static canonicalizeAttribute(attribute: string | null): string {
+        if (!attribute) {
+            return ''
+        }
         return attribute.replace(THIS_PATTERN, '');
     }
 
     private static buildNormalizedConfig(mapName: string,
                                          indexType: IndexType,
-                                         indexName: string,
+                                         indexName: string | null,
                                          normalizedAttributeNames: string[]): InternalIndexConfig {
         const newConfig = new InternalIndexConfig();
         newConfig.bitmapIndexOptions = new InternalBitmapIndexOptions();

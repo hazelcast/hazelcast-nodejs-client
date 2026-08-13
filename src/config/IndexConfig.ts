@@ -64,15 +64,15 @@ export class InternalIndexConfig {
      */
     public static readonly DEFAULT_TYPE = IndexType.SORTED;
 
-    name: string;
+    name: string | null = null;
     type: IndexType = InternalIndexConfig.DEFAULT_TYPE;
     attributes: string[] = [];
-    bitmapIndexOptions: InternalBitmapIndexOptions;
+    bitmapIndexOptions: InternalBitmapIndexOptions | null = null;
 
-    constructor(name?: string,
+    constructor(name?: string | null,
                 type?: IndexType,
                 attributes?: string[],
-                bitmapIndexOptions?: InternalBitmapIndexOptions) {
+                bitmapIndexOptions?: InternalBitmapIndexOptions | null) {
         if (name) {
             this.name = name;
         }
@@ -91,7 +91,7 @@ export class InternalIndexConfig {
     }
 
     toString(): string {
-        let bitmapIndexOptions: string;
+        let bitmapIndexOptions: string | undefined;
         if (this.bitmapIndexOptions == null) {
             bitmapIndexOptions = undefined;
         } else {

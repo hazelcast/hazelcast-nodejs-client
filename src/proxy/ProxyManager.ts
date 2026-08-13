@@ -17,7 +17,7 @@
 
 import {ClientCreateProxyCodec} from '../codec/ClientCreateProxyCodec';
 import {ClientDestroyProxyCodec} from '../codec/ClientDestroyProxyCodec';
-import {DistributedObject} from '../core/DistributedObject';
+import {DistributedObject} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {FlakeIdGeneratorProxy} from './flakeid/FlakeIdGeneratorProxy';
 import {ListProxy} from './ListProxy';
@@ -34,7 +34,7 @@ import {ClientMessage} from '../protocol/ClientMessage';
 import {ClientCreateProxiesCodec} from '../codec/ClientCreateProxiesCodec';
 import {BaseProxy} from './BaseProxy';
 import {Ringbuffer} from './Ringbuffer';
-import {ClientConfig, ClientConfigImpl} from '../config/Config';
+import {ClientConfig, ClientConfigImpl} from '../config';
 import {ListenerService} from '../listener/ListenerService';
 import {NearCachedMapProxy} from './NearCachedMapProxy';
 import {ILogger} from '../logging';
@@ -103,7 +103,11 @@ export class ProxyManager {
     public getOrCreateProxy(name: string, serviceName: string, createAtServer = true): Promise<DistributedObject> {
         const fullName = serviceName + NAMESPACE_SEPARATOR + name;
         if (this.proxies.has(fullName)) {
-            return this.proxies.get(fullName);
+            const proxy = this.proxies.get(fullName);
+            if (!proxy) {
+                throw new Error('proxy is null');
+            }
+            return proxy;
         }
 
         const deferred = deferredPromise<DistributedObject>();

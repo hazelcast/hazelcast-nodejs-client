@@ -19,7 +19,7 @@ import {ClientConfigImpl} from '../config';
 import {MemberInfo, lookupPublicAddress} from '../core/MemberInfo';
 import {AddressProvider} from '../connection/AddressProvider';
 import {DefaultAddressProvider} from '../connection/DefaultAddressProvider';
-import {ILogger} from '../logging/ILogger';
+import {ILogger} from '../logging';
 import {shuffleArray} from '../util/Util';
 import {
     isAddressReachable,
@@ -117,16 +117,16 @@ export class TranslateAddressProvider {
                 return resolveAddress(address).catch(() => null);
             });
 
-        let addressesFromConfig: string[];
+        let addressesFromConfig: Array<string|null>;
         return Promise.all(pHostsFromConfig)
-            .then((addresses: string[]) => {
+            .then((addresses: Array<string|null>) => {
                 addressesFromConfig = addresses;
                 const memberHostPromises = members
                     .map((member) => {
                         return resolveAddress(member.address.host).catch(() => null);
                     });
                 return Promise.all(memberHostPromises);
-            }).then((addressesFromMembers: string[]) => {
+            }).then((addressesFromMembers: Array<string|null>) => {
                 for (const address of addressesFromMembers) {
                     if (addressesFromConfig.includes(address)) {
                         return true;

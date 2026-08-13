@@ -22,7 +22,7 @@ import {BuildInfo} from '../BuildInfo';
 import {AddressImpl, IOError, UUID} from '../core';
 import {ClientMessageHandler} from '../protocol/ClientMessage';
 import {deferredPromise, DeferredPromise} from '../util/Util';
-import {ILogger} from '../logging/ILogger';
+import {ILogger} from '../logging';
 import {
     ClientMessage,
     Frame,
@@ -32,7 +32,7 @@ import {ClientConfig} from '../config';
 import {ConnectionManager} from './ConnectionManager';
 import {LifecycleService} from '../LifecycleService';
 
-const FROZEN_ARRAY = Object.freeze([]) as OutputQueueItem[];
+const FROZEN_ARRAY = (Object.freeze([]) as unknown) as OutputQueueItem[];
 const PROPERTY_PIPELINING_ENABLED = 'hazelcast.client.autopipelining.enabled';
 const PROPERTY_PIPELINING_THRESHOLD = 'hazelcast.client.autopipelining.threshold.bytes';
 const PROPERTY_NO_DELAY = 'hazelcast.client.socket.no.delay';
@@ -57,7 +57,7 @@ interface OutputQueueItem {
 export class PipelinedWriter extends Writer {
 
     private queue: OutputQueueItem[] = [];
-    private error: Error;
+    private error?: Error;
     private scheduled = false;
     private canWrite = true;
     // reusable buffer for coalescing
@@ -85,7 +85,7 @@ export class PipelinedWriter extends Writer {
     write(message: ClientMessage, resolver: DeferredPromise<void>): void {
         if (this.error) {
             // if the socket is closed, it's useless to keep writing to the socket
-            return process.nextTick(() => resolver.reject(this.error));
+            return process.nextTick(() => resolver.reject(<Error> this.error));
         }
         this.queue.push({ message, resolver });
         this.schedule();
@@ -154,7 +154,7 @@ export class PipelinedWriter extends Writer {
         }
 
         // write to the socket: no further writes until flushed
-        this.canWrite = this.socket.write(buf, (err: Error) => {
+        this.canWrite = this.socket.write(buf, (err?: Error) => {
             if (err) {
                 this.handleError(err, writeBatch);
                 return;
@@ -231,17 +231,17 @@ export class ClientMessageReader {
     private chunksTotalSize = 0;
     private frameSize = 0;
     private flags = 0;
-    private clientMessage: ClientMessage = null;
+    private clientMessage: ClientMessage | null= null;
 
     append(buffer: Buffer): void {
         this.chunksTotalSize += buffer.length;
         this.chunks.push(buffer);
     }
 
-    read(): ClientMessage {
+    read(): ClientMessage | null {
         for (;;) {
             if (this.readFrame()) {
-                if (this.clientMessage.endFrame.isFinalFrame()) {
+                if (this.clientMessage?.endFrame.isFinalFrame()) {
                     const message = this.clientMessage;
                     this.reset();
                     return message;
@@ -344,15 +344,15 @@ export class FragmentedClientMessageHandler {
 /** @internal */
 export class Connection {
 
-    private remoteUuid: UUID;
-    private clusterUuid: UUID;
+    private remoteUuid: UUID | null = null;
+    private clusterUuid: UUID | null = null;
     private readonly localAddress: AddressImpl;
     private lastReadTimeMillis: number;
-    private lastWriteTimeMillis: number;
+    private lastWriteTimeMillis = 0;
     private readonly startTime: number = Date.now();
     private closedTime: number;
-    private closedReason: string;
-    private closedCause: Error;
+    private closedReason: string | null = null;
+    private closedCause: Error | null = null;
     private connectedServerVersion: number;
     private readonly writer: Writer;
     private readonly reader: ClientMessageReader;
@@ -410,7 +410,7 @@ export class Connection {
         this.remoteAddress = address;
     }
 
-    getRemoteUuid(): UUID {
+    getRemoteUuid(): UUID | null {
         return this.remoteUuid;
     }
 
@@ -473,7 +473,7 @@ export class Connection {
     }
 
     getClosedReason(): string {
-        return this.closedReason;
+        return this.closedReason || '';
     }
 
     getStartTime(): number {
@@ -530,7 +530,7 @@ export class Connection {
         this.clusterUuid = uuid;
     }
 
-    getClusterUuid(): UUID {
+    getClusterUuid(): UUID | null {
         return this.clusterUuid;
     }
 

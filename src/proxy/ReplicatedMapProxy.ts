@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {
     Predicate,
     ReadOnlyLazyList,
@@ -44,14 +44,14 @@ import {ReplicatedMapValuesCodec} from '../codec/ReplicatedMapValuesCodec';
 import {EventType} from './EventType';
 import {EntryEvent, EntryEventListener, EntryListener} from './EntryListener';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
-import {Data} from '../serialization/Data';
+import {Data} from '../serialization';
 import {assertNotNull} from '../util/Util';
 import {ReplicatedMap} from './ReplicatedMap';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {MapEvent, MapEventListener} from './MapListener';
 import {ClientMessage} from '../protocol/ClientMessage';
 
-type EntryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data,
+type EntryEventHandler = (key: Data | null, value: Data | null, oldValue: Data | null, mergingValue: Data | null,
                           eventType: number, uuid: UUID, numberOfAffectedEntries: number) => void
 
 /** @internal */
@@ -225,7 +225,7 @@ export class ReplicatedMapProxy<K, V> extends PartitionSpecificProxy implements 
     }
 
     private addEntryListenerInternal(listener: EntryListener<K, V>, predicate?: Predicate, key?: K): Promise<string> {
-        const entryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data,
+        const entryEventHandler = (key: Data | null, value: Data | null, oldValue: Data | null, mergingValue: Data | null,
                                    event: number, uuid: UUID, numberOfAffectedEntries: number): void => {
             const member = this.clusterService.getMember(uuid.toString());
             const name = this.name;

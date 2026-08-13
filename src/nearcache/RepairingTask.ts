@@ -15,14 +15,14 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
-import * as Long from 'long';
+import assert from 'assert';
+import Long from 'long';
 import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';
 import {PartitionService} from '../PartitionService';
-import {ILogger} from '../logging/ILogger';
-import {UUID} from '../core/UUID';
+import {ILogger} from '../logging';
+import {UUID} from '../core';
 import {LifecycleService, Properties} from '../index';
 import {InvocationService} from '../invocation/InvocationService';
 import {ClusterService} from '../invocation/ClusterService';

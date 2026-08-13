@@ -25,12 +25,12 @@ export class ClientInfo {
     /**
      * The unique id of this client instance.
      */
-    uuid: UUID;
+    uuid?: UUID;
 
     /**
      * Local port address that is used to communicate with a cluster.
      */
-    localAddress: Address;
+    localAddress?: Address;
 
     /**
      * Type of this client. It is always `NodeJS`.
@@ -40,11 +40,11 @@ export class ClientInfo {
     /**
      * Name of the client.
      */
-    name: string;
+    name?: string;
 
     /**
      * Set of all labels of this client.
      */
-    labels: Set<string>;
+    labels?: Set<string>;
 
 }

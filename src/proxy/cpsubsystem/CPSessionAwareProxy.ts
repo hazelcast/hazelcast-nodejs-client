@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {RaftGroupId} from './RaftGroupId';
 import {BaseCPProxy} from './BaseCPProxy';
 import {CPSessionManager} from './CPSessionManager';

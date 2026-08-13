@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ClientConfig} from '../config/Config';
+import {ClientConfig} from '../config';
 import {Cluster} from './Cluster';
 import {Member} from './Member';
 import {
@@ -72,9 +72,9 @@ export interface LoadBalancer {
  */
 export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembershipListener {
 
-    private members: Member[];
-    private dataMembers: Member[];
-    private cluster: Cluster;
+    private members: Member[] = [];
+    private dataMembers: Member[] = [];
+    private cluster?: Cluster;
 
     abstract next(): Member | null;
 
@@ -108,7 +108,7 @@ export abstract class AbstractLoadBalancer implements LoadBalancer, InitialMembe
     }
 
     private setMembers(): void {
-        this.members = this.cluster.getMembers();
+        this.members = this.cluster?.getMembers() || [];
         this.dataMembers = this.members.filter(member => !member.liteMember);
     }
 }

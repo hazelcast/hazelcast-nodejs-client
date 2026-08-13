@@ -36,8 +36,11 @@ export class NearCacheManager {
         let nearCache = this.caches.get(name);
         if (nearCache == null) {
             const config = this.clientConfig as ClientConfigImpl;
-            nearCache = new NearCacheImpl(config.getNearCacheConfig(name),
-                this.serializationService);
+            const nearCacheConfig = config.getNearCacheConfig(name);
+            if (!nearCacheConfig) {
+                throw new Error('NearCacheConfig is null');
+            }
+            nearCache = new NearCacheImpl(nearCacheConfig, this.serializationService);
             this.caches.set(name, nearCache);
         }
         return nearCache;

@@ -30,7 +30,7 @@ import {SetRemoveListenerCodec} from '../codec/SetRemoveListenerCodec';
 import {SetSizeCodec} from '../codec/SetSizeCodec';
 import {ItemEvent, ItemEventType, ItemListener} from './ItemListener';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
-import {Data} from '../serialization/Data';
+import {Data} from '../serialization';
 import {ISet} from './ISet';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ClientMessage} from '../protocol/ClientMessage';
@@ -155,9 +155,12 @@ export class SetProxy<E> extends PartitionSpecificProxy implements ISet<E> {
 
     addItemListener(listener: ItemListener<E>, includeValue = true): Promise<string> {
         const handler = (message: ClientMessage): void => {
-            SetAddListenerCodec.handle(message, (item: Data, uuid: UUID, eventType: number) => {
+            SetAddListenerCodec.handle(message, (item: Data | null, uuid: UUID, eventType: number) => {
                 const responseObject = this.toObject(item);
                 const member = this.clusterService.getMember(uuid.toString());
+                if (!member) {
+                    return;
+                }
                 const name = this.name;
                 const itemEvent = new ItemEvent(name, eventType, responseObject, member);
 

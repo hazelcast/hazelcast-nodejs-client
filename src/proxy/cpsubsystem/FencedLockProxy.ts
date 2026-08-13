@@ -15,8 +15,8 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
-import * as Long from 'long';
+import assert from 'assert';
+import Long from 'long';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {FencedLock} from '../FencedLock';
 import {CPProxyManager} from './CPProxyManager';
@@ -198,8 +198,7 @@ export class FencedLockProxy extends CPSessionAwareProxy implements FencedLock {
 
     isLocked(): Promise<boolean> {
         return this.requestLockOwnershipState().then((state) => {
-            const locked = isValidFence(state.fence);
-            return locked;
+            return isValidFence(state.fence);
         });
     }
 

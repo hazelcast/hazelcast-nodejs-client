@@ -37,13 +37,13 @@ export class MemberInfo {
                 liteMember: boolean,
                 version: MemberVersion,
                 isAddressMapExists: boolean,
-                addressMap: Map<EndpointQualifier, AddressImpl>) {
+                addressMap: Map<EndpointQualifier, AddressImpl> | null) {
         this.address = address;
         this.uuid = uuid;
         this.attributes = attributes;
         this.liteMember = liteMember;
         this.version = version;
-        if (isAddressMapExists) {
+        if (addressMap !== null) {
             this.addressMap = addressMap;
         } else {
             this.addressMap = new Map();
@@ -74,7 +74,7 @@ export class MemberInfo {
  * @returns found address or `null`
  * @internal
  */
-export function lookupPublicAddress(member: MemberInfo | MemberImpl): AddressImpl {
+export function lookupPublicAddress(member: MemberInfo | MemberImpl): AddressImpl | null {
     for (const [qualifier, address] of member.addressMap.entries()) {
         if (qualifier.type === ProtocolType.CLIENT && qualifier.identifier === 'public') {
             return address;

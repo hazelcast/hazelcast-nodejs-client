@@ -19,8 +19,8 @@ import {
     CLUSTER_DATA_FACTORY_ID,
     CLUSTER_DATA_ADDRESS_CLASS_ID
 } from '../serialization/ClusterDataFactory';
-import {DataInput, DataOutput} from '../serialization/Data';
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
+import {DataInput, DataOutput} from '../serialization';
+import {IdentifiedDataSerializable} from '../serialization';
 
 /**
  * Represents a network address (e.g. of the client or a cluster member).
@@ -56,16 +56,16 @@ export class AddressImpl implements Address, IdentifiedDataSerializable {
     private addrStr: string;
 
     constructor(host?: string, port?: number) {
-        this.host = host;
-        this.port = port;
-        this.type = net.isIP(host);
+        this.host = host || '';
+        this.port = port || 0;
+        this.type = net.isIP(this.host);
         this.addrStr = this.toStringInternal();
     }
 
     readData(input: DataInput): any {
         this.port = input.readInt();
         this.type = input.readByte();
-        this.host = input.readString();
+        this.host = input.readString() || '';
         this.addrStr = this.toStringInternal();
     }
 

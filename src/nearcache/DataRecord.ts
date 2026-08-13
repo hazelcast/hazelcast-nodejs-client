@@ -15,9 +15,9 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
-import {UUID} from '../core/UUID';
-import {Data} from '../serialization/Data';
+import Long from 'long';
+import {UUID} from '../core';
+import {Data} from '../serialization';
 
 /** @internal */
 export class DataRecord {
@@ -28,13 +28,13 @@ export class DataRecord {
     key: Data;
     value: Data | any;
     private creationTime: number;
-    private expirationTime: number;
+    private expirationTime?: number;
     private lastAccessTime: number;
     private accessHit: number;
     private invalidationSequence: Long;
-    private uuid: UUID;
+    private uuid: UUID | null;
     private status: Long;
-    private readonly ttl: number;
+    private readonly ttl?: number;
 
     constructor(key: Data, value: Data | any, creationTime?: number, ttl?: number) {
         this.key = key;
@@ -71,7 +71,7 @@ export class DataRecord {
 
     isExpired(maxIdleSeconds: number): boolean {
         const now = Date.now();
-        return (this.expirationTime > 0 && this.expirationTime < now) ||
+        return (this.expirationTime !== undefined && (this.expirationTime > 0 && this.expirationTime < now)) ||
             (maxIdleSeconds > 0 && this.lastAccessTime + maxIdleSeconds * 1000 < now);
     }
 
@@ -91,7 +91,7 @@ export class DataRecord {
         this.invalidationSequence = sequence;
     }
 
-    hasSameUuid(uuid: UUID): boolean {
+    hasSameUuid(uuid: UUID | null): boolean {
         return uuid != null && this.uuid != null && this.uuid.equals(uuid);
     }
 

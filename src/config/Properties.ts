@@ -20,4 +20,4 @@ export interface Properties {
     [prop: string]: Property;
 }
 
-export type Property = string | number | boolean | ILogger;
+export type Property = string | number | boolean | null | ILogger;

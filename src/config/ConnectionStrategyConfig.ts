@@ -52,18 +52,18 @@ export interface ConnectionStrategyConfig {
      * until a cluster connection established, and it is ready to use the client instance.
      * By default, set to `false`.
      */
-    asyncStart?: boolean;
+    asyncStart: boolean;
 
     /**
      * Defines how a client reconnects to cluster after a disconnect. Available values
      * are `ON`, `OFF` and `ASYNC`. By default, set to `ON`.
      */
-    reconnectMode?: ReconnectMode;
+    reconnectMode: ReconnectMode;
 
     /**
      * Connection retry config to be used by the client.
      */
-    connectionRetry?: ConnectionRetryConfig;
+    connectionRetry: ConnectionRetryConfig;
 
 }
 

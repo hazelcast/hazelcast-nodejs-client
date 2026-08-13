@@ -24,7 +24,7 @@ export const CLUSTER_DATA_FACTORY_ID = 0;
 export const CLUSTER_DATA_ADDRESS_CLASS_ID = 1;
 
 /** @internal */
-export function clusterDataFactory(classId: number): IdentifiedDataSerializable {
+export function clusterDataFactory(classId: number): IdentifiedDataSerializable | null {
     if (classId === CLUSTER_DATA_ADDRESS_CLASS_ID) {
         return new AddressImpl();
     }

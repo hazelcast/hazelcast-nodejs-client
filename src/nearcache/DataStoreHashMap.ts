@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {Data} from '../serialization/Data';
+import {Data} from '../serialization';
 
 /** @internal */
 export class DataKeyedHashMap<T> {
@@ -48,7 +48,7 @@ export class DataKeyedHashMap<T> {
         return this.findIndexInBucket(key) !== -1;
     }
 
-    get(key: Data): T {
+    get(key: Data): T | undefined {
         const keyHash = key.hashCode();
         const existingIndex = this.findIndexInBucket(key);
         if (existingIndex !== -1) {
@@ -106,7 +106,7 @@ export class DataKeyedHashMap<T> {
     }
 
     private getOrCreateBucket(key: number): Array<InternalRecord<T>> {
-        let bucket: Array<InternalRecord<T>>;
+        let bucket: Array<InternalRecord<T>> | undefined;
         bucket = this.internalStore.get(key);
         if (bucket === undefined) {
             bucket = [];
@@ -119,4 +119,9 @@ export class DataKeyedHashMap<T> {
 class InternalRecord<T> {
     key: Data;
     value: T;
+
+    constructor(key: Data, value: T) {
+        this.key = key;
+        this.value = value;
+    }
 }

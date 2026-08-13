@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {Schema} from './Schema';
 import {ILogger} from '../../logging';
 import {Invocation, InvocationService} from '../../invocation/InvocationService';
@@ -92,13 +92,13 @@ export class SchemaService {
         return this.replicateSchemaInCluster(schema).then((result) => {
             if (!result) {
                 throw new IllegalStateError(
-                    `The schema ${schema.typeName} cannot be replicated in the cluster, after ${this.maxPutRetryCount}  retries. 
-                    It might be the case that the client is connected to the two halves of the cluster that 
-                    is experiencing a split-brain, and continue putting the data associated with that schema might 
-                    result in data loss. It might be possible to replicate the schema after some time, when 
+                    `The schema ${schema.typeName} cannot be replicated in the cluster, after ${this.maxPutRetryCount}  retries.
+                    It might be the case that the client is connected to the two halves of the cluster that
+                    is experiencing a split-brain, and continue putting the data associated with that schema might
+                    result in data loss. It might be possible to replicate the schema after some time, when
                     the cluster is healed.`
                 );
-            } 
+            }
             this.putIfAbsent(schema);
         })
     }
@@ -132,7 +132,7 @@ export class SchemaService {
     hasAnySchemas(): boolean {
         return !(this.schemas.size === 0);
     }
-    
+
     replicateSchemaInCluster(schema: Schema): Promise<boolean> {
         const clientMessage = ClientSendSchemaCodec.encodeRequest(schema);
         return this.retryMaxPutRetryCount(clientMessage, 0);
@@ -142,7 +142,7 @@ export class SchemaService {
         if (currentRetryCount === this.maxPutRetryCount) {
             return Promise.resolve(false);
         }
-        const invocationService = this.getInvocationService(); 
+        const invocationService = this.getInvocationService();
         const invocation = new Invocation(invocationService, clientMessage);
         return invocationService.invoke(invocation).then((response) => {
             const replicatedMemberUuids = UuidUtil.convertUUIDSetToStringSet(ClientSendSchemaCodec.decodeResponse(response));
@@ -165,6 +165,6 @@ export class SchemaService {
             // All members in our member list all known to have the schema
             return Promise.resolve(true);
         })
-        
+
     }
 }

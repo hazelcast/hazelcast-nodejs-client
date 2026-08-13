@@ -15,11 +15,11 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
-import {Data} from '../../serialization/Data';
+import Long from 'long';
+import {Data} from '../../serialization';
 import {SerializationService, SerializationServiceV1} from '../../serialization/SerializationService';
 import {ReadResultSet} from '../../core';
-import {HazelcastSerializationError, SchemaNotFoundError} from './../../core/HazelcastError';
+import {HazelcastSerializationError, SchemaNotFoundError} from '../../core';
 
 
 
@@ -39,7 +39,11 @@ class LazyReadResultSetIterator<T> implements Iterator<T> {
      */
     next(): IteratorResult<T> {
         if (this.index < this.list.size()) {
-            return {done: false, value: this.list.get(this.index++)};
+            const value = this.list.get(this.index++);
+            if (value === undefined) {
+                return {done: true, value: undefined};
+            }
+            return {done: false, value: value};
         } else {
             return {done: true, value: undefined};
         }
@@ -59,12 +63,12 @@ export class LazyReadResultSet<T> implements ReadResultSet<T> {
     constructor(serializationService: SerializationService,
                 readCount: number,
                 items: Data[],
-                itemSeqs: Long[],
+                itemSeqs: Long[] | null,
                 nextSeq: Long) {
         this.serializationService = serializationService;
         this.readCount = readCount;
         this.items = items;
-        this.itemSeqs = itemSeqs;
+        this.itemSeqs = itemSeqs || [];
         this.nextSeq = nextSeq;
     }
 
@@ -72,7 +76,7 @@ export class LazyReadResultSet<T> implements ReadResultSet<T> {
         return this.readCount;
     }
 
-    get(index: number): T {
+    get(index: number): T | undefined {
         const dataOrObject = this.items[index];
         if (dataOrObject == null) {
             return undefined;

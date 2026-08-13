@@ -24,11 +24,11 @@ import {
     LocalTime,
     OffsetDateTime,
 } from '../../core';
-import * as Long from 'long';
+import Long from 'long';
 import {CompactStreamSerializer} from './CompactStreamSerializer';
 import {Schema} from './Schema';
 import {ObjectDataInput} from '../ObjectData';
-import {FieldKind} from '../generic_record/FieldKind';
+import {FieldKind} from '../generic_record';
 import {CompactGenericRecordImpl} from '../generic_record';
 import {Field} from '../generic_record/Fields';
 import {
@@ -533,7 +533,8 @@ export class DefaultCompactReader implements CompactReader {
         return offset === NULL_OFFSET ? NULL_OFFSET : offset + this.dataStartPosition;
     }
 
-    private getVariableSizeByNameAndKind<R>(fieldName: string, fieldKind: FieldKind, readFn: (reader: ObjectDataInput) => R): R {
+    private getVariableSizeByNameAndKind<R>(fieldName: string, fieldKind: FieldKind,
+                                            readFn: (reader: ObjectDataInput) => R): R | null {
         const fd = this.getFieldDefinitionChecked(fieldName, fieldKind);
         return this.getVariableSize(fd, readFn);
     }
@@ -600,7 +601,7 @@ export class DefaultCompactReader implements CompactReader {
 
     private getArrayOfVariableSizesWithFieldDescriptor<T>(
         fieldDescriptor: FieldDescriptor, readFn: (reader: ObjectDataInput) => T
-    ): T[] | null {
+    ): Array<T|null> | null {
         const currentPos = this.input.position();
         try {
             const pos = this.readVariableSizeFieldPosition(fieldDescriptor);
@@ -612,7 +613,7 @@ export class DefaultCompactReader implements CompactReader {
             const itemCount = this.input.readInt();
 
             const dataStartPosition = this.input.position();
-            const values = new Array<T>(itemCount);
+            const values = new Array<T | null>(itemCount);
 
             const offsetReader = DefaultCompactReader.getOffsetReader(dataLength);
             const offsetsPosition = dataStartPosition + dataLength;
@@ -635,7 +636,7 @@ export class DefaultCompactReader implements CompactReader {
         fieldName: string,
         fieldKind: FieldKind,
         readFn: (reader: ObjectDataInput) => T
-    ): T[] {
+    ): Array<T|null> | null {
         const fieldDefinition = this.getFieldDefinitionChecked(fieldName, fieldKind);
         return this.getArrayOfVariableSizesWithFieldDescriptor(fieldDefinition, readFn);
     }
@@ -654,7 +655,7 @@ export class DefaultCompactReader implements CompactReader {
         primitiveKind: FieldKind,
         nullableKind: FieldKind,
         methodSuffix: string
-    ): T {
+    ): T | null {
         const fd = this.getFieldDefinition(fieldName);
         const fieldKind = fd.kind;
 
@@ -692,7 +693,7 @@ export class DefaultCompactReader implements CompactReader {
 
     private getArrayOfNullables<T>(
         fieldName: string, readFn: (reader: ObjectDataInput) => T, primitiveKind: FieldKind, nullableField: FieldKind
-    ): T[] {
+    ): Array<T|null> | null {
         const fd = this.getFieldDefinition(fieldName);
         const fieldKind = fd.kind;
         switch (fieldKind) {

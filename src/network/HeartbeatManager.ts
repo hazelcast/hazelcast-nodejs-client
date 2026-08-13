@@ -17,7 +17,7 @@
 
 import {ClientPingCodec} from '../codec/ClientPingCodec';
 import {Connection} from './Connection';
-import {ILogger} from '../logging/ILogger';
+import {ILogger} from '../logging';
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import {TargetDisconnectedError} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
@@ -35,7 +35,7 @@ export class HeartbeatManager {
 
     private readonly heartbeatTimeout: number;
     private readonly heartbeatInterval: number;
-    private task: Task;
+    private task: Task | null = null;
 
     constructor(
         properties: Properties,
@@ -58,7 +58,9 @@ export class HeartbeatManager {
      * Cancels the periodic heartbeat operation.
      */
     shutdown(): void {
-        cancelRepetitionTask(this.task);
+        if (this.task) {
+            cancelRepetitionTask(this.task);
+        }
     }
 
     /**

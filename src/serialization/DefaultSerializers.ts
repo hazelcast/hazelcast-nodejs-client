@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {DataInput, DataOutput} from './Data';
 import {
     Serializer,
@@ -38,7 +38,7 @@ export class StringSerializer implements Serializer<string> {
 
     id = -11;
 
-    read(input: DataInput): string {
+    read(input: DataInput): string | null {
         return input.readString();
     }
 
@@ -167,7 +167,7 @@ export class BooleanArraySerializer implements Serializer<boolean[]> {
 
     id = -13;
 
-    read(input: DataInput): boolean[] {
+    read(input: DataInput): boolean[] | null {
         return input.readBooleanArray();
     }
 
@@ -195,7 +195,7 @@ export class IntegerArraySerializer implements Serializer<number[]> {
 
     id = -16;
 
-    read(input: DataInput): number[] {
+    read(input: DataInput): number[] | null {
         return input.readIntArray();
     }
 
@@ -209,7 +209,7 @@ export class LongArraySerializer implements Serializer<Long[]> {
 
     id = -17;
 
-    read(input: DataInput): Long[] {
+    read(input: DataInput): Long[] | null {
         return input.readLongArray();
     }
 
@@ -223,7 +223,7 @@ export class DoubleArraySerializer implements Serializer<number[]> {
 
     id = -19;
 
-    read(input: DataInput): number[] {
+    read(input: DataInput): number[] | null {
         return input.readDoubleArray();
     }
 
@@ -237,7 +237,7 @@ export class StringArraySerializer implements Serializer<string[]> {
 
     id = -20;
 
-    read(input: DataInput): string[] {
+    read(input: DataInput): string[] | null {
         return input.readStringArray();
     }
 
@@ -265,7 +265,7 @@ export class ByteArraySerializer implements Serializer<Buffer> {
 
     id = -12;
 
-    read(input: DataInput): Buffer {
+    read(input: DataInput): Buffer | null {
         return input.readByteArray();
     }
 
@@ -293,7 +293,7 @@ export class CharArraySerializer implements Serializer<string[]> {
 
     id = -14;
 
-    read(input: DataInput): string[] {
+    read(input: DataInput): string[] | null {
         return input.readCharArray();
     }
 
@@ -366,9 +366,9 @@ export class LinkedListSerializer extends JavaArraySerializer {
 export class IdentifiedDataSerializableSerializer implements Serializer {
 
     id = -2;
-    private readonly factories: { [id: number]: IdentifiedDataSerializableFactory };
+    private readonly factories: { [id: number]: IdentifiedDataSerializableFactory | null };
 
-    constructor(factories: { [id: number]: IdentifiedDataSerializableFactory }) {
+    constructor(factories: { [id: number]: IdentifiedDataSerializableFactory | null }) {
         this.factories = factories;
     }
 
@@ -384,6 +384,9 @@ export class IdentifiedDataSerializableSerializer implements Serializer {
             throw new RangeError('There is no Identified Data Serializer factory with id ' + factoryId + '.');
         }
         const object = factoryFn(classId);
+        if (object === null) {
+            throw new Error('No serializer found with factoryId ' + factoryId + '.');
+        }
         object.readData(input);
         return object;
     }
@@ -402,7 +405,7 @@ export class JsonSerializer implements Serializer {
     id = -130;
 
     read(input: DataInput): any {
-        return JSON.parse(input.readString());
+        return JSON.parse(input.readString() || '');
     }
 
     write(output: DataOutput, object: any): void {
@@ -419,7 +422,7 @@ export class JsonSerializer implements Serializer {
 export class HazelcastJsonValueSerializer extends JsonSerializer {
 
     read(input: DataInput): HazelcastJsonValue {
-        return new HazelcastJsonValue(input.readString());
+        return new HazelcastJsonValue(input.readString() || '');
     }
 }
 
@@ -549,8 +552,11 @@ export class BigDecimalSerializer implements Serializer<BigDecimal> {
 
     id = -27;
 
-    read(input: DataInput): BigDecimal {
+    read(input: DataInput): BigDecimal | null {
         const body = input.readByteArray();
+        if (body === null) {
+            return null;
+        }
         const scale = input.readInt();
 
         return new BigDecimal(BigDecimalUtil.bufferToBigInt(body), scale);
@@ -567,8 +573,11 @@ export class BigIntSerializer implements Serializer<bigint> {
 
     id = -26;
 
-    read(input: DataInput): bigint {
+    read(input: DataInput): bigint | null {
         const body = input.readByteArray();
+        if (body === null) {
+            return null;
+        }
         return BigDecimalUtil.bufferToBigInt(body);
     }
 

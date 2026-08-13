@@ -16,25 +16,22 @@
 /** @ignore *//** */
 
 import {EventEmitter} from 'events';
+import {CandidateClusterContext, ClusterFailoverService} from '../ClusterFailoverService';
 import {
-    CandidateClusterContext,
-    ClusterFailoverService
-} from '../ClusterFailoverService';
-import {
+    Addresses,
+    AddressImpl,
     AuthenticationError,
     ClientNotActiveError,
     ClientNotAllowedInClusterError,
     HazelcastError,
     IllegalStateError,
     InvalidConfigurationError,
-    TargetDisconnectedError,
-    UUID,
-    AddressImpl,
-    Addresses,
-    MemberImpl,
     IOError,
+    MemberImpl,
     MembershipEvent,
-    MembershipListener
+    MembershipListener,
+    TargetDisconnectedError,
+    UUID
 } from '../core';
 import {lookupPublicAddress} from '../core/MemberInfo';
 import {Connection} from './Connection';
@@ -49,21 +46,18 @@ import {
     Task,
     timedPromise,
 } from '../util/Util';
-import {BasicSSLOptionsFactory} from '../connection/BasicSSLOptionsFactory';
-import {ILogger} from '../logging/ILogger';
+import {BasicSSLOptionsFactory} from '../connection';
+import {ILogger} from '../logging';
 import {HeartbeatManager} from './HeartbeatManager';
 import {UuidUtil} from '../util/UuidUtil';
 import {WaitStrategy} from './WaitStrategy';
-import {ReconnectMode} from '../config/ConnectionStrategyConfig';
-import {ClientConfig, ClientConfigImpl} from '../config/Config';
-import {LifecycleState, LifecycleServiceImpl, LifecycleService} from '../LifecycleService';
+import {ReconnectMode} from '../config';
+import {ClientConfig, ClientConfigImpl} from '../config';
+import {LifecycleService, LifecycleServiceImpl, LifecycleState} from '../LifecycleService';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {BuildInfo} from '../BuildInfo';
 import {ClientAuthenticationCustomCodec} from '../codec/ClientAuthenticationCustomCodec';
-import {
-    ClientAuthenticationCodec,
-    ClientAuthenticationResponseParams
-} from '../codec/ClientAuthenticationCodec';
+import {ClientAuthenticationCodec, ClientAuthenticationResponseParams} from '../codec/ClientAuthenticationCodec';
 import {AuthenticationStatus} from '../protocol/AuthenticationStatus';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {PartitionService, PartitionServiceImpl} from '../PartitionService';
@@ -151,9 +145,9 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
     private readonly clientUuid = UuidUtil.generate(false);
     private readonly waitStrategy: WaitStrategy;
     private readonly pendingConnections = new Map<string, DeferredPromise<Connection>>();
-    private clusterId: UUID;
-    private connectToClusterTaskSubmitted: boolean;
-    private reconnectToMembersTask: Task;
+    private clusterId: UUID | null = null;
+    private connectToClusterTaskSubmitted = false;
+    private reconnectToMembersTask: Task | null = null;
     // contains member UUIDs (strings) for members with in-flight connection attempt
     private readonly connectingMembers = new Set<string>();
     /**
@@ -166,7 +160,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
      * counter, but may not show the latest total.
      */
     private totalBytesWritten : number;
-    private establishedInitialClusterConnection: boolean;
+    private establishedInitialClusterConnection = false;
 
     constructor(
         private readonly client: ClientForConnectionManager,
@@ -183,7 +177,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
         private readonly connectionRegistry: ConnectionRegistryImpl
     ) {
         super();
-        this.labels = this.clientConfig.clientLabels;
+        this.labels = this.clientConfig.clientLabels || [];
         this.connectionTimeoutMillis = this.initConnectionTimeoutMillis();
         this.heartbeatManager = new HeartbeatManager(
             this.clientConfig.properties,
@@ -192,11 +186,11 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
         );
         this.authenticationTimeout = this.heartbeatManager.getHeartbeatTimeout();
         this.shuffleMemberList = this.clientConfig.properties['hazelcast.client.shuffle.member.list'] as boolean;
-        this.smartRoutingEnabled = this.clientConfig.network.smartRouting;
+        this.smartRoutingEnabled = this.clientConfig.network?.smartRouting || false;
         this.waitStrategy = this.initWaitStrategy(this.clientConfig as ClientConfigImpl);
         const connectionStrategyConfig = this.clientConfig.connectionStrategy;
-        this.asyncStart = connectionStrategyConfig.asyncStart;
-        this.reconnectMode = connectionStrategyConfig.reconnectMode;
+        this.asyncStart = connectionStrategyConfig?.asyncStart || false;
+        this.reconnectMode = connectionStrategyConfig?.reconnectMode || ReconnectMode.ON;
         this.totalBytesWritten = 0;
         this.totalBytesRead = 0;
         this.clusterService.addMembershipListener(this);
@@ -238,7 +232,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
         }
 
         this.active = false;
-        if (this.reconnectToMembersTask !== undefined) {
+        if (this.reconnectToMembersTask) {
             cancelRepetitionTask(this.reconnectToMembersTask);
         }
         this.pendingConnections.forEach((pending) => {
@@ -292,7 +286,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
     }
 
     private getOrConnect(address: AddressImpl,
-                         translateAddressFn: () => Promise<AddressImpl>): Promise<Connection> {
+                         translateAddressFn: () => Promise<AddressImpl | null>): Promise<Connection> {
         const addressKey = address.toString();
         const pendingConnection = this.pendingConnections.get(addressKey);
         if (pendingConnection) {
@@ -306,7 +300,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
             this.invocationService.processResponse(msg);
         };
 
-        let translatedAddress: AddressImpl;
+        let translatedAddress: AddressImpl | null;
         let connection: Connection;
         translateAddressFn()
             .then((translated) => {
@@ -317,6 +311,9 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
                 return this.triggerConnect(translatedAddress);
             })
             .then((socket) => {
+                if (translatedAddress == null) {
+                    throw new RangeError(`Address translator could not translate address ${address}`);
+                }
                 connection = new Connection(
                     this,
                     this.clientConfig,
@@ -367,7 +364,9 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
         // do the cleanup only if connection is active
         const activeConnection = memberUuid != null ? this.connectionRegistry.getConnection(memberUuid) : null;
         if (connection === activeConnection) {
-            this.connectionRegistry.deleteConnection(memberUuid);
+            if (memberUuid) {
+                this.connectionRegistry.deleteConnection(memberUuid);
+            }
             this.logger.info('ConnectionManager', 'Removed connection to endpoint: '
                 + endpoint + ':' + memberUuid + ', connection: ' + connection);
             if (this.connectionRegistry.isEmpty()) {
@@ -393,7 +392,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
 
     private initConnectionTimeoutMillis(): number {
         const networkConfig = this.clientConfig.network;
-        const connTimeout = networkConfig.connectionTimeout;
+        const connTimeout = networkConfig?.connectionTimeout || 0;
         return connTimeout === 0 ? SET_TIMEOUT_MAX_DELAY : connTimeout;
     }
 
@@ -564,7 +563,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
     }
 
     private connect(target: MemberImpl | AddressImpl,
-                    getOrConnectFn: () => Promise<Connection>): Promise<Connection> {
+                    getOrConnectFn: () => Promise<Connection>): Promise<Connection | null> {
         this.logger.info('ConnectionManager', 'Trying to connect to ' + target.toString());
         return getOrConnectFn()
             .catch((err) => {
@@ -605,7 +604,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
             });
     }
 
-    private getConnectionForAddress(address: AddressImpl): Connection {
+    private getConnectionForAddress(address: AddressImpl): Connection | null {
         for (const connection of this.connectionRegistry.getConnections()) {
             if (connection.getRemoteAddress().equals(address)) {
                 return connection;
@@ -617,7 +616,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
     private initiateCommunication(socket: net.Socket): Promise<void> {
         // Send the protocol version
         const deferred = deferredPromise<void>();
-        socket.write(BINARY_PROTOCOL_VERSION as any, (err: Error) => {
+        socket.write(BINARY_PROTOCOL_VERSION as any, (err?: Error) => {
             if (err) {
                 deferred.reject(err);
             }
@@ -628,7 +627,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
     }
 
     private triggerConnect(translatedAddress: AddressImpl): Promise<net.Socket> {
-        if (this.clientConfig.network.ssl.enabled) {
+        if (this.clientConfig.network?.ssl?.enabled) {
             if (this.clientConfig.network.ssl.sslOptions) {
                 const opts = this.clientConfig.network.ssl.sslOptions;
                 return this.connectTLSSocket(translatedAddress, opts);
@@ -705,7 +704,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
         this.emit(CONNECTION_REMOVED_EVENT_NAME, connection);
     }
 
-    private translateAddress(target: AddressImpl): Promise<AddressImpl> {
+    private translateAddress(target: AddressImpl): Promise<AddressImpl|null> {
         const ctx = this.clusterFailoverService.current()
         const addressProvider = ctx.addressProvider;
         return addressProvider.translate(target)
@@ -716,7 +715,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
             });
     }
 
-    private translateMemberAddress(member: MemberImpl): Promise<AddressImpl> {
+    private translateMemberAddress(member: MemberImpl): Promise<AddressImpl|null> {
         if (member.addressMap == null) {
             return this.translateAddress(member.address);
         }
@@ -831,14 +830,18 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
                             response: ClientAuthenticationResponseParams): Connection {
         this.checkPartitionCount(response.partitionCount);
         connection.setConnectedServerVersion(response.serverHazelcastVersion);
-        connection.setRemoteAddress(response.address);
-        connection.setRemoteUuid(response.memberUuid);
+        if (response.address) {
+            connection.setRemoteAddress(response.address);
+        }
+        if (response.memberUuid) {
+            connection.setRemoteUuid(response.memberUuid);
+        }
         connection.setClusterUuid(response.clusterId);
 
-        const existingConnection = this.connectionRegistry.getConnection(response.memberUuid);
+        const existingConnection = (response.memberUuid) ? this.connectionRegistry.getConnection(response.memberUuid) : null;
         if (existingConnection != null) {
             connection.close('Duplicate connection to same member with uuid: '
-                + response.memberUuid.toString(), null);
+                + response.memberUuid?.toString(), null);
             return existingConnection;
         }
 
@@ -852,7 +855,9 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
             this.client.onConnectionToNewCluster();
         }
         const connectionsEmpty = this.connectionRegistry.isEmpty();
-        this.connectionRegistry.setConnection(response.memberUuid, connection);
+        if (response.memberUuid) {
+            this.connectionRegistry.setConnection(response.memberUuid, connection);
+        }
         if (connectionsEmpty) {
             this.clusterId = newClusterId;
             if (this.establishedInitialClusterConnection) {
@@ -918,6 +923,7 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
         const clientVersion = BuildInfo.getClientVersion();
 
         let clientMessage: ClientMessage;
+        const routingMode = (this.clientConfig.network?.smartRouting == false)? 0 : 1;
 
         if (customCredentials != null || securityConfig.token != null || securityConfig.custom != null) {
             // User either provided a customCredentials or explicitly configured
@@ -925,12 +931,12 @@ export class ConnectionManager extends EventEmitter implements MembershipListene
             const credentialsPayload = this.getCredentialsPayload(customCredentials, securityConfig);
 
             clientMessage = ClientAuthenticationCustomCodec.encodeRequest(clusterName, credentialsPayload, this.clientUuid,
-                CLIENT_TYPE, SERIALIZATION_VERSION, clientVersion, this.clientName, this.labels);
+                CLIENT_TYPE, SERIALIZATION_VERSION, clientVersion, this.clientName, this.labels, routingMode, false);
         } else {
             const usernamePasswordCredentials = securityConfig.usernamePassword;
             clientMessage = ClientAuthenticationCodec.encodeRequest(clusterName, usernamePasswordCredentials.username,
                 usernamePasswordCredentials.password, this.clientUuid, CLIENT_TYPE, SERIALIZATION_VERSION, clientVersion,
-                this.clientName, this.labels);
+                this.clientName, this.labels, routingMode, false);
         }
 
         return clientMessage;

@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {FlakeIdGeneratorNewIdBatchCodec} from '../../codec/FlakeIdGeneratorNewIdBatchCodec';
 import {FlakeIdGeneratorConfigImpl} from '../../config/FlakeIdGeneratorConfig';
 import {BaseProxy} from '../BaseProxy';

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
-import {DataInput, DataOutput} from '../serialization/Data';
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
+import Long from 'long';
+import {DataInput, DataOutput} from '../serialization';
+import {IdentifiedDataSerializable} from '../serialization';
 import * as AggregatorConstants from './AggregatorConstants';
 import {HazelcastError} from '../core';
 
@@ -32,10 +32,10 @@ export abstract class AbstractAggregator<R> implements Aggregator<R> {
 
     abstract classId: number;
     factoryId = AggregatorConstants.AGGREGATOR_FACTORY_ID;
-    protected attributePath: string;
+    protected attributePath: string | null;
 
     constructor(attributePath?: string) {
-        this.attributePath = attributePath;
+        this.attributePath = attributePath === undefined? null : attributePath;
     }
 
     abstract readData(input: DataInput): any;
@@ -302,6 +302,6 @@ export function aggregatorFactory(classId: number): IdentifiedDataSerializable {
     try {
         return new idToConstructor[classId]();
     } catch (e) {
-        throw new HazelcastError('There is no known aggregator with type id ' + classId, e);
+        throw new HazelcastError('There is no known aggregator with type id ' + classId, e as Error);
     }
 }

@@ -16,7 +16,7 @@
 
 import {ConnectionOptions} from 'tls';
 import {Properties} from './Properties';
-import {SSLOptionsFactory} from '../connection/SSLOptionsFactory';
+import {SSLOptionsFactory} from '../connection';
 
 /**
  * SSL configuration.
@@ -59,8 +59,8 @@ export interface SSLConfig {
 export class SSLConfigImpl implements SSLConfig {
 
     enabled = false;
-    sslOptions: ConnectionOptions = null;
-    sslOptionsFactory: SSLOptionsFactory = null;
-    sslOptionsFactoryProperties: Properties = null;
+    sslOptions?: ConnectionOptions = undefined;
+    sslOptionsFactory?: SSLOptionsFactory = undefined;
+    sslOptionsFactoryProperties?: Properties = undefined;
 
 }

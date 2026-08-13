@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
+import Long from 'long';
 
 /**
  * Represents UUIDs used by Hazelcast client. A UUID represents a 128-bit value.
@@ -30,14 +30,14 @@ export class UUID {
      */
     readonly mostSignificant: Long;
     /** @internal */
-    private cachedString: string;
+    private cachedString?: string;
 
     constructor(mostSig: Long, leastSig: Long) {
         this.mostSignificant = mostSig;
         this.leastSignificant = leastSig;
     }
 
-    equals(other: UUID): boolean {
+    equals(other: UUID | null): boolean {
         if (other == null) {
             return false;
         }

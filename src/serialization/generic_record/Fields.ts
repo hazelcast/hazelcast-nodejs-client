@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
+import Long from 'long';
 import {FieldKind} from './FieldKind';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 import {GenericRecord} from './GenericRecord';
