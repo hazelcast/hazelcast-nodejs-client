@@ -149,16 +149,16 @@ export class MetricsCompressor {
         const mask = this.calculateDescriptorMask(descriptor);
         this.metricsBuffer.writeByte(mask);
 
-        if (((mask & MASK_PREFIX) === 0) && descriptor.prefix) {
+        if (((mask & MASK_PREFIX) === 0)) {
             this.metricsBuffer.writeInt(this.getDictionaryId(descriptor.prefix));
         }
         if ((mask & MASK_METRIC) === 0) {
             this.metricsBuffer.writeInt(this.getDictionaryId(descriptor.metric));
         }
-        if (((mask & MASK_DISCRIMINATOR) === 0) && descriptor.discriminator) {
+        if (((mask & MASK_DISCRIMINATOR) === 0)) {
             this.metricsBuffer.writeInt(this.getDictionaryId(descriptor.discriminator));
         }
-        if (((mask & MASK_DISCRIMINATOR_VALUE) === 0) && descriptor.discriminatorValue) {
+        if (((mask & MASK_DISCRIMINATOR_VALUE) === 0)) {
             this.metricsBuffer.writeInt(this.getDictionaryId(descriptor.discriminatorValue));
         }
         if ((mask & MASK_UNIT) == 0) {
@@ -210,7 +210,7 @@ export class MetricsCompressor {
         return mask;
     }
 
-    private getDictionaryId(word: string): number {
+    private getDictionaryId(word: string | undefined): number {
         if (word === undefined) {
             return NULL_DICTIONARY_ID;
         }
