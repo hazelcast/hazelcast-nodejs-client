@@ -1,11 +1,13 @@
 {
     "compilerOptions": {
         "noEmit": true,
-        "module": "commonjs",
-        "moduleResolution": "node",
+        "module": "node16",
+        "moduleResolution": "node16",
         "stripInternal": true,
-        "strict": true
-    },
+        "strict": true,
+        "types": [
+            "node"
+        ]},
     "include": [
         "UserCodeTest.ts"
     ]
