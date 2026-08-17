@@ -2084,6 +2084,29 @@ of these policies.
 > **NOTE: When you use `default` as the Reliable Topic configuration key, it has a special meaning. Hazelcast client will use
 > that configuration as the default one for all Reliable Topics, unless there is a specific configuration for the topic.**
 
+
+### 8.4.8. Using Topic
+
+Hazelcast `Topic` is a distributed topic implementation. For details, see
+the [Topic section](https://docs.hazelcast.com/hazelcast/latest/data-structures/topic) in the Hazelcast
+Reference Manual.
+
+A Topic usage example is shown below.
+
+```javascript
+// Get a Topic called 'my-distributed-topic'
+const topic = await client.getTopic('my-distributed-topic');
+// Add a Listener to the Topic
+topic.addMessageListener((message) => {
+    console.log('Message:', message);
+});
+// Publish a message to the Topic
+await topic.publish('Hello to the distributed world!');
+```
+
+Hazelcast Topic uses `MessageListener` to listen to the events that occur when a message is received. See the
+[Message Listener section](#8524-message-listener) for information on how to create a message listener object and register it.
+
 ### 8.4.9. Using PN Counter
 
 Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually
@@ -2731,7 +2754,7 @@ event contains the item value.
 
 #### 8.5.2.4. Message Listener
 
-The Message Listener is used by the Hazelcast `ReliableTopic`.
+The Message Listener is used by the Hazelcast `Topic` and `ReliableTopic`.
 
 You can listen to message events. To listen to these events, you need to implement the `MessageListener` function to which a
 `Message` object is passed.

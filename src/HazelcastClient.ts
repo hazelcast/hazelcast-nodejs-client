@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2026, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -400,6 +400,13 @@ export class HazelcastClient {
      */
     getReliableTopic<E>(name: string): Promise<ITopic<E>> {
         return this.proxyManager.getOrCreateProxy(name, ProxyManager.RELIABLETOPIC_SERVICE) as Promise<ITopic<E>>;
+    }
+
+    /**
+     * Returns a distributed Topic instance with the given name.
+     */
+    getTopic<E>(name: string): Promise<ITopic<E>> {
+        return this.proxyManager.getOrCreateProxy(name, ProxyManager.TOPIC_SERVICE) as Promise<ITopic<E>>;
     }
 
     /**
