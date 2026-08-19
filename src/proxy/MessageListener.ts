@@ -30,7 +30,7 @@ export class Message<T> {
     /**
      * Published message.
      */
-    messageObject: T;
+    messageObject: T | null;
 
     /**
      * Address of the member that published the message.
@@ -42,7 +42,7 @@ export class Message<T> {
      */
     publishingTime: Long;
 
-    constructor(messageObject: T, publisher: Address, publishingTime: Long) {
+    constructor(messageObject: T | null, publisher: Address, publishingTime: Long) {
         this.messageObject = messageObject;
         this.publisher = publisher;
         this.publishingTime = publishingTime;
