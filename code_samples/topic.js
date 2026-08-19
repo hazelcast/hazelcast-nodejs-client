@@ -19,9 +19,9 @@ const { Client } = require('hazelcast-client');
 
 (async () => {
     const client = await Client.newHazelcastClient();
-    const topic = await client.getReliableTopic('my-distributed-topic');
+    const topic = await client.getTopic('my-distributed-topic');
 
-    await topic.addMessageListener((message) => {
+    topic.addMessageListener((message) => {
         console.log('Received message:\n', message);
         // shut down the client once the message is received
         client.shutdown().catch((err) => {

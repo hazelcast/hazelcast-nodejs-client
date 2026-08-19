@@ -92,7 +92,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         this.ringbuffer = ringbuffer;
     }
 
-    addMessageListener(listener: MessageListener<E>): string {
+    addMessageListener(listener: MessageListener<E>): Promise<string> {
         if (!this.ringbuffer) {
             throw new Error('ringbuffer is null');
         }
@@ -109,19 +109,19 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             this.logger.warn('ReliableTopicProxy', 'Failed to fetch sequence for runner.', e);
         });
 
-        return listenerId;
+        return Promise.resolve(listenerId);
     }
 
-    removeMessageListener(listenerId: string): boolean {
+    removeMessageListener(listenerId: string): Promise<boolean> {
         const runner = this.runners[listenerId];
         if (!runner) {
-            return false;
+            return Promise.resolve(false);
         }
 
         runner.cancel();
         delete this.runners[listenerId];
 
-        return true;
+        return Promise.resolve(true);
     }
 
     publish(message: E): Promise<void> {

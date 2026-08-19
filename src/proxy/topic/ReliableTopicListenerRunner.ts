@@ -94,7 +94,11 @@ export class ReliableTopicListenerRunner<E> {
                 if (this.handleInternalError(err)) {
                     setImmediate(this.next.bind(this));
                 } else {
-                    this.proxy.removeMessageListener(this.listenerId);
+                    // ReliableTopic removeMessageListener never returns an error with removeMessageListener
+                    // handling the error for completeness --YT
+                    this.proxy.removeMessageListener(this.listenerId).catch((err) => {
+                        throw err;
+                    });
                 }
             });
     }
