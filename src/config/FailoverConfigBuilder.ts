@@ -107,9 +107,6 @@ export class FailoverConfigBuilder {
                 copy[p] = (config as any)[p];
             }
         }
-        // const copy = {
-        //     ...config
-        // };
         // now make a copy of config.network, as we're going to mutate it
         for (const p in config.network) {
             if (!disallowedNetworkFields.has(p)) {
