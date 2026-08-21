@@ -37,7 +37,7 @@ export class DataCodec {
         return new HeapData(clientMessage.nextFrame().content);
     }
 
-    static decodeNullable(clientMessage: ClientMessage): Data {
+    static decodeNullable(clientMessage: ClientMessage): Data | null {
         return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : DataCodec.decode(clientMessage);
     }
 }

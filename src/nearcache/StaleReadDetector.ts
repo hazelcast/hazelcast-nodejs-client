@@ -26,7 +26,7 @@ export interface StaleReadDetector {
 
     getPartitionId(key: any): number;
 
-    getMetadataContainer(partitionId: number): MetadataContainer;
+    getMetadataContainer(partitionId: number): MetadataContainer | null;
 }
 
 /** @internal */
@@ -63,7 +63,7 @@ class AlwaysFreshStaleReadDetectorImpl implements StaleReadDetector {
         return 0;
     }
 
-    getMetadataContainer(_partitionId: number): MetadataContainer {
+    getMetadataContainer(_partitionId: number): MetadataContainer | null {
         return null;
     }
 }

@@ -113,6 +113,9 @@ export class ListenerService {
                 listenerRegistration.connectionRegistrations.set(connection, clientEventRegistration);
             })
             .catch((err) => {
+                if (invocation.connection === null) {
+                    return;
+                }
                 if (invocation.connection.isAlive()) {
                     this.deregisterListener(userRegistrationId)
                         .catch(() => {
@@ -183,9 +186,14 @@ export class ListenerService {
                     || err instanceof TargetDisconnectedError) {
                 return;
             }
-            this.logger.warn('ListenerService',
-                'Deregistration of listener ' + userRegistrationId + ' has failed for address '
+            if (invocation.connection) {
+                this.logger.warn('ListenerService',
+                    'Deregistration of listener ' + userRegistrationId + ' has failed for address '
                     + invocation.connection.getRemoteAddress().toString());
+            } else {
+                this.logger.warn('ListenerService',
+                    'Deregistration of listener ' + userRegistrationId + ' has failed, there is no connection');
+            }
         });
     }
 

@@ -38,7 +38,7 @@ import {ListSizeCodec} from '../codec/ListSizeCodec';
 import {ListSubCodec} from '../codec/ListSubCodec';
 import {ItemEvent, ItemEventType, ItemListener} from './ItemListener';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
-import {Data} from '../serialization/Data';
+import {Data} from '../serialization';
 import {IList} from './IList';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ClientMessage} from '../protocol/ClientMessage';
@@ -240,10 +240,13 @@ export class ListProxy<E> extends PartitionSpecificProxy implements IList<E> {
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
         const listenerHandler = (message: ClientMessage): void => {
-            ListAddListenerCodec.handle(message, (element: Data, uuid: UUID, eventType: number) => {
+            ListAddListenerCodec.handle(message, (element: Data | null, uuid: UUID, eventType: number) => {
                 const responseObject = element ? this.toObject(element) : null;
 
                 const member = this.clusterService.getMember(uuid.toString());
+                if (!member) {
+                    return null;
+                }
                 const name = this.name;
                 const itemEvent = new ItemEvent(name, eventType, responseObject, member);
 

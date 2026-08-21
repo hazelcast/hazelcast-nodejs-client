@@ -15,24 +15,24 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {PNCounterAddCodec} from '../codec/PNCounterAddCodec';
 import {PNCounterGetCodec} from '../codec/PNCounterGetCodec';
 import {PNCounterGetConfiguredReplicaCountCodec} from '../codec/PNCounterGetConfiguredReplicaCountCodec';
-import {dataMemberSelector} from '../core/MemberSelector';
+import {dataMemberSelector} from '../core';
 import {VectorClock} from './VectorClock';
 import {NoDataMemberInClusterError} from '../core';
 import {randomInt} from '../util/Util';
 import {BaseProxy} from './BaseProxy';
 import {PNCounter} from './PNCounter';
-import {MemberImpl} from '../core/Member';
+import {MemberImpl} from '../core';
 
 /** @internal */
 export class PNCounterProxy extends BaseProxy implements PNCounter {
     private static readonly EMPTY_ARRAY: MemberImpl[] = [];
     private lastObservedVectorClock: VectorClock = new VectorClock();
     private maximumReplicaCount = 0;
-    private currentTargetReplicaAddress: MemberImpl;
+    private currentTargetReplicaAddress: MemberImpl | null = null;
 
     get(): Promise<Long> {
         return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterGetCodec);
@@ -112,7 +112,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         }, ...codecArguments, this.lastObservedVectorClock.entrySet(), target.uuid)
     }
 
-    private getCRDTOperationTarget(excludedAddresses: MemberImpl[]): Promise<MemberImpl> {
+    private getCRDTOperationTarget(excludedAddresses: MemberImpl[]): Promise<MemberImpl | null> {
         if (this.currentTargetReplicaAddress != null &&
             !excludedAddresses.some(this.currentTargetReplicaAddress.equals.bind(this.currentTargetReplicaAddress))) {
             return Promise.resolve(this.currentTargetReplicaAddress);
@@ -124,7 +124,7 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         }
     }
 
-    private chooseTargetReplica(excludedAddresses: MemberImpl[]): Promise<MemberImpl> {
+    private chooseTargetReplica(excludedAddresses: MemberImpl[]): Promise<MemberImpl | null> {
         return this.getReplicaAddresses(excludedAddresses).then((replicaAddresses) => {
             if (replicaAddresses.length === 0) {
                 return null;

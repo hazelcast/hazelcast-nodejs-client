@@ -20,7 +20,7 @@ import {DataOutput, PositionalDataOutput} from '../Data';
 import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {BitsUtil} from '../../util/BitsUtil';
 import {Portable, FieldType, PortableWriter} from '../Portable';
-import * as Long from 'long';
+import Long from 'long';
 import {
     BigDecimal,
     HazelcastSerializationError,
@@ -212,6 +212,9 @@ export class DefaultPortableWriter implements PortableWriter {
         this.output.writeInt(len);
         this.output.writeInt(fieldDefinition.getFactoryId());
         this.output.writeInt(fieldDefinition.getClassId());
+        if (portables === null) {
+            return;
+        }
         if (len > 0) {
             innerOffset = this.output.position();
             this.output.writeZeroBytes(len * 4);
@@ -250,7 +253,11 @@ export class DefaultPortableWriter implements PortableWriter {
         fieldName: string, fieldType: FieldType, values: T[] | null, writeFn: (out: DataOutput, value: T) => void
     ) {
         this.setPosition(fieldName, fieldType);
-        const len = values === null ? BitsUtil.NULL_ARRAY_LENGTH : values.length;
+        if (values === null) {
+            this.output.writeInt(BitsUtil.NULL_ARRAY_LENGTH);
+            return;
+        }
+        const len = values.length;
         this.output.writeInt(len);
 
         if (len > 0) {
@@ -258,11 +265,12 @@ export class DefaultPortableWriter implements PortableWriter {
             this.output.writeZeroBytes(len * BitsUtil.INT_SIZE_IN_BYTES);
             for (let i = 0; i < len; i++) {
                 const position = this.output.position();
-                if (values[i] === null) {
+                const value = values[i];
+                if (value === null) {
                     throw new HazelcastSerializationError('Array items cannot be null');
                 }
                 this.output.pwriteInt(offset + i * BitsUtil.INT_SIZE_IN_BYTES, position);
-                writeFn(this.output, values[i]);
+                writeFn(this.output, value);
             }
         }
     }

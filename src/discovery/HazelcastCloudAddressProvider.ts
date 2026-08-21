@@ -17,8 +17,8 @@
 
 import {HazelcastCloudDiscovery} from './HazelcastCloudDiscovery';
 import {AddressProvider} from '../connection/AddressProvider';
-import {ILogger} from '../logging/ILogger';
-import {AddressImpl, Addresses} from '../core/Address';
+import {ILogger} from '../logging';
+import {AddressImpl, Addresses} from '../core';
 import {createAddressFromString} from '../util/AddressUtil';
 
 /** @internal */
@@ -50,23 +50,22 @@ export class HazelcastCloudAddressProvider implements AddressProvider {
             });
     }
 
-    translate(address: AddressImpl): Promise<AddressImpl> {
-        if (address == null) {
+    translate(address: AddressImpl): Promise<AddressImpl|null> {
+        if (!address) {
             return Promise.resolve(null);
         }
-        let publicAddress = this.privateToPublic.get(address.toString());
+        const publicAddress = this.privateToPublic.get(address.toString());
         if (publicAddress != null) {
             return Promise.resolve(publicAddress);
         }
 
         return this.refresh()
             .then(() => {
-                publicAddress = this.privateToPublic.get(address.toString());
+                const publicAddress = this.privateToPublic.get(address.toString());
                 if (publicAddress != null) {
                     return publicAddress;
-                } else {
-                    return null;
                 }
+                return null;
             });
     }
 

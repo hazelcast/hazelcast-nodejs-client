@@ -44,7 +44,7 @@ class MemberListSnapshot {
         public version: number,
         public readonly members: Map<string, MemberImpl>,
         public readonly memberList: MemberImpl[],
-        public readonly clusterUuid: UUID
+        public readonly clusterUuid: UUID | null,
     ) {}
 }
 
@@ -144,11 +144,11 @@ export class ClusterService implements Cluster {
         // - registering cluster view listener back to the new cluster.
         // - on authentication response when cluster uuid change is detected.
         if (this.memberListSnapshot.version !== INITIAL_MEMBER_LIST_VERSION) {
-            this.memberListSnapshot = 
-                new MemberListSnapshot(   
-                    0, 
-                    this.memberListSnapshot.members, 
-                    this.memberListSnapshot.memberList, 
+            this.memberListSnapshot =
+                new MemberListSnapshot(
+                    0,
+                    this.memberListSnapshot.members,
+                    this.memberListSnapshot.memberList,
                     this.memberListSnapshot.clusterUuid
                 );
         }
@@ -157,11 +157,11 @@ export class ClusterService implements Cluster {
     onTryToConnectNextCluster(): void {
         this.logger.trace('ClusterService', 'Resetting the cluster snapshot.');
         this.initialListFetched = deferredPromise<void>();
-        this.memberListSnapshot = 
-                new MemberListSnapshot(   
-                    INITIAL_MEMBER_LIST_VERSION, 
-                    this.memberListSnapshot.members, 
-                    this.memberListSnapshot.memberList, 
+        this.memberListSnapshot =
+                new MemberListSnapshot(
+                    INITIAL_MEMBER_LIST_VERSION,
+                    this.memberListSnapshot.members,
+                    this.memberListSnapshot.memberList,
                     this.memberListSnapshot.clusterUuid
                 );
     }
@@ -244,7 +244,7 @@ export class ClusterService implements Cluster {
     private detectMembershipEvents(
         prevMembers: MemberImpl[],
         currentMembers: MemberImpl[],
-        clusterUuid: UUID
+        clusterUuid: UUID | null,
     ): MembershipEvent[] {
         const newMembers = new Array<MemberImpl>();
 
@@ -254,7 +254,7 @@ export class ClusterService implements Cluster {
         }
 
         for (const member of currentMembers) {
-            if (this.memberListSnapshot.clusterUuid.equals(clusterUuid)) {
+            if (this.memberListSnapshot?.clusterUuid?.equals(clusterUuid)) {
                 if (!deadMembers.delete(member.id())) {
                     newMembers.push(member);
                 }

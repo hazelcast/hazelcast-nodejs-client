@@ -33,7 +33,7 @@ export class CodecUtil {
         }
     }
 
-    static encodeNullable<T>(clientMessage: ClientMessage, value: T, encoder: (msg: ClientMessage, val: T) => void): void {
+    static encodeNullable<T>(clientMessage: ClientMessage, value: T | null, encoder: (msg: ClientMessage, val: T) => void): void {
         if (value == null) {
             clientMessage.addFrame(NULL_FRAME.copy());
         } else {
@@ -41,12 +41,16 @@ export class CodecUtil {
         }
     }
 
-    static decodeNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T {
+    static decodeNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T | null {
         return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : decoder(clientMessage);
     }
 
     static nextFrameIsDataStructureEndFrame(clientMessage: ClientMessage): boolean {
-        return clientMessage.peekNextFrame().isEndFrame();
+        const frame = clientMessage.peekNextFrame();
+        if (!frame) {
+            throw new RangeError('next frame is null');
+        }
+        return frame.isEndFrame();
     }
 
     /**
@@ -55,7 +59,11 @@ export class CodecUtil {
      * by calling {@link ClientMessage.nextFrame} once to skip the {@link NULL_FRAME}.
      */
     static nextFrameIsNullFrame(clientMessage: ClientMessage): boolean {
-        const isNull = clientMessage.peekNextFrame().isNullFrame();
+        const frame = clientMessage.peekNextFrame();
+        if (!frame) {
+            throw new RangeError('next frame is null')
+        }
+        const isNull = frame.isNullFrame();
         if (isNull) {
             clientMessage.nextFrame();
         }

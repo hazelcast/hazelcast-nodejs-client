@@ -15,8 +15,8 @@
  */
 /** @ignore *//** */
 
-import * as assert from 'assert';
-import * as util from 'util';
+import assert from 'assert';
+import util from 'util';
 import {InvalidConfigurationError} from '../core';
 import {
     assertPositiveNumber,
@@ -46,7 +46,8 @@ export class FailoverConfigBuilder {
             this.handleConfig(this.originalConfig);
             this.validate();
             return this.effectiveConfig;
-        } catch (err) {
+        } catch (err1) {
+            const err = err1 as Error;
             throw new InvalidConfigurationError('Config validation error: ' + err.message, err);
         }
     }
@@ -85,8 +86,9 @@ export class FailoverConfigBuilder {
         const mainCopy = FailoverConfigBuilder.copyWithoutAllowedFields(main);
         const alternativeCopy = FailoverConfigBuilder.copyWithoutAllowedFields(alternative);
 
+        const equal = util.isDeepStrictEqual(mainCopy, alternativeCopy);
         assert(
-            util.isDeepStrictEqual(mainCopy, alternativeCopy),
+            equal,
             'Alternative config with cluster name ' + alternative.clusterName
                 + ' must have the same config as the initial config with cluster name '
                 + main.clusterName + ' except for the following options: '
@@ -96,23 +98,21 @@ export class FailoverConfigBuilder {
     }
 
     private static copyWithoutAllowedFields(config: ClientConfigImpl): Record<string, unknown> {
+        const disallowedConfigFields = new Set(['clusterName', 'customCredentials', 'security', 'network'])
+        const disallowedNetworkFields = new Set(['clusterMembers', 'ssl', 'hazelcastCloud']);
         // make a shallow copy of the config
-        const copy = {
-            ...config
-        };
+        const copy: Record<string, any> = {network: {}};
+        for (const p in config) {
+            if (!disallowedConfigFields.has(p)) {
+                copy[p] = (config as any)[p];
+            }
+        }
         // now make a copy of config.network, as we're going to mutate it
-        copy.network = {
-            ...copy.network
-        };
-        // now get rid of allowed fields
-        // note: make sure to update assertion message in validateAlternativeConfigs
-        //       when this list changes
-        delete copy.clusterName;
-        delete copy.customCredentials;
-        delete copy.security;
-        delete copy.network.clusterMembers;
-        delete copy.network.ssl;
-        delete copy.network.hazelcastCloud;
+        for (const p in config.network) {
+            if (!disallowedNetworkFields.has(p)) {
+                copy.network[p] = (config.network as any)[p];
+            }
+        }
         return copy;
     }
 }

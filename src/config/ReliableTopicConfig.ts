@@ -40,7 +40,7 @@ export class ReliableTopicConfigImpl implements ReliableTopicConfig {
     /**
      * Name of the ReliableTopic.
      */
-    name: string;
+    name = '';
     readBatchSize = 10;
     overloadPolicy: TopicOverloadPolicy = TopicOverloadPolicy.BLOCK;
 

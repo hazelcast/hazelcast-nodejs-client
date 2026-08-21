@@ -41,15 +41,15 @@ export class SqlPredicate extends AbstractPredicate {
     static CLASS_ID = 0;
 
     classId = SqlPredicate.CLASS_ID;
-    private sql: string;
+    private sql = '';
 
     constructor(sql?: string) {
         super();
-        this.sql = sql;
+        this.sql = sql || '';
     }
 
     readData(input: DataInput): any {
-        this.sql = input.readString();
+        this.sql = input.readString() || '';
     }
 
     writeData(output: DataOutput): void {
@@ -92,13 +92,13 @@ export class BetweenPredicate extends AbstractPredicate {
     static CLASS_ID = 2;
 
     classId = BetweenPredicate.CLASS_ID;
-    private field: string;
+    private field: string | null;
     private from: any;
     private to: any;
 
     constructor(field?: string, from?: any, to?: any) {
         super();
-        this.field = field;
+        this.field = field || null;
         this.from = from;
         this.to = to;
     }
@@ -122,12 +122,12 @@ export class EqualPredicate extends AbstractPredicate {
     static CLASS_ID = 3;
 
     classId = EqualPredicate.CLASS_ID;
-    private field: string;
+    private field: string | null;
     private value: any;
 
     constructor(field?: string, value?: any) {
         super();
-        this.field = field;
+        this.field = field || null;
         this.value = value;
     }
 
@@ -148,17 +148,17 @@ export class GreaterLessPredicate extends AbstractPredicate {
     static CLASS_ID = 4;
 
     classId = GreaterLessPredicate.CLASS_ID;
-    private field: string;
+    private field: string | null;
     private value: any;
     private equal: boolean;
     private less: boolean;
 
     constructor(field?: string, value?: any, equal?: boolean, less?: boolean) {
         super();
-        this.field = field;
+        this.field = field || null;
         this.value = value;
-        this.equal = equal;
-        this.less = less;
+        this.equal = equal || false;
+        this.less = less || false;
     }
 
     readData(input: DataInput): any {
@@ -183,13 +183,13 @@ export class LikePredicate extends AbstractPredicate {
     static CLASS_ID = 5;
 
     classId = LikePredicate.CLASS_ID;
-    private field: string;
-    private expr: string;
+    private field: string | null;
+    private expr: string | null;
 
     constructor(field?: string, expr?: string) {
         super();
-        this.field = field;
-        this.expr = expr;
+        this.field = field || null;
+        this.expr = expr || null;
     }
 
     readData(input: DataInput): any {
@@ -218,12 +218,12 @@ export class InPredicate extends AbstractPredicate {
     static CLASS_ID = 7;
 
     classId = InPredicate.CLASS_ID;
-    private field: string;
+    private field: string | null;
     private values: any[];
 
     constructor(field?: string, ...values: any[]) {
         super();
-        this.field = field;
+        this.field = field || null;
         this.values = values;
     }
 
@@ -252,11 +252,11 @@ export class InstanceOfPredicate extends AbstractPredicate {
     static CLASS_ID = 8;
 
     classId = InstanceOfPredicate.CLASS_ID;
-    private className: string;
+    private className: string | null;
 
     constructor(className?: string) {
         super();
-        this.className = className;
+        this.className = className || null;
     }
 
     readData(input: DataInput): any {
@@ -283,11 +283,11 @@ export class NotPredicate extends AbstractPredicate {
     static CLASS_ID = 10;
 
     classId = NotPredicate.CLASS_ID;
-    private predicate: Predicate;
+    private predicate: Predicate | null;
 
     constructor(predicate?: Predicate) {
         super();
-        this.predicate = predicate;
+        this.predicate = predicate || null;
     }
 
     readData(input: DataInput): any {
@@ -336,13 +336,13 @@ export class RegexPredicate extends AbstractPredicate {
     static CLASS_ID = 12;
 
     classId = RegexPredicate.CLASS_ID;
-    private field: string;
-    private regex: string;
+    private field: string | null;
+    private regex: string | null;
 
     constructor(field?: string, regex?: string) {
         super();
-        this.field = field;
-        this.regex = regex;
+        this.field = field || null;
+        this.regex = regex || null;
     }
 
     readData(input: DataInput): any {
@@ -394,27 +394,27 @@ export class TruePredicate extends AbstractPredicate {
 /** @internal */
 export class PagingPredicateImpl extends AbstractPredicate implements PagingPredicate {
 
-    private static NULL_ANCHOR: [number, [any, any]] = [-1, null];
+    private static NULL_ANCHOR: [number, [any, any] | null] = [-1, null];
     static CLASS_ID = 15;
 
     classId = PagingPredicateImpl.CLASS_ID;
-    private internalPredicate: Predicate;
+    private internalPredicate: Predicate | null;
     private pageSize: number;
-    private comparatorObject: Comparator;
+    private comparatorObject: Comparator | null;
     private page = 0;
     private iterationType: IterationType = IterationType.ENTRY;
     private anchorList: Array<[number, [any, any]]> = [];
 
-    constructor(internalPredicate?: Predicate, pageSize?: number, comparator?: Comparator) {
+    constructor(internalPredicate?: Predicate, pageSize?: number, comparator: Comparator | null = null) {
         super();
-        if (pageSize <= 0) {
+        if (pageSize !== undefined && pageSize <= 0) {
             throw new TypeError('Page size should be greater than 0!');
         }
-        this.pageSize = pageSize;
+        this.pageSize = pageSize || 0;
         if (internalPredicate instanceof PagingPredicateImpl) {
             throw new TypeError('Nested paging predicates are not supported!');
         }
-        this.internalPredicate = internalPredicate;
+        this.internalPredicate = internalPredicate || null;
         this.comparatorObject = comparator;
     }
 
@@ -423,7 +423,11 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
         this.comparatorObject = input.readObject();
         this.page = input.readInt();
         this.pageSize = input.readInt();
-        this.iterationType = enumFromString<IterationType>(IterationType, input.readString());
+        const iterType = input.readString();
+        if (!iterType) {
+            throw new Error('iterType is null')
+        }
+        this.iterationType = enumFromString<IterationType>(IterationType, iterType);
         this.anchorList = [];
         const size = input.readInt();
         for (let i = 0; i < size; i++) {
@@ -471,11 +475,11 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
         return this.pageSize;
     }
 
-    getComparator(): Comparator {
+    getComparator(): Comparator | null {
         return this.comparatorObject;
     }
 
-    getAnchor(): [number, [any, any]] {
+    getAnchor(): [number, [any, any] | null] {
         const anchorCount = this.anchorList.length;
         if (this.page === 0 || anchorCount === 0) {
             return PagingPredicateImpl.NULL_ANCHOR;
@@ -489,7 +493,7 @@ export class PagingPredicateImpl extends AbstractPredicate implements PagingPred
         return anchoredEntry;
     }
 
-    getPredicate(): Predicate {
+    getPredicate(): Predicate | null {
         return this.internalPredicate;
     }
 

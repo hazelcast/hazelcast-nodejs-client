@@ -16,11 +16,11 @@
 /** @ignore *//** */
 
 import {MapFetchNearCacheInvalidationMetadataCodec} from '../codec/MapFetchNearCacheInvalidationMetadataCodec';
-import {dataMemberSelector} from '../core/MemberSelector';
-import {UUID} from '../core/UUID';
+import {dataMemberSelector} from '../core';
+import {UUID} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 import {RepairingHandler} from './RepairingHandler';
-import {ILogger} from '../logging/ILogger';
+import {ILogger} from '../logging';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {ClusterService} from '../invocation/ClusterService';
 
@@ -69,7 +69,8 @@ export class MetadataFetcher {
                 this.repairUuids(handler, metadata.partitionUuidList);
                 this.repairSequences(handler, metadata.namePartitionSequenceList);
             } catch (e) {
-                this.logger.warn('MetadataFetcher', 'Can not get invalidation metadata ' + e.message);
+                const err = e as Error;
+                this.logger.warn('MetadataFetcher', 'Can not get invalidation metadata ' + err.message);
             }
         });
     }

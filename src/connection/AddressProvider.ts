@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {AddressImpl, Addresses} from '../core/Address';
+import {AddressImpl, Addresses} from '../core';
 
 /**
  * Provides initial addresses for the client to find and connect to a node &
@@ -36,6 +36,6 @@ export interface AddressProvider {
      * @param address to be translated
      * @return new address if given address is known, otherwise return null
      */
-    translate(address: AddressImpl): Promise<AddressImpl>;
+    translate(address: AddressImpl): Promise<AddressImpl|null>;
 
 }

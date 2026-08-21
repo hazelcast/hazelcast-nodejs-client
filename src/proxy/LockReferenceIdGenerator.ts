@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 
 /** @internal */
 export class LockReferenceIdGenerator {

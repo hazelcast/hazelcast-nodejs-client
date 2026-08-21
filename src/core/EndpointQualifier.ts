@@ -19,9 +19,9 @@
 export class EndpointQualifier {
 
     readonly type: number;
-    readonly identifier: string;
+    readonly identifier: string | null;
 
-    constructor(type: number, identifier: string) {
+    constructor(type: number, identifier: string | null) {
         this.type = type;
         this.identifier = identifier;
     }

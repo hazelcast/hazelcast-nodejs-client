@@ -22,11 +22,11 @@ import {
 } from '../network/ConnectionManager';
 import {PartitionServiceImpl} from '../PartitionService';
 import {ClusterService} from '../invocation/ClusterService';
-import {ILogger} from '../logging/ILogger';
+import {ILogger} from '../logging';
 import {Connection} from '../network/Connection';
 import {ClientAddClusterViewListenerCodec} from '../codec/ClientAddClusterViewListenerCodec';
 import {ClientMessage} from '../protocol/ClientMessage';
-import {UUID} from '../core/UUID';
+import {UUID} from '../core';
 import {Invocation, InvocationService} from '../invocation/InvocationService';
 
 /**
@@ -36,7 +36,7 @@ import {Invocation, InvocationService} from '../invocation/InvocationService';
  */
 export class ClusterViewListenerService {
 
-    private listenerAddedConnection: Connection;
+    private listenerAddedConnection: Connection | null = null;
 
     constructor(
         private readonly logger: ILogger,
@@ -71,7 +71,7 @@ export class ClusterViewListenerService {
         const invocation = new Invocation(this.invocationService, request);
         invocation.connection = connection;
         invocation.eventHandler = handler;
-        
+
         this.clusterService.onClusterConnect();
         this.logger.trace('ClusterViewListenerService', `Register attempt of cluster view handler to ${connection}`);
         this.invocationService.invokeUrgent(invocation)
@@ -98,9 +98,13 @@ export class ClusterViewListenerService {
 
     private createClusterViewEventHandler(connection: Connection): (msg: ClientMessage) => void {
         return (clientMessage: ClientMessage): void => {
+            const uuid = connection.getClusterUuid();
+            if (uuid == null) {
+                return;
+            }
             ClientAddClusterViewListenerCodec.handle(clientMessage,
                 this.clusterService.handleMembersViewEvent.bind(
-                    this.clusterService, connection.getClusterUuid()
+                    this.clusterService, uuid
                 ),
                 (version: number, partitions: Array<[UUID, number[]]>) => {
                     this.partitionService.handlePartitionViewEvent(connection, partitions, version);

@@ -15,11 +15,11 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
-import {EvictionPolicy} from '../config/EvictionPolicy';
-import {InMemoryFormat} from '../config/InMemoryFormat';
-import {NearCacheConfigImpl} from '../config/NearCacheConfig';
-import {Data} from '../serialization/Data';
+import Long from 'long';
+import {EvictionPolicy} from '../config';
+import {InMemoryFormat} from '../config';
+import {NearCacheConfigImpl} from '../config';
+import {Data} from '../serialization';
 import {SerializationService} from '../serialization/SerializationService';
 import {
     deferredPromise,
@@ -91,7 +91,7 @@ export class NearCacheImpl implements NearCache {
     private missCount = 0;
     private hitCount = 0;
     private creationTime = Date.now();
-    private readonly compareFunc: (x: DataRecord, y: DataRecord) => number;
+    private readonly compareFunc?: (x: DataRecord, y: DataRecord) => number;
     private ready: DeferredPromise<void>;
 
     constructor(nearCacheConfig: NearCacheConfigImpl, serializationService: SerializationService) {
@@ -250,7 +250,7 @@ export class NearCacheImpl implements NearCache {
     }
 
     getStatistics(): NearCacheStatistics {
-        const stats: NearCacheStatistics = {
+        return {
             creationTime: this.creationTime,
             evictedCount: this.evictedCount,
             expiredCount: this.expiredCount,
@@ -258,7 +258,6 @@ export class NearCacheImpl implements NearCache {
             hitCount: this.hitCount,
             entryCount: this.internalStore.size,
         };
-        return stats;
     }
 
     protected isEvictionRequired(): boolean {
@@ -326,7 +325,15 @@ export class NearCacheImpl implements NearCache {
         }
         const partitionId = this.staleReadDetector.getPartitionId(dr.key);
         const metadataContainer = this.staleReadDetector.getMetadataContainer(partitionId);
+        if (metadataContainer === null) {
+            return;
+        }
         dr.setInvalidationSequence(metadataContainer.getSequence());
-        dr.setUuid(metadataContainer.getUuid());
+        const uuid= metadataContainer.getUuid();
+        if (uuid === null) {
+            throw new Error('MetadataConainer uuid is null');
+        }
+
+        dr.setUuid(uuid);
     }
 }

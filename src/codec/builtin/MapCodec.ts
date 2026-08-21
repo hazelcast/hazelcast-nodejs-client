@@ -58,7 +58,7 @@ export class MapCodec {
 
     static decodeNullable<K, V>(clientMessage: ClientMessage,
                                 keyDecoder: (msg: ClientMessage) => K,
-                                valueDecoder: (msg: ClientMessage) => V): Map<K, V> {
+                                valueDecoder: (msg: ClientMessage) => V): Map<K, V> | null {
         return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : MapCodec.decode(clientMessage, keyDecoder, valueDecoder);
     }
 }

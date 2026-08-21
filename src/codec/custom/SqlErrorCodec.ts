@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2026, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ export class SqlErrorCodec {
 
         CodecUtil.encodeNullable(clientMessage, sqlError.message, StringCodec.encode);
         CodecUtil.encodeNullable(clientMessage, sqlError.suggestion, StringCodec.encode);
+        CodecUtil.encodeNullable(clientMessage, sqlError.causeStackTrace, StringCodec.encode);
 
         clientMessage.addFrame(END_FRAME.copy());
     }
@@ -47,19 +48,28 @@ export class SqlErrorCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
+        let nextFrame: Frame | null = null;
+
         const code = FixSizedTypesCodec.decodeInt(initialFrame.content, CODE_OFFSET);
         const originatingMemberId = FixSizedTypesCodec.decodeUUID(initialFrame.content, ORIGINATING_MEMBER_ID_OFFSET);
-
         const message = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
         let isSuggestionExists = false;
         let suggestion = null;
-        if (!clientMessage.peekNextFrame().isEndFrame()) {
+        nextFrame = clientMessage.peekNextFrame();
+        if (nextFrame && !nextFrame.isEndFrame()) {
             suggestion = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
             isSuggestionExists = true;
+        }
+        let isCauseStackTraceExists = false;
+        let causeStackTrace = null;
+        nextFrame = clientMessage.peekNextFrame();
+        if (nextFrame && !nextFrame.isEndFrame()) {
+            causeStackTrace = CodecUtil.decodeNullable(clientMessage, StringCodec.decode);
+            isCauseStackTraceExists = true;
         }
 
         CodecUtil.fastForwardToEndFrame(clientMessage);
 
-        return new SqlError(code, message, originatingMemberId, isSuggestionExists, suggestion);
+        return new SqlError(code, message, originatingMemberId, isSuggestionExists, suggestion, isCauseStackTraceExists, causeStackTrace);
     }
 }

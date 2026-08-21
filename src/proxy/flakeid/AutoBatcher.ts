@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {EventEmitter} from 'events';
-import * as Long from 'long';
+import Long from 'long';
 import {
     deferredPromise,
     DeferredPromise
@@ -45,7 +45,7 @@ export class Batch {
      * @returns next id from the batch,
      *          undefined if ids are exhausted or not valid anymore
      */
-    nextId(): Long {
+    nextId(): Long | undefined {
         if (this.invalidSince <= Date.now()) {
             return undefined;
         }
@@ -64,7 +64,7 @@ export class AutoBatcher {
     private static readonly NEW_BATCH_AVAILABLE = 'newBatch';
 
     private queue: Array<DeferredPromise<Long>> = [];
-    private batch: Batch;
+    private batch: Batch | null = null;
     private requestInFlight = false;
     private supplier: () => Promise<any>;
     private emitter = new EventEmitter();
@@ -78,7 +78,7 @@ export class AutoBatcher {
     processIdRequests(): void {
         let ind = 0;
         while (ind < this.queue.length) {
-            let nextId: Long;
+            let nextId: Long | undefined;
             if (this.batch != null && (nextId = this.batch.nextId()) != null) {
                 this.queue[ind].resolve(nextId);
                 ind++;

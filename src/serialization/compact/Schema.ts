@@ -16,9 +16,9 @@
 /** @ignore *//** */
 
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
-import * as Long from 'long';
+import Long from 'long';
 import {FieldOperations} from '../generic_record/FieldOperations';
-import {FieldKind} from '../generic_record/FieldKind';
+import {FieldKind} from '../generic_record';
 import {BitsUtil} from '../../util/BitsUtil';
 import {RabinFingerprint64} from './RabinFingerprint';
 
@@ -30,9 +30,9 @@ export class Schema {
     typeName: string;
     fieldDefinitionMap: Map<string, FieldDescriptor>;
     fields: FieldDescriptor[];
-    numberVarSizeFields: number;
-    fixedSizeFieldsLength: number;
-    schemaId: Long;
+    numberVarSizeFields = 0;
+    fixedSizeFieldsLength = 0;
+    schemaId: Long = Long.ZERO;
 
     constructor(typeName: string, fields: FieldDescriptor[]) {
         this.typeName = typeName;
@@ -116,6 +116,9 @@ export class Schema {
             }
 
             const otherField = other.fieldDefinitionMap.get(fieldName);
+            if (!otherField) {
+                return false;
+            }
 
             if (!otherField.equals(field)) {
                 return false;

@@ -30,18 +30,17 @@ export class TopicProxy<E> extends PartitionSpecificProxy implements ITopic<E> {
     addMessageListener(listener: MessageListener<E>): Promise<string> {
         const handler = (message: ClientMessage): void => {
             TopicAddMessageListenerCodec.handle(message, (item, publishTime, uuid) => {
-                let responseObject: E;
+                let responseObject: E | null;
                 if (item == null) {
                     responseObject = null;
                 } else {
                     responseObject = this.toObject(item);
                 }
                 const member = this.clusterService.getMember(uuid.toString());
-                const message = new Message<E>();
-                message.messageObject = responseObject;
-                message.publisher = member.address;
-                message.publishingTime = publishTime;
-                listener.apply(null, [message]);
+                if (member) {
+                    const message = new Message<E>(responseObject, member.address, publishTime);
+                    listener.apply(null, [message]);
+                }
             });
         }
         const codec = this.createEntryListener(this.name);

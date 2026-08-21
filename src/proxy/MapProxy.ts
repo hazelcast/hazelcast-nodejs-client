@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import {Aggregator} from '../aggregation/Aggregator';
+import {Aggregator} from '../aggregation';
 import {MapAddEntryListenerCodec} from '../codec/MapAddEntryListenerCodec';
 import {MapAddEntryListenerToKeyCodec} from '../codec/MapAddEntryListenerToKeyCodec';
 import {MapAddEntryListenerToKeyWithPredicateCodec} from '../codec/MapAddEntryListenerToKeyWithPredicateCodec';
@@ -72,30 +72,30 @@ import {MapValuesCodec} from '../codec/MapValuesCodec';
 import {MapValuesWithPagingPredicateCodec} from '../codec/MapValuesWithPagingPredicateCodec';
 import {MapValuesWithPredicateCodec} from '../codec/MapValuesWithPredicateCodec';
 import {EventType} from './EventType';
-import {SimpleEntryView} from '../core/SimpleEntryView';
+import {SimpleEntryView} from '../core';
 import {MapEvent, MapListener} from './MapListener';
 import {IterationType, Predicate} from '../core/Predicate';
-import {ReadOnlyLazyList} from '../core/ReadOnlyLazyList';
+import {ReadOnlyLazyList} from '../core';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
-import {Data} from '../serialization/Data';
+import {Data} from '../serialization';
 import {PagingPredicateImpl} from '../serialization/DefaultPredicates';
 import {assertArray, assertNotNull} from '../util/Util';
 import {BaseProxy} from './BaseProxy';
 import {IMap} from './IMap';
 import {EntryEvent} from './EntryListener';
-import {UUID} from '../core/UUID';
+import {UUID} from '../core';
 import {ClientMessage} from '../protocol/ClientMessage';
-import {IndexConfig} from '../config/IndexConfig';
+import {IndexConfig} from '../config';
 import {IndexUtil} from '../util/IndexUtil';
 import {PagingPredicateHolder} from '../protocol/PagingPredicateHolder';
 import {MapEntriesWithPagingPredicateCodec} from '../codec/MapEntriesWithPagingPredicateCodec';
-import * as Long from 'long';
+import Long from 'long';
 import {SchemaNotReplicatedError} from '../core';
 import {MapRemoveAllCodec} from '../codec/MapRemoveAllCodec';
 import {getLockID} from './LockContext';
 
-type EntryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number,
-                          uuid: UUID, numberOfAffectedEntries: number) => void;
+type EntryEventHandler = (key: Data | null, value: Data | null, oldValue: Data | null, mergingValue: Data | null,
+                          eventType: number, uuid: UUID, numberOfAffectedEntries: number) => void;
 
 /** @internal */
 export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
@@ -218,7 +218,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         if (predicate instanceof PagingPredicateImpl) {
             predicate.setIterationType(IterationType.ENTRY);
             const serializationService = this.serializationService;
-            let pagingPredicateHolder: PagingPredicateHolder;
+            let pagingPredicateHolder: PagingPredicateHolder | null;
             try {
                 pagingPredicateHolder = PagingPredicateHolder.of(predicate, serializationService);
             } catch (e) {
@@ -257,7 +257,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         if (predicate instanceof PagingPredicateImpl) {
             predicate.setIterationType(IterationType.KEY);
             const serializationService = this.serializationService;
-            let pagingPredicateHolder: PagingPredicateHolder;
+            let pagingPredicateHolder: PagingPredicateHolder | null;
             try {
                 pagingPredicateHolder = PagingPredicateHolder.of(predicate, serializationService);
             } catch (e) {
@@ -295,7 +295,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         if (predicate instanceof PagingPredicateImpl) {
             predicate.setIterationType(IterationType.VALUE);
             const serializationService = this.serializationService;
-            let pagingPredicateHolder: PagingPredicateHolder;
+            let pagingPredicateHolder: PagingPredicateHolder | null;
             try {
                 pagingPredicateHolder = PagingPredicateHolder.of(predicate, serializationService);
             } catch (e) {
@@ -675,7 +675,7 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
         });
     }
 
-    getEntryView(key: K): Promise<SimpleEntryView<K, V>> {
+    getEntryView(key: K): Promise<SimpleEntryView<K, V> | null> {
         assertNotNull(key);
         let keyData: Data;
         try {
@@ -1002,7 +1002,8 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
                 flags = flags | conversionTable[funcName];
             }
         }
-        const entryEventHandler = (key: Data, value: Data, oldValue: Data, mergingValue: Data, eventType: number,
+        const entryEventHandler = (key: Data | null, value: Data | null,
+                                   oldValue: Data | null, mergingValue: Data | null, eventType: number,
                                    uuid: UUID, numberOfAffectedEntries: number): void => {
             const member = this.clusterService.getMember(uuid.toString());
             const name = this.name;
@@ -1020,31 +1021,31 @@ export class MapProxy<K, V> extends BaseProxy implements IMap<K, V> {
 
             switch (eventType) {
                 case EventType.ADDED:
-                    listener.added.apply(null, [entryEvent]);
+                    listener.added?.apply(null, [entryEvent]);
                     break;
                 case EventType.REMOVED:
-                    listener.removed.apply(null, [entryEvent]);
+                    listener.removed?.apply(null, [entryEvent]);
                     break;
                 case EventType.UPDATED:
-                    listener.updated.apply(null, [entryEvent]);
+                    listener.updated?.apply(null, [entryEvent]);
                     break;
                 case EventType.EVICTED:
-                    listener.evicted.apply(null, [entryEvent]);
+                    listener.evicted?.apply(null, [entryEvent]);
                     break;
                 case EventType.EVICT_ALL:
-                    listener.mapEvicted.apply(null, [mapEvent]);
+                    listener.mapEvicted?.apply(null, [mapEvent]);
                     break;
                 case EventType.CLEAR_ALL:
-                    listener.mapCleared.apply(null, [mapEvent]);
+                    listener.mapCleared?.apply(null, [mapEvent]);
                     break;
                 case EventType.MERGED:
-                    listener.merged.apply(null, [entryEvent]);
+                    listener.merged?.apply(null, [entryEvent]);
                     break;
                 case EventType.EXPIRED:
-                    listener.expired.apply(null, [entryEvent]);
+                    listener.expired?.apply(null, [entryEvent]);
                     break;
                 case EventType.LOADED:
-                    listener.loaded.apply(null, [entryEvent]);
+                    listener.loaded?.apply(null, [entryEvent]);
                     break;
             }
         };

@@ -57,7 +57,7 @@ describe('ClientErrorFactoryTest', function () {
         const error = factory.createError([createErrorHolder(code)], 0);
 
         assertKnownError(error, IllegalStateError, code);
-        expect(error.cause).to.be.null;
+        expect(error.cause).to.be.undefined;
     });
 
     it('createError: should create error with given cause', function () {
@@ -68,14 +68,14 @@ describe('ClientErrorFactoryTest', function () {
 
         const cause = error.cause;
         assertKnownError(cause, IllegalStateError, code);
-        expect(cause.cause).to.be.null;
+        expect(cause.cause).to.be.undefined;
     });
 
     it('createError: should create UndefinedErrorCodeError for single exception with unknown code', function () {
         const error = factory.createError([createErrorHolder(-1)], 0);
 
         assertUnknownError(error);
-        expect(error.cause).to.be.null;
+        expect(error.cause).to.be.undefined;
     });
 
     it('createError: should create UndefinedErrorCodeError with known cause for chain of exceptions', function () {

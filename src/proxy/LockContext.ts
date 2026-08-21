@@ -1,6 +1,6 @@
 
 import { AsyncLocalStorage } from 'node:async_hooks';
-import * as Long from 'long';
+import Long from 'long';
 
 const lockContextStorage = new AsyncLocalStorage();
 let lockID = Long.ZERO

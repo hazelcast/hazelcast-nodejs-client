@@ -21,7 +21,7 @@ import {SqlErrorCode} from './SqlErrorCode';
 import {SqlQueryId} from './SqlQueryId';
 import {SerializationService} from '../serialization/SerializationService';
 import {SqlExecuteCodec, SqlExecuteResponseParams} from '../codec/SqlExecuteCodec';
-import * as Long from 'long';
+import Long from 'long';
 import {InvocationService} from '../invocation/InvocationService';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {Connection} from '../network/Connection';
@@ -134,7 +134,8 @@ export class SqlServiceImpl implements SqlService {
     private static handleExecuteResponse(response: SqlExecuteResponseParams, res: SqlResultImpl): void {
         const sqlError = response.error;
         if (sqlError !== null) {
-            throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code, sqlError.message, sqlError.suggestion);
+            throw new HazelcastSqlException(sqlError.originatingMemberId, sqlError.code,
+                sqlError?.message || '', sqlError.suggestion);
         } else {
             res.onExecuteResponse(
                 response.rowMetadata !== null ? new SqlRowMetadataImpl(response.rowMetadata) : null,
@@ -172,7 +173,10 @@ export class SqlServiceImpl implements SqlService {
      * @param sqlStatementOptions
      * @throws RangeError if validation is not successful
      */
-    private static validateSqlStatementOptions(sqlStatementOptions: SqlStatementOptions): void {
+    private static validateSqlStatementOptions(sqlStatementOptions?: SqlStatementOptions): void {
+        if (!sqlStatementOptions) {
+            return;
+        }
         if (sqlStatementOptions.hasOwnProperty('schema')) {
             tryGetString(sqlStatementOptions.schema);
         }
@@ -238,7 +242,8 @@ export class SqlServiceImpl implements SqlService {
     executeStatement(sqlStatement: SqlStatement): Promise<SqlResult> {
         try {
             SqlServiceImpl.validateSqlStatement(sqlStatement);
-        } catch (error) {
+        } catch (e1) {
+            const error = e1 as Error
             throw new IllegalArgumentError(`Invalid argument given to execute(): ${error.message}`, error)
         }
 
@@ -247,7 +252,7 @@ export class SqlServiceImpl implements SqlService {
         try {
             connection = this.connectionManager.getConnectionRegistry().getConnectionForSql();
         } catch (e) {
-            throw this.toHazelcastSqlException(e);
+            throw this.toHazelcastSqlException(e as Error);
         }
 
         if (connection === null) {
@@ -258,22 +263,25 @@ export class SqlServiceImpl implements SqlService {
                 'Client is not currently connected to the cluster.'
             );
         }
+        const remoteUuid = connection.getRemoteUuid();
+        if (!remoteUuid) {
+            throw new Error('remoteUuid is null');
+        }
+        const queryId = SqlQueryId.fromMemberId(remoteUuid);
 
-        const queryId = SqlQueryId.fromMemberId(connection.getRemoteUuid());
-
-        const expectedResultType: SqlExpectedResultType = sqlStatement.options?.hasOwnProperty('expectedResultType') ?
+        const expectedResultType: SqlExpectedResultType = (sqlStatement.options?.expectedResultType) ?
             SqlExpectedResultType[sqlStatement.options.expectedResultType] : SqlServiceImpl.DEFAULT_EXPECTED_RESULT_TYPE;
 
-        const timeoutMillis = sqlStatement.options?.hasOwnProperty('timeoutMillis') ?
+        const timeoutMillis = (sqlStatement.options?.timeoutMillis !== undefined) ?
             Long.fromNumber(sqlStatement.options.timeoutMillis) : SqlServiceImpl.DEFAULT_TIMEOUT;
 
-        const cursorBufferSize = sqlStatement.options?.hasOwnProperty('cursorBufferSize') ?
+        const cursorBufferSize = (sqlStatement.options?.cursorBufferSize) ?
             sqlStatement.options.cursorBufferSize : SqlServiceImpl.DEFAULT_CURSOR_BUFFER_SIZE;
 
-        const returnRawResult = sqlStatement.options?.hasOwnProperty('returnRawResult') ?
+        const returnRawResult = (sqlStatement.options?.returnRawResult) ?
             sqlStatement.options.returnRawResult : SqlServiceImpl.DEFAULT_FOR_RETURN_RAW_RESULT;
 
-        const schema = sqlStatement.options?.hasOwnProperty('schema') ?
+        const schema = (sqlStatement.options?.schema) ?
             sqlStatement.options.schema : SqlServiceImpl.DEFAULT_SCHEMA;
 
 
@@ -320,7 +328,9 @@ export class SqlServiceImpl implements SqlService {
             return this.invocationService.invokeOnConnection(
                 connection, requestMessage, SqlExecuteCodec.decodeResponse
             ).then(response => {
-                SqlServiceImpl.handleExecuteResponse(response, result);
+                if (response) {
+                    SqlServiceImpl.handleExecuteResponse(response, result);
+                }
                 return result;
             }).catch(err => {
                 const error = this.rethrow(err, connection);
@@ -328,7 +338,7 @@ export class SqlServiceImpl implements SqlService {
                 throw error;
             });
         } catch (error) {
-            throw this.rethrow(error, connection);
+            throw this.rethrow(error as Error, connection);
         }
     }
 
@@ -352,7 +362,7 @@ export class SqlServiceImpl implements SqlService {
      * @param connection The connection the request will be sent to
      * @param queryId The query id that defines the SQL result
      */
-    close(connection: Connection, queryId: SqlQueryId): Promise<ClientMessage> {
+    close(connection: Connection, queryId: SqlQueryId): Promise<ClientMessage|null> {
         const requestMessage = SqlCloseCodec.encodeRequest(queryId);
         return this.invocationService.invokeOnConnection(connection, requestMessage, x => x);
     }
@@ -363,7 +373,7 @@ export class SqlServiceImpl implements SqlService {
      * @param queryId The query id that defines the SQL result
      * @param cursorBufferSize The cursor buffer size associated with SQL fetch request, i.e its page size
      */
-    fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage> {
+    fetch(connection: Connection, queryId: SqlQueryId, cursorBufferSize: number): Promise<SqlPage | null> {
         const requestMessage = SqlFetchCodec.encodeRequest(queryId, cursorBufferSize);
         return this.invocationService.invokeOnConnection(connection, requestMessage, clientMessage => {
             const response = SqlFetchCodec.decodeResponse(clientMessage);
@@ -371,7 +381,7 @@ export class SqlServiceImpl implements SqlService {
                 throw new HazelcastSqlException(
                     response.error.originatingMemberId,
                     response.error.code,
-                    response.error.message
+                    response.error.message || '',
                 );
             }
             return response.rowPage;
@@ -395,14 +405,15 @@ export class SqlServiceImpl implements SqlService {
                         + 'the field because of lazy deserialization support. SQL\'s lazy deserialization support may '
                         + 'be removed in the future, after that you will no longer get this error.'
             } else {
+                const err = e as Error;
                 message = 'Failed to deserialize query result value.';
                 if (!isRaw) {
                     message += 'In order to partially deserialize SQL rows you can set `returnRawResult` option to `true`. Check '
                             + 'out the "Lazy SQL Row Deserialization" section in the client\'s reference manual.';
                 }
-                message += ` Error: ${e.message}`;
+                message += ` Error: ${err.message}`;
             }
-            throw this.toHazelcastSqlException(e, message);
+            throw this.toHazelcastSqlException(e as Error, message);
         }
     }
 }

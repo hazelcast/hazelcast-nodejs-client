@@ -38,7 +38,7 @@ import {QueueTakeCodec} from '../codec/QueueTakeCodec';
 import {ItemEvent, ItemEventType, ItemListener} from './ItemListener';
 import {IllegalStateError, SchemaNotReplicatedError, UUID} from '../core';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
-import {Data} from '../serialization/Data';
+import {Data} from '../serialization';
 import {IQueue} from './IQueue';
 import {PartitionSpecificProxy} from './PartitionSpecificProxy';
 import {ClientMessage} from '../protocol/ClientMessage';
@@ -71,8 +71,8 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
 
     addItemListener(listener: ItemListener<E>, includeValue: boolean): Promise<string> {
         const handler = (message: ClientMessage): void => {
-            QueueAddListenerCodec.handle(message, (item: Data, uuid: UUID, eventType: number) => {
-                let responseObject: E;
+            QueueAddListenerCodec.handle(message, (item: Data | null, uuid: UUID, eventType: number) => {
+                let responseObject: E | null;
                 if (item == null) {
                     responseObject = null;
                 } else {
@@ -80,6 +80,9 @@ export class QueueProxy<E> extends PartitionSpecificProxy implements IQueue<E> {
                 }
 
                 const member = this.clusterService.getMember(uuid.toString());
+                if (!member) {
+                    return;
+                }
                 const name = this.name;
                 const itemEvent = new ItemEvent(name, eventType, responseObject, member);
 

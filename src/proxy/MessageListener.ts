@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
+import Long from 'long';
 import {Address} from '../core';
 
 /**
@@ -30,7 +30,7 @@ export class Message<T> {
     /**
      * Published message.
      */
-    messageObject: T;
+    messageObject: T | null;
 
     /**
      * Address of the member that published the message.
@@ -41,5 +41,11 @@ export class Message<T> {
      * Time when the message was published (Epoch time).
      */
     publishingTime: Long;
+
+    constructor(messageObject: T | null, publisher: Address, publishingTime: Long) {
+        this.messageObject = messageObject;
+        this.publisher = publisher;
+        this.publishingTime = publishingTime;
+    }
 
 }

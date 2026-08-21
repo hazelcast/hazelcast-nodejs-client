@@ -17,18 +17,17 @@
 import {ClientNetworkConfig, ClientNetworkConfigImpl} from './ClientNetworkConfig';
 import {ConfigPatternMatcher} from './ConfigPatternMatcher';
 import {FlakeIdGeneratorConfig, FlakeIdGeneratorConfigImpl} from './FlakeIdGeneratorConfig';
-import {MembershipListener} from '../core/MembershipListener';
+import {MembershipListener} from '../core';
 import {LifecycleState} from '../LifecycleService';
 import {NearCacheConfig, NearCacheConfigImpl} from './NearCacheConfig';
 import {Properties} from './Properties';
 import {ReliableTopicConfig, ReliableTopicConfigImpl} from './ReliableTopicConfig';
 import {SerializationConfig, SerializationConfigImpl} from './SerializationConfig';
-import {ILogger} from '../logging/ILogger';
+import {ILogger} from '../logging';
 import {ConnectionStrategyConfig, ConnectionStrategyConfigImpl} from './ConnectionStrategyConfig';
 import {LoadBalancerConfig, LoadBalancerConfigImpl} from './LoadBalancerConfig';
 import {MetricsConfig, MetricsConfigImpl} from './MetricsConfig';
 import {SecurityConfig, SecurityConfigImpl} from './SecurityConfig';
-import {Statistics} from '../statistics/Statistics';
 
 /**
  * Top level configuration object of Hazelcast client.
@@ -134,14 +133,6 @@ export interface ClientConfig {
     customLogger?: ILogger;
 
     /**
-     * Custom credentials to be used as a part of authentication on
-     * the cluster.
-     *
-     * @deprecated Since version 5.1. Use {@link security} element instead.
-     */
-    customCredentials?: any;
-
-    /**
      * Enables the client to get backup acknowledgements directly from
      * the member that backups are applied, which reduces number of hops
      * and increases performance for smart clients.
@@ -154,7 +145,7 @@ export interface ClientConfig {
     /**
      * User-defined properties.
      */
-    properties?: Properties;
+    properties: Properties;
 
     /**
      * Metrics config. Using this config, you can enable client metrics collection and change the frequency of sending client
@@ -182,14 +173,6 @@ const DEFAULT_PROPERTIES: Properties = {
     'hazelcast.client.invocation.timeout.millis': 120000,
     'hazelcast.client.internal.clean.resources.millis': 100,
     'hazelcast.client.cloud.url': 'https://api.cloud.hazelcast.com',
-    /**
-     * `hazelcast.client.statistics.enabled` and `hazelcast.client.period.seconds` are
-     * @deprecated since 5.1
-     *
-     * use `metrics` client config instead.
-     */
-    'hazelcast.client.statistics.enabled': false,
-    'hazelcast.client.statistics.period.seconds': Statistics.PERIOD_SECONDS_DEFAULT_VALUE,
     'hazelcast.invalidation.reconciliation.interval.seconds': 60,
     'hazelcast.invalidation.max.tolerated.miss.count': 10,
     'hazelcast.invalidation.min.reconciliation.interval.seconds': 30,
@@ -206,11 +189,16 @@ const DEFAULT_PROPERTIES: Properties = {
 };
 
 /** @internal */
+export class EmptyClientConfigImpl implements ClientConfig {
+    properties: Properties = {...DEFAULT_PROPERTIES};
+}
+
+/** @internal */
 export class ClientConfigImpl implements ClientConfig {
     properties: Properties = {...DEFAULT_PROPERTIES}; // Create a new object
-    instanceName: string;
+    instanceName = '';
     network = new ClientNetworkConfigImpl();
-    customLogger: ILogger = null;
+    customLogger?: ILogger = undefined;
     customCredentials: any = null;
     lifecycleListeners: Array<(state: LifecycleState) => void> = [];
     membershipListeners: MembershipListener[] = [];
@@ -244,7 +232,7 @@ export class ClientConfigImpl implements ClientConfig {
         return config;
     }
 
-    getNearCacheConfig(name: string): NearCacheConfigImpl {
+    getNearCacheConfig(name: string): NearCacheConfigImpl | null {
         const matching = this.lookupByPattern<NearCacheConfigImpl>(this.nearCaches, name);
         if (matching == null) {
             return null;
@@ -255,7 +243,7 @@ export class ClientConfigImpl implements ClientConfig {
     }
 
     getFlakeIdGeneratorConfig(name: string): FlakeIdGeneratorConfigImpl {
-        const matching: FlakeIdGeneratorConfigImpl =
+        const matching: FlakeIdGeneratorConfigImpl | null =
             this.lookupByPattern<FlakeIdGeneratorConfigImpl>(this.flakeIdGenerators, name);
         let config: FlakeIdGeneratorConfigImpl;
         if (matching != null) {
@@ -267,7 +255,7 @@ export class ClientConfigImpl implements ClientConfig {
         return config;
     }
 
-    private lookupByPattern<T>(config: { [pattern: string]: any }, name: string): T {
+    private lookupByPattern<T>(config: { [pattern: string]: any }, name: string): T | null {
         if (config[name] != null) {
             return config[name];
         }

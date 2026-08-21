@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {RingbufferAddAllCodec} from '../../codec/RingbufferAddAllCodec';
 import {RingbufferAddCodec} from '../../codec/RingbufferAddCodec';
 import {RingbufferCapacityCodec} from '../../codec/RingbufferCapacityCodec';

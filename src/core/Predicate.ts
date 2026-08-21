@@ -32,7 +32,7 @@ import {
     SqlPredicate,
     TruePredicate,
 } from '../serialization/DefaultPredicates';
-import {IdentifiedDataSerializable} from '../serialization/Serializable';
+import {IdentifiedDataSerializable} from '../serialization';
 import {Comparator} from './Comparator';
 
 /**
@@ -82,12 +82,12 @@ export interface PagingPredicate extends Predicate {
      * Note: This method will return "null" anchor on the first page of the query
      * result or if the predicate was not applied for the previous page number.
      */
-    getAnchor(): [number, [any, any]];
+    getAnchor(): [number, [any, any] | null];
 
     /**
      * Returns the comparator used by this predicate (if any).
      */
-    getComparator(): Comparator;
+    getComparator(): Comparator | null;
 
 }
 
@@ -163,7 +163,7 @@ export function alwaysFalse(): Predicate {
     return FalsePredicate.INSTANCE;
 }
 
-export function paging(predicate: Predicate, pageSize: number, comparator: Comparator = null): PagingPredicate {
+export function paging(predicate: Predicate, pageSize: number, comparator: Comparator | null = null): PagingPredicate {
     return new PagingPredicateImpl(predicate, pageSize, comparator);
 }
 

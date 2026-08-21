@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {OverflowPolicy} from '../OverflowPolicy';
 import {AddressImpl, SchemaNotReplicatedError, TopicOverloadError} from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';
@@ -31,7 +31,7 @@ import {ReliableTopicMessage} from './ReliableTopicMessage';
 import {ReliableTopicListenerRunner} from './ReliableTopicListenerRunner';
 import {MessageListener} from '../MessageListener';
 import {TopicOverloadPolicy} from '../TopicOverloadPolicy';
-import {ClientConfig, ClientConfigImpl} from '../../config/Config';
+import {ClientConfig, ClientConfigImpl} from '../../config';
 import {ClusterService} from '../../invocation/ClusterService';
 import {ILogger} from '../../logging';
 import {ProxyManager} from '../ProxyManager';
@@ -49,11 +49,11 @@ export const TOPIC_MAX_BACKOFF = 2000;
 
 /** @internal */
 export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
-    private ringbuffer: Ringbuffer<ReliableTopicMessage>;
+    private ringbuffer: Ringbuffer<ReliableTopicMessage> | null = null;
     private readonly batchSize: number;
     private readonly runners: { [key: string]: ReliableTopicListenerRunner<E> } = {};
     private readonly overloadPolicy: TopicOverloadPolicy;
-    private readonly localAddress: AddressImpl;
+    private readonly localAddress: AddressImpl | null;
 
     constructor(
         serviceName: string,
@@ -81,7 +81,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             connectionRegistry,
             schemaService
         );
-        const connection: Connection = this.connectionRegistry.getRandomConnection();
+        const connection: Connection | null = this.connectionRegistry.getRandomConnection();
         this.localAddress = connection != null ? connection.getLocalAddress() : null;
         const config = (clientConfig as ClientConfigImpl).getReliableTopicConfig(name);
         this.batchSize = config.readBatchSize;
@@ -93,6 +93,9 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     }
 
     addMessageListener(listener: MessageListener<E>): Promise<string> {
+        if (!this.ringbuffer) {
+            throw new Error('ringbuffer is null');
+        }
         const listenerId = UuidUtil.generate().toString();
         const runner = new ReliableTopicListenerRunner(listenerId, listener, this.ringbuffer,
             this.batchSize, this.serializationService, this.logger, this);
@@ -150,7 +153,7 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
         }
     }
 
-    public getRingbuffer(): Ringbuffer<ReliableTopicMessage> {
+    public getRingbuffer(): Ringbuffer<ReliableTopicMessage> | null {
         return this.ringbuffer;
     }
 
@@ -159,29 +162,31 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
             const runner = this.runners[k];
             runner.cancel();
         }
-        return this.ringbuffer.destroy();
+        return this.ringbuffer?.destroy() || Promise.resolve();
     }
 
     private addOrDiscard(reliableTopicMessage: ReliableTopicMessage): Promise<void> {
-        return this.ringbuffer.add(reliableTopicMessage, OverflowPolicy.FAIL).then<void>(() => {
-            return null;
-        });
+        return this.ringbuffer?.add(reliableTopicMessage, OverflowPolicy.FAIL).then<void>(
+            () => {}) || Promise.resolve();
     }
 
     private addWithError(reliableTopicMessage: ReliableTopicMessage): Promise<void> {
+        if (!this.ringbuffer) {
+            throw new Error('ringbuffer is null');
+        }
         return this.ringbuffer.add(reliableTopicMessage, OverflowPolicy.FAIL).then<void>((seq: Long) => {
             if (seq.toNumber() === -1) {
                 throw new TopicOverloadError('Failed to publish message: ' + reliableTopicMessage +
                     ' on topic: ' + this.getName());
             }
-            return null;
         });
     }
 
     private addOrOverwrite(reliableTopicMessage: ReliableTopicMessage): Promise<void> {
-        return this.ringbuffer.add(reliableTopicMessage, OverflowPolicy.OVERWRITE).then<void>(() => {
-            return null;
-        });
+        if (!this.ringbuffer) {
+            throw new Error('ringbuffer is null');
+        }
+        return this.ringbuffer.add(reliableTopicMessage, OverflowPolicy.OVERWRITE).then<void>(() => {});
     }
 
     private addWithBackoff(reliableTopicMessage: ReliableTopicMessage): Promise<void> {
@@ -191,6 +196,9 @@ export class ReliableTopicProxy<E> extends BaseProxy implements ITopic<E> {
     }
 
     private trySendMessage(message: ReliableTopicMessage, delay: number, deferred: DeferredPromise<void>): void {
+        if (!this.ringbuffer) {
+            throw new Error('ringbuffer is null');
+        }
         this.ringbuffer.add(message, OverflowPolicy.FAIL).then((seq: Long) => {
             if (seq.toNumber() === -1) {
                 let newDelay = delay *= 2;

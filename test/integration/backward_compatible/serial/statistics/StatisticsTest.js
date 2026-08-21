@@ -158,57 +158,43 @@ const testFactory = new TestUtil.TestFactory();
     });
 });
 
-[true, false].forEach((useProps) => {
-    describe('StatisticsTest (non-default period) ' + (useProps ? 'using statistics config' : 'using metrics config'),
-        function () {
-        let cluster;
-        let client;
+describe('StatisticsTest (non-default period)', function () {
+    let cluster;
+    let client;
 
-        before(async function () {
-            // metrics added in 5.1.0
-            if (!useProps) {
-                TestUtil.markClientVersionAtLeast(this, '5.1.0');
+    before(async function () {
+        cluster = await testFactory.createClusterForSerialTests();
+        const member = await RC.startMember(cluster.id);
+        const config = {
+            clusterName: cluster.id,
+            network: {
+                clusterMembers: [`127.0.0.1:${member.port}`]
             }
-            cluster = await testFactory.createClusterForSerialTests();
-            const member = await RC.startMember(cluster.id);
-            const config = {
-                clusterName: cluster.id,
-                network: {
-                    clusterMembers: [`127.0.0.1:${member.port}`]
-                }
-            };
-            if (useProps) {
-                config.properties = {
-                    'hazelcast.client.statistics.enabled': true,
-                    'hazelcast.client.statistics.period.seconds': 2
-                };
-            } else {
-                config.metrics = {
-                    enabled: true,
-                    collectionFrequencySeconds: 2
-                };
-            }
-            client = await testFactory.newHazelcastClientForSerialTests(config);
-        });
+        };
+        config.metrics = {
+            enabled: true,
+            collectionFrequencySeconds: 2
+        };
+        client = await testFactory.newHazelcastClientForSerialTests(config);
+    });
 
-        after(async function () {
-            await testFactory.shutdownAll();
-        });
+    after(async function () {
+        await testFactory.shutdownAll();
+    });
 
-        it('should not change before period', async function () {
-            await TestUtil.promiseWaitMilliseconds(1000);
-            const stats1 = await getClientStatisticsFromServer(cluster, client);
-            const stats2 = await getClientStatisticsFromServer(cluster, client);
-            expect(stats1).to.be.equal(stats2);
-        });
+    it('should not change before period', async function () {
+        await TestUtil.promiseWaitMilliseconds(1000);
+        const stats1 = await getClientStatisticsFromServer(cluster, client);
+        const stats2 = await getClientStatisticsFromServer(cluster, client);
+        expect(stats1).to.be.equal(stats2);
+    });
 
-        it('should change after period', async function () {
-            await TestUtil.promiseWaitMilliseconds(1000);
-            const stats1 = await getClientStatisticsFromServer(cluster, client);
-            await TestUtil.promiseWaitMilliseconds(2000);
-            const stats2 = await getClientStatisticsFromServer(cluster, client);
-            expect(stats1).not.to.be.equal(stats2);
-        });
+    it('should change after period', async function () {
+        await TestUtil.promiseWaitMilliseconds(1000);
+        const stats1 = await getClientStatisticsFromServer(cluster, client);
+        await TestUtil.promiseWaitMilliseconds(2000);
+        const stats2 = await getClientStatisticsFromServer(cluster, client);
+        expect(stats1).not.to.be.equal(stats2);
     });
 });
 

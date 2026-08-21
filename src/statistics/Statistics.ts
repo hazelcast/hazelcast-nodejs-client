@@ -22,14 +22,14 @@ import {MetricDescriptor, MetricsCompressor, ProbeUnit, ValueType} from './Metri
 import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
-import {ILogger} from '../logging/ILogger';
-import * as Long from 'long';
+import {ILogger} from '../logging';
+import Long from 'long';
 import {InvocationService} from '../invocation/InvocationService';
 import {NearCacheManager} from '../nearcache/NearCacheManager';
 import {MetricsConfig} from '../config/MetricsConfig';
 
 type GaugeDescription = {
-    gaugeFn: () => number;
+    gaugeFn: () => number | null;
     type: ValueType;
     unit?: ProbeUnit;
 }
@@ -56,7 +56,7 @@ export class Statistics {
     private static readonly EMPTY_STAT_VALUE: string = '';
     private readonly allGauges: { [name: string]: GaugeDescription } = {};
     private readonly enabled: boolean;
-    private statisticsSendTask: Task;
+    private statisticsSendTask: Task | null = null;
     private compressorErrorLogged = false;
 
     constructor(
@@ -67,7 +67,7 @@ export class Statistics {
         private readonly nearCacheManager: NearCacheManager,
         private readonly connectionManager: ConnectionManager
     ) {
-        this.enabled = this.metricsConfig.enabled;
+        this.enabled = this.metricsConfig.enabled || false;
         this.logger = logger;
         this.invocationService = invocationService;
         this.clientName = clientName;
@@ -84,7 +84,7 @@ export class Statistics {
 
         this.registerMetrics();
 
-        let periodSeconds = this.metricsConfig.collectionFrequencySeconds;
+        let periodSeconds = this.metricsConfig.collectionFrequencySeconds || Statistics.PERIOD_SECONDS_DEFAULT_VALUE;
         if (periodSeconds <= 0) {
             const defaultValue = Statistics.PERIOD_SECONDS_DEFAULT_VALUE;
             this.logger.warn('Statistics', 'Provided client statistics ' + Statistics.PERIOD_SECONDS
@@ -113,7 +113,7 @@ export class Statistics {
             const collectionTimestamp = Long.fromNumber(Date.now());
 
             const connection = this.connectionManager.getConnectionRegistry().getRandomConnection();
-            if (connection == null) {
+            if (!connection) {
                 this.logger.trace('Statistics', 'Can not send client statistics to the server. No connection found.');
                 return;
             }
@@ -211,7 +211,7 @@ export class Statistics {
                     this.logCompressorError(new Error('Unexpected type: ' + type));
             }
         } catch (err) {
-            this.logCompressorError(err);
+            this.logCompressorError(err as Error);
         }
     }
 
@@ -254,9 +254,13 @@ export class Statistics {
             const gauge = this.allGauges[gaugeName];
             try {
                 const value = gauge.gaugeFn();
-                this.addSimpleMetric(compressor, gaugeName, value, gauge.type, gauge.unit);
-                // necessary for compatibility with Management Center 4.0
-                Statistics.addAttribute(stats, gaugeName, value);
+                if (value === null) {
+                    this.logger.trace('Statistics', 'Could not collect data for gauge ' + gaugeName);
+                } else {
+                    this.addSimpleMetric(compressor, gaugeName, value, gauge.type, gauge.unit);
+                    // necessary for compatibility with Management Center 4.0
+                    Statistics.addAttribute(stats, gaugeName, value);
+                }
             } catch (err) {
                 this.logger.trace('Statistics', 'Could not collect data for gauge ' + gaugeName, err);
             }

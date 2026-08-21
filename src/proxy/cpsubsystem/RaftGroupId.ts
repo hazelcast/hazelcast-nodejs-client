@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 
 /** @internal */
 export class RaftGroupId {
@@ -23,21 +23,18 @@ export class RaftGroupId {
     readonly name: string;
     readonly seed: Long;
     readonly id: Long;
-    private stringId: string;
+    private readonly stringId: string;
 
     constructor(name: string, seed: Long, id: Long) {
         this.name = name;
         this.seed = seed;
         this.id = id;
-    }
-
-    getStringId(): string {
-        if (this.stringId !== undefined) {
-            return this.stringId;
-        }
         this.stringId = this.name;
         this.stringId += ':' + this.seed.toString();
         this.stringId += ':' + this.id.toString();
+    }
+
+    getStringId(): string {
         return this.stringId;
     }
 

@@ -26,10 +26,10 @@ export class ConfigPatternMatcher {
      * @returns `null` if there is no matching pattern;
      *          the best matching pattern otherwise
      */
-    matches(configPatterns: string[], itemName: string): string {
+    matches(configPatterns: string[], itemName: string): string | null {
         let bestMatchingPoint = -1;
-        let matchingPattern: string = null;
-        let duplicatePattern: string = null;
+        let matchingPattern: string | null = null;
+        let duplicatePattern: string | null = null;
         configPatterns.forEach((pattern: string) => {
             const currentPoint = this.getMatchingPoint(pattern, itemName);
             if (currentPoint > bestMatchingPoint) {

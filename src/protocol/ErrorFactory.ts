@@ -72,12 +72,12 @@ import {
     WaitKeyCancelledError,
 } from '../core';
 import {ClientProtocolErrorCodes} from './ClientProtocolErrorCodes';
-import {ClientMessage} from '../protocol/ClientMessage';
+import {ClientMessage} from './ClientMessage';
 import {ErrorsCodec} from '../codec/builtin/ErrorsCodec';
 import {ErrorHolder} from './ErrorHolder';
 import {StackTraceElement} from './StackTraceElement';
 
-type ErrorFactory = (msg: string, cause: Error, serverStackTrace: StackTraceElement[]) => Error;
+type ErrorFactory = (msg: string, cause?: Error, serverStackTrace?: StackTraceElement[]) => Error;
 
 /** @internal */
 export class ClientErrorFactory {
@@ -203,21 +203,21 @@ export class ClientErrorFactory {
             (m, c, s) => new NotLeaderError(m, c, s));
     }
 
-    createErrorFromClientMessage(clientMessage: ClientMessage): Error {
+    createErrorFromClientMessage(clientMessage: ClientMessage): Error | undefined {
         const errorHolders = ErrorsCodec.decode(clientMessage);
         return this.createError(errorHolders, 0);
     }
 
-    private createError(errorHolders: ErrorHolder[], errorHolderIdx: number): Error {
+    private createError(errorHolders: ErrorHolder[], errorHolderIdx: number): Error | undefined {
         if (errorHolderIdx === errorHolders.length) {
-            return null;
+            return undefined;
         }
         const errorHolder = errorHolders[errorHolderIdx];
         const factoryFn = this.codeToErrorConstructor.get(errorHolder.errorCode);
         let error: Error;
-        if (factoryFn != null) {
+        if (factoryFn) {
             error = factoryFn(
-                errorHolder.message,
+                errorHolder.message || '',
                 this.createError(errorHolders, errorHolderIdx + 1),
                 errorHolder.stackTraceElements
             );

@@ -25,6 +25,6 @@ export interface ListenerMessageCodec {
 
     decodeAddResponse: (msg: ClientMessage) => UUID;
 
-    encodeRemoveRequest: (listenerId: UUID) => ClientMessage;
+    encodeRemoveRequest: (listenerId: UUID) => ClientMessage | null;
 
 }

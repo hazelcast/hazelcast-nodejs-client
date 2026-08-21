@@ -40,7 +40,7 @@ describe('ConfigBuilderHazelcastCloudTest', function () {
 
     it('hazelcastCloud_defaults', function () {
         const clientConfig = new ClientConfigImpl();
-        expect(clientConfig.network.hazelcastCloud.discoveryToken).to.be.null;
+        expect(clientConfig.network.hazelcastCloud.discoveryToken).to.be.undefined;
     });
 
     it('hazelcastCloud_enabled', function () {

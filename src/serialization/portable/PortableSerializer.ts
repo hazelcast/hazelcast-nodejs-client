@@ -23,7 +23,7 @@ import {DefaultPortableReader} from './DefaultPortableReader';
 import {MorphingPortableReader} from './MorphingPortableReader';
 import {ClassDefinition} from './ClassDefinition';
 import {DefaultPortableWriter} from './DefaultPortableWriter';
-import {SerializationConfigImpl} from '../../config/SerializationConfig';
+import {SerializationConfigImpl} from '../../config';
 import {HazelcastSerializationError} from '../../core';
 
 /** @internal */
@@ -56,6 +56,9 @@ export class PortableSerializer implements Serializer {
             } finally {
                 input.position(backupPos);
             }
+        }
+        if (classDefinition == null) {
+            throw new Error('classDefinitition is null');
         }
         let reader: DefaultPortableReader;
         if (classDefinition.getVersion() === this.portableContext.getClassVersion(portable)) {

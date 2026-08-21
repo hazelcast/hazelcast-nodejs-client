@@ -25,15 +25,15 @@ import {iterationTypeToId} from '../core/Predicate';
 export class PagingPredicateHolder {
 
     anchorDataListHolder: AnchorDataListHolder;
-    predicateData: Data;
-    comparatorData: Data;
+    predicateData: Data | null;
+    comparatorData: Data | null;
     pageSize: number;
     page: number;
     iterationTypeId: number;
-    partitionKeyData: Data;
+    partitionKeyData: Data | null;
 
-    constructor(anchorDataListHolder: AnchorDataListHolder, predicateData: Data, comparatorData: Data,
-                pageSize: number, page: number, iterationTypeId: number, partitionKeyData: Data) {
+    constructor(anchorDataListHolder: AnchorDataListHolder, predicateData: Data | null, comparatorData: Data | null,
+                pageSize: number, page: number, iterationTypeId: number, partitionKeyData: Data | null) {
         this.anchorDataListHolder = anchorDataListHolder;
         this.predicateData = predicateData;
         this.comparatorData = comparatorData;
@@ -43,7 +43,7 @@ export class PagingPredicateHolder {
         this.partitionKeyData = partitionKeyData;
     }
 
-    static of(predicate: PagingPredicateImpl, serializationService: SerializationService): PagingPredicateHolder {
+    static of(predicate: PagingPredicateImpl, serializationService: SerializationService): PagingPredicateHolder | null {
         if (predicate == null) {
             return null;
         }

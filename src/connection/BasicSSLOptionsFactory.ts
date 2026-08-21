@@ -16,7 +16,7 @@
 
 import * as fs from 'fs';
 import {promisify} from 'util';
-import {Properties} from '../config/Properties';
+import {Properties} from '../config';
 import {HazelcastError} from '../core';
 import {
     getBooleanOrUndefined,
@@ -30,14 +30,14 @@ import {SSLOptionsFactory} from './SSLOptionsFactory';
  */
 export class BasicSSLOptionsFactory implements SSLOptionsFactory {
 
-    private servername: string;
-    private rejectUnauthorized: boolean;
-    private ca: Buffer;
-    private key: Buffer;
-    private cert: Buffer;
-    private ciphers: string;
+    private servername?: string;
+    private rejectUnauthorized?: boolean;
+    private ca?: Buffer;
+    private key?: Buffer;
+    private cert?: Buffer;
+    private ciphers?: string;
 
-    init(properties: Properties): Promise<void> {
+    init(properties?: Properties): Promise<void> {
         if (typeof properties !== 'object') {
             throw new HazelcastError('properties is not an object');
         }

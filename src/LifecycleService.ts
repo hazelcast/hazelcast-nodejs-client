@@ -82,6 +82,7 @@ export class LifecycleServiceImpl extends EventEmitter implements LifecycleServi
 
     constructor(lifecycleListeners: Array<(state: LifecycleState) => void>, private logger: ILogger) {
         super();
+        this.active = false;
         this.setMaxListeners(0);
         lifecycleListeners.forEach((listener) => {
             this.on(LIFECYCLE_EVENT_NAME, listener);

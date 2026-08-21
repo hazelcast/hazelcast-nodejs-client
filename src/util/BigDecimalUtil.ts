@@ -21,7 +21,10 @@ import {Buffer} from 'buffer';
  * Converts Buffer to BigInt
  * @param buffer
  */
-export function bufferToBigInt(buffer: Buffer): bigint {
+export function bufferToBigInt(buffer: Buffer | null): bigint {
+    if (buffer === null) {
+        throw new Error('buffer is null');
+    }
     // We need to copy the buffer here since in compact serialization there can be several trials of serialization. We don't want
     // our buffer to be modified in the second try.
     const bufferCopy = Buffer.from(buffer);

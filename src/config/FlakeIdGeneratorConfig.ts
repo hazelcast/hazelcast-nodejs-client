@@ -46,7 +46,7 @@ export class FlakeIdGeneratorConfigImpl implements FlakeIdGeneratorConfig {
     /**
      * Name of the FlakeIdGenerator.
      */
-    name: string;
+    name = '';
     prefetchCount = 100;
     prefetchValidityMillis = 600000;
 

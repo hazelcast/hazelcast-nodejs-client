@@ -25,8 +25,8 @@ import {AtomicRefSetCodec} from '../../codec/AtomicRefSetCodec';
 import {AtomicRefContainsCodec} from '../../codec/AtomicRefContainsCodec';
 import {InvocationService} from '../../invocation/InvocationService';
 import {SerializationService} from '../../serialization/SerializationService';
-import {SchemaNotReplicatedError} from '../../core/HazelcastError';
-import {Data} from '../../serialization/Data';
+import {SchemaNotReplicatedError} from '../../core';
+import {Data} from '../../serialization';
 
 
 /** @internal */
@@ -75,6 +75,9 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             AtomicRefGetCodec,
             (clientMessage) => {
                 const response = AtomicRefGetCodec.decodeResponse(clientMessage);
+                if (response == null) {
+                    return null;
+                }
                 return this.toObject(response);
             },
             this.groupId,
@@ -82,7 +85,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
         );
     }
 
-    set(newValue: E): Promise<void> {
+    set(newValue: E | null): Promise<void> {
         let newData: Data;
         try {
             newData = this.toData(newValue);
@@ -118,6 +121,9 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
             AtomicRefSetCodec,
             (clientMessage) => {
                 const response = AtomicRefSetCodec.decodeResponse(clientMessage);
+                if (response === null) {
+                    return null;
+                }
                 return this.toObject(response);
             },
             this.groupId,
@@ -135,7 +141,7 @@ export class AtomicRefProxy<E> extends BaseCPProxy implements IAtomicReference<E
         return this.set(null);
     }
 
-    contains(value: E): Promise<boolean> {
+    contains(value: E | null): Promise<boolean> {
         let valueData: Data;
         try {
             valueData = this.toData(value);

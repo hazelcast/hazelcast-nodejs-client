@@ -41,6 +41,6 @@ describe('ConfigBuilderSSLTest', function () {
         expect(networkCfg.ssl.sslOptions.ca).to.be.equal('ca.pem');
         expect(networkCfg.ssl.sslOptions.cert).to.be.equal('cert.pem');
         expect(networkCfg.ssl.sslOptions.key).to.be.equal('key.pem');
-        expect(networkCfg.ssl.sslOptionsFactory).to.be.null;
+        expect(networkCfg.ssl.sslOptionsFactory).to.be.undefined;
     });
 });

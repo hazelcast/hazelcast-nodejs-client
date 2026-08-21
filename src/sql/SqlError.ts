@@ -27,12 +27,14 @@ export class SqlError {
         /** The error code. */
         readonly code: number,
         /** The error message. */
-        readonly message: string,
+        readonly message: string | null = null,
         /** UUID of the member or client that caused or initiated an error condition. */
         readonly originatingMemberId: UUID,
-        _ : boolean,
+        readonly isSuggestionExist : boolean,
         /** Suggested SQL statement to remediate experienced error. */
-        readonly suggestion: string | null
+        readonly suggestion: string | null,
+        readonly isCauseStackTrace : boolean,
+        readonly causeStackTrace: string | null = null,
     ) {
     }
 }

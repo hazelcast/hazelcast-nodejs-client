@@ -56,6 +56,6 @@ export interface LoadBalancerConfig {
 export class LoadBalancerConfigImpl implements LoadBalancerConfig {
 
     type = LoadBalancerType.ROUND_ROBIN;
-    customLoadBalancer: LoadBalancer = null;
+    customLoadBalancer?: LoadBalancer;
 
 }

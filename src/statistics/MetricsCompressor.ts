@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import * as zlib from 'zlib';
-import * as Long from 'long';
+import Long from 'long';
 import {BitsUtil} from '../util/BitsUtil';
 
 /**
@@ -94,7 +94,7 @@ export class MetricsCompressor {
     private readonly dictionaryBuffer: OutputBuffer;
     private readonly dictionary: MetricsDictionary;
     private metricsCount = 0;
-    private lastDescriptor: MetricDescriptor;
+    private lastDescriptor: MetricDescriptor | null = null;
 
     constructor() {
         this.metricsBuffer = new OutputBuffer();
@@ -183,7 +183,7 @@ export class MetricsCompressor {
 
     private calculateDescriptorMask(descriptor: MetricDescriptor): number {
         let mask = 0;
-        if (this.lastDescriptor === undefined) {
+        if (this.lastDescriptor === null) {
             return mask;
         }
 
@@ -210,7 +210,7 @@ export class MetricsCompressor {
         return mask;
     }
 
-    private getDictionaryId(word: string): number {
+    private getDictionaryId(word: string | undefined): number {
         if (word === undefined) {
             return NULL_DICTIONARY_ID;
         }

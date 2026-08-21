@@ -61,12 +61,12 @@ export class ListMultiFrameCodec {
         return result;
     }
 
-    static decodeNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T[] {
+    static decodeNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T[] | null {
         return CodecUtil.nextFrameIsNullFrame(clientMessage) ? null : ListMultiFrameCodec.decode(clientMessage, decoder);
     }
 
-    static decodeContainsNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): T[] {
-        const result: T[] = [];
+    static decodeContainsNullable<T>(clientMessage: ClientMessage, decoder: (msg: ClientMessage) => T): Array<T|null> {
+        const result: Array<T|null> = [];
         // begin frame
         clientMessage.nextFrame();
         while (!CodecUtil.nextFrameIsDataStructureEndFrame(clientMessage)) {

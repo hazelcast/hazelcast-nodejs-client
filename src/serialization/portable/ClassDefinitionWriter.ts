@@ -18,7 +18,7 @@
 import {Portable, PortableWriter} from '../Portable';
 import {ClassDefinition} from './ClassDefinition';
 import {PortableContext} from './PortableContext';
-import * as Long from 'long';
+import Long from 'long';
 import {ClassDefinitionBuilder} from './ClassDefinitionBuilder';
 import {
     HazelcastSerializationError,

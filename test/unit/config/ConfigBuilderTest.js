@@ -455,53 +455,6 @@ describe('ConfigBuilderValidationTest', function () {
         }
 
         describe('statistics', function () {
-            it('should use statistics if both statistics and metrics set enabled', function () {
-                expect(new ConfigBuilder({
-                    metrics: {
-                        enabled: true
-                    },
-                    properties: {
-                        'hazelcast.client.statistics.enabled': false,
-                    }
-                }).build().metrics.enabled).to.be.false;
-
-                expect(new ConfigBuilder({
-                    metrics: {
-                        enabled: false
-                    },
-                    properties: {
-                        'hazelcast.client.statistics.enabled': true,
-                    }
-                }).build().metrics.enabled).to.be.true;
-
-                expect(new ConfigBuilder({
-                    metrics: {
-                        enabled: true
-                    },
-                    properties: {
-                        'hazelcast.client.statistics.enabled': true,
-                    }
-                }).build().metrics.enabled).to.be.true;
-
-                expect(new ConfigBuilder({
-                    metrics: {
-                        enabled: false
-                    },
-                    properties: {
-                        'hazelcast.client.statistics.enabled': false,
-                    }
-                }).build().metrics.enabled).to.be.false;
-
-                () => new ConfigBuilder({
-                    metrics: {
-                        collectionFrequencySeconds: 1
-                    },
-                    properties: {
-                        'hazelcast.client.statistics.period.seconds': 2,
-                    }
-                }).build().metrics.collectionFrequencySeconds.should.be.eq(2);
-            });
-
             it('should behave correctly when statistics properties and metrics setting options', function () {
                 const defaultConfig = new ConfigBuilder();
 
@@ -528,20 +481,8 @@ describe('ConfigBuilderValidationTest', function () {
                 }).build().metrics.enabled.should.be.false;
 
                 new ConfigBuilder({
-                    properties: {
-                        'hazelcast.client.statistics.enabled': false,
-                    }
-                }).build().metrics.enabled.should.be.false;
-
-                new ConfigBuilder({
                     metrics: {
                         collectionFrequencySeconds: 999
-                    }
-                }).build().metrics.collectionFrequencySeconds.should.be.eq(999);
-
-                new ConfigBuilder({
-                    properties: {
-                        'hazelcast.client.statistics.period.seconds': 999,
                     }
                 }).build().metrics.collectionFrequencySeconds.should.be.eq(999);
             });
@@ -877,7 +818,7 @@ describe('ConfigBuilderValidationTest', function () {
     });
 
     it('should validate lifecycleListeners', function () {
-        const invalidLifecycleListenersArray = [undefined, 1, '1', {}, [1], [() => {}, 1]];
+        const invalidLifecycleListenersArray = [1, '1', {}, [1], [() => {}, 1]];
 
         for (const invalidLifecycleListeners of invalidLifecycleListenersArray) {
             expect(() => new ConfigBuilder({
@@ -893,7 +834,7 @@ describe('ConfigBuilderValidationTest', function () {
     });
 
     it('should validate membershipListeners', function () {
-        const invalidMembershipListenersArray = [undefined, 1, '1', {}, [1], [{}]];
+        const invalidMembershipListenersArray = [1, '1', {}, [1], [{}]];
 
         for (const invalidMembershipListeners of invalidMembershipListenersArray) {
             expect(() => new ConfigBuilder({
@@ -909,7 +850,7 @@ describe('ConfigBuilderValidationTest', function () {
     });
 
     it('should validate custom logger', function () {
-        const invalidCustomLoggers = [undefined, 1, '1', {}, [1], [{}], {log: () => {}, error: () => {}}];
+        const invalidCustomLoggers = [1, '1', {}, [1], [{}], {log: () => {}, error: () => {}}];
 
         for (const invalidLogger of invalidCustomLoggers) {
             expect(() => new ConfigBuilder({
@@ -1075,18 +1016,6 @@ describe('ConfigBuilderValidationTest', function () {
         for (const config of invalidConfigs) {
             expect(() => new ConfigBuilder(config).build()).to.throw(InvalidConfigurationError);
         }
-    });
-
-    it('should throw when customCredentials and security are used together', function () {
-        expect(() => new ConfigBuilder({
-            'customCredentials': {},
-            'security': {
-                'username': {
-                    'username': 'username',
-                    'password': 'password',
-                }
-            }
-        }).build()).to.throw(InvalidConfigurationError, 'Ambiguous security configuration is found');
     });
 
     it('should throw when multiple security configurations are used together', function () {

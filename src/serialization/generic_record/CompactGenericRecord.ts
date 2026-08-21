@@ -31,7 +31,7 @@ import {SchemaWriter} from '../compact/SchemaWriter';
 import {FieldDescriptor} from './FieldDescriptor';
 import {CompactExceptions} from '../compact/CompactUtil';
 import {FieldValidator} from './FieldValidator';
-import * as Long from 'long';
+import Long from 'long';
 
 /**
  * Represents a deserialized compact generic record. This class is what user gets.
@@ -85,10 +85,11 @@ export class CompactGenericRecordImpl implements GenericRecord {
     }
 
     getFieldKind(fieldName: string): FieldKind {
-        if (!this.schema.fieldDefinitionMap.has(fieldName)) {
+        const field = this.schema.fieldDefinitionMap.get(fieldName);
+        if (!field) {
             throw RangeError('There is no field named as '+ fieldName);
         }
-        return this.schema.fieldDefinitionMap.get(fieldName).kind;
+        return field.kind;
     }
 
     hasField(fieldName: string): boolean {

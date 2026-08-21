@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2026, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,15 +53,17 @@ export class MemberInfoCodec {
         clientMessage.nextFrame();
 
         const initialFrame = clientMessage.nextFrame();
+        let nextFrame: Frame | null = null;
+
         const uuid = FixSizedTypesCodec.decodeUUID(initialFrame.content, UUID_OFFSET);
         const liteMember = FixSizedTypesCodec.decodeBoolean(initialFrame.content, LITE_MEMBER_OFFSET);
-
         const address = AddressCodec.decode(clientMessage);
         const attributes = MapCodec.decode(clientMessage, StringCodec.decode, StringCodec.decode);
         const version = MemberVersionCodec.decode(clientMessage);
         let isAddressMapExists = false;
         let addressMap = null;
-        if (!clientMessage.peekNextFrame().isEndFrame()) {
+        nextFrame = clientMessage.peekNextFrame();
+        if (nextFrame && !nextFrame.isEndFrame()) {
             addressMap = MapCodec.decode(clientMessage, EndpointQualifierCodec.decode, AddressCodec.decode);
             isAddressMapExists = true;
         }

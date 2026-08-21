@@ -28,7 +28,7 @@ export class ClassDefinitionBuilder {
     private fieldDefinitions: FieldDefinition[] = [];
 
     private index = 0;
-    private done: boolean;
+    private done = false;
 
     constructor(factoryId: number, classId: number, version = 0) {
         this.factoryId = factoryId;

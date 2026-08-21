@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
 import {IOUtil} from '../../util/IOUtil';
 import {
@@ -39,8 +39,8 @@ export class DefaultPortableReader implements PortableReader {
     protected input: DataInput;
     protected classDefinition: ClassDefinition;
 
-    private offset: number;
-    private finalPos: number;
+    private offset = 0;
+    private finalPos = 0;
     private raw = false;
 
     constructor(serializer: PortableSerializer, input: DataInput, classDefinition: ClassDefinition) {
@@ -66,12 +66,12 @@ export class DefaultPortableReader implements PortableReader {
         return this.classDefinition.getFieldType(fieldName);
     }
 
-    readInt(fieldName: string): number {
+    readInt(fieldName: string): number | null {
         const pos = this.positionByField(fieldName, FieldType.INT);
         return this.input.readInt(pos);
     }
 
-    readLong(fieldName: string): Long {
+    readLong(fieldName: string): Long | null {
         const pos = this.positionByField(fieldName, FieldType.LONG);
         return this.input.readLong(pos);
     }
@@ -85,32 +85,32 @@ export class DefaultPortableReader implements PortableReader {
         return this.input.readString(pos);
     }
 
-    readBoolean(fieldName: string): boolean {
+    readBoolean(fieldName: string): boolean | null {
         const pos = this.positionByField(fieldName, FieldType.BOOLEAN);
         return this.input.readBoolean(pos);
     }
 
-    readByte(fieldName: string): number {
+    readByte(fieldName: string): number | null {
         const pos = this.positionByField(fieldName, FieldType.BYTE);
         return this.input.readByte(pos);
     }
 
-    readChar(fieldName: string): string {
+    readChar(fieldName: string): string | null {
         const pos = this.positionByField(fieldName, FieldType.CHAR);
         return this.input.readChar(pos);
     }
 
-    readDouble(fieldName: string): number {
+    readDouble(fieldName: string): number | null {
         const pos = this.positionByField(fieldName, FieldType.DOUBLE);
         return this.input.readDouble(pos);
     }
 
-    readFloat(fieldName: string): number {
+    readFloat(fieldName: string): number | null {
         const pos = this.positionByField(fieldName, FieldType.FLOAT);
         return this.input.readFloat(pos);
     }
 
-    readShort(fieldName: string): number {
+    readShort(fieldName: string): number | null {
         const pos = this.positionByField(fieldName, FieldType.SHORT);
         return this.input.readShort(pos);
     }
@@ -251,7 +251,7 @@ export class DefaultPortableReader implements PortableReader {
         );
     }
 
-    private readNullableField<T>(fieldName: string, fieldType: FieldType, readFn: (inp: DataInput) => T): T {
+    private readNullableField<T>(fieldName: string, fieldType: FieldType, readFn: (inp: DataInput) => T): T | null {
         const currentPos = this.input.position();
 
         try {

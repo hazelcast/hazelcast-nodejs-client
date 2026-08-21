@@ -28,7 +28,7 @@ export class LoggingService {
 
     private readonly logger: ILogger;
 
-    constructor(customLogger: ILogger, level: string) {
+    constructor(customLogger: ILogger | null, level: string) {
         if (customLogger == null) {
             const logLevel = enumFromString<LogLevel>(LogLevel, level);
             this.logger = new DefaultLogger(logLevel);

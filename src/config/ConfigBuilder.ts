@@ -27,7 +27,7 @@ import {
     tryGetString,
     tryGetStringOrNull
 } from '../util/Util';
-import {ClientConfig, ClientConfigImpl} from './Config';
+import {ClientConfig, ClientConfigImpl, EmptyClientConfigImpl} from './Config';
 import {EvictionPolicy} from './EvictionPolicy';
 import {FlakeIdGeneratorConfigImpl} from './FlakeIdGeneratorConfig';
 import {InMemoryFormat} from './InMemoryFormat';
@@ -39,7 +39,6 @@ import {ReconnectMode} from './ConnectionStrategyConfig';
 import {LoadBalancerType} from './LoadBalancerConfig';
 import {LogLevel} from '../logging';
 import {TokenCredentialsImpl, TokenEncoding, UsernamePasswordCredentialsImpl,} from '../security';
-import {MetricsConfig} from './MetricsConfig';
 import * as Util from '../util/Util';
 
 /**
@@ -52,21 +51,20 @@ export class ConfigBuilder {
     private effectiveConfig: ClientConfigImpl = new ClientConfigImpl();
 
     constructor(config?: ClientConfig) {
-        this.originalConfig = config || {};
+        this.originalConfig = config || new EmptyClientConfigImpl();
     }
 
     build(): ClientConfigImpl {
         try {
             this.handleConfig(this.originalConfig);
             return this.effectiveConfig;
-        } catch (err) {
+        } catch (err1) {
+            const err = err1 as Error;
             throw new InvalidConfigurationError('Config validation error: ' + err.message, err);
         }
     }
 
     private handleConfig(jsonObject: any): void {
-        ConfigBuilder.validateSecurityConfiguration(jsonObject);
-
         for (const key in jsonObject) {
             const value = jsonObject[key];
             if (key === 'clusterName') {
@@ -109,7 +107,6 @@ export class ConfigBuilder {
                 throw new RangeError(`Unexpected config key '${key}' is passed to the Hazelcast Client`);
             }
         }
-        ConfigBuilder.overrideMetricsViaStatistics(jsonObject, this.effectiveConfig.metrics);
     }
 
     private handleMetrics(jsonObject: any) {
@@ -123,13 +120,6 @@ export class ConfigBuilder {
             } else {
                 throw new RangeError(`Unexpected metrics config '${key}' is passed to the Hazelcast Client`);
             }
-        }
-    }
-
-    private static validateSecurityConfiguration(jsonObject: any): void {
-        if ('security' in jsonObject && 'customCredentials' in jsonObject) {
-            throw new RangeError('Ambiguous security configuration is found. ' +
-                'Use one of \'security\' or \'customCredentials\' elements, not both.')
         }
     }
 
@@ -174,8 +164,8 @@ export class ConfigBuilder {
     }
 
     private handleTokenCredentials(jsonObject: any): void {
-        let token: string;
-        let encoding: TokenEncoding;
+        let token: string | null = null;
+        let encoding: TokenEncoding | undefined = undefined;
         for (const key in jsonObject) {
             const value = jsonObject[key];
             if (key === 'token') {
@@ -308,7 +298,7 @@ export class ConfigBuilder {
                 throw new RangeError(`Expected 'sslOptionsFactoryProperties' to be an object but it is a: ${factoryPropsType}`);
             }
             this.effectiveConfig.network.ssl.sslOptionsFactoryProperties = jsonObject.sslOptionsFactoryProperties
-                ? ConfigBuilder.parseProperties(jsonObject.sslOptionsFactoryProperties) : null;
+                ? ConfigBuilder.parseProperties(jsonObject.sslOptionsFactoryProperties) : undefined;
         }
     }
 
@@ -403,28 +393,6 @@ export class ConfigBuilder {
                 break;
             default:
                 throw new RangeError(`Unexpected property '${property}' is passed to the Hazelcast Client`);
-        }
-    }
-
-    /**
-     * When this method runs, metrics config is already parsed in metricsConfig. This method will override
-     * metrics config with statistics config.  There are four different cases:
-     *
-     * 1. When no config is given metrics will be enabled. Because this is the default behaviour in metrics.
-     * 2. When only statistics props is given statistics config will take effect. So backward compatibility is kept.
-     * 3. When only metrics config is given metrics config will take effect.
-     * 4. When both statistics props and metrics config are given statistics config will take effect.
-     *
-     * The behaviour is inline with Java client's behaviour.
-     */
-    private static overrideMetricsViaStatistics(config: ClientConfig, metricsConfig: MetricsConfig): void {
-        if (config.hasOwnProperty('properties') && config.properties.hasOwnProperty('hazelcast.client.statistics.enabled')) {
-            metricsConfig.enabled = config.properties['hazelcast.client.statistics.enabled'] as boolean;
-        }
-
-        if (config.hasOwnProperty('properties')
-            && config.properties.hasOwnProperty('hazelcast.client.statistics.period.seconds')) {
-            metricsConfig.collectionFrequencySeconds = config.properties['hazelcast.client.statistics.period.seconds'] as number;
         }
     }
 

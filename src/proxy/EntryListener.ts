@@ -72,9 +72,9 @@ export class EntryEvent<K, V> {
     /**
      * The member that fired this event.
      */
-    member: Member;
+    member?: Member;
 
-    constructor(name: string, key: K, value: V, oldValue: V, mergingValue: V, member: Member) {
+    constructor(name: string, key: K, value: V, oldValue: V, mergingValue: V, member?: Member) {
         this.name = name;
         this.key = key;
         this.value = value;

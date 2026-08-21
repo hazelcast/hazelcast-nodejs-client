@@ -20,13 +20,13 @@ import {FieldKindBasedOperations} from './FieldKindBasedOperations';
 import {DefaultCompactWriter} from '../compact/DefaultCompactWriter';
 import {GenericRecord} from './GenericRecord';
 import {BitsUtil} from '../../util/BitsUtil';
-import {CompactReader} from '../compact/CompactReader';
+import {CompactReader} from '../compact';
 import {FieldValidator} from './FieldValidator';
-import {BigDecimal} from '../../core/BigDecimal';
-import {LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core/DateTimeClasses';
+import {BigDecimal} from '../../core';
+import {LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 import {CompactGenericRecordImpl} from './CompactGenericRecord';
 
-import * as Long from 'long';
+import Long from 'long';
 
 /**
  * Implementation of {@link FieldKindBasedOperations} for each field

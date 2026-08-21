@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
+import Long from 'long';
 import {
     BigDecimal,
     LocalDate,
@@ -388,7 +388,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the int value read
      */
-    readInt(fieldName: string): number;
+    readInt(fieldName: string): number | null;
 
     /**
      * Reads a long.
@@ -396,7 +396,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the long value read
      */
-    readLong(fieldName: string): Long;
+    readLong(fieldName: string): Long | null;
 
     /**
      * Reads a string from UTF-8 encoded bytes.
@@ -421,7 +421,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the boolean value read
      */
-    readBoolean(fieldName: string): boolean;
+    readBoolean(fieldName: string): boolean | null;
 
     /**
      * Reads a 8-bit unsigned integer.
@@ -429,7 +429,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the byte value read
      */
-    readByte(fieldName: string): number;
+    readByte(fieldName: string): number | null;
 
     /**
      * Reads a single character string using `String.fromCharCode` from two bytes of UTF-16 code units.
@@ -437,7 +437,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the char value read
      */
-    readChar(fieldName: string): string;
+    readChar(fieldName: string): string | null;
 
     /**
      * Reads a double.
@@ -445,7 +445,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the double value read
      */
-    readDouble(fieldName: string): number;
+    readDouble(fieldName: string): number | null;
 
     /**
      * Reads a float.
@@ -453,7 +453,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the float value read
      */
-    readFloat(fieldName: string): number;
+    readFloat(fieldName: string): number | null;
 
     /**
      * Reads a 16-bit signed integer.
@@ -461,7 +461,7 @@ export interface PortableReader {
      * @param fieldName name of the field
      * @return the short value read
      */
-    readShort(fieldName: string): number;
+    readShort(fieldName: string): number | null;
 
     /**
      * Reads a Portable.

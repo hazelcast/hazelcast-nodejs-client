@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
+import Long from 'long';
 
 export const SEQUENCE_UNAVAILABLE = -1;
 
@@ -43,7 +43,7 @@ export interface ReadResultSet<T> {
      * @throws {@link HazelcastSerializationError} if the object to be returned is a compact object whose schema is not known
      * @returns the found item or `undefined` if the index is out of bounds
      */
-    get(index: number): T;
+    get(index: number): T | undefined;
 
     /**
      * Returns the sequence number for the item at the given index.
@@ -63,10 +63,10 @@ export interface ReadResultSet<T> {
 
      /**
      * Returns an iterator for elements in the list.
-     * 
+     *
      * @returns the iterator for elements in the list.
      */
-    [Symbol.iterator](): Iterator<T>; 
+    [Symbol.iterator](): Iterator<T>;
 
     /**
      * Returns the sequence of the item following the last read item. This

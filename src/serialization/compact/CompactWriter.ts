@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
+import Long from 'long';
 import {BigDecimal, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 
 /**
@@ -241,9 +241,9 @@ export interface CompactWriter {
     /**
      * Writes an array of nested compact objects.
      *
-     * For compact objects, if an array contains different item types or undefined 
+     * For compact objects, if an array contains different item types or undefined
      * a {@link HazelcastSerializationError} will be thrown.
-     * 
+     *
      * @param fieldName name of the field.
      * @param value     to be written.
      */

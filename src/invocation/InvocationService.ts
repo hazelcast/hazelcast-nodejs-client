@@ -29,13 +29,13 @@ import {
     InvocationMightContainCompactDataError
 } from '../core';
 import {Connection} from '../network/Connection';
-import {ILogger} from '../logging/ILogger';
+import {ILogger} from '../logging';
 import {ClientMessage, IS_BACKUP_AWARE_FLAG} from '../protocol/ClientMessage';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
 import {ClientLocalBackupListenerCodec} from '../codec/ClientLocalBackupListenerCodec';
 import {EXCEPTION_MESSAGE_TYPE} from '../codec/builtin/ErrorsCodec';
 import {PartitionServiceImpl} from '../PartitionService';
-import {SerializationService} from './../serialization/SerializationService';
+import {SerializationService} from '../serialization/SerializationService';
 import {
     scheduleWithRepetition,
     cancelRepetitionTask,
@@ -48,7 +48,7 @@ import {ListenerService} from '../listener/ListenerService';
 import {ClientErrorFactory} from '../protocol/ErrorFactory';
 import {LifecycleService} from '../LifecycleService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
-import * as Long from 'long';
+import Long from 'long';
 import {SchemaService} from '../serialization/compact/SchemaService';
 import {Schema} from '../serialization/compact/Schema';
 
@@ -80,7 +80,7 @@ export class Invocation {
     /**
      * UUID of the request. If request is not bound to any specific UUID, should be set to null.
      */
-    uuid: UUID;
+    uuid: UUID | null;
 
     /**
      * Deadline of validity. Client will not try to send this request to server after the deadline passes.
@@ -90,22 +90,22 @@ export class Invocation {
     /**
      * Connection of the request. If request is not bound to any specific address, should be set to null.
      */
-    connection: Connection;
+    connection: Connection | null;
 
     /**
      * Connection on which the request was written. May be different from `connection`.
      */
-    sendConnection: Connection;
+    sendConnection: Connection | null;
 
     /**
      * Promise managing object.
      */
-    deferred: DeferredPromise<ClientMessage>;
+    deferred?: DeferredPromise<ClientMessage>;
 
     /**
      * Contains the pending response from the primary. It is pending because it could be that backups need to complete.
      */
-    pendingResponseMessage: ClientMessage;
+    pendingResponseMessage?: ClientMessage;
 
     /**
      * Number of backups acks received.
@@ -128,7 +128,7 @@ export class Invocation {
      * If this is an event listener registration, handler should be set to the function to be called on events.
      * Otherwise, should be set to null.
      */
-    eventHandler: (clientMessage: ClientMessage) => any;
+    eventHandler?: (clientMessage: ClientMessage) => any;
 
     /**
      * Handler is responsible for handling the client message and returning an object. The default value
@@ -142,6 +142,10 @@ export class Invocation {
     urgent = false;
 
     constructor(invocationService: InvocationService, request: ClientMessage, timeoutMillis?: number) {
+        this.partitionId = -1;
+        this.uuid = null;
+        this.connection = null;
+        this.sendConnection = null;
         this.invocationService = invocationService;
         this.deadline = timeoutMillis === undefined
             ? Date.now() + this.invocationService.invocationTimeoutMillis
@@ -239,7 +243,7 @@ export class Invocation {
          */
         try {
             const result = this.handler(clientMessage);
-            this.deferred.resolve(result);
+            this.deferred?.resolve(result);
             this.invocationService.deregisterInvocation(this.request.getCorrelationId());
         } catch (e) {
             if (e instanceof SchemaNotFoundError) {
@@ -255,13 +259,13 @@ export class Invocation {
                     this.completeWithError(err);
                 });
             } else {
-                this.completeWithError(e);
+                this.completeWithError(e as Error);
             }
         }
     }
 
     completeWithError(err: Error): void {
-        this.deferred.reject(err);
+        this.deferred?.reject(err);
         this.invocationService.deregisterInvocation(this.request.getCorrelationId());
     }
 }
@@ -275,7 +279,7 @@ const backupListenerCodec: ListenerMessageCodec = {
         return ClientLocalBackupListenerCodec.decodeResponse(msg);
     },
 
-    encodeRemoveRequest(_listenerId: UUID): ClientMessage {
+    encodeRemoveRequest(_listenerId: UUID): ClientMessage | null {
         return null;
     }
 }
@@ -297,7 +301,7 @@ export class InvocationService {
     private readonly cleanResourcesMillis: number;
     private readonly redoOperation: boolean;
     private correlationCounter = 1;
-    private cleanResourcesTask: Task;
+    private cleanResourcesTask?: Task;
     private isShutdown: boolean;
 
     constructor(
@@ -311,7 +315,7 @@ export class InvocationService {
         private readonly schemaService: SchemaService,
         private readonly serializationService: SerializationService
     ) {
-        if (clientConfig.network.smartRouting) {
+        if (clientConfig.network?.smartRouting) {
             this.doInvoke = this.invokeSmart;
         } else {
             this.doInvoke = this.invokeNonSmart;
@@ -326,8 +330,8 @@ export class InvocationService {
             clientConfig.properties[PROPERTY_FAIL_ON_INDETERMINATE_STATE] as boolean;
         this.cleanResourcesMillis =
             clientConfig.properties[PROPERTY_CLEAN_RESOURCES_MILLIS] as number;
-        this.redoOperation = clientConfig.network.redoOperation;
-        this.backupAckToClientEnabled = clientConfig.network.smartRouting && clientConfig.backupAckToClientEnabled;
+        this.redoOperation = clientConfig?.network?.redoOperation || false;
+        this.backupAckToClientEnabled = clientConfig?.network?.smartRouting && clientConfig.backupAckToClientEnabled || false;
         this.isShutdown = false;
     }
 
@@ -346,7 +350,7 @@ export class InvocationService {
         return scheduleWithRepetition(() => {
             for (const invocation of this.pending.values()) {
                 const connection = invocation.sendConnection;
-                if (connection === undefined) {
+                if (!connection) {
                     continue;
                 }
                 if (!connection.isAlive()) {
@@ -401,7 +405,7 @@ export class InvocationService {
         connection: Connection,
         request: ClientMessage,
         handler: (clientMessage: ClientMessage) => V
-    ): Promise<V> {
+    ): Promise<V|null> {
         const invocation = new Invocation(this, request);
         invocation.connection = connection;
         invocation.handler = handler;
@@ -467,6 +471,9 @@ export class InvocationService {
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     registerSchema(schema: Schema, clazz: Function | undefined): Promise<void> {
+        if (!clazz) {
+            throw new Error('clazz is undefined');
+        }
         return this.schemaService.put(schema).then(() => {
             this.serializationService.registerSchemaToClass(schema, clazz);
         })
@@ -475,7 +482,9 @@ export class InvocationService {
     private callEventHandlerWithMessage(invocation: Invocation, clientMessage: ClientMessage): void {
         // We need to retry calling the event handler after fetching the schema if it is not found for the compact case.
         try {
-            invocation.eventHandler(clientMessage);
+            if (invocation.eventHandler) {
+                invocation.eventHandler(clientMessage);
+            }
         } catch (e) {
             if (!(e instanceof SchemaNotFoundError)) {
                 throw e;
@@ -531,7 +540,9 @@ export class InvocationService {
         const messageType = clientMessage.getMessageType();
         if (messageType === EXCEPTION_MESSAGE_TYPE) {
             const remoteError = this.errorFactory.createErrorFromClientMessage(clientMessage);
-            this.notifyError(pendingInvocation, remoteError);
+            if (remoteError) {
+                this.notifyError(pendingInvocation, remoteError);
+            }
         } else {
             pendingInvocation.notify(clientMessage);
         }
@@ -554,7 +565,7 @@ export class InvocationService {
         }
 
         let invocationPromise: Promise<void>;
-        if (invocation.hasOwnProperty('connection')) {
+        if (invocation.connection) {
             invocationPromise = this.send(invocation, invocation.connection);
             invocationPromise.catch((err) => {
                 this.notifyError(invocation, err);
@@ -564,7 +575,7 @@ export class InvocationService {
 
         if (invocation.hasPartitionId()) {
             invocationPromise = this.invokeOnPartitionOwner(invocation, invocation.partitionId);
-        } else if (invocation.hasOwnProperty('uuid')) {
+        } else if (invocation.uuid) {
             invocationPromise = this.invokeOnUuid(invocation, invocation.uuid);
         } else {
             invocationPromise = this.invokeOnRandomConnection(invocation);
@@ -594,7 +605,7 @@ export class InvocationService {
         }
 
         let invocationPromise: Promise<void>;
-        if (invocation.hasOwnProperty('connection')) {
+        if (invocation.connection) {
             invocationPromise = this.send(invocation, invocation.connection);
         } else {
             invocationPromise = this.invokeOnRandomConnection(invocation);
@@ -669,18 +680,18 @@ export class InvocationService {
      */
     private rejectIfNotRetryable(invocation: Invocation, error: Error): boolean {
         if (!this.lifecycleService.isRunning()) {
-            invocation.deferred.reject(new ClientNotActiveError('Client is shutting down.', error));
+            invocation.deferred?.reject(new ClientNotActiveError('Client is shutting down.', error));
             return true;
         }
 
         if (!invocation.shouldRetry(error)) {
-            invocation.deferred.reject(error);
+            invocation.deferred?.reject(error);
             return true;
         }
 
         if (invocation.deadline < Date.now()) {
             this.logger.trace('InvocationService', 'Error will not be retried because invocation timed out');
-            invocation.deferred.reject(new OperationTimeoutError('Invocation '
+            invocation.deferred?.reject(new OperationTimeoutError('Invocation '
                 + invocation.request.getCorrelationId() + ') reached its deadline.', error));
             return true;
         }

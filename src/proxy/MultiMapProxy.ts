@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import * as Long from 'long';
+import Long from 'long';
 import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
 import {MultiMapIsLockedCodec} from '../codec/MultiMapIsLockedCodec';
 import {MultiMapLockCodec} from '../codec/MultiMapLockCodec';
@@ -24,7 +24,7 @@ import {MultiMapUnlockCodec} from '../codec/MultiMapUnlockCodec';
 import {EventType} from './EventType';
 import {EntryEvent, EntryListener} from './EntryListener';
 import {ListenerMessageCodec} from '../listener/ListenerMessageCodec';
-import {Data} from '../serialization/Data';
+import {Data} from '../serialization';
 import {MultiMapAddEntryListenerCodec} from '../codec/MultiMapAddEntryListenerCodec';
 import {MultiMapAddEntryListenerToKeyCodec} from '../codec/MultiMapAddEntryListenerToKeyCodec';
 import {MultiMapClearCodec} from '../codec/MultiMapClearCodec';
@@ -241,11 +241,11 @@ export class MultiMapProxy<K, V> extends BaseProxy implements MultiMap<K, V> {
             keyData, MultiMapValueCountCodec.decodeResponse, keyData, getLockID());
     }
 
-    addEntryListener(listener: EntryListener<K, V>, key?: K, includeValue = true): Promise<string> {
-        const entryEventHandler = (keyData: Data,
-                                   valueData: Data,
-                                   oldValueData: Data,
-                                   mergingValueData: Data,
+    addEntryListener(listener: EntryListener<K, V>, key: K, includeValue = true): Promise<string> {
+        const entryEventHandler = (keyData: Data | null,
+                                   valueData: Data | null,
+                                   oldValueData: Data | null,
+                                   mergingValueData: Data | null,
                                    eventType: number,
                                    uuid: UUID,
                                    numberOfAffectedEntries: number): void => {

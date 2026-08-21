@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
+import Long from 'long';
 import {BitsUtil} from '../../util/BitsUtil';
-import {UUID} from '../../core/UUID';
+import {UUID} from '../../core';
 import {
     LocalDate,
     LocalDateTime,
@@ -158,7 +158,7 @@ export class FixSizedTypesCodec {
         return buffer.readUInt8(offset);
     }
 
-    static encodeUUID(buffer: Buffer, offset: number, value: UUID): void {
+    static encodeUUID(buffer: Buffer, offset: number, value: UUID | null): void {
         const isNull = value === null;
         this.encodeBoolean(buffer, offset, isNull);
         if (isNull) {
@@ -173,7 +173,7 @@ export class FixSizedTypesCodec {
     static decodeUUID(buffer: Buffer, offset: number): UUID {
         const isNull = FixSizedTypesCodec.decodeBoolean(buffer, offset);
         if (isNull) {
-            return null;
+            return new UUID(Long.ZERO, Long.ZERO);
         }
         const mostSignificantBits = FixSizedTypesCodec.decodeLong(buffer, offset + BitsUtil.BOOLEAN_SIZE_IN_BYTES);
         const leastSignificantBits = FixSizedTypesCodec.decodeLong(buffer,

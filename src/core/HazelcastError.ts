@@ -15,7 +15,7 @@
  */
 
 import {UUID} from './UUID';
-import * as Long from 'long';
+import Long from 'long';
 import {Schema} from '../serialization/compact/Schema';
 
 /**
@@ -53,7 +53,7 @@ export class HazelcastError extends Error {
     /**
      * Cause of this exception.
      */
-    cause: Error;
+    cause?: Error;
 
     /**
      * Server-side stack trace.
@@ -65,8 +65,8 @@ export class HazelcastError extends Error {
         this.cause = cause;
         this.serverStackTrace = serverStackTrace;
         Error.captureStackTrace(this, HazelcastError);
-        if (cause !== undefined && cause !== null) {
-            this.stack += '\nCaused by ' + cause.stack.toString();
+        if (cause) {
+            this.stack += '\nCaused by ' + cause?.stack?.toString();
         }
     }
 }
