@@ -261,7 +261,15 @@ describe('CompactPublicAPIsTest', function () {
         queue = await client.getQueue(name);
         set = await client.getSet(name);
         reliableTopic = await client.getReliableTopic(name);
-        topic = await client.getTopic(name);
+        try {
+            topic = await client.getTopic(name);
+        } catch (e) {
+            // this fails for clients < 6.0
+            // so ignore that until 6.0 is the minimum supported version
+            if (TestUtil.isClientVersionAtLeast('6.0')) {
+                throw e;
+            }
+        }
         ringBuffer = await client.getRingbuffer(name);
         compactSerializerUsed = false;
     });
@@ -283,7 +291,15 @@ describe('CompactPublicAPIsTest', function () {
         await queue.destroy();
         await set.destroy();
         await reliableTopic.destroy();
-        await topic.destroy();
+        try {
+            await topic.destroy();
+        } catch (e) {
+            // this fails for clients < 6.0
+            // so ignore that until 6.0 is the minimum supported version
+            if (TestUtil.isClientVersionAtLeast('6.0')) {
+                throw e;
+            }
+        }
         await ringBuffer.destroy();
         await testFactory.shutdownAllClients();
     });
