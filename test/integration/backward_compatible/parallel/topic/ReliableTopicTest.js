@@ -124,13 +124,22 @@ describe('ReliableTopicTest', function () {
             topicOne.publish({ 'value0': 'foo0' });
             topicOne.publish({ 'value1': 'foo1' });
             setTimeout(() => {
-                topicTwo.removeMessageListener(id).then(() => {
-                    topicOne.publish({ 'value2': 'foo2' });
-                    topicOne.publish({ 'value3': 'foo3' });
-                    topicOne.publish({ 'value4': 'foo4' });
-                    topicOne.publish({ 'value5': 'foo5' });
+                if (TestUtil.isClientVersionAtLeast('6.0')) {
+                    topicTwo.removeMessageListener(id).then(() => {
+                        topicOne.publish({'value2': 'foo2'});
+                        topicOne.publish({'value3': 'foo3'});
+                        topicOne.publish({'value4': 'foo4'});
+                        topicOne.publish({'value5': 'foo5'});
+                        setTimeout(done, 500);
+                    });
+                } else {
+                    topicTwo.removeMessageListener(id);
+                    topicOne.publish({'value2': 'foo2'});
+                    topicOne.publish({'value3': 'foo3'});
+                    topicOne.publish({'value4': 'foo4'});
+                    topicOne.publish({'value5': 'foo5'});
                     setTimeout(done, 500);
-                });
+                }
             }, 500);
         }).catch(done);
     });
