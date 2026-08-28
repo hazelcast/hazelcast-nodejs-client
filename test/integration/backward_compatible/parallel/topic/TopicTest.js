@@ -30,6 +30,7 @@ describe('TopicProxyTest', function () {
     const testFactory = new TestUtil.TestFactory();
 
     before(async function () {
+        TestUtil.markClientVersionAtLeast(this, '6.0');
         cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForParallelTests({ clusterName: cluster.id }, member);
