@@ -1093,6 +1093,10 @@ describe('CompactPublicAPIsTest', function () {
     });
 
     describe('Topic', function () {
+        before(function () {
+            TestUtil.markClientVersionAtLeast(this, '6.0');
+        });
+
         it('publish', async function () {
             const fn = topic.publish.bind(topic, OUTER_INSTANCE);
             await fn();
