@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../core/Long';
 
 /** @internal */
 export class LockReferenceIdGenerator {
@@ -23,7 +23,7 @@ export class LockReferenceIdGenerator {
     private counter: Long = Long.fromNumber(0);
 
     getNextReferenceId(): Long {
-        this.counter = this.counter.add(1);
+        this.counter = this.counter.addN(1);
         return this.counter;
     }
 }

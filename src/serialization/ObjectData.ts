@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import assert from 'assert';
-import Long from 'long';
+import {Long} from '../core/Long';
 import {BitsUtil} from '../util/BitsUtil';
 import {Data, DataInput, DataOutput, PositionalDataOutput} from './Data';
 import {HeapData, HEAP_DATA_OVERHEAD} from './HeapData';
@@ -166,15 +166,16 @@ export class ObjectDataOutput implements DataOutput {
 
     writeLong(long: Long): void {
         this.ensureAvailable(BitsUtil.LONG_SIZE_IN_BYTES);
+        const [low, high] = long.getLowHigh();
         if (this.isBigEndian()) {
-            BitsUtil.writeInt32(this.buffer, this.pos, long.high, true);
+            BitsUtil.writeInt32(this.buffer, this.pos, high, true);
             this.pos += BitsUtil.INT_SIZE_IN_BYTES;
-            BitsUtil.writeInt32(this.buffer, this.pos, long.low, true);
+            BitsUtil.writeInt32(this.buffer, this.pos, low, true);
             this.pos += BitsUtil.INT_SIZE_IN_BYTES;
         } else {
-            BitsUtil.writeInt32(this.buffer, this.pos, long.low, false);
+            BitsUtil.writeInt32(this.buffer, this.pos, low, false);
             this.pos += BitsUtil.INT_SIZE_IN_BYTES;
-            BitsUtil.writeInt32(this.buffer, this.pos, long.high, false);
+            BitsUtil.writeInt32(this.buffer, this.pos, high, false);
             this.pos += BitsUtil.INT_SIZE_IN_BYTES;
         }
     }
@@ -294,12 +295,13 @@ export class PositionalObjectDataOutput extends ObjectDataOutput implements Posi
     }
 
     pwriteLong(position: number, long: Long): void {
+        const [low, high] = long.getLowHigh();
         if (this.isBigEndian()) {
-            BitsUtil.writeInt32(this.buffer, position, long.high, true);
-            BitsUtil.writeInt32(this.buffer, position + BitsUtil.INT_SIZE_IN_BYTES, long.low, true);
+            BitsUtil.writeInt32(this.buffer, position, high, true);
+            BitsUtil.writeInt32(this.buffer, position + BitsUtil.INT_SIZE_IN_BYTES, low, true);
         } else {
-            BitsUtil.writeInt32(this.buffer, position, long.low, false);
-            BitsUtil.writeInt32(this.buffer, position + BitsUtil.INT_SIZE_IN_BYTES, long.high, false);
+            BitsUtil.writeInt32(this.buffer, position, low, false);
+            BitsUtil.writeInt32(this.buffer, position + BitsUtil.INT_SIZE_IN_BYTES, high, false);
         }
     }
 
@@ -484,9 +486,9 @@ export class ObjectDataInput implements DataInput {
             second = BitsUtil.readInt32(this.buffer, pos + BitsUtil.INT_SIZE_IN_BYTES, this.isBigEndian());
         }
         if (this.isBigEndian()) {
-            return new Long(second, first);
+            return Long.fromLowHigh(second, first);
         } else {
-            return new Long(first, second);
+            return Long.fromLowHigh(first, second);
         }
     }
 

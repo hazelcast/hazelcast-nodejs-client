@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../core/Long';
 import {UUID} from '../core/UUID';
 
 const INT_BOUND = 0xFFFFFFFF;
@@ -27,8 +27,8 @@ function randomUInt(): number {
 /** @internal */
 export class UuidUtil {
     static generate(isUnsigned = true): UUID {
-        const mostS = new Long(randomUInt(), randomUInt(), isUnsigned);
-        const leastS = new Long(randomUInt(), randomUInt(), isUnsigned);
+        const mostS = Long.fromLowHigh(randomUInt(), randomUInt(), isUnsigned);
+        const leastS = Long.fromLowHigh(randomUInt(), randomUInt(), isUnsigned);
         return new UUID(mostS, leastS);
     }
     static convertUUIDSetToStringSet(uuidSet: Set<UUID>): Set<string> {

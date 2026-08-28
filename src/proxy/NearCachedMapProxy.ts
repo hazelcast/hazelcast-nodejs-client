@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../core/Long';
 import {MapAddNearCacheInvalidationListenerCodec} from '../codec/MapAddNearCacheInvalidationListenerCodec';
 import {MapRemoveEntryListenerCodec} from '../codec/MapRemoveEntryListenerCodec';
 import {MapGetAllCodec} from '../codec/MapGetAllCodec';

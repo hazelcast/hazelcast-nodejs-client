@@ -21,7 +21,7 @@ import {SqlErrorCode} from './SqlErrorCode';
 import {SqlQueryId} from './SqlQueryId';
 import {SerializationService} from '../serialization/SerializationService';
 import {SqlExecuteCodec, SqlExecuteResponseParams} from '../codec/SqlExecuteCodec';
-import Long from 'long';
+import {Long} from '../core/Long';
 import {InvocationService} from '../invocation/InvocationService';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {Connection} from '../network/Connection';
@@ -107,7 +107,7 @@ export interface SqlService {
 /** @internal */
 export class SqlServiceImpl implements SqlService {
     /** Value for the timeout that is not set. */
-    static readonly TIMEOUT_NOT_SET = Long.fromInt(-1);
+    static readonly TIMEOUT_NOT_SET = Long.NEG_ONE;
     /** Default timeout. */
     static readonly DEFAULT_TIMEOUT = SqlServiceImpl.TIMEOUT_NOT_SET;
     /** Default cursor buffer size. */

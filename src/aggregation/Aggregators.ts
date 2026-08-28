@@ -30,6 +30,7 @@ import {
     NumberAverageAggregator,
     DistinctValuesAggregator
 } from './Aggregator';
+import {Long} from '../core/Long';
 
 /**
  * @param attributePath extracts values from this path if given

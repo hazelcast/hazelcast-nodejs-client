@@ -20,7 +20,7 @@ chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
-const Long = require('long');
+const {Long} = require('../../../../lib/core/Long');
 const { AssertionError } = require('assert');
 const {
     IllegalMonitorStateError,

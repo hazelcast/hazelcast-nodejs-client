@@ -17,7 +17,7 @@
 
 import {UUID} from '../core';
 import {UuidUtil} from '../util/UuidUtil';
-import Long from 'long';
+import {Long} from '../core/Long';
 
 
 /**

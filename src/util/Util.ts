@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import assert from 'assert';
-import Long from 'long';
+import {Long} from '../core/Long';
 import * as Path from 'path';
 import {IllegalStateError, MemberImpl} from '../core';
 import {MemberVersion} from '../core/MemberVersion';

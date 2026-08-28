@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../core/Long';
 import {DataInput, DataOutput} from './Data';
 import {
     Serializer,

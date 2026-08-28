@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {RingbufferAddAllCodec} from '../../codec/RingbufferAddAllCodec';
 import {RingbufferAddCodec} from '../../codec/RingbufferAddCodec';
 import {RingbufferCapacityCodec} from '../../codec/RingbufferCapacityCodec';
@@ -88,7 +88,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
     }
 
     readOne(sequence: number | Long): Promise<E> {
-        if (Long.fromValue(sequence).lessThan(0)) {
+        if (Long.fromValue(sequence).lessThan(Long.ZERO)) {
             throw new RangeError('Sequence number should not be less than zero, was: ' + sequence);
         }
 
@@ -102,7 +102,7 @@ export class RingbufferProxy<E> extends PartitionSpecificProxy implements Ringbu
              minCount: number,
              maxCount: number,
              filter: any = null): Promise<ReadResultSet<E>> {
-        if (Long.fromValue(startSequence).lessThan(0)) {
+        if (Long.fromValue(startSequence).lessThan(Long.ZERO)) {
             throw new RangeError('Sequence number should not be less than zero, was: ' + startSequence);
         }
         if (minCount < 0) {

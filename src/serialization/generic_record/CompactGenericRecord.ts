@@ -31,7 +31,7 @@ import {SchemaWriter} from '../compact/SchemaWriter';
 import {FieldDescriptor} from './FieldDescriptor';
 import {CompactExceptions} from '../compact/CompactUtil';
 import {FieldValidator} from './FieldValidator';
-import Long from 'long';
+import {Long} from '../../core/Long';
 
 /**
  * Represents a deserialized compact generic record. This class is what user gets.
@@ -346,7 +346,7 @@ export class CompactGenericRecordImpl implements GenericRecord {
         }
 
         if (obj instanceof Long) {
-            return new Long(obj.low, obj.high, obj.unsigned);
+            return obj.clone();
         }
 
         if (Buffer.isBuffer(obj)) {

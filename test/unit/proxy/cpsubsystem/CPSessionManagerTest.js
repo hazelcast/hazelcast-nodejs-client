@@ -20,7 +20,7 @@ chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
-const Long = require('long');
+const {Long} = require('../../../../lib/core/Long');
 const {
     IllegalStateError,
     SessionExpiredError
@@ -33,6 +33,8 @@ const { DefaultLogger } = require('../../../../lib/logging/DefaultLogger');
 const { RaftGroupId } = require('../../../../lib/proxy/cpsubsystem/RaftGroupId');
 const { deferredPromise } = require('../../../../lib/util/Util');
 const { InvocationService } = require('../../../../lib/invocation/InvocationService');
+
+console.log('Long.fromNumber', Long.fromNumber);
 
 describe('CPSessionManagerTest', function () {
     afterEach(function () {

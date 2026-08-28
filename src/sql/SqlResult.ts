@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Long from 'long';
+import {Long} from '../core/Long';
 
 import {SqlRow, SqlRowImpl} from './SqlRow';
 import {SqlRowMetadata, SqlRowMetadataImpl} from './SqlRowMetadata';
@@ -260,7 +260,7 @@ export class SqlResultImpl implements SqlResult {
      * @param error The wrapped error that can be propagated to the user through executeDeferred.
      */
     onExecuteError(error: HazelcastSqlException): void {
-        this.updateCount = Long.fromInt(-1);
+        this.updateCount = Long.NEG_ONE;
         this.rowMetadata = null;
     }
 
@@ -301,7 +301,7 @@ export class SqlResultImpl implements SqlResult {
             if (rowPage) {
                 this.onNextPage(rowPage);
             }
-            this.updateCount = Long.fromInt(-1);
+            this.updateCount = Long.NEG_ONE;
         } else { // Result that includes update count
             this.updateCount = updateCount;
             this.closed = true;

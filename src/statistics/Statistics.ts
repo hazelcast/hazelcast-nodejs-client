@@ -23,7 +23,7 @@ import {cancelRepetitionTask, scheduleWithRepetition, Task} from '../util/Util';
 import * as os from 'os';
 import {BuildInfo} from '../BuildInfo';
 import {ILogger} from '../logging';
-import Long from 'long';
+import {Long} from '../core/Long';
 import {InvocationService} from '../invocation/InvocationService';
 import {NearCacheManager} from '../nearcache/NearCacheManager';
 import {MetricsConfig} from '../config/MetricsConfig';

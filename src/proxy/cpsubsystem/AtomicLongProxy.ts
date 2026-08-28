@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {BaseCPProxy} from './BaseCPProxy';
 import {IAtomicLong} from '../IAtomicLong';
 import {CPProxyManager} from './CPProxyManager';

@@ -17,7 +17,7 @@
 import {BitsUtil} from '../../util/BitsUtil';
 import {ClientMessage, Frame} from '../../protocol/ClientMessage';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';
-import Long from 'long';
+import {Long} from '../../core/Long';
 
 const ENTRY_SIZE_IN_BYTES = BitsUtil.INT_SIZE_IN_BYTES + BitsUtil.LONG_SIZE_IN_BYTES;
 

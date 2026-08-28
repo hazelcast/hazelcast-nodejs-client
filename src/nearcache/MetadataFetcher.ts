@@ -23,6 +23,7 @@ import {RepairingHandler} from './RepairingHandler';
 import {ILogger} from '../logging';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {ClusterService} from '../invocation/ClusterService';
+import {Long} from '../core/Long';
 
 /** @internal */
 export class MetadataFetcher {

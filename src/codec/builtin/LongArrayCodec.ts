@@ -15,7 +15,7 @@
  */
 
 import {ClientMessage} from '../../protocol/ClientMessage';
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {ListLongCodec} from './ListLongCodec';
 
 /** @internal */

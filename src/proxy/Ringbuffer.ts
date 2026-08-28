@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Long from 'long';
+import {Long} from '../core/Long';
 import {
     DistributedObject,
     ReadResultSet

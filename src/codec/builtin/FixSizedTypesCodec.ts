@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {BitsUtil} from '../../util/BitsUtil';
 import {UUID} from '../../core';
 import {
@@ -95,7 +95,7 @@ export class FixSizedTypesCodec {
     static decodeLong(buffer: Buffer, offset: number): Long {
         const low = buffer.readInt32LE(offset);
         const high = buffer.readInt32LE(offset + BitsUtil.INT_SIZE_IN_BYTES);
-        return new Long(low, high);
+        return Long.fromLowHigh(low, high);
     }
 
     /**

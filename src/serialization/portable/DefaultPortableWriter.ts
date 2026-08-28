@@ -20,7 +20,7 @@ import {DataOutput, PositionalDataOutput} from '../Data';
 import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {BitsUtil} from '../../util/BitsUtil';
 import {Portable, FieldType, PortableWriter} from '../Portable';
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {
     BigDecimal,
     HazelcastSerializationError,

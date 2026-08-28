@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../core/Long';
 import {EvictionPolicy} from '../config';
 import {InMemoryFormat} from '../config';
 import {NearCacheConfigImpl} from '../config';
@@ -134,7 +134,7 @@ export class NearCacheImpl implements NearCache {
 
     nextReservationId(): Long {
         const res = this.reservationCounter;
-        this.reservationCounter = this.reservationCounter.add(1);
+        this.reservationCounter = this.reservationCounter.addN(1);
         return res;
     }
 

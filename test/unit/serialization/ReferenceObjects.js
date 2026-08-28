@@ -24,7 +24,7 @@
 
 'use strict';
 
-const Long = require('long');
+const {Long} = require('../../../lib/core/Long');
 const { UUID } = require('../../../lib/core/UUID');
 const { LocalDate, LocalDateTime, LocalTime, OffsetDateTime } = require('../../../lib/core/DateTimeClasses');
 const { BigDecimal } = require('../../../lib/core/BigDecimal');

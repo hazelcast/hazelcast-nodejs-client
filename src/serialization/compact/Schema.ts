@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {FieldOperations} from '../generic_record/FieldOperations';
 import {FieldKind} from '../generic_record';
 import {BitsUtil} from '../../util/BitsUtil';

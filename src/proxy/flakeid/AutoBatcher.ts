@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {EventEmitter} from 'events';
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {
     deferredPromise,
     DeferredPromise
@@ -33,7 +33,7 @@ export class Batch {
     constructor(validityMillis: number, base: Long, increment: Long, batchSize: number) {
         this.nextIdLong = base;
         this.increment = increment;
-        this.firstInvalidId = base.add(this.increment.multiply(batchSize));
+        this.firstInvalidId = base.add(this.increment.multiplyN(batchSize));
         if (validityMillis > 0) {
             this.invalidSince = validityMillis + Date.now();
         } else {

@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../core/Long';
 import {UUID} from '../core';
 import {PartitionService} from '../PartitionService';
 import {Data} from '../serialization';
@@ -90,9 +90,9 @@ export class RepairingHandler {
         metadata.setSequence(nextSequence);
         let missed = nextSequence.subtract(current);
         if (!viaAntiEntropy) {
-            missed = missed.subtract(1);
+            missed = missed.subtractN(1);
         }
-        if (missed.greaterThan(0)) {
+        if (missed.greaterThanN(0)) {
             metadata.increaseMissedSequenceCount(missed);
         }
     }

@@ -26,7 +26,7 @@ import {BigDecimal} from '../../core';
 import {LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
 import {CompactGenericRecordImpl} from './CompactGenericRecord';
 
-import Long from 'long';
+import {Long} from '../../core/Long';
 
 /**
  * Implementation of {@link FieldKindBasedOperations} for each field

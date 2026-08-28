@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {OverflowPolicy} from '../OverflowPolicy';
 import {AddressImpl, SchemaNotReplicatedError, TopicOverloadError} from '../../core';
 import {SerializationService} from '../../serialization/SerializationService';

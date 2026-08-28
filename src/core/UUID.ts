@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Long from 'long';
+import {Long} from './Long';
 
 /**
  * Represents UUIDs used by Hazelcast client. A UUID represents a 128-bit value.

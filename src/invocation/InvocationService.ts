@@ -48,7 +48,7 @@ import {ListenerService} from '../listener/ListenerService';
 import {ClientErrorFactory} from '../protocol/ErrorFactory';
 import {LifecycleService} from '../LifecycleService';
 import {ConnectionRegistry} from '../network/ConnectionRegistry';
-import Long from 'long';
+import {Long} from '../core/Long';
 import {SchemaService} from '../serialization/compact/SchemaService';
 import {Schema} from '../serialization/compact/Schema';
 

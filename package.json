@@ -8,10 +8,6 @@
         "lib/**/*.js",
         "lib/**/*.d.ts"
     ],
-    "dependencies": {
-        "@types/long": "4.0.2",
-        "long": "4.0.0"
-    },
     "devDependencies": {
         "@istanbuljs/nyc-config-typescript": "~1.0.2",
         "@types/node": "~22.13.14",

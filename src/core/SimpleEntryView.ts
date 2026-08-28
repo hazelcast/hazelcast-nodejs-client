@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Long from 'long';
+import {Long} from './Long';
 
 /**
  * Represents a view of a map entry.

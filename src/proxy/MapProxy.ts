@@ -89,7 +89,7 @@ import {IndexConfig} from '../config';
 import {IndexUtil} from '../util/IndexUtil';
 import {PagingPredicateHolder} from '../protocol/PagingPredicateHolder';
 import {MapEntriesWithPagingPredicateCodec} from '../codec/MapEntriesWithPagingPredicateCodec';
-import Long from 'long';
+import {Long} from '../core/Long';
 import {SchemaNotReplicatedError} from '../core';
 import {MapRemoveAllCodec} from '../codec/MapRemoveAllCodec';
 import {getLockID} from './LockContext';

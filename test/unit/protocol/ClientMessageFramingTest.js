@@ -17,7 +17,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const Long = require('long');
+const Long = require('../../../lib/core/Long');
 
 const cm = require('../../../lib/protocol/ClientMessage');
 const { HeapData } = require('../../../lib/serialization/HeapData');

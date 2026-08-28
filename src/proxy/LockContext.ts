@@ -1,6 +1,6 @@
 
 import { AsyncLocalStorage } from 'node:async_hooks';
-import Long from 'long';
+import {Long} from '../core/Long';
 
 const lockContextStorage = new AsyncLocalStorage();
 let lockID = Long.ZERO
@@ -13,7 +13,7 @@ export class LockContext {
      * @param f Promise the async function to run with the lock ID.
      */
     static async run(f: () => Promise<void>) {
-        lockID = lockID.add(1);
+        lockID = lockID.addN(1);
         await lockContextStorage.run(lockID, f);
     }
 }

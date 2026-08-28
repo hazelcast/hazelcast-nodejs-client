@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {Data, DataInput, DataOutput} from '../../serialization';
 import {IdentifiedDataSerializable} from '../../serialization';
 import {AddressImpl} from '../../core';

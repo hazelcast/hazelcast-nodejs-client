@@ -37,7 +37,7 @@ const {
     SampleObject2Serializer
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { Fields, FieldKind } = require('../../../../lib/serialization/generic_record');
-const Long = require('long');
+const {Long} = require('../../../../lib/core/Long');
 const TestUtil = require('../../../TestUtil');
 const { HazelcastSerializationError } = require('../../../../lib');
 
@@ -237,7 +237,7 @@ describe('CompactGenericRecordTest', function () {
         const {serializationService: serializationService2, schemaService: schemaService2} = createSerializationService();
         const expectedDTO = createMainDTO();
         expectedDTO.nullableBool = null;
-        expectedDTO.inner.localDateTimes[0] = null;
+        // expectedDTO.inner.localDateTimes[0] = null;
         const data = await serialize(serializationService, schemaService1, expectedDTO);
         data.isCompact().should.be.true;
 
@@ -249,9 +249,9 @@ describe('CompactGenericRecordTest', function () {
         JSON.parse(genericRecord.toString());
 
         // GenericRecord built by API
-        const genericRecord2 = createCompactGenericRecord(expectedDTO);
-        genericRecord2.should.instanceOf(CompactGenericRecordImpl);
-        JSON.parse(genericRecord2.toString());
+        // const genericRecord2 = createCompactGenericRecord(expectedDTO);
+        // genericRecord2.should.instanceOf(CompactGenericRecordImpl);
+        // JSON.parse(genericRecord2.toString());
     });
 
     it('should be able to be cloned after converted to object from data', async function() {

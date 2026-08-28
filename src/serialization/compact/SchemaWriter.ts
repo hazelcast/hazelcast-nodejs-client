@@ -18,7 +18,7 @@
 import {CompactWriter} from './CompactWriter';
 import {Schema} from './Schema';
 import {BigDecimal, HazelcastSerializationError, LocalDate, LocalDateTime, LocalTime, OffsetDateTime} from '../../core';
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {FieldDescriptor} from '../generic_record/FieldDescriptor';
 import {FieldKind} from '../generic_record/FieldKind';
 

@@ -15,7 +15,7 @@
  */
 
 import {UUID} from './UUID';
-import Long from 'long';
+import {Long} from './Long';
 import {Schema} from '../serialization/compact/Schema';
 
 /**

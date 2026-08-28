@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import {Long} from '../core/Long';
 import {PNCounterAddCodec} from '../codec/PNCounterAddCodec';
 import {PNCounterGetCodec} from '../codec/PNCounterGetCodec';
 import {PNCounterGetConfiguredReplicaCountCodec} from '../codec/PNCounterGetConfiguredReplicaCountCodec';
@@ -50,14 +50,14 @@ export class PNCounterProxy extends BaseProxy implements PNCounter {
         if (!Long.isLong(delta)) {
             delta = Long.fromNumber(delta as number);
         }
-        return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterAddCodec, (delta as Long).neg(), true);
+        return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterAddCodec, (delta as Long).negate(), true);
     }
 
     subtractAndGet(delta: Long | number): Promise<Long> {
         if (!Long.isLong(delta)) {
             delta = Long.fromNumber(delta as number);
         }
-        return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterAddCodec, (delta as Long).neg(), false);
+        return this.invokeInternal(PNCounterProxy.EMPTY_ARRAY, null, PNCounterAddCodec, (delta as Long).negate(), false);
     }
 
     decrementAndGet(): Promise<Long> {

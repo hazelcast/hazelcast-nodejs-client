@@ -16,16 +16,17 @@
 /** @ignore *//** */
 
 import {Schema} from './Schema';
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {Buffer} from 'buffer';
 
-export const INIT =  Long.fromString('0xc15d213aa4d7a795', false, 16);
+export const INIT =  Long.fromString('-4513414715797952619', false, 16);
 const FP_TABLE = new Array<Long>(256);
+const LONG_255 = Long.fromString('0xff', true, 16);
 
 for (let i = 0; i < 256; i++) {
     let fp: Long = Long.fromNumber(i);
     for (let j = 0; j < 8; j++) {
-        fp = (fp.shiftRightUnsigned(1)).xor(INIT.and(fp.and(Long.ONE).negate()));
+        fp = fp.shiftRightUnsigned(1).xor(INIT.and(fp.andN(1).negate()));
     }
     FP_TABLE[i] = fp;
 }
@@ -78,6 +79,6 @@ export class RabinFingerprint64 {
     }
 
     private static ofByte(fp: Long, byte: number) : Long {
-        return fp.shiftRightUnsigned(8).xor(FP_TABLE[fp.xor(byte).and(Long.fromString('0xff', true, 16)).toNumber()]);
+        return fp.shiftRightUnsigned(8).xor(FP_TABLE[fp.xorN(byte).and(LONG_255).toNumber()]);
     }
 }

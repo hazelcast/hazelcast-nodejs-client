@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import assert from 'assert';
-import Long from 'long';
+import {Long} from '../core/Long';
 import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';
@@ -127,7 +127,7 @@ export class RepairingTask {
         for (let i = 0; i < this.partitionCount; i++) {
             const added = handler.getMetadataContainer(i).getMissedSequenceCount();
             totalMissCount = totalMissCount.add(added);
-            if (totalMissCount.greaterThanOrEqual(this.maxToleratedMissCount)) {
+            if (totalMissCount.greaterThanOrEqualN(this.maxToleratedMissCount)) {
                 return true;
             }
         }
@@ -138,7 +138,7 @@ export class RepairingTask {
         for (let i = 0; i < this.partitionCount; i++) {
             const container = handler.getMetadataContainer(i);
             const missedCount = container.getMissedSequenceCount();
-            if (missedCount.notEquals(0)) {
+            if (missedCount.notEqualsN(0)) {
                 container.increaseMissedSequenceCount(missedCount.negate());
                 handler.updateLastKnownStaleSequence(container);
             }

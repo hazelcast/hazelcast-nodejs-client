@@ -1,5 +1,5 @@
 import {ClientMessage} from '../../protocol/ClientMessage';
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {ListCNFixedSizeCodec} from './ListCNFixedSizeCodec';
 import {BitsUtil} from '../../util/BitsUtil';
 import {FixSizedTypesCodec} from './FixSizedTypesCodec';

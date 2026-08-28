@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Long from 'long';
+import {Long} from '../core/Long';
 import {DataInput, DataOutput} from '../serialization';
 import {IdentifiedDataSerializable} from '../serialization';
 import * as AggregatorConstants from './AggregatorConstants';

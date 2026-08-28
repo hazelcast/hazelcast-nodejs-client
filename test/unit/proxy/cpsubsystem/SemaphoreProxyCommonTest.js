@@ -18,7 +18,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
-const Long = require('long');
+const {Long} = require('../../../../lib/core/Long');
 const { AssertionError } = require('assert');
 const { SessionlessSemaphoreProxy } = require('../../../../lib/proxy/cpsubsystem/SessionlessSemaphoreProxy');
 const { SessionAwareSemaphoreProxy } = require('../../../../lib/proxy/cpsubsystem/SessionAwareSemaphoreProxy');

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Long from 'long';
+import {Long} from '../core/Long';
 import {Aggregator} from '../aggregation/Aggregator';
 import {SimpleEntryView} from '../core/SimpleEntryView';
 import {MapListener} from './MapListener';

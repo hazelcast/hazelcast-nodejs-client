@@ -20,7 +20,7 @@ import {PortableSerializer} from './PortableSerializer';
 import {DataInput} from '../Data';
 import {ClassDefinition, FieldDefinition} from './ClassDefinition';
 import {Portable, FieldType} from '../Portable';
-import Long from 'long';
+import {Long} from '../../core/Long';
 import {
     BigDecimal,
     LocalDate,

@@ -62,7 +62,7 @@ let HIRING_STATUS;
 if (TestUtil.isClientVersionAtLeast('5.1.0')) {
     const { SerializationConfigImpl } = require('../../../../../../lib');
     const { SerializationServiceV1 } = require('../../../../../../lib/serialization/SerializationService');
-    const Long = require('long');
+    const {Long} = require('../../../../../../lib/core/Long');
     const {
         BigDecimal, LocalTime, LocalDate, LocalDateTime, OffsetDateTime, FieldKind, GenericRecords
     } = require('../../../../../../lib');

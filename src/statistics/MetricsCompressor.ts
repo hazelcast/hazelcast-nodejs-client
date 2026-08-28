@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import * as zlib from 'zlib';
-import Long from 'long';
+import {Long} from '../core/Long';
 import {BitsUtil} from '../util/BitsUtil';
 
 /**
@@ -319,9 +319,10 @@ export class OutputBuffer {
     writeLong(value: number): void {
         const long = Long.fromNumber(value);
         this.ensureAvailable(BitsUtil.LONG_SIZE_IN_BYTES);
-        BitsUtil.writeInt32(this.buffer, this.pos, long.high, true);
+        const [low, high] = long.getLowHigh();
+        BitsUtil.writeInt32(this.buffer, this.pos, high, true);
         this.pos += BitsUtil.INT_SIZE_IN_BYTES;
-        BitsUtil.writeInt32(this.buffer, this.pos, long.low, true);
+        BitsUtil.writeInt32(this.buffer, this.pos, low, true);
         this.pos += BitsUtil.INT_SIZE_IN_BYTES;
     }
 

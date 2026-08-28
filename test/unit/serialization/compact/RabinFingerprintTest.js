@@ -16,7 +16,7 @@
 'use strict';
 
 const chai = require('chai');
-const Long = require('long');
+const {Long} = require('../../../../lib/core/Long');
 const { RabinFingerprint64, INIT } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const { SchemaWriter } = require('../../../../lib/serialization/compact/SchemaWriter');
 const {Schema} = require('../../../../lib/serialization/compact/Schema');
@@ -39,7 +39,7 @@ describe('RabinFingerprintTest', function () {
         ['127', -128, '-7333697815154264656']
     ].forEach((params) => {
         it(`i8 test ${params}`, function () {
-            RabinFingerprint64.ofByte(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
+            RabinFingerprint64.ofByte(Long.fromString(params[0]), params[1]).equals(Long.fromString(params[2])).should.be.true;
         });
     });
 
@@ -56,7 +56,7 @@ describe('RabinFingerprintTest', function () {
         ['2147483647', -2147483648, '-7679311364898232185'],
     ].forEach(params => {
         it(`i32 test ${params}`, function () {
-            RabinFingerprint64.ofInt(Long.fromString(params[0]), params[1]).eq(Long.fromString(params[2])).should.be.true;
+            RabinFingerprint64.ofInt(Long.fromString(params[0]), params[1]).equals(Long.fromString(params[2])).should.be.true;
         });
     });
 
@@ -74,11 +74,11 @@ describe('RabinFingerprintTest', function () {
     ].forEach(params => {
         it(`string test ${params}`, function () {
             if (params[0] === INIT) {
-                RabinFingerprint64.ofString(params[0], params[1]).eq(Long.fromString(params[2])).should.be.true;
+                RabinFingerprint64.ofString(params[0], params[1]).equals(Long.fromString(params[2])).should.be.true;
             } else {
                 RabinFingerprint64.ofString(
                     Long.fromString(params[0]), params[1]
-                ).eq(Long.fromString(params[2])).should.be.true;
+                ).equals(Long.fromString(params[2])).should.be.true;
             }
         });
     });
@@ -90,7 +90,7 @@ describe('RabinFingerprintTest', function () {
         writer.writeInt8('age', 0);
         writer.writeArrayOfTimestamp('times', []);
         const schema = writer.build();
-        schema.schemaId.eq(Long.fromString('3662264393229655598')).should.be.true;
+        schema.schemaId.equals(Long.fromString('3662264393229655598')).should.be.true;
     });
 
     it('should compute the same fingerprint for equivalent schemas regardless of the field order', function () {
@@ -105,6 +105,6 @@ describe('RabinFingerprintTest', function () {
             new FieldDescriptor('field-1', FieldKind.ARRAY_OF_DATE),
         ]);
         const fp2 = RabinFingerprint64.ofSchema(schema2);
-        fp1.eq(fp2).should.be.true;
+        fp1.equals(fp2).should.be.true;
     });
 });
