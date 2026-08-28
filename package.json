@@ -41,7 +41,7 @@
         "yargs": "~17.5.1"
     },
     "engines": {
-        "node": ">=20.22.0"
+        "node": ">=22.23"
     },
     "scripts": {
         "clean": "rimraf lib *.jar *.log *.xml coverage",
