@@ -527,10 +527,6 @@ export class ObjectDataInput implements DataInput {
         return result;
     }
 
-    readUTFArray(pos?: number): string[] | null {
-        return this.readStringArray(pos);
-    }
-
     readStringArray(pos?: number): string[] | null {
         return this.readArray<string>(this.readString, pos);
     }

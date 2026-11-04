@@ -171,10 +171,6 @@ export class MorphingPortableReader extends DefaultPortableReader {
         return this.validateCompatibleAndRead(fieldName, FieldType.STRING_ARRAY, super.readStringArray);
     }
 
-    readUTFArray(fieldName: string): string[] | null {
-        return this.readStringArray(fieldName);
-    }
-
     readShortArray(fieldName: string): number[] | null {
         return this.validateCompatibleAndRead(fieldName, FieldType.SHORT_ARRAY, super.readShortArray);
     }
@@ -221,10 +217,6 @@ export class MorphingPortableReader extends DefaultPortableReader {
 
     readString(fieldName: string): string | null {
         return this.validateCompatibleAndRead(fieldName, FieldType.STRING, super.readString);
-    }
-
-    readUTF(fieldName: string): string | null {
-        return this.readString(fieldName);
     }
 
     readDecimal(fieldName: string): BigDecimal | null {

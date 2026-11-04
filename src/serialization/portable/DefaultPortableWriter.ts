@@ -68,10 +68,6 @@ export class DefaultPortableWriter implements PortableWriter {
         this.output.writeLong(long);
     }
 
-    writeUTF(fieldName: string, str: string | null): void {
-        this.writeString(fieldName, str);
-    }
-
     writeString(fieldName: string, str: string | null): void {
         this.setPosition(fieldName, FieldType.STRING);
         this.output.writeString(str);
@@ -192,10 +188,6 @@ export class DefaultPortableWriter implements PortableWriter {
     writeShortArray(fieldName: string, shorts: number[] | null): void {
         this.setPosition(fieldName, FieldType.SHORT_ARRAY);
         this.output.writeShortArray(shorts);
-    }
-
-    writeUTFArray(fieldName: string, val: string[] | null): void {
-        this.writeStringArray(fieldName, val);
     }
 
     writeStringArray(fieldName: string, val: string[] | null): void {

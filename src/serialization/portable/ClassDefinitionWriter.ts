@@ -52,10 +52,6 @@ export class ClassDefinitionWriter implements PortableWriter {
         this.builder.addStringField(fieldName);
     }
 
-    writeUTF(fieldName: string, str: string): void {
-        this.writeString(fieldName, str);
-    }
-
     writeBoolean(fieldName: string, _value: boolean): void {
         this.builder.addBooleanField(fieldName);
     }
@@ -154,10 +150,6 @@ export class ClassDefinitionWriter implements PortableWriter {
 
     writeStringArray(fieldName: string, _value: string[]): void {
         this.builder.addStringArrayField(fieldName);
-    }
-
-    writeUTFArray(fieldName: string, val: string[]): void {
-        this.writeStringArray(fieldName, val);
     }
 
     writePortableArray(fieldName: string, portables: Portable[]): void {
