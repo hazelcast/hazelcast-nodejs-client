@@ -101,5 +101,4 @@ describe('LoadBalancerTest', function () {
             expect(mockMembers[(firstMember.uuid + i) % mockMembers.length]).to.equal(member);
         }
     });
-
 });
