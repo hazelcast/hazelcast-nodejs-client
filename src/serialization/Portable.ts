@@ -36,7 +36,6 @@ export enum FieldType {
     LONG = 6,
     FLOAT = 7,
     DOUBLE = 8,
-    UTF = 9, // Defined for backwards compatibility.
     STRING = 9,
     PORTABLE_ARRAY = 10,
     BYTE_ARRAY = 11,
@@ -47,7 +46,6 @@ export enum FieldType {
     LONG_ARRAY = 16,
     FLOAT_ARRAY = 17,
     DOUBLE_ARRAY = 18,
-    UTF_ARRAY = 19, // Defined for backwards compatibility.
     STRING_ARRAY = 19,
     DECIMAL = 20,
     DECIMAL_ARRAY = 21,
@@ -82,15 +80,6 @@ export interface PortableWriter {
      * @param value     long value to be written
      */
     writeLong(fieldName: string, value: Long): void;
-
-    /**
-     * Writes a string as UTF-8 encoded bytes.
-     *
-     * @param fieldName name of the field
-     * @param value     UTF string value to be written
-     * @deprecated since version 4.2 for the sake of better naming. Please use {@link writeString} instead.
-     */
-    writeUTF(fieldName: string, value: string | null): void;
 
     /**
      * Writes a string as UTF-8 encoded bytes.
@@ -289,15 +278,6 @@ export interface PortableWriter {
      *
      * @param fieldName name of the field
      * @param values    string array to be written
-     * @deprecated  since version 4.2. for the sake of better naming. Please use {@link writeStringArray} instead.
-     */
-    writeUTFArray(fieldName: string, values: string[] | null): void;
-
-    /**
-     * Writes an array of strings. Each string is written as UTF-8 encoded bytes.
-     *
-     * @param fieldName name of the field
-     * @param values    string array to be written
      */
     writeStringArray(fieldName: string, values: string[] | null): void;
 
@@ -397,15 +377,6 @@ export interface PortableReader {
      * @return the long value read
      */
     readLong(fieldName: string): Long | null;
-
-    /**
-     * Reads a string from UTF-8 encoded bytes.
-     *
-     * @param fieldName name of the field
-     * @return the UTF string value read
-     * @deprecated since version 4.2 for the sake of better naming. Please use {@link readString} instead.
-     */
-    readUTF(fieldName: string): string | null;
 
     /**
      * Reads a string from UTF-8 encoded bytes.
@@ -575,15 +546,6 @@ export interface PortableReader {
      * @return the short array value read
      */
     readShortArray(fieldName: string): number[] | null;
-
-    /**
-     * Reads an array strings. Strings are read using UTF-8 encoding.
-     *
-     * @param fieldName name of the field
-     * @return the string array value read
-     * @deprecated since version 4.2 for the sake of better naming. Please use {@link readStringArray} instead
-     */
-    readUTFArray(fieldName: string): string[] | null;
 
     /**
      * Reads an array of strings. Strings are read using UTF-8 encoding.

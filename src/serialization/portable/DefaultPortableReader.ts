@@ -76,10 +76,6 @@ export class DefaultPortableReader implements PortableReader {
         return this.input.readLong(pos);
     }
 
-    readUTF(fieldName: string): string | null {
-        return this.readString(fieldName);
-    }
-
     readString(fieldName: string): string | null {
         const pos = this.positionByField(fieldName, FieldType.STRING);
         return this.input.readString(pos);
@@ -191,10 +187,6 @@ export class DefaultPortableReader implements PortableReader {
     readShortArray(fieldName: string): number[] | null {
         const pos = this.positionByField(fieldName, FieldType.SHORT_ARRAY);
         return this.input.readShortArray(pos);
-    }
-
-    readUTFArray(fieldName: string): string[] | null {
-        return this.readStringArray(fieldName);
     }
 
     readStringArray(fieldName: string): string[] | null {

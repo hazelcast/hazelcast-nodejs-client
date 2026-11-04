@@ -197,10 +197,6 @@ export class ObjectDataOutput implements DataOutput {
         this.writeArray(this.writeShort, shorts);
     }
 
-    writeUTF(val: string | null): void {
-        this.writeString(val);
-    }
-
     writeString(val: string | null): void {
         if (val === null) {
             this.writeInt(BitsUtil.NULL_ARRAY_LENGTH)
@@ -211,10 +207,6 @@ export class ObjectDataOutput implements DataOutput {
         this.ensureAvailable(len);
         this.buffer.write(val, this.pos, this.pos + len, 'utf8');
         this.pos += len;
-    }
-
-    writeUTFArray(val: string[] | null): void {
-        this.writeStringArray(val);
     }
 
     writeStringArray(val: string[] | null): void {
@@ -522,10 +514,6 @@ export class ObjectDataInput implements DataInput {
         return this.readChar(pos).charCodeAt(0);
     }
 
-    readUTF(pos?: number): string | null {
-        return this.readString(pos);
-    }
-
     readString(pos?: number): string | null {
         const len = this.readInt(pos);
         if (len === BitsUtil.NULL_ARRAY_LENGTH) {
@@ -537,10 +525,6 @@ export class ObjectDataInput implements DataInput {
             this.pos += len;
         }
         return result;
-    }
-
-    readUTFArray(pos?: number): string[] | null {
-        return this.readStringArray(pos);
     }
 
     readStringArray(pos?: number): string[] | null {
