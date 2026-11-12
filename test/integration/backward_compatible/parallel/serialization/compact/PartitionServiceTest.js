@@ -20,7 +20,7 @@ chai.should();
 const RC = require('../../../../RC');
 const TestUtil = require('../../../../../TestUtil');
 const CompactUtil = require('./CompactUtil');
-const Long = require('long');
+const { Long } = require('../../../../../../lib/long');
 const sinon = require('sinon');
 const { HazelcastSerializationError } = require('../../../../../../lib');
 const sandbox = sinon.createSandbox();

@@ -17,7 +17,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const Long = require('long');
+const { Long } = require('../../../lib/long');
 const { UUID } = require('../../../lib/core/UUID');
 
 describe('UuidTest', function () {

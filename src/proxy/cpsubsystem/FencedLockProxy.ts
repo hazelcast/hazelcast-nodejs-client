@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import assert from 'assert';
-import Long from 'long';
+import Long from '../../long';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {FencedLock} from '../FencedLock';
 import {CPProxyManager} from './CPProxyManager';

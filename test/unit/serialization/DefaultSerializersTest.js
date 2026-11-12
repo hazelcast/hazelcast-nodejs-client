@@ -17,7 +17,7 @@
 
 const { expect, assert, should } = require('chai');
 should();
-const Long = require('long');
+const { Long } = require('../../../lib/long');
 const { SerializationServiceV1 } = require('../../../lib/serialization/SerializationService');
 const { SerializationConfigImpl } = require('../../../lib/config/SerializationConfig');
 const {

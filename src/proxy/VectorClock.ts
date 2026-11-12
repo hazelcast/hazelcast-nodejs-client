@@ -15,6 +15,8 @@
  */
 /** @ignore *//** */
 
+import Long from '../long';
+
 /** @internal */
 export class VectorClock {
 

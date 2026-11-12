@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const Long = require('long');
+const { Long } = require('../../../lib/long');
 const { SerializationConfigImpl } = require('../../../lib/config/SerializationConfig');
 const {
     HazelcastSerializationError,

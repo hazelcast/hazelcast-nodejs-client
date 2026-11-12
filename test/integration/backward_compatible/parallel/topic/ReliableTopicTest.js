@@ -17,7 +17,7 @@
 
 const { expect } = require('chai');
 const fs = require('fs');
-const Long = require('long');
+const { Long } = require('../../../../../lib/long');
 
 const RC = require('../../../RC');
 const { TopicOverloadPolicy } = require('../../../../../lib');

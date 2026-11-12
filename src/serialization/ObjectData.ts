@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import assert from 'assert';
-import Long from 'long';
+import Long from '../long';
 import {BitsUtil} from '../util/BitsUtil';
 import {Data, DataInput, DataOutput, PositionalDataOutput} from './Data';
 import {HeapData, HEAP_DATA_OVERHEAD} from './HeapData';

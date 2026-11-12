@@ -28,7 +28,7 @@ import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} 
 import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
 import {DataCodec} from './builtin/DataCodec';
-import Long from 'long';
+import Long from '../long';
 
 // hex: 0x170600
 const REQUEST_MESSAGE_TYPE = 1508864;

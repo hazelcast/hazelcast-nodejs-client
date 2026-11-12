@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const Long = require('long');
+const { Long } = require('../../../../../lib/long');
 const { expect } = require('chai');
 const RC = require('../../../RC');
 const { Lang } = require('../../../remote_controller/remote_controller_types');

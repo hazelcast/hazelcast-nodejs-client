@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../../long';
 import {Data} from '../../serialization';
 import {SerializationService, SerializationServiceV1} from '../../serialization/SerializationService';
 import {ReadResultSet} from '../../core';

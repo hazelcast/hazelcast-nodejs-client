@@ -28,7 +28,7 @@ const { UuidUtil } = require('../../../lib/util/UuidUtil');
 const { assertTrueEventually, getRejectionReasonOrThrow } = require('../../TestUtil');
 const { IllegalArgumentError, HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 
-const long = require('long');
+const long = require('../../../lib/long');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const chai = require('chai');

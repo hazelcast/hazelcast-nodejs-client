@@ -16,7 +16,7 @@
 'use strict';
 
 const chai = require('chai');
-const Long = require('long');
+const { Long } = require('../../../../lib/long');
 const should = chai.should();
 const { Fields, GenericRecords, CompactGenericRecordImpl, HazelcastSerializationError } = require('../../../../lib');
 const {

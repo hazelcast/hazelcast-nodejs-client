@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Long from 'long';
+import Long from '../long';
 
 import {SqlRow, SqlRowImpl} from './SqlRow';
 import {SqlRowMetadata, SqlRowMetadataImpl} from './SqlRowMetadata';

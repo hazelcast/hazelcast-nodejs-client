@@ -19,7 +19,7 @@ const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
 const fs = require('fs');
-const Long = require('long');
+const { Long } = require('../../../../../lib/long');
 const { AssertionError } = require('assert');
 
 const RC = require('../../../RC');

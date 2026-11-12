@@ -30,7 +30,7 @@ import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 import {StringCodec} from './builtin/StringCodec';
 import {EntryListCodec} from './builtin/EntryListCodec';
 import {EntryListIntegerLongCodec} from './builtin/EntryListIntegerLongCodec';
-import Long from 'long';
+import Long from '../long';
 import {EntryListIntegerUUIDCodec} from './builtin/EntryListIntegerUUIDCodec';
 
 // hex: 0x013D00

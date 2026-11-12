@@ -39,7 +39,7 @@ const {
     NodeDTO,
     DefaultSerializerOverridingSerializer,
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
-const Long = require('long');
+const { Long } = require('../../../../lib/long');
 const { CompactGenericRecordImpl } = require('../../../../lib/serialization/generic_record/CompactGenericRecord');
 const { GenericRecords, HazelcastSerializationError, IllegalArgumentError } = require('../../../../lib');
 const { Fields, FieldKind } = require('../../../../lib/serialization/generic_record');

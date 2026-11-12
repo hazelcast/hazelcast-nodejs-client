@@ -18,7 +18,7 @@
 const { should } = require('chai');
 should();
 const RC = require('../../../RC');
-const long = require('long');
+const long = require('../../../../../lib/long');
 const {
     Aggregators,
     Predicates

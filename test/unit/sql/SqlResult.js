@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const long = require('long');
+const long = require('../../../lib/long');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const chai = require('chai');

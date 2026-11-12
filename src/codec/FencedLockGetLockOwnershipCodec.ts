@@ -28,7 +28,7 @@ import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} 
 import {RaftGroupId} from '../proxy/cpsubsystem/RaftGroupId';
 import {RaftGroupIdCodec} from './custom/RaftGroupIdCodec';
 import {StringCodec} from './builtin/StringCodec';
-import Long from 'long';
+import Long from '../long';
 
 // hex: 0x070400
 const REQUEST_MESSAGE_TYPE = 459776;

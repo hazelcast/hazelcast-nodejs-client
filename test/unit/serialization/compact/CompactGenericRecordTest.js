@@ -37,7 +37,7 @@ const {
     SampleObject2Serializer
 } = require('../../../integration/backward_compatible/parallel/serialization/compact/CompactUtil');
 const { Fields, FieldKind } = require('../../../../lib/serialization/generic_record');
-const Long = require('long');
+const { Long } = require('../../../../lib/long');
 const TestUtil = require('../../../TestUtil');
 const { HazelcastSerializationError } = require('../../../../lib');
 

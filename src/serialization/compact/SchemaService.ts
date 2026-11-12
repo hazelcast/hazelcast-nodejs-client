@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../../long';
 import {Schema} from './Schema';
 import {ILogger} from '../../logging';
 import {Invocation, InvocationService} from '../../invocation/InvocationService';

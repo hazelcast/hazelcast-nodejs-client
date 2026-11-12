@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../long';
 import * as Util from '../util/Util';
 import {AGGREGATOR_FACTORY_ID} from '../aggregation/AggregatorConstants';
 import {aggregatorFactory} from '../aggregation';

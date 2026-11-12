@@ -29,7 +29,7 @@ import {StringCodec} from './builtin/StringCodec';
 import {Data} from '../serialization/Data';
 import {ListMultiFrameCodec} from './builtin/ListMultiFrameCodec';
 import {DataCodec} from './builtin/DataCodec';
-import Long from 'long';
+import Long from '../long';
 
 // hex: 0x170800
 const REQUEST_MESSAGE_TYPE = 1509376;

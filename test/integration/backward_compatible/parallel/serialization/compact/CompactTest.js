@@ -20,7 +20,7 @@ const should = chai.should();
 
 const RC = require('../../../../RC');
 const TestUtil = require('../../../../../TestUtil');
-const Long = require('long');
+const { Long } = require('../../../../../../lib/long');
 const { A, ASerializer } = require('./Class');
 const B = require('./SameNamedClass').A;
 const BSerializer = require('./SameNamedClass').ASerializer;

@@ -16,7 +16,7 @@
 'use strict';
 
 const chai = require('chai');
-const Long = require('long');
+const { Long } = require('../../../../lib/long');
 const { RabinFingerprint64, INIT } = require('../../../../lib/serialization/compact/RabinFingerprint');
 const { SchemaWriter } = require('../../../../lib/serialization/compact/SchemaWriter');
 const {Schema} = require('../../../../lib/serialization/compact/Schema');

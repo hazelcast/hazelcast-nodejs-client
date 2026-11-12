@@ -20,7 +20,7 @@ chai.should();
 
 const RC = require('../../../../RC');
 const TestUtil = require('../../../../../TestUtil');
-const Long = require('long');
+const { Long } = require('../../../../../../lib/long');
 const { Lang } = require('../../../../remote_controller/remote_controller_types');
 const CompactUtil = require('./CompactUtil');
 

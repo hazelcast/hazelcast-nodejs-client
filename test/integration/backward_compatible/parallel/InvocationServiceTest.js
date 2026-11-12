@@ -24,7 +24,7 @@ const { Invocation } = require('../../../../lib/invocation/InvocationService');
 const { expect } = require('chai');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
-const Long = require('long');
+const { Long } = require('../../../../lib/long');
 
 describe('ClientInvocationServiceImplTest', function () {
     let cluster;
