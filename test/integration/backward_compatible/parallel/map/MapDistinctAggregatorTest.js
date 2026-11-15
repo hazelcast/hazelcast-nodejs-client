@@ -18,7 +18,7 @@
 const { should } = require('chai');
 should();
 const RC = require('../../../RC');
-const long = require('../../../../../lib/long');
+const { Long } = require('../../../../../lib/long');
 const {
     Aggregators,
     Predicates
@@ -30,7 +30,7 @@ describe('MapDistinctAggregatorTest', function () {
     let client;
     let map;
 
-    const mixedMapValues = ['0', '1', 1.1, long.fromNumber(1), {}, { a: 1 }, true, true, false, '0'];
+    const mixedMapValues = ['0', '1', 1.1, Long.fromNumber(1), {}, { a: 1 }, true, true, false, '0'];
     const fixedMapValues = ['0', '1', '1', '2', 'asd', 'asd', '1231231asd'];
     const testFactory = new TestUtil.TestFactory();
 

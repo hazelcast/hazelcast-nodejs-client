@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const long = require('../../../lib/long');
+const { Long } = require('../../../lib/long');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const chai = require('chai');
@@ -56,7 +56,7 @@ function simulateExecutionResponse(
     sqlResult,
     rowCount = 0,
     rowMetadata = defaultRowMetadata,
-    updateCount = long.fromNumber(-1),
+    updateCount = Long.fromNumber(-1),
     isLast = true
 ) {
     const data = [];
@@ -121,7 +121,7 @@ describe('SqlResultTest', function () {
                 rowCounter.should.be.eq(rowCount);
                 sqlResult.rowMetadata.should.be.eq(defaultRowMetadata);
                 (await sqlResult.isRowSet()).should.be.true;
-                sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
+                sqlResult.updateCount.eq(Long.fromNumber(-1)).should.be.true;
             }
         });
 
@@ -145,7 +145,7 @@ describe('SqlResultTest', function () {
             rowCounter.should.be.eq(rowCount);
             sqlResult.rowMetadata.should.be.eq(defaultRowMetadata);
             (await sqlResult.isRowSet()).should.be.true;
-            sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
+            sqlResult.updateCount.eq(Long.fromNumber(-1)).should.be.true;
         });
 
         it('should be iterable via next()', async function () {
@@ -168,7 +168,7 @@ describe('SqlResultTest', function () {
             counter.should.be.eq(rowCount);
             sqlResult.rowMetadata.should.be.eq(defaultRowMetadata);
             (await sqlResult.isRowSet()).should.be.true;
-            sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
+            sqlResult.updateCount.eq(Long.fromNumber(-1)).should.be.true;
         });
 
         it('should reject for await iteration on execute error', async function () {
@@ -261,7 +261,7 @@ describe('SqlResultTest', function () {
                     false // last is false, so the result is not closed yet
                 );
 
-                sqlResult.onExecuteResponse(defaultRowMetadata, rowPage, long.fromNumber(-1));
+                sqlResult.onExecuteResponse(defaultRowMetadata, rowPage, Long.fromNumber(-1));
                 await sqlResult.close();
                 onExecuteErrorFake.called.should.be.false;
                 done();
@@ -324,15 +324,15 @@ describe('SqlResultTest', function () {
             const sqlResult2 = new SqlResultImpl({}, {}, {}, {}, 4096);
 
             simulateExecutionResponse(sqlResult1, 2, rowMetadata);
-            simulateExecutionResponse(sqlResult2, 2, null, long.fromNumber(1));
+            simulateExecutionResponse(sqlResult2, 2, null, Long.fromNumber(1));
 
             sqlResult1.rowMetadata.should.be.eq(rowMetadata);
             (await sqlResult1.isRowSet()).should.be.true;
-            sqlResult1.updateCount.eq(long.fromNumber(-1)).should.be.true;
+            sqlResult1.updateCount.eq(Long.fromNumber(-1)).should.be.true;
 
             should.equal(sqlResult2.rowMetadata, null);
             (await sqlResult2.isRowSet()).should.be.false;
-            sqlResult2.updateCount.eq(long.fromNumber(1)).should.be.true;
+            sqlResult2.updateCount.eq(Long.fromNumber(1)).should.be.true;
         });
     });
     describe('fetch', function () {
@@ -573,10 +573,10 @@ describe('SqlResultTest', function () {
     describe('onExecuteError', function () {
         it('should reject execute promise and set update count to long(-1)', async function () {
             const sqlResult = new SqlResultImpl({}, {}, {}, {}, 4096);
-            sqlResult.updateCount = long.fromNumber(1); // change update count to see if it's changed
+            sqlResult.updateCount = Long.fromNumber(1); // change update count to see if it's changed
 
             simulateExecuteError(sqlResult);
-            sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
+            sqlResult.updateCount.eq(Long.fromNumber(-1)).should.be.true;
         });
     });
     describe('onExecuteResponse', function () {
@@ -587,11 +587,11 @@ describe('SqlResultTest', function () {
 
         it('should close the result and set updateCount if update count result is received ', async function () {
             // pass null to make sure row page is not used
-            simulateExecutionResponse(sqlResult, 0, null, long.fromNumber(5));
+            simulateExecutionResponse(sqlResult, 0, null, Long.fromNumber(5));
 
             sqlResult.closed.should.be.true;
             should.equal(sqlResult.currentPage, null);
-            sqlResult.updateCount.eq(long.fromNumber(5)).should.be.true;
+            sqlResult.updateCount.eq(Long.fromNumber(5)).should.be.true;
         });
 
         it('should call onNextpage and set row metadata if rowset result is received', async function () {
@@ -603,7 +603,7 @@ describe('SqlResultTest', function () {
 
             sqlResult.rowMetadata.should.be.eq(rowMetadata);
             fake.calledOnce.should.be.true;
-            sqlResult.updateCount.eq(long.fromNumber(-1)).should.be.true;
+            sqlResult.updateCount.eq(Long.fromNumber(-1)).should.be.true;
         });
     });
 });

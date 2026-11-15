@@ -17,7 +17,7 @@
 
 const chai = require('chai');
 chai.should();
-const long = require('long');
+const { Long } = require('../../../../../lib/long');
 
 const RC = require('../../../RC');
 const TestUtil = require('../../../../TestUtil');
@@ -110,6 +110,6 @@ describe('SqlResultTest', function () {
         isRowSet.should.be.true;
 
         const updateCount = await TestUtil.getUpdateCount(result);
-        updateCount.eq(long.fromNumber(-1)).should.be.true;
+        updateCount.eq(Long.fromNumber(-1)).should.be.true;
     });
 });

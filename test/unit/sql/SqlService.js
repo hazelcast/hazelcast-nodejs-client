@@ -28,7 +28,7 @@ const { UuidUtil } = require('../../../lib/util/UuidUtil');
 const { assertTrueEventually, getRejectionReasonOrThrow } = require('../../TestUtil');
 const { IllegalArgumentError, HazelcastSqlException } = require('../../../lib/core/HazelcastError');
 
-const long = require('../../../lib/long');
+const { Long } = require('../../../lib/long');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const chai = require('chai');
@@ -130,7 +130,7 @@ describe('SqlServiceTest', function () {
             fakeEncodeRequest.lastCall.calledWithExactly(
                 's',
                 [1, 2, 3],
-                long.ZERO,
+                Long.ZERO,
                 1,
                 'sd',
                 SqlExpectedResultType.ANY,
@@ -276,7 +276,7 @@ describe('SqlServiceTest', function () {
              Depending on the type of these values, they are passed as arguments. If parameter type is not the expected
              type, we expect the method to throw IllegalArgumentError
              */
-            for (const v of ['ss', 1, null, undefined, {}, [], Symbol(), BigInt(1), long.ZERO, true, 'ANY']) {
+            for (const v of ['ss', 1, null, undefined, {}, [], Symbol(), BigInt(1), Long.ZERO, true, 'ANY']) {
                 if (typeof v !== 'string') {
                     // invalid sql string
                     await shouldThrowIllegalArgumentError(async () => await sqlService.execute(v, [], {}));
