@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../../long';
 import {RaftGroupId} from './RaftGroupId';
 import {
     IllegalStateError,

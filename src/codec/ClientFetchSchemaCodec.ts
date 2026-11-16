@@ -25,7 +25,7 @@
 import {BitsUtil} from '../util/BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, PARTITION_ID_OFFSET} from '../protocol/ClientMessage';
-import Long from 'long';
+import Long from '../long';
 import {Schema} from '../serialization/compact/Schema';
 import {SchemaCodec} from './custom/SchemaCodec';
 import {CodecUtil} from './builtin/CodecUtil';

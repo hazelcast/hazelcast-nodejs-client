@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../long';
 import {EvictionPolicy} from '../config';
 import {InMemoryFormat} from '../config';
 import {NearCacheConfigImpl} from '../config';

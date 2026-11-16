@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../../long';
 import {BitsUtil} from '../../util/BitsUtil';
 import {IOUtil} from '../../util/IOUtil';
 import {

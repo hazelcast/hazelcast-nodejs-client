@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import {EventEmitter} from 'events';
-import Long from 'long';
+import Long from '../../long';
 import {
     deferredPromise,
     DeferredPromise

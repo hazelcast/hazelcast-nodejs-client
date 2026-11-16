@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../long';
 import {PNCounterAddCodec} from '../codec/PNCounterAddCodec';
 import {PNCounterGetCodec} from '../codec/PNCounterGetCodec';
 import {PNCounterGetConfiguredReplicaCountCodec} from '../codec/PNCounterGetConfiguredReplicaCountCodec';

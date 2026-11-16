@@ -31,7 +31,7 @@ import {SchemaWriter} from '../compact/SchemaWriter';
 import {FieldDescriptor} from './FieldDescriptor';
 import {CompactExceptions} from '../compact/CompactUtil';
 import {FieldValidator} from './FieldValidator';
-import Long from 'long';
+import Long from '../../long';
 
 /**
  * Represents a deserialized compact generic record. This class is what user gets.

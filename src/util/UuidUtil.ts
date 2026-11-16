@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../long';
 import {UUID} from '../core/UUID';
 
 const INT_BOUND = 0xFFFFFFFF;

@@ -24,7 +24,7 @@ import {
     LocalTime,
     OffsetDateTime,
 } from '../../core';
-import Long from 'long';
+import Long from '../../long';
 import {CompactStreamSerializer} from './CompactStreamSerializer';
 import {Schema} from './Schema';
 import {ObjectDataInput} from '../ObjectData';

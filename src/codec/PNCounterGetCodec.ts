@@ -28,7 +28,7 @@ import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} 
 import {UUID} from '../core/UUID';
 import {StringCodec} from './builtin/StringCodec';
 import {EntryListUUIDLongCodec} from './builtin/EntryListUUIDLongCodec';
-import Long from 'long';
+import Long from '../long';
 
 // hex: 0x1D0100
 const REQUEST_MESSAGE_TYPE = 1900800;

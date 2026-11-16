@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../long';
 import {UUID} from '../core';
 import {Data} from '../serialization';
 

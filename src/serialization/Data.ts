@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Long from 'long';
+import Long from '../long';
 
 /** @internal */
 export interface Data {

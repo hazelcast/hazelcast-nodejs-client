@@ -26,7 +26,7 @@ import {BitsUtil} from '../util/BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../protocol/ClientMessage';
 import {StringCodec} from './builtin/StringCodec';
-import Long from 'long';
+import Long from '../long';
 
 // hex: 0x170500
 const REQUEST_MESSAGE_TYPE = 1508608;

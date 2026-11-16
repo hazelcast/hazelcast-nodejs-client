@@ -23,7 +23,7 @@ const CompactUtil = require('../serialization/compact/CompactUtil');
 const { InvocationService } = require('../../../../../lib/invocation/InvocationService');
 
 const chai = require('chai');
-const Long = require('long');
+const { Long } = require('../../../../../lib/long');
 const fs = require('fs');
 const path = require('path');
 const sinon = require('sinon');

@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../long';
 import {MultiMapForceUnlockCodec} from '../codec/MultiMapForceUnlockCodec';
 import {MultiMapIsLockedCodec} from '../codec/MultiMapIsLockedCodec';
 import {MultiMapLockCodec} from '../codec/MultiMapLockCodec';

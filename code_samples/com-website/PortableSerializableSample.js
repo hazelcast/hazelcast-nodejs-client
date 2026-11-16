@@ -15,8 +15,7 @@
  */
 'use strict';
 
-const { Client } = require('hazelcast-client');
-const Long = require('long');
+const { Client, Long } = require('hazelcast-client');
 
 class Customer {
     constructor(name, id, lastOrder) {

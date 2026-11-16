@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import * as zlib from 'zlib';
-import Long from 'long';
+import Long from '../long';
 import {BitsUtil} from '../util/BitsUtil';
 
 /**

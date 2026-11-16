@@ -15,7 +15,7 @@
  */
 /** @ignore *//** */
 
-import Long from 'long';
+import Long from '../../long';
 import {CPSessionAwareProxy} from './CPSessionAwareProxy';
 import {ISemaphore} from '../ISemaphore';
 import {CPProxyManager} from './CPProxyManager';

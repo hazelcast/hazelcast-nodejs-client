@@ -16,7 +16,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const Long = require('long');
+const { Long } = require('../../../../../lib/long');
 const RC = require('../../../RC');
 const { Aggregators, Predicates } = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');

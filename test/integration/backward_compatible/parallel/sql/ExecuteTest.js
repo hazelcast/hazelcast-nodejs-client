@@ -17,7 +17,7 @@
 
 const chai = require('chai');
 const sinon = require('sinon');
-const long = require('long');
+const { Long }= require('../../../../../lib/long');
 const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 chai.should();
@@ -522,7 +522,7 @@ describe('SqlExecuteTest', function () {
 
             for (const result of [result1, result2]) {
                 (await result.isRowSet()).should.be.true;
-                (await TestUtil.getUpdateCount(result)).eq(long.fromNumber(-1)).should.be.true;
+                (await TestUtil.getUpdateCount(result)).eq(Long.fromNumber(-1)).should.be.true;
             }
         });
         it('should return rows when expected result type is any and select is used', async function () {
@@ -542,7 +542,7 @@ describe('SqlExecuteTest', function () {
             });
             for (const result of [result1, result2]) {
                 (await result.isRowSet()).should.be.true;
-                (await TestUtil.getUpdateCount(result)).eq(long.fromNumber(-1)).should.be.true;
+                (await TestUtil.getUpdateCount(result)).eq(Long.fromNumber(-1)).should.be.true;
             }
         });
         it('should reject with error, if select is used and update count is expected', async function () {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Long from 'long';
+import Long from '../../long';
 import {BitsUtil} from '../../util/BitsUtil';
 import {UUID} from '../../core';
 import {

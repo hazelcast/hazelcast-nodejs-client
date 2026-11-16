@@ -16,7 +16,7 @@
 /** @ignore *//** */
 
 import assert from 'assert';
-import Long from 'long';
+import Long from '../long';
 import {MetadataFetcher} from './MetadataFetcher';
 import {NearCache} from './NearCache';
 import {RepairingHandler} from './RepairingHandler';

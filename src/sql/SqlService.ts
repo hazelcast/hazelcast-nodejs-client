@@ -21,7 +21,7 @@ import {SqlErrorCode} from './SqlErrorCode';
 import {SqlQueryId} from './SqlQueryId';
 import {SerializationService} from '../serialization/SerializationService';
 import {SqlExecuteCodec, SqlExecuteResponseParams} from '../codec/SqlExecuteCodec';
-import Long from 'long';
+import Long from '../long';
 import {InvocationService} from '../invocation/InvocationService';
 import {ClientMessage} from '../protocol/ClientMessage';
 import {Connection} from '../network/Connection';

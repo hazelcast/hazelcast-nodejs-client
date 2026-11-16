@@ -26,7 +26,7 @@ import {BitsUtil} from '../util/BitsUtil';
 import {FixSizedTypesCodec} from './builtin/FixSizedTypesCodec';
 import {ClientMessage, Frame, RESPONSE_BACKUP_ACKS_OFFSET, PARTITION_ID_OFFSET} from '../protocol/ClientMessage';
 import {UUID} from '../core/UUID';
-import Long from 'long';
+import Long from '../long';
 import {RaftGroupId} from '../proxy/cpsubsystem/RaftGroupId';
 import {RaftGroupIdCodec} from './custom/RaftGroupIdCodec';
 import {StringCodec} from './builtin/StringCodec';
