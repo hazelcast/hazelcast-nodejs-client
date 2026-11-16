@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 'use strict';
-const {Client, FieldKind} = require('hazelcast-client');
-const Long = require('long');
+const {Client, FieldKind, Long} = require('hazelcast-client');
 
 class Employee {
     constructor(age, id) {

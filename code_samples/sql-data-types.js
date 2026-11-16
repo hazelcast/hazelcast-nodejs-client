@@ -15,8 +15,7 @@
  */
 'use strict';
 
-const { Client, SqlColumnType, HazelcastSqlException } = require('hazelcast-client');
-const long = require('long');
+const { Client, SqlColumnType, HazelcastSqlException, Long } = require('hazelcast-client');
 
 // Portable class
 class Student {
@@ -132,12 +131,12 @@ const bigintExample = async (client) => {
     await client.getSql().execute(createMappingQuery);
 
     for (let key = 0; key < 10; key++) {
-        await someMap.set(key, long.fromNumber(key * 2));
+        await someMap.set(key, Long.fromNumber(key * 2));
     }
 
     const result = await client.getSql().execute(
         `SELECT * FROM ${mapName} WHERE this > ? AND this < ?`,
-        [long.fromNumber(10), long.fromNumber(18)]
+        [Long.fromNumber(10), Long.fromNumber(18)]
     );
     const rowMetadata = result.rowMetadata;
     const columnIndex = rowMetadata.findColumn('this');
@@ -181,7 +180,7 @@ const portableExample = async (client, classId, factoryId) => {
     await client.getSql().execute(createMappingQuery);
 
     for (let key = 0; key < 10; key++) {
-        await someMap.set(key, new Student(long.fromNumber(key), 1.1));
+        await someMap.set(key, new Student(Long.fromNumber(key), 1.1));
     }
 
     // Note: If you do not specify `this` and use *, by default, `age` and `height` columns will be fetched
@@ -224,12 +223,12 @@ const compactExample = async (client, typeName) => {
     await client.getSql().execute(createMappingQuery);
 
     for (let key = 0; key < 10; key++) {
-        await someMap.set(key, new Employee(key, long.fromNumber(key)));
+        await someMap.set(key, new Employee(key, Long.fromNumber(key)));
     }
 
     const result = await client.getSql().execute(
         'SELECT * FROM employeeMap WHERE id > ? AND id < ?',
-        [long.fromNumber(3), long.fromNumber(8)]
+        [Long.fromNumber(3), Long.fromNumber(8)]
     );
 
     const rowMetadata = result.rowMetadata;

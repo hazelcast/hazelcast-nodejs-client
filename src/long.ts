@@ -2,6 +2,7 @@
  * @license
  * Copyright 2009 The Closure Library Authors
  * Copyright 2020 Daniel Wirtz / The long.js Authors.
+ * Copyright 2026 Hazelcast, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -48,11 +49,6 @@ const UINT_CACHE: Record<number, Long> = {};
 
 function isLong(obj: any): obj is Long {
   return (obj && obj['__isLong__']) === true;
-}
-
-function ctz32(value: number): number {
-  const c = Math.clz32(value & -value);
-  return value ? 31 - c : c;
 }
 
 function fromBits(lowBits: number, highBits: number, unsigned = false): Long {
@@ -154,18 +150,6 @@ function ensureLong(val: LongLike): Long {
   if (isLong(val)) {return val;}
   return fromValue(val);
 }
-
-// --- Module-level Long constants (initialized after class definition) ---
-
-// let ZERO: Long;
-// let UZERO: Long;
-// let ONE: Long;
-// let UONE: Long;
-// let NEG_ONE: Long;
-// let MAX_VALUE: Long;
-// let MIN_VALUE: Long;
-// let MAX_UNSIGNED_VALUE: Long;
-// let TWO_PWR_24: Long;
 
 // --- The Long class ---
 
@@ -352,9 +336,10 @@ export class Long {
     // Do several (6) digits each time through the loop, so as to
     // minimize the calls to the very expensive emulated div.
     const radixToPower = fromNumber(pow_dbl(radix, 6), this.unsigned);
-    let rem: Long = this;
+    let rem: Long = this.add(0);  // to prevent unexpected aliasing of 'this'
     let result = '';
-    while (true) {
+    const forever = true;
+    while (forever) {
       const remDiv = rem.div(radixToPower);
       const intval = rem.sub(remDiv.mul(radixToPower)).toInt() >>> 0;
       let digits = intval.toString(radix);
@@ -365,13 +350,7 @@ export class Long {
         result = '' + digits + result;
       }
     }
-  }
-
-  /**
-   * Gets the high 32 bits as a signed integer.
-   */
-  getHighBits(): number {
-    return this.high;
+    return '';
   }
 
   /**
@@ -382,44 +361,10 @@ export class Long {
   }
 
   /**
-   * Gets the low 32 bits as a signed integer.
-   */
-  getLowBits(): number {
-    return this.low;
-  }
-
-  /**
    * Gets the low 32 bits as an unsigned integer.
    */
   getLowBitsUnsigned(): number {
     return this.low >>> 0;
-  }
-
-  /**
-   * Gets the number of bits needed to represent the absolute value of this Long.
-   */
-  getNumBitsAbs(): number {
-    if (this.isNegative())
-      // Unsigned Longs are never negative
-      {return this.eq(Long.MIN_VALUE) ? 64 : this.neg().getNumBitsAbs();}
-    const val = this.high != 0 ? this.high : this.low;
-    let bit = 31;
-    for (; bit > 0; bit--) {if ((val & (1 << bit)) != 0) {break;}}
-    return this.high != 0 ? bit + 33 : bit + 1;
-  }
-
-  /**
-   * Tests if this Long can be safely represented as a JavaScript number.
-   */
-  isSafeInteger(): boolean {
-    // 2^53-1 is the maximum safe value
-    const top11Bits = this.high >> 21;
-    // [0, 2^53-1]
-    if (!top11Bits) {return true;}
-    // > 2^53-1
-    if (this.unsigned) {return false;}
-    // [-2^53, -1] except -2^53
-    return top11Bits === -1 && !(this.low === 0 && this.high === -0x200000);
   }
 
   /**
@@ -430,13 +375,6 @@ export class Long {
   }
 
   /**
-   * Tests if this Long's value equals zero. Alias of isZero.
-   */
-  eqz(): boolean {
-    return this.isZero();
-  }
-
-  /**
    * Tests if this Long's value is negative.
    */
   isNegative(): boolean {
@@ -444,24 +382,10 @@ export class Long {
   }
 
   /**
-   * Tests if this Long's value is positive or zero.
-   */
-  isPositive(): boolean {
-    return this.unsigned || this.high >= 0;
-  }
-
-  /**
    * Tests if this Long's value is odd.
    */
   isOdd(): boolean {
     return (this.low & 1) === 1;
-  }
-
-  /**
-   * Tests if this Long's value is even.
-   */
-  isEven(): boolean {
-    return (this.low & 1) === 0;
   }
 
   /**
@@ -490,16 +414,6 @@ export class Long {
     return !this.eq(/* validates */ other);
   }
 
-  /** Alias of notEquals */
-  neq(other: LongLike): boolean {
-    return this.notEquals(other);
-  }
-
-  /** Alias of notEquals */
-  ne(other: LongLike): boolean {
-    return this.notEquals(other);
-  }
-
   /**
    * Tests if this Long's value is less than the specified's.
    */
@@ -510,23 +424,6 @@ export class Long {
   /** Alias of lessThan */
   lt(other: LongLike): boolean {
     return this.lessThan(other);
-  }
-
-  /**
-   * Tests if this Long's value is less than or equal the specified's.
-   */
-  lessThanOrEqual(other: LongLike): boolean {
-    return this.comp(/* validates */ other) <= 0;
-  }
-
-  /** Alias of lessThanOrEqual */
-  lte(other: LongLike): boolean {
-    return this.lessThanOrEqual(other);
-  }
-
-  /** Alias of lessThanOrEqual */
-  le(other: LongLike): boolean {
-    return this.lessThanOrEqual(other);
   }
 
   /**
@@ -550,11 +447,6 @@ export class Long {
 
   /** Alias of greaterThanOrEqual */
   gte(other: LongLike): boolean {
-    return this.greaterThanOrEqual(other);
-  }
-
-  /** Alias of greaterThanOrEqual */
-  ge(other: LongLike): boolean {
     return this.greaterThanOrEqual(other);
   }
 
@@ -758,7 +650,7 @@ export class Long {
     // into the result, and subtract it from the remainder.  It is critical that
     // the approximate value is less than or equal to the real value so that the
     // remainder never becomes negative.
-    rem = this;
+    rem = this.add(0); // to suppress unexpected aliasing of 'this'
     while (rem.gte(d)) {
       // Approximate the result of division. This may be a little greater or
       // smaller than the actual value.
@@ -794,52 +686,10 @@ export class Long {
   }
 
   /**
-   * Returns this Long modulo the specified.
-   */
-  modulo(divisor: LongLike): Long {
-    const d = ensureLong(divisor);
-    return this.sub(this.div(d).mul(d));
-  }
-
-  /** Alias of modulo */
-  mod(divisor: LongLike): Long {
-    return this.modulo(divisor);
-  }
-
-  /** Alias of modulo */
-  rem(divisor: LongLike): Long {
-    return this.modulo(divisor);
-  }
-
-  /**
    * Returns the bitwise NOT of this Long.
    */
   not(): Long {
     return fromBits(~this.low, ~this.high, this.unsigned);
-  }
-
-  /**
-   * Returns count leading zeros of this Long.
-   */
-  countLeadingZeros(): number {
-    return this.high ? Math.clz32(this.high) : Math.clz32(this.low) + 32;
-  }
-
-  /** Alias of countLeadingZeros */
-  clz(): number {
-    return this.countLeadingZeros();
-  }
-
-  /**
-   * Returns count trailing zeros of this Long.
-   */
-  countTrailingZeros(): number {
-    return this.low ? ctz32(this.low) : ctz32(this.high) + 32;
-  }
-
-  /** Alias of countTrailingZeros */
-  ctz(): number {
-    return this.countTrailingZeros();
   }
 
   /**
@@ -935,77 +785,6 @@ export class Long {
     return this.shiftRightUnsigned(numBits);
   }
 
-  /** Alias of shiftRightUnsigned */
-  shr_u(numBits: number | Long): Long {
-    return this.shiftRightUnsigned(numBits);
-  }
-
-  /**
-   * Returns this Long with bits rotated to the left by the given amount.
-   */
-  rotateLeft(numBits: number | Long): Long {
-    let n = isLong(numBits) ? numBits.toInt() : (numBits as number);
-    if ((n &= 63) === 0) {return this;}
-    if (n === 32) {return fromBits(this.high, this.low, this.unsigned);}
-    if (n < 32) {
-      const b = 32 - n;
-      return fromBits(
-        (this.low << n) | (this.high >>> b),
-        (this.high << n) | (this.low >>> b),
-        this.unsigned,
-      );
-    }
-    n -= 32;
-    const b = 32 - n;
-    return fromBits(
-      (this.high << n) | (this.low >>> b),
-      (this.low << n) | (this.high >>> b),
-      this.unsigned,
-    );
-  }
-
-  /** Alias of rotateLeft */
-  rotl(numBits: number | Long): Long {
-    return this.rotateLeft(numBits);
-  }
-
-  /**
-   * Returns this Long with bits rotated to the right by the given amount.
-   */
-  rotateRight(numBits: number | Long): Long {
-    let n = isLong(numBits) ? numBits.toInt() : (numBits as number);
-    if ((n &= 63) === 0) {return this;}
-    if (n === 32) {return fromBits(this.high, this.low, this.unsigned);}
-    if (n < 32) {
-      const b = 32 - n;
-      return fromBits(
-        (this.high << b) | (this.low >>> n),
-        (this.low << b) | (this.high >>> n),
-        this.unsigned,
-      );
-    }
-    n -= 32;
-    const b = 32 - n;
-    return fromBits(
-      (this.low << b) | (this.high >>> n),
-      (this.high << b) | (this.low >>> n),
-      this.unsigned,
-    );
-  }
-
-  /** Alias of rotateRight */
-  rotr(numBits: number | Long): Long {
-    return this.rotateRight(numBits);
-  }
-
-  /**
-   * Converts this Long to signed.
-   */
-  toSigned(): Long {
-    if (!this.unsigned) {return this;}
-    return fromBits(this.low, this.high, false);
-  }
-
   /**
    * Converts this Long to unsigned.
    */
@@ -1013,60 +792,7 @@ export class Long {
     if (this.unsigned) {return this;}
     return fromBits(this.low, this.high, true);
   }
-
-  /**
-   * Converts this Long to its byte representation.
-   */
-  toBytes(le = false): number[] {
-    return le ? this.toBytesLE() : this.toBytesBE();
-  }
-
-  /**
-   * Converts this Long to its little endian byte representation.
-   */
-  toBytesLE(): number[] {
-    const hi = this.high;
-    const lo = this.low;
-    return [
-      lo & 0xff,
-      (lo >>> 8) & 0xff,
-      (lo >>> 16) & 0xff,
-      lo >>> 24,
-      hi & 0xff,
-      (hi >>> 8) & 0xff,
-      (hi >>> 16) & 0xff,
-      hi >>> 24,
-    ];
-  }
-
-  /**
-   * Converts this Long to its big endian byte representation.
-   */
-  toBytesBE(): number[] {
-    const hi = this.high;
-    const lo = this.low;
-    return [
-      hi >>> 24,
-      (hi >>> 16) & 0xff,
-      (hi >>> 8) & 0xff,
-      hi & 0xff,
-      lo >>> 24,
-      (lo >>> 16) & 0xff,
-      (lo >>> 8) & 0xff,
-      lo & 0xff,
-    ];
-  }
-
-  /**
-   * Converts the Long to its big integer representation.
-   */
-  toBigInt(): bigint {
-    const lowBigInt = BigInt(this.low >>> 0);
-    const highBigInt = BigInt(this.unsigned ? this.high >>> 0 : this.high);
-    return (highBigInt << BigInt(32)) | lowBigInt;
-  }
 }
-
 
 const ZERO = fromInt(0);
 const UZERO = fromInt(0, true);
@@ -1077,9 +803,6 @@ const MAX_VALUE = fromBits(0xffffffff | 0, 0x7fffffff | 0, false);
 const MIN_VALUE = fromBits(0, 0x80000000 | 0, false);
 const MAX_UNSIGNED_VALUE = fromBits(0xffffffff | 0, 0xffffffff | 0, true);
 const TWO_PWR_24 = fromInt(TWO_PWR_24_DBL);
-
-
-
 
 // Assign static class properties
 Long.ZERO = ZERO;

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 'use strict';
-const { Client, Fields, GenericRecords } = require('hazelcast-client');
-const Long = require('long');
+const { Client, Fields, GenericRecords, Long } = require('hazelcast-client');
 
 async function main() {
     const fields = {
