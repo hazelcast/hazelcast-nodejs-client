@@ -30,7 +30,6 @@ import Long from '../long';
  * Base class for all typed number wrappers. Instances are value types: two instances are logically
  * equal when their type and value match, even though they are distinct object references.
  *
- * @internal
  */
 abstract class TypedNumberBase<T> {
     /** The numeric content (`Long` for {@link Int64}, a plain `number` otherwise). */
