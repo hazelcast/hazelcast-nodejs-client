@@ -53,7 +53,6 @@ describe('Invalidation metadata distortion', function () {
             clusterName: cluster.id,
             nearCaches: {},
             serialization: {
-                defaultNumberType: 'integer',
                 dataSerializableFactories: {
                     66: identifiedFactory
                 }

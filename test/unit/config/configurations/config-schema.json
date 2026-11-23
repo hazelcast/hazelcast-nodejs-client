@@ -157,17 +157,6 @@
         "serialization": {
             "type": "object",
             "properties": {
-                "defaultNumberType": {
-                    "enum": [
-                        "double",
-                        "short",
-                        "integer",
-                        "float",
-                        "byte",
-                        "long"
-                    ],
-                    "default": "double"
-                },
                 "jsonStringDeserializationPolicy": {
                     "enum": [
                         "eager",

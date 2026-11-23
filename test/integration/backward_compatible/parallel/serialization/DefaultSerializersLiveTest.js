@@ -637,10 +637,7 @@ describe('DefaultSerializersLiveTest Arrays', function () {
         cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForParallelTests({
-            clusterName: cluster.id,
-            serialization: {
-                defaultNumberType: 'short'
-            }
+            clusterName: cluster.id
         }, member);
     });
 
@@ -658,9 +655,10 @@ describe('DefaultSerializersLiveTest Arrays', function () {
         expect(response.result.toString()).to.equal(['a', 'v', 'vg'].toString());
     });
 
-    it('should serialize numbers as shorts when defaultNumberType is set to short', async function () {
+    it('should serialize int16 values as shorts', async function () {
+        const { int16 } = require('../../../../../lib');
         const sampleNumbersArray = [-32768, 32767, 10000, 12121, 0, 1, -1, -2121, -12121, -10000];
-        await map.put('a', sampleNumbersArray);
+        await map.put('a', sampleNumbersArray.map((n) => int16(n)));
         const response = await RC.executeOnController(cluster.id, generateGet('a', map.getName()), Lang.JAVASCRIPT);
         expect(response.result.toString()).to.equal(sampleNumbersArray.toString());
     });

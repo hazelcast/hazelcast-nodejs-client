@@ -16,7 +16,6 @@
 /** @ignore *//** */
 
 import Long from '../long';
-import * as Util from '../util/Util';
 import {AGGREGATOR_FACTORY_ID} from '../aggregation/AggregatorConstants';
 import {aggregatorFactory} from '../aggregation';
 import {CLUSTER_DATA_FACTORY_ID, clusterDataFactory} from './ClusterDataFactory';
@@ -74,7 +73,21 @@ import {CompactStreamSerializer} from './compact/CompactStreamSerializer';
 import {SchemaService} from './compact/SchemaService';
 import {CompactGenericRecordImpl} from './generic_record';
 import {Schema} from './compact/Schema';
-import {BigDecimal, IllegalArgumentError, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, UUID} from '../core';
+import {
+    BigDecimal,
+    Float32,
+    Float64,
+    IllegalArgumentError,
+    Int16,
+    Int32,
+    Int64,
+    Int8,
+    LocalDate,
+    LocalDateTime,
+    LocalTime,
+    OffsetDateTime,
+    UUID
+} from '../core';
 
 /**
  * Serializes objects and deserializes data.
@@ -124,7 +137,6 @@ export class SerializationServiceV1 implements SerializationService {
     private readonly compactStreamSerializer: CompactStreamSerializer;
     private readonly portableSerializer: PortableSerializer;
     private readonly identifiedSerializer: IdentifiedDataSerializableSerializer;
-    private readonly typeKeyForDefaultNumberType : TypeKey;
 
     constructor(
         private readonly serializationConfig: SerializationConfigImpl,
@@ -140,7 +152,6 @@ export class SerializationServiceV1 implements SerializationService {
         this.registerCustomSerializers();
         this.registerCompactSerializers();
         this.registerGlobalSerializer();
-        this.typeKeyForDefaultNumberType = Util.getTypeKeyForDefaultNumberType(this.serializationConfig.defaultNumberType);
 
         // Called here so that we can make sure that we are not overriding
         // any of the default serializers registered above with the Compact
@@ -283,9 +294,9 @@ export class SerializationServiceV1 implements SerializationService {
 
         const isArray = Array.isArray(obj);
         if (!isArray) {
-            // Number needs special care because it can be serialized with one of many serializers.
+            // A plain number is always serialized as a float64.
             if (typeof obj === 'number') {
-                return this.findSerializerByType(this.typeKeyForDefaultNumberType, isArray);
+                return this.findSerializerByType(SerializationSymbols.DOUBLE_SYMBOL, isArray);
             }
             // We know obj is not undefined or null at this point, meaning it has a constructor field.
             return this.findSerializerByType(obj.constructor, isArray);
@@ -295,7 +306,7 @@ export class SerializationServiceV1 implements SerializationService {
 
     private lookupDefaultSerializerForArray(obj: Array<any>): Serializer | null {
         if (obj.length === 0) {
-            return this.findSerializerByType(this.typeKeyForDefaultNumberType, true);
+            return this.findSerializerByType(SerializationSymbols.DOUBLE_SYMBOL, true);
         }
         const firstElement = obj[0];
         // First element can be anything. Check for null and undefined.
@@ -306,8 +317,8 @@ export class SerializationServiceV1 implements SerializationService {
                 + 'The first element is undefined. Throwing an error because undefined cannot be'
                 + ' serialized in Hazelcast serialization.');
         } else if (typeof firstElement === 'number') {
-            // Number needs special care because it can be serialized with one of many serializers.
-            return this.findSerializerByType(this.typeKeyForDefaultNumberType, true);
+            // A plain number is always serialized as a float64.
+            return this.findSerializerByType(SerializationSymbols.DOUBLE_SYMBOL, true);
         }
         return this.findSerializerByType(obj[0].constructor, true);
     }
@@ -363,15 +374,22 @@ export class SerializationServiceV1 implements SerializationService {
     }
 
     private registerDefaultSerializers(): void {
+        const byteArraySerializer = new ByteArraySerializer();
+        const shortArraySerializer = new ShortArraySerializer();
+        const integerArraySerializer = new IntegerArraySerializer();
+        const longArraySerializer = new LongArraySerializer();
+        const floatArraySerializer = new FloatArraySerializer();
+        const doubleArraySerializer = new DoubleArraySerializer();
+
         this.registerSerializer(String, new StringSerializer(), new StringArraySerializer());
-        this.registerSerializer(SerializationSymbols.DOUBLE_SYMBOL, new DoubleSerializer(), new DoubleArraySerializer());
-        this.registerSerializer(SerializationSymbols.BYTE_SYMBOL , new ByteSerializer(), new ByteArraySerializer());
+        this.registerSerializer(SerializationSymbols.DOUBLE_SYMBOL, new DoubleSerializer(), doubleArraySerializer);
+        this.registerSerializer(SerializationSymbols.BYTE_SYMBOL , new ByteSerializer(), byteArraySerializer);
         this.registerSerializer(Boolean, new BooleanSerializer(), new BooleanArraySerializer());
         this.registerSerializer(SerializationSymbols.NULL_SYMBOL, new NullSerializer(), null);
-        this.registerSerializer(SerializationSymbols.SHORT_SYMBOL, new ShortSerializer(), new ShortArraySerializer());
-        this.registerSerializer(SerializationSymbols.INTEGER_SYMBOL, new IntegerSerializer(), new IntegerArraySerializer());
-        this.registerSerializer(Long, new LongSerializer(), new LongArraySerializer());
-        this.registerSerializer(SerializationSymbols.FLOAT_SYMBOL, new FloatSerializer(), new FloatArraySerializer());
+        this.registerSerializer(SerializationSymbols.SHORT_SYMBOL, new ShortSerializer(), shortArraySerializer);
+        this.registerSerializer(SerializationSymbols.INTEGER_SYMBOL, new IntegerSerializer(), integerArraySerializer);
+        this.registerSerializer(Long, new LongSerializer(), longArraySerializer);
+        this.registerSerializer(SerializationSymbols.FLOAT_SYMBOL, new FloatSerializer(), floatArraySerializer);
         this.registerSerializer(SerializationSymbols.CHAR_SYMBOL, new CharSerializer(), new CharArraySerializer());
         this.registerSerializer(Date, new DateSerializer(), null);
         this.registerSerializer(LocalDate, new LocalDateSerializer(), null);
@@ -394,6 +412,13 @@ export class SerializationServiceV1 implements SerializationService {
         } else {
             this.registerSerializer(SerializationSymbols.JSON_SYMBOL, new HazelcastJsonValueSerializer(), null);
         }
+
+        this.typeKeyToSerializersMap.set(Int8, [new ByteSerializer(), byteArraySerializer]);
+        this.typeKeyToSerializersMap.set(Int16, [new ShortSerializer(), shortArraySerializer]);
+        this.typeKeyToSerializersMap.set(Int32, [new IntegerSerializer(), integerArraySerializer]);
+        this.typeKeyToSerializersMap.set(Int64, [new LongSerializer(), longArraySerializer]);
+        this.typeKeyToSerializersMap.set(Float32, [new FloatSerializer(), floatArraySerializer]);
+        this.typeKeyToSerializersMap.set(Float64, [new DoubleSerializer(), doubleArraySerializer]);
     }
 
     private createIdentifiedSerializer(): IdentifiedDataSerializableSerializer {

@@ -40,4 +40,5 @@ export * from './ReadOnlyLazyList';
 export * from './ReadResultSet';
 export * from './RestValue';
 export * from './SimpleEntryView';
+export * from './TypedNumbers';
 export * from './UUID';

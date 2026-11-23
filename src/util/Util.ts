@@ -21,7 +21,6 @@ import * as Path from 'path';
 import {IllegalStateError, MemberImpl} from '../core';
 import {MemberVersion} from '../core/MemberVersion';
 import {BuildInfo} from '../BuildInfo';
-import {SerializationSymbols} from '../serialization/SerializationSymbols';
 
 /** @internal */
 export function assertNotNull(v: any): void {
@@ -117,27 +116,6 @@ export function tryGetString(val: any): string {
     }
 }
 
-/** @internal */
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function getTypeKeyForDefaultNumberType(defaultNumberType: string): Function | Symbol {
-    switch (defaultNumberType) {
-        case 'byte':
-            return SerializationSymbols.BYTE_SYMBOL;
-        case 'short':
-            return SerializationSymbols.SHORT_SYMBOL;
-        case 'integer':
-            return SerializationSymbols.INTEGER_SYMBOL;
-        case 'float':
-            return SerializationSymbols.FLOAT_SYMBOL;
-        case 'double':
-            return SerializationSymbols.DOUBLE_SYMBOL;
-        case 'long':
-            return Long;
-        default:
-            throw new RangeError(`Unexpected defaultNumberType value. (${defaultNumberType})
-                Expected values: byte, short, integer, float, double, long`);
-    }
-}
 
 /** @internal */
 export function tryGetStringOrNull(val: any): string {

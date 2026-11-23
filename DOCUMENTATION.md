@@ -671,18 +671,17 @@ for the Java server side.
 | Node.js         | Java                                  |
 |-----------------|---------------------------------------|
 | boolean         | Boolean                               |
-| number          | Byte, Short, Integer, Float, Double   |
+| number          | Double                                |
 | BigInt          | BigInteger                            |
 | string          | String                                |
 | Long            | Long                                  |
 | Buffer          | byte[]                                |
 | Object          | com.hazelcast.core.HazelcastJsonValue |
 
-> **NOTE: The `Long` type means the type provided by [long.js library](https://github.com/dcodeIO/long.js).**
-
-> **NOTE: A `number` is serialized as `Double` by default. You can configure this behavior using the `defaultNumberType`
-> serialization config option. See [API Documentation](http://hazelcast.github.io/hazelcast-nodejs-client)
-> for more information.**
+> A `number` is always serialized as a 64-bit float (`Double`). To store a number with a different numeric type,
+> wrap it with one of the typed number factories such as `int8`, `int16`, `int32`, `int64`, `float32` or `float64`.
+> An array whose elements are wrapped values is serialized as the corresponding primitive array (for example, an array
+> of `int16(...)` values becomes a Java `short[]`).
 
 Arrays of the `boolean`, `number`, `BigInt`, `string`, and `Long` types can be serialized as `boolean[]`, `BigInteger[]`,
 `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `string[]`, and `long[]` for the Java server side, respectively.
