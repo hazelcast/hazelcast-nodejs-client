@@ -19,23 +19,11 @@ import Long from '../long';
 /**
  * JavaScript exposes a single numeric type (`number`, an IEEE-754 double), while Hazelcast
  * distinguishes several numeric wire types: `byte`, `short`, `int`, `long`, `float` and `double`.
- * A plain JS `number` is always serialized as a 64-bit float (`double`).
- *
- * The factory functions in this module let you tag an individual value with its intended numeric
- * type. A value produced by one of these functions is serialized using that specific wire type,
- * independent of the default `double` representation used for plain numbers.
+ * A plain JS `number` is always serialized as a float64.
  */
 
-/**
- * Base class for all typed number wrappers. Instances are value types: two instances are logically
- * equal when their type and value match, even though they are distinct object references.
- *
- */
 abstract class TypedNumberBase<T> {
-    /** The numeric content (`Long` for {@link Int64}, a plain `number` otherwise). */
     readonly value: T;
-
-    /** Stable identifier of the type, e.g. `'int32'`. */
     readonly typeName: string;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,16 +34,10 @@ abstract class TypedNumberBase<T> {
         Object.freeze(this);
     }
 
-    /**
-     * Returns `true` when `other` is the same wrapper type with an equal value.
-     */
     equals(other: unknown): boolean {
         return other instanceof (this.constructor as any) && (other as TypedNumberBase<T>).value === this.value;
     }
 
-    /**
-     * Human readable form, e.g. `"int32(5)"`.
-     */
     toString(): string {
         return `${this.typeName}(${this.value})`;
     }
@@ -100,9 +82,6 @@ export class Int64 extends TypedNumberBase<Long> {
         super('int64', value);
     }
 
-    /**
-     * Returns `true` when `other` is an {@link Int64} with an equal value.
-     */
     equals(other: unknown): boolean {
         return other instanceof Int64 && this.value.equals((other as Int64).value);
     }
@@ -225,9 +204,6 @@ export function int64(value: number | bigint | Long): Int64 {
 /**
  * Creates a value that is serialized as a Hazelcast `float` (float32).
  *
- * The value must be finite. It is rounded to single precision on the wire; this is expected and
- * not an error.
- *
  * @param value the number to wrap
  * @throws RangeError if `value` is not finite (`NaN`, `Infinity`, `-Infinity`).
  */
@@ -238,9 +214,6 @@ export function float32(value: number): Float32 {
 
 /**
  * Creates a value that is serialized as a Hazelcast `double` (float64).
- *
- * The value must be finite. This is the same representation a plain (unwrapped) number always uses,
- * so `float64(x)` is byte-identical to storing the plain number `x`.
  *
  * @param value the number to wrap
  * @throws RangeError if `value` is not finite (`NaN`, `Infinity`, `-Infinity`).
