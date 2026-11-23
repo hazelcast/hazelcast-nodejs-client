@@ -36,7 +36,6 @@ describe('BinaryCompatibilityTest', function () {
     const isBigEndianValues = [true, false];
 
     const dataMap = {};
-    const defaultNumberTypes = ['byte', 'short', 'integer', 'float', 'double', 'long'];
 
     function createFileName(version) {
         return version + '.serialization.compatibility.binary';
@@ -68,7 +67,7 @@ describe('BinaryCompatibilityTest', function () {
         return version + '-' + stripArticle(varName) + '-' + convertEndiannesToByteOrder(isBigEndian);
     }
 
-    function createSerializationService(isBigEndian, defaultNumberType) {
+    function createSerializationService(isBigEndian) {
         const cfg = new SerializationConfigImpl();
         cfg.portableFactories[ReferenceObjects.PORTABLE_FACTORY_ID] =
             (classId) => {
@@ -109,9 +108,6 @@ describe('BinaryCompatibilityTest', function () {
             }
         ];
         cfg.isBigEndian = isBigEndian;
-        if (defaultNumberTypes.includes(defaultNumberType)) {
-            cfg.defaultNumberType = defaultNumberType;
-        }
         return new SerializationServiceV1(cfg);
     }
 
@@ -140,7 +136,7 @@ describe('BinaryCompatibilityTest', function () {
                 isBigEndianValues.forEach((isBigEndian) => {
                     it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version, function () {
                         const key = createObjectKey(varName, version, isBigEndian);
-                        const service = createSerializationService(isBigEndian, 'integer');
+                        const service = createSerializationService(isBigEndian);
                         const deserialized = service.toObject(dataMap[key]);
                         expectAlmostEqual(deserialized, object);
                     });
@@ -148,7 +144,7 @@ describe('BinaryCompatibilityTest', function () {
                     if (!ReferenceObjects.skipOnSerialize[varName]) {
                         it(varName + '-' + convertEndiannesToByteOrder(isBigEndian) + '-' + version + ' serialize deserialize',
                             function () {
-                                const service = createSerializationService(isBigEndian, stripArticle(varName).toLowerCase());
+                                const service = createSerializationService(isBigEndian);
                                 const data = service.toData(object);
                                 const deserialized = service.toObject(data);
                                 expectAlmostEqual(deserialized, object);

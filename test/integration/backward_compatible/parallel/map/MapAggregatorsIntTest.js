@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2026, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ const { expect } = require('chai');
 const RC = require('../../../RC');
 const {
     Aggregators,
-    Predicates
+    Predicates,
+    int32
 } = require('../../../../../lib');
 const TestUtil = require('../../../../TestUtil');
 
@@ -33,10 +34,7 @@ describe('MapAggregatorsIntTest', function () {
         cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForParallelTests({
-            clusterName: cluster.id,
-            serialization: {
-                defaultNumberType: 'integer'
-            }
+            clusterName: cluster.id
         }, member);
         map = await client.getMap('aggregatorsMap');
     });
@@ -46,7 +44,11 @@ describe('MapAggregatorsIntTest', function () {
     });
 
     beforeEach(async function () {
-        return TestUtil.fillMap(map, 50, 'key', 0);
+        const entries = [];
+        for (let i = 0; i < 50; i++) {
+            entries.push(['key' + i, int32(i)]);
+        }
+        return map.putAll(entries);
     });
 
     afterEach(async function () {

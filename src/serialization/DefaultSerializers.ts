@@ -24,7 +24,13 @@ import {
 } from './Serializable';
 import {
     BigDecimal,
+    Float32,
+    Float64,
     HazelcastJsonValue,
+    Int16,
+    Int32,
+    Int64,
+    Int8,
     LocalDate,
     LocalDateTime,
     LocalTime,
@@ -56,8 +62,8 @@ export class DoubleSerializer implements Serializer<number> {
         return input.readDouble();
     }
 
-    write(output: DataOutput, object: number): void {
-        output.writeDouble(object);
+    write(output: DataOutput, object: number | Float64): void {
+        output.writeDouble(object instanceof Float64 ? object.value : object);
     }
 }
 
@@ -101,8 +107,8 @@ export class ShortSerializer implements Serializer<number> {
         return input.readShort();
     }
 
-    write(output: DataOutput, object: number): void {
-        output.writeShort(object);
+    write(output: DataOutput, object: number | Int16): void {
+        output.writeShort(object instanceof Int16 ? object.value : object);
     }
 }
 
@@ -115,8 +121,8 @@ export class IntegerSerializer implements Serializer<number> {
         return input.readInt();
     }
 
-    write(output: DataOutput, object: number): void {
-        output.writeInt(object);
+    write(output: DataOutput, object: number | Int32): void {
+        output.writeInt(object instanceof Int32 ? object.value : object);
     }
 }
 
@@ -129,8 +135,8 @@ export class LongSerializer implements Serializer<Long> {
         return input.readLong();
     }
 
-    write(output: DataOutput, object: Long): void {
-        output.writeLong(object);
+    write(output: DataOutput, object: Long | Int64): void {
+        output.writeLong(object instanceof Int64 ? object.value : object);
     }
 }
 
@@ -143,8 +149,8 @@ export class FloatSerializer implements Serializer<number> {
         return input.readFloat();
     }
 
-    write(output: DataOutput, object: number): void {
-        output.writeFloat(object);
+    write(output: DataOutput, object: number | Float32): void {
+        output.writeFloat(object instanceof Float32 ? object.value : object);
     }
 }
 
@@ -177,7 +183,7 @@ export class BooleanArraySerializer implements Serializer<boolean[]> {
 }
 
 /** @internal */
-export class ShortArraySerializer implements Serializer<number[]> {
+export class ShortArraySerializer implements Serializer<(number | Int16)[]> {
 
     id = -15;
 
@@ -185,13 +191,13 @@ export class ShortArraySerializer implements Serializer<number[]> {
         return input.readShortArray();
     }
 
-    write(output: DataOutput, object: number[]): void {
-        output.writeShortArray(object);
+    write(output: DataOutput, object: (number | Int16)[]): void {
+        output.writeShortArray(object.map((v) => v instanceof Int16 ? v.value : v));
     }
 }
 
 /** @internal */
-export class IntegerArraySerializer implements Serializer<number[]> {
+export class IntegerArraySerializer implements Serializer<(number | Int32)[]> {
 
     id = -16;
 
@@ -199,13 +205,13 @@ export class IntegerArraySerializer implements Serializer<number[]> {
         return input.readIntArray();
     }
 
-    write(output: DataOutput, object: number[]): void {
-        output.writeIntArray(object);
+    write(output: DataOutput, object: (number | Int32)[]): void {
+        output.writeIntArray(object.map((v) => v instanceof Int32 ? v.value : v));
     }
 }
 
 /** @internal */
-export class LongArraySerializer implements Serializer<Long[]> {
+export class LongArraySerializer implements Serializer<(Long | Int64)[]> {
 
     id = -17;
 
@@ -213,13 +219,13 @@ export class LongArraySerializer implements Serializer<Long[]> {
         return input.readLongArray();
     }
 
-    write(output: DataOutput, object: Long[]): void {
-        output.writeLongArray(object);
+    write(output: DataOutput, object: (Long | Int64)[]): void {
+        output.writeLongArray(object.map((v) => v instanceof Int64 ? v.value : v));
     }
 }
 
 /** @internal */
-export class DoubleArraySerializer implements Serializer<number[]> {
+export class DoubleArraySerializer implements Serializer<(number | Float64)[]> {
 
     id = -19;
 
@@ -227,8 +233,8 @@ export class DoubleArraySerializer implements Serializer<number[]> {
         return input.readDoubleArray();
     }
 
-    write(output: DataOutput, object: number[]): void {
-        output.writeDoubleArray(object);
+    write(output: DataOutput, object: (number | Float64)[]): void {
+        output.writeDoubleArray(object.map((v) => v instanceof Float64 ? v.value : v));
     }
 }
 
@@ -255,13 +261,13 @@ export class ByteSerializer implements Serializer<number> {
         return input.readByte();
     }
 
-    write(output: DataOutput, object: number): void {
-        output.writeByte(object);
+    write(output: DataOutput, object: number | Int8): void {
+        output.writeByte(object instanceof Int8 ? object.value : object);
     }
 }
 
 /** @internal */
-export class ByteArraySerializer implements Serializer<Buffer> {
+export class ByteArraySerializer implements Serializer<Buffer | (number | Int8)[]> {
 
     id = -12;
 
@@ -269,8 +275,13 @@ export class ByteArraySerializer implements Serializer<Buffer> {
         return input.readByteArray();
     }
 
-    write(output: DataOutput, object: Buffer): void {
-        output.writeByteArray(object);
+    write(output: DataOutput, object: Buffer | (number | Int8)[]): void {
+        if (Buffer.isBuffer(object)) {
+            output.writeByteArray(object);
+        } else {
+            // An array of wrapped/numeric values is written as a byte[] (Buffer).
+            output.writeByteArray(Buffer.from(object.map((v) => v instanceof Int8 ? v.value : v)));
+        }
     }
 }
 
@@ -303,7 +314,7 @@ export class CharArraySerializer implements Serializer<string[]> {
 }
 
 /** @internal */
-export class FloatArraySerializer implements Serializer<number[]> {
+export class FloatArraySerializer implements Serializer<(number | Float32)[]> {
 
     id = -18;
 
@@ -311,8 +322,8 @@ export class FloatArraySerializer implements Serializer<number[]> {
         return input.readFloatArray();
     }
 
-    write(output: DataOutput, object: any): void {
-        output.writeFloatArray(object);
+    write(output: DataOutput, object: (number | Float32)[]): void {
+        output.writeFloatArray(object.map((v) => v instanceof Float32 ? v.value : v));
     }
 }
 

@@ -22,9 +22,7 @@ const { SerializationServiceV1 } = require('../../../lib/serialization/Serializa
 const { SerializationConfigImpl } = require('../../../lib/config/SerializationConfig');
 const {
     DoubleArraySerializer,
-    ByteArraySerializer,
-    JsonSerializer,
-    IntegerArraySerializer
+    JsonSerializer
 } = require('../../../src/serialization/DefaultSerializers');
 const {
     Predicates,
@@ -36,7 +34,6 @@ const {
     LocalDate,
     BigDecimal
 } = require('../../../');
-const TestUtil = require('../../../test/TestUtil');
 
 describe('DefaultSerializersTest', function () {
     const restValue = new RestValue();
@@ -105,46 +102,6 @@ describe('DefaultSerializersTest', function () {
             }
         );
     });
-
-    const defaultNumberTypes = [
-        'double',
-        'short',
-        'integer',
-        'long',
-        'float',
-        'byte'
-    ];
-
-    defaultNumberTypes.forEach((type) => {
-        it('convert default number type: ' + type, function () {
-            let num = 56;
-            if (type === 'long') {
-                num = Long.fromNumber(56);
-            }
-            const config = new SerializationConfigImpl();
-            config.defaultNumberType = type;
-            const serializationService = new SerializationServiceV1(config);
-            const serialized = serializationService.toData(num);
-            expect(serializationService.toObject(serialized)).to.deep.equal(num);
-        });
-    });
-
-    defaultNumberTypes.forEach((type) => {
-        it('convert array of default number type: ' + type, function () {
-            let nums = [56, 101];
-            if (type === 'long') {
-                nums = [Long.fromNumber(56), Long.fromNumber(101)];
-            }
-            if (type === 'byte') {
-                nums = Buffer.from(nums);
-            }
-            const config = new SerializationConfigImpl();
-            config.defaultNumberType = type;
-            const serializationService = new SerializationServiceV1(config);
-            const serialized = serializationService.toData(nums);
-            expect(serializationService.toObject(serialized)).to.deep.equal(nums);
-        });
-    });
 });
 
 describe('DefaultSerializersTest For Arrays', function () {
@@ -171,43 +128,12 @@ describe('DefaultSerializersTest For Arrays', function () {
         assert.equal(returnValue.getType(), new DoubleArraySerializer().id);
     });
 
-    it('should use IntegerArraySerializer for numbers array when I set defaultNumberType to integer', function () {
-        const numbersArray = [189, 255];
-        const config = new SerializationConfigImpl();
-        config.defaultNumberType = 'integer';
-        const serializationService = new SerializationServiceV1(config);
-        const returnValue = serializationService.toData(numbersArray);
-        assert.equal(returnValue.getType(), new IntegerArraySerializer().id);
-    });
-
-    it('should use ByteArraySerializer for numbers array when I set defaultNumberType to byte', function () {
-        const sampleNumbersArray = [12, 18];
-        const nums = Buffer.from(sampleNumbersArray);
-        const config = new SerializationConfigImpl();
-        config.defaultNumberType = 'byte';
-        const serializationService = new SerializationServiceV1(config);
-        const returnValue = serializationService.toData(nums);
-        assert.equal(returnValue.getType(), new ByteArraySerializer().id);
-    });
-
     it('should use JsonSerializer when the first element of array is null, NullArraySerializer is not defined', function () {
         const firstElementNullArray = [null, 18];
         const config = new SerializationConfigImpl();
-        config.defaultNumberType = 'byte';
         const serializationService = new SerializationServiceV1(config);
         const returnValue = serializationService.toData(firstElementNullArray);
         assert.equal(returnValue.getType(), new JsonSerializer().id);
-    });
-
-    it('should throw range error when defaultNumberType is set to short and send values out of bounds.', async function () {
-        const outOfBoundsShortArray = [-32769, 32768];
-        const config = new SerializationConfigImpl();
-        config.defaultNumberType = 'short';
-        const serializationService = new SerializationServiceV1(config);
-        const error = await TestUtil.getRejectionReasonOrThrow(async () => {
-            await serializationService.toData(outOfBoundsShortArray);
-        });
-        error.message.includes('-32768').should.be.true;
     });
 });
 

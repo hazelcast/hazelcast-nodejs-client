@@ -17,7 +17,6 @@
         "chai-as-promised": "~7.1.1",
         "eslint": "~8.28.0",
         "eslint-plugin-mocha": "~9.0.0",
-        "husky": "~6.0.0",
         "jsonschema": "~1.5.0",
         "markdown-link-check": "^3.14.2",
         "markdownlint-cli": "~0.32.2",
@@ -59,7 +58,6 @@
         "startrc": "node scripts/test-runner.js startrc",
         "check-code-samples": "node scripts/test-runner.js check-code-samples",
         "check-markdown-links": "markdown-link-check -q",
-        "prepare": "husky install",
         "prepublishOnly": "path-exists lib"
     },
     "repository": {

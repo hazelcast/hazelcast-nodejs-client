@@ -39,7 +39,6 @@ import {ReconnectMode} from './ConnectionStrategyConfig';
 import {LoadBalancerType} from './LoadBalancerConfig';
 import {LogLevel} from '../logging';
 import {TokenCredentialsImpl, TokenEncoding, UsernamePasswordCredentialsImpl,} from '../security';
-import * as Util from '../util/Util';
 
 /**
  * Responsible for user-defined config validation. Builds the effective config with necessary defaults.
@@ -442,12 +441,7 @@ export class ConfigBuilder {
 
     private handleSerialization(jsonObject: any): void {
         for (const key in jsonObject) {
-            if (key === 'defaultNumberType') {
-                const defaultNumberType = tryGetString(jsonObject[key]).toLowerCase();
-                // For checking expected value for defaultNumberType. If get unexpected value, throw RangeError.
-                Util.getTypeKeyForDefaultNumberType(defaultNumberType);
-                this.effectiveConfig.serialization.defaultNumberType = defaultNumberType;
-            } else if (key === 'isBigEndian') {
+            if (key === 'isBigEndian') {
                 this.effectiveConfig.serialization.isBigEndian = tryGetBoolean(jsonObject[key]);
             } else if (key === 'portableVersion') {
                 this.effectiveConfig.serialization.portableVersion = tryGetNumber(jsonObject[key]);

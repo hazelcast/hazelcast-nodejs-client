@@ -33,10 +33,7 @@ describe('MapAggregatorsLongTest', function () {
         cluster = await testFactory.createClusterForParallelTests();
         const member = await RC.startMember(cluster.id);
         client = await testFactory.newHazelcastClientForParallelTests({
-            clusterName: cluster.id,
-            serialization: {
-                defaultNumberType: 'long'
-            }
+            clusterName: cluster.id
         }, member);
         map = await client.getMap('aggregatorsMap');
     });
