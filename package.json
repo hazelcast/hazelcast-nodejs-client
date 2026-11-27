@@ -6,7 +6,8 @@
     "types": "lib/index.d.ts",
     "files": [
         "lib/**/*.js",
-        "lib/**/*.d.ts"
+        "lib/**/*.d.ts",
+        "sbom.cdx.json"
     ],
     "devDependencies": {
         "@istanbuljs/nyc-config-typescript": "~1.0.2",
@@ -42,6 +43,7 @@
     "scripts": {
         "clean": "rimraf lib *.jar *.log *.xml coverage",
         "compile": "tsc",
+        "sbom": "npm sbom --omit dev --sbom-format=cyclonedx > sbom.cdx.json",
         "test": "node scripts/test-runner.js all",
         "test:unit": "node scripts/test-runner.js unit",
         "test:integration": "node scripts/test-runner.js integration",
@@ -60,7 +62,7 @@
         "check-code-samples": "node scripts/test-runner.js check-code-samples",
         "check-markdown-links": "markdown-link-check -q",
         "prepare": "husky install",
-        "prepublishOnly": "path-exists lib"
+        "prepublishOnly": "path-exists lib && npm run sbom"
     },
     "repository": {
         "type": "git",
